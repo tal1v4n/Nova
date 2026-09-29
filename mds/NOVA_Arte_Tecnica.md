@@ -337,11 +337,32 @@ después.
 - El pivote nunca se desplaza, porque todas las formas se construyen
   alrededor del mismo centro de celda.
 - Ciclo idle de criaturas: squash and stretch con volumen conservado.
-  `s = 1 + 0.07*sin(2πt)`, altura `× s`, anchura `÷ sqrt(s)`.
+  `s = 1 + 0.07*sin(2πt)`, altura `× s`, anchura `÷ sqrt(s)`. **Esta fórmula
+  solo la puede ejecutar un generador**, que dibuja cada frame en su forma
+  exacta. Ver la regla siguiente.
+- **Un transform traslada; nunca escala un nodo.** `s` produce alturas de
+  71.9 px y 62.5 px sobre un sprite de 67 px, y con `Filter Mode: Point` eso
+  remuestrea el sprite en cada frame duplicando y soltando filas distintas:
+  no es un nodo respirando, es un nodo hirviendo. Es la misma prohibición que
+  convirtió el protón en tres sprites discretos y con la que T.8 descarta
+  arreglar la escala del tablero desde Unity, aplicada al último sitio donde
+  faltaba. **Todo movimiento por transform de un nodo es una traslación de
+  píxeles enteros**, y eso incluye la sacudida de `Asustado`
+  ([14.7](./NOVA_Estados_Animaciones.md#147-prioridad-visual), capa 5).
 - **Reparto del idle.** El nodo cuyo idle es solo deformación —**Asteroide** y
-  **Magnetar**— lo resuelve **por transform en Unity** y no genera hoja. Los
-  que tienen que mover algo interno (**Estrella y Púlsar**) llevan hoja de 16
-  frames, porque una corona congelada delata que el sprite es estático.
+  **Magnetar**— lo resuelve **por transform en Unity** y no genera hoja, así
+  que su idle **no es un squash sino un cabeceo**: 1 px el Asteroide, 2 px el
+  Magnetar, ciclo lento y desplazamiento entero. Los que tienen que mover algo
+  interno (**Estrella y Púlsar**) llevan hoja de 16 frames y sí usan `s`,
+  porque allí la deformación la dibuja el generador y no hay remuestreo. Una
+  corona congelada delata que el sprite es estático.
+
+  **El reparto no cambia, pero su motivo son ahora dos preguntas y no una.**
+  La primera sigue siendo «¿tiene algo interno que mover?», y decide si hace
+  falta una hoja. La segunda es «¿lo que se mueve cabe en una traslación
+  entera?», y decide si el transform puede encargarse. Un nodo que necesitara
+  deformarse sin tener nada interno que mover llevaría hoja igual, solo por
+  la segunda.
 
   El Magnetar ha estado en los dos grupos, y siempre por el mismo criterio.
   Con «La Botella» los lazos de campo eran su firma y un campo congelado
@@ -433,8 +454,8 @@ los nodos:
 
 | Familia | Resolución | Motivo |
 |---|---|---|
-| `art/bg/*` | 2048×1152 | Ver *Fondos*. |
-| `art/world/world_radius_*` | Hasta 384×384 | El radio del Magnetar mide 2.0–3.6 u ([A.4.1](./NOVA_Assets_Diseno.md#a41-radio-de-alcance-del-magnetar)). |
+| `art/bg/*` | **960×540** | Ver *Fondos*. Son 15 × 8.4375 u a PPU 64: el tablero entero ([T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada), cerrada el 2026-09-28). Eran 2048×1152 cuando el tablero medía 32 × 18 u, y llegaron a pedirse a 1280×720 durante unas horas, con el tablero de 20 u. |
+| `art/world/world_radius_*` | Hasta 512×512 | El radio del Magnetar mide 2.0–3.6 u, y 3.6 u a PPU 64 son 230 px **de radio**: 461 px de lado ([A.4.1](./NOVA_Assets_Diseno.md#a41-radio-de-alcance-del-magnetar)). **Un archivo por nivel**, porque escalar uno solo daría factores no enteros. |
 | `art/world/world_proton_*` | 48×48 | Ver abajo. |
 
 **El protón no escala de forma continua.** [14.3](./NOVA_Estados_Animaciones.md#143-protón)
@@ -450,7 +471,7 @@ del mismo sprite. Se sustituye por **tres sprites discretos** de 48×48
 Los fondos son una familia aparte y viven en `tools/nova_fondo.py`. No
 comparten nada con las primitivas de nodo salvo la paleta y la matriz de
 Bayer: allí hay cuerpos dentro de una celda de 96 px con normal, bandas,
-contorno y huella; aquí hay campos de densidad de 2048×1152 px que se
+contorno y huella; aquí hay campos de densidad de 960×540 px que se
 resuelven a color por trama. Son dos familias con reglas distintas.
 
 **El presupuesto de contraste.** La media de luminancia de cualquier ventana
@@ -502,6 +523,8 @@ viñeta lleva la mirada al centro, y aquí el centro es el tablero.
 
 ## Importación en Unity
 
+**Versión y plantilla:** Unity **6.6 (6000.6.0f1)**, plantilla **Universal 2D v7.0.0** (URP con 2D Renderer). La URP se elige porque en Unity 6 el componente **Pixel Perfect Camera** viaja dentro de ella y ya no existe como paquete aparte. **Sin post-procesado de ningún tipo:** bloom, tonemapping o antialiasing deshacen el dithering Bayer y el alfa binario sobre los que está construido todo este documento.
+
 | Ajuste | Valor |
 |---|---|
 | Sprite Mode | Single (estático) / Multiple (animado) |
@@ -514,9 +537,26 @@ viñeta lleva la mirada al centro, y aquí el centro es el tablero.
 Números de juego (vida, puntaje, valores) no se hornean en el sprite: van
 en un objeto hijo con TextMeshPro. La sombra de suelo es un sprite aparte.
 
-**Tipografía:** una única pixel font de licencia libre para todo —números
-sobre el nodo, paneles y menús—, importada a TextMeshPro. Una sola familia:
-mezclar dos en un juego de este tamaño se nota si no se hace muy bien.
+**Tipografía: Jersey 10**, licencia **OFL**, una sola familia para todo
+—números sobre el nodo, paneles y menús—, importada a TextMeshPro desde
+`Assets/Art/Fonts/`. Tiene `á é í ó ú ñ ü ¡ ¿`, y la UI de
+[13](./NOVA_GameDesign_Spec.md#13-controles-y-ui) está escrita en español.
+Mezclar dos familias en un juego de este tamaño se nota si no se hace muy bien.
+
+**Y se usa a múltiplos enteros de su tamaño nativo.** Una pixel font renderizada
+a un tamaño intermedio se interpola, y entonces el texto es lo único borroso de
+una pantalla dibujada entera con `Filter Mode: Point`. Es la misma regla que
+prohíbe escalar un sprite por un factor no entero, aplicada al texto.
+
+**Por eso no es Pixelify Sans**, que fue la elegida primero el 2026-09-28 y se
+cambió el mismo día: medida sobre el TTF, **ninguna** de sus ~17 000
+coordenadas cae en una rejilla, así que no tiene tamaño nativo y la regla de
+arriba no se le puede aplicar. Jersey 10 tiene el **100 %** de sus puntos en
+una rejilla de 75 unidades sobre un em de 1400: **18.67 px por em**, con una
+mayúscula de 10 px, la más legible a 1:1 de las cinco fuentes en rejilla que
+se compararon (`art/_preview/fuentes/`). Como 18.67 no es entero, el atlas de
+TextMeshPro se genera a **56 pt**, donde cada píxel de diseño son 3 del atlas
+exactos, y los textos usan tamaños múltiplos de 18.67.
 
 ---
 

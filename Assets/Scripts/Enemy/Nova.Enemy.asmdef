@@ -1,0 +1,14 @@
+{
+    "name": "Nova.Enemy",
+    "rootNamespace": "Nova.Enemy",
+    "references": ["Nova.Core", "Nova.Data", "Nova.Gameplay"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -14,7 +14,7 @@
 1. **La presentación solo lee.** `NodeAnimator` se suscribe a eventos; nunca modifica Energía, facción ni estado ([15.1](./NOVA_GameDesign_Spec.md#151-principios), principio 3).
 2. **Estado ≠ animación puntual.** Un *estado* (14.1) persiste y puede bloquear acciones; una *animación puntual* (14.5) es un efecto que se reproduce y termina, sin efecto de juego.
 3. **Todo nodo anima igual, sea del bando que sea.** Jugador, Enemigo y Neutral usan las mismas reglas; solo cambia la paleta. En la práctica esto es literal: una variante de facción es la misma llamada de geometría con otra rampa.
-4. **El idle se reparte.** El Asteroide y el Magnetar resuelven su idle por transform en Unity y no generan hoja; Estrella y Púlsar llevan hoja de 16 frames porque tienen que mover algo interno. El Magnetar ha estado en los dos grupos por el mismo criterio: con «La Botella» sus lazos de campo eran su firma, y cerrado en «El Yunque» ([A.2.4](./NOVA_Assets_Diseno.md#a24-magnetar--44)) un cuerpo tallado con esquirlas capturadas no tiene nada interno que mover. El criterio es el motivo, no la lista.
+4. **El idle se reparte.** El Asteroide y el Magnetar resuelven su idle por transform en Unity y no generan hoja —un **cabeceo de píxeles enteros**, no un squash: un transform no puede deformar un sprite sin romper la rejilla ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Animación*)—; Estrella y Púlsar llevan hoja de 16 frames porque tienen que mover algo interno. El Magnetar ha estado en los dos grupos por el mismo criterio: con «La Botella» sus lazos de campo eran su firma, y cerrado en «El Yunque» ([A.2.4](./NOVA_Assets_Diseno.md#a24-magnetar--44)) un cuerpo tallado con esquirlas capturadas no tiene nada interno que mover. El criterio es el motivo, no la lista.
 5. **Si el estado no se ve, es un bug.** Cada estado de 14.1 debe ser distinguible de un vistazo sin leer números.
 
 ---
@@ -29,12 +29,14 @@
 | `SinEncender` | Asteroide del Jugador o del Enemigo | Es Asteroide y `faction != Neutral` | Una **brasa** en el sitio del `zzz`, en color de facción. **Dos lecturas** según `energy`: quieta por debajo de 10, abierta en cinco trazos que **crepitan** al llegar ([A.3.2](./NOVA_Assets_Diseno.md#a32-art-st-ign-y-art-st-ready--sinencender)) | Indefinida | Se enciende ([4.1](./NOVA_Nodos.md#41-asteroide-nivel-0)) |
 | `Normal` | Cualquier nodo encendido | Ausencia de los demás estados | Idle propio del tipo | — | Entra otro estado |
 | `Asustado` | **Cualquier** nodo: Jugador, Enemigo y Neutral | Ver 14.2 | Ojos muy abiertos ([A.3.3](./NOVA_Assets_Diseno.md#a33-art-st-scare--asustado)) más temblor y salto corto, que son **transform** (14.7, capa 5) | Hasta el impacto | El protón impacta, se destruye o deja de ser letal |
-| `Congelado` | Cualquier nodo encendido | Impacto de Cero Absoluto ([7.3](./NOVA_GameDesign_Spec.md#73-cero-absoluto)) | **Una red de grietas** que cruza el nodo, cian `#B8F0FF` **por trama**, idle detenido ([A.3.4](./NOVA_Assets_Diseno.md#a34-art-st-frozen--congelado)) | Hasta deshielo, máx. 30 s | Energía llega a 0 (deshielo) o auto-deshielo a los 30 s |
+| `Congelado` | Cualquier nodo encendido | Impacto de Cero Absoluto ([7.3](./NOVA_GameDesign_Spec.md#73-cero-absoluto)) | **Una red de grietas** que cruza el nodo, cian `#B8F0FF` **por trama**, idle detenido ([A.3.4](./NOVA_Assets_Diseno.md#a34-art-st-frozen--congelado)) | Hasta el deshielo. **No hay máximo:** los 30 s del auto-deshielo son de *inactividad* y **cada impacto los reinicia** ([7.3](./NOVA_GameDesign_Spec.md#73-cero-absoluto)) | Su Energía llega a 0 por un impacto (deshielo, cambia de bando) o pasan 30 s **sin recibir ninguno** (auto-deshielo, conserva bando y Energía) |
 | `Infectado` | Cualquier nodo encendido | Impacto de Decaimiento ([7.4](./NOVA_GameDesign_Spec.md#74-decaimiento)) | **Nube verde** `#7CF23F` **por trama**, con cizalla y sesgada hacia abajo, que respira en 16 frames, más gotas que caen ([A.3.5](./NOVA_Assets_Diseno.md#a35-art-st-decay--infectado)) | Indefinida | Recibe Energía de cualquier facción (cura) o es capturado |
 | `Reconvirtiendo` | Estrella, Púlsar o Magnetar propio | Confirmación de reconversión ([8.1](./NOVA_GameDesign_Spec.md#81-reglas)) | **Un frente** en color de facción que barre el nodo, tapa el cambio de sprite y lo descubre siendo otro tipo ([A.3.6](./NOVA_Assets_Diseno.md#a36-art-st-conv--reconvirtiendo)) | 3.0 s exactos | Acaba el temporizador o es capturado |
 | `Capturado` | Cualquier nodo | `ChangeFaction()` | **Dos anillos blancos** que se cruzan en el frame central: uno se cierra sobre el nodo y otro sale de él. Cambio de paleta en el frame 0 ([A.3.7](./NOVA_Assets_Diseno.md#a37-art-st-cap--capturado)) | 0.4 s | Acaba el temporizador → `Normal` |
 
-**Nota sobre «cualquier nodo encendido».** El Asteroide **nunca** lo está: encenderlo lo convierte en Estrella, Púlsar o Magnetar ([4.1](./NOVA_Nodos.md#41-asteroide-nivel-0)). Así que `Congelado`, `Infectado` y el buff se aplican a **trece** sprites de nodo y no a catorce, y `Reconvirtiendo` a doce, porque además tiene que ser propio. Solo `Asustado` y `Capturado` van sobre los catorce. No cambia ninguna regla de juego —la condición escrita en la columna *Se aplica a* ya lo decía—, pero sí cambia contra qué se comprueba un overlay, y por eso está recogido en [A.3](./NOVA_Assets_Diseno.md#a3-estados-y-overlays--141) y en `tools/nova_estados.py`.
+**Nota sobre «cualquier nodo encendido».** El Asteroide **nunca** lo está: encenderlo lo convierte en Estrella, Púlsar o Magnetar ([4.1](./NOVA_Nodos.md#41-asteroide-nivel-0)). Así que `Congelado`, `Infectado` y el buff se aplican a **trece** sprites de nodo y no a catorce, y `Reconvirtiendo` a doce, porque además tiene que ser propio.
+
+**Y hay exactamente un nodo Neutral que sí puede llevarlos: el Magnetar.** `Congelado` e `Infectado` solo los provoca un poder del Púlsar, y [7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido) admite como objetivo **cualquier nodo encendido que no sea propio**, lo que incluye al Magnetar neutral de [3.2](./NOVA_GameDesign_Spec.md#32-nota-sobre-el-magnetar-neutral) y excluye a todos los Asteroides. El conteo de trece no cambia —se cuenta por tipo y nivel, no por facción— pero **sí cambia contra qué hay que verificar los dos tintes**: `ART-ST-FROZEN` y `ART-ST-DECAY` se midieron sobre las rampas de Jugador y Enemigo, y ahora tienen que leerse también sobre la rampa gris del Magnetar neutral. La geometría es idéntica; lo que puede fallar es el contraste, porque el hielo `#B8F0FF` sobre un cuerpo gris `#8A93A6` tiene menos recorrido que sobre uno cian o magenta. Anotado en [NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #29. Solo `Asustado` y `Capturado` van sobre los catorce. No cambia ninguna regla de juego —la condición escrita en la columna *Se aplica a* ya lo decía—, pero sí cambia contra qué se comprueba un overlay, y por eso está recogido en [A.3](./NOVA_Assets_Diseno.md#a3-estados-y-overlays--141) y en `tools/nova_estados.py`.
 
 **Nota sobre «silueta neutra».** Esta columna decía «colapso y reencendido, silueta neutra», y **«neutra» aquí quiere decir sin tipo, no sin bando**. [8.1](./NOVA_GameDesign_Spec.md#81-reglas) es explícito: durante los 3 s el nodo sigue siendo de su dueño, tanto que puede ser capturado, y si lo capturan la reconversión se cancela. Un nodo pintado de gris `#8A93A6` durante tres segundos diría que no es de nadie justo en su momento más vulnerable. Lo que pierde es el tipo, y el tipo se ve en la geometría. Por eso `ART-ST-CONV` es el segundo overlay con variante de facción, después de `ART-ST-IGN` ([A.3.6](./NOVA_Assets_Diseno.md#a36-art-st-conv--reconvirtiendo)).
 
@@ -52,7 +54,7 @@ Es la señal de lectura más importante del juego: indica de un vistazo qué est
 
 **Sobre quién:** todos los nodos, **incluidos los neutrales y los del Enemigo**. Sin excepciones.
 
-**Condición exacta** (evaluada cada frame por `ThreatCalculator`, el mismo que usa la IA — ver [12.4](./NOVA_IA_Algoritmos.md#124-detección-de-amenaza-y-defensa)):
+**Condición exacta** (evaluada cada frame por `ThreatCalculator`, el mismo que usa el algoritmo del Enemigo — ver [12.4](./NOVA_Algoritmo_Enemigo.md#124-detección-de-amenaza-y-defensa)):
 
 ```
 EstaAsustado(nodo):
@@ -72,9 +74,11 @@ EstaAsustado(nodo):
 | ¿Cuándo termina? | En el frame en que pasa a `false`: el protón impacta, un Magnetar lo derriba, o el nodo recibe refuerzo y deja de ser letal |
 | ¿Se acumula? | No. Varios protones letales producen un único susto |
 | ¿Tiene efecto de juego? | Ninguno. Es puramente informativo |
-| ¿La ve la IA? | No como animación. La IA consulta `ThreatCalculator` directamente ([12.6](./NOVA_IA_Algoritmos.md#126-prohibiciones)) |
+| ¿La ve el Enemigo? | No como animación. Su algoritmo consulta `ThreatCalculator` directamente ([12.6](./NOVA_Algoritmo_Enemigo.md#126-prohibiciones)) |
 
 Un nodo puede pasar de `Asustado` a `Normal` sin ser capturado. Es deliberado: enseña al jugador que el refuerzo funcionó.
+
+**La sacudida va en píxeles enteros**, como todo movimiento por transform de un nodo ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Animación*): un temblor de 1.5 px produce el mismo hervor que el squash que esa regla prohíbe.
 
 **El susto se dibuja en dos sitios, y conviene no duplicarlos.** Los **ojos** son un asset, `ART-ST-SCARE` ([A.3.3](./NOVA_Assets_Diseno.md#a33-art-st-scare--asustado)); el **temblor y el salto** son la capa 5 de [14.7](#147-prioridad-visual), sacudida de transform, y los hace Unity moviendo el nodo entero. Hornear la sacudida en la hoja sería pagarla dos veces y dejaría el hitbox temblando.
 
@@ -88,7 +92,7 @@ Y el asset **no es un par de ojos, es un ojo**: se instancia dos veces con el de
 |---|---|
 | Sprite | Circular con estela, color de la facción emisora ([6.1](./NOVA_GameDesign_Spec.md#61-el-protón)) |
 | Número de Carga | Siempre visible en el centro, actualizado en tiempo real |
-| Escala | **Tres sprites discretos**, no escala continua. La fórmula anterior `0.6 + (carga/100)*0.6` queda anulada: con `Filter Mode: Point` una escala no entera rompe el pixel-perfect. Umbrales en [A.4.2](./NOVA_Assets_Diseno.md#a42-protón-y-proyectiles--143). |
+| Escala | **Tres sprites discretos**, no escala continua. La fórmula anterior `0.6 + (carga/100)*0.6` queda anulada: con `Filter Mode: Point` una escala no entera rompe el pixel-perfect. Umbrales en [A.4.2](./NOVA_Assets_Diseno.md#a42-protón-y-haces-de-poder--143). |
 | Al ser alcanzado por un Magnetar | Destello, sacudida, el número baja de 2 en 2 |
 | Al ser destruido | Implosión corta, no deja nada |
 | Al impactar | Ver 14.5: absorción, daño o captura |
@@ -104,11 +108,14 @@ El protón **no cambia de color** aunque su nodo origen cambie de bando durante 
 | Jugador | `#3FD7F5` |
 | Enemigo | `#F2456B` |
 | Neutral | `#8A93A6` |
-| Congelado | `#B8F0FF` |
-| Infectado | `#7CF23F` |
+| Congelado · haz de Cero Absoluto | `#B8F0FF` |
+| Infectado · haz de Decaimiento | `#7CF23F` |
+| Haz de Agujero de Gusano | `#9B5CF6` |
 | Power-up Rayo Cósmico | `#FFD23F` |
 | Power-up Nube de Hidrógeno | `#FF8FD0` |
 | Fondo profundo | `#0B0E1A` |
+
+> **El haz de poder se colorea por poder, no por facción** ([7.2.2](./NOVA_GameDesign_Spec.md#722-el-haz)). Reutiliza el color del estado que provoca —hielo para Cero Absoluto, verde para Decaimiento— y el morado `gusano`, que el contrato reserva en exclusiva al Agujero de Gusano precisamente para que ese poder no se confunda con nada. Quién lanzó el haz se lee por el extremo del que sale, que es un Púlsar con color de facción; qué va a pasar, por el color del trazo. Con alcance global esa lectura anticipada importa más que antes: el haz puede nacer al otro lado del tablero, lejos de donde el jugador está mirando.
 
 > La paleta completa —22 rampas de 7 tonos— vive en `tools/nova_paleta.py`. Las reglas que la gobiernan están en [NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), sección Paleta. Cada color de esta tabla aparece **literal** en el índice 3 de su rampa: aquí se decide el significado, allí el volumen.
 
@@ -133,20 +140,27 @@ Efectos que se reproducen y terminan. No bloquean nada.
 | `FX-THAW` | Deshielo | El nodo congelado | Energía llega a 0 o auto-deshielo 30 s | 0.5 s |
 | `FX-CURE` | Cura de Decaimiento | El nodo infectado | Recibe Energía de cualquier facción | 0.4 s |
 | `FX-CAST` | Lanzamiento de poder | El Púlsar | `PulsarCaster` dispara | 0.4 s |
-| `FX-PWR-ZER` | Impacto Cero Absoluto | El nodo objetivo | Llega el proyectil | 0.7 s → estado `Congelado` |
-| `FX-PWR-DEC` | Impacto Decaimiento | El nodo objetivo | Llega el proyectil | 0.7 s → estado `Infectado` |
-| `FX-PWR-WRM` | Impacto Agujero de Gusano | El nodo objetivo | Llega el proyectil | 1.0 s → `Capturado` |
+| `FX-BEAM` | **Haz del poder** | Del Púlsar al nodo objetivo | Mismo frame que `FX-CAST` | 0.25 s, constante |
+| `FX-PWR-ZER` | Impacto Cero Absoluto | El nodo objetivo | **Termina el haz** | 0.7 s → estado `Congelado` |
+| `FX-PWR-DEC` | Impacto Decaimiento | El nodo objetivo | **Termina el haz** | 0.7 s → estado `Infectado` |
+| `FX-PWR-WRM` | Impacto Agujero de Gusano | El nodo objetivo | **Termina el haz** | 1.0 s → `Capturado` |
 | `FX-DROP` | Aparición de power-up | Un Asteroide neutral al azar | `PowerUpSpawner` | Halo + icono, hasta recogida o 30 s |
 | `FX-BUFF` | Power-up activo | Los nodos de la facción **a los que el power-up afecta** ([A.3.8](./NOVA_Assets_Diseno.md#a38-art-st-buff--power-up-activo)) | Recogida del power-up | 20 s |
 | `FX-CASCADE` | Cascada de conquista | Los Asteroides neutrales restantes | Victoria ([10.1](./NOVA_GameDesign_Spec.md#101-victoria-del-jugador)) | 3 s, de cercano a lejano |
 | `FX-VANISH` | Protones huérfanos | Protones del bando derrotado | Su bando pierde el último nodo | 0.4 s |
 | `FX-SHAKE` | Sacudida de cámara | La cámara | Captura de un nodo con Energía ≥ 50 | 0.3 s |
 
+**`FX-BEAM` se solapa con `FX-CAST`, no va detrás.** Los dos arrancan en el mismo frame: el fogonazo dura 0.4 s en el Púlsar y el haz 0.25 s entre los dos nodos, así que el efecto cae mientras el Púlsar todavía está retrocediendo. Encadenarlos sumaría 0.65 s entre el clic y la consecuencia, y con alcance global un poder tiene que sentirse inmediato ([18](./NOVA_GameDesign_Spec.md#18-decisiones-tomadas-por-defecto) #15).
+
+**Y es el único `FX-*` cuyo asset no vive en [A.5](./NOVA_Assets_Diseno.md#a5-vfx-puntuales--145).** Un VFX puntual es una hoja de frames que se reproduce **sobre un nodo**, dentro de su celda de 96. El haz no cabe en esa definición: une dos puntos arbitrarios del tablero y puede medir 3 u o 35 u, así que se dibuja estirando un asset de mundo, como el radio del Magnetar o la línea de arrastre. Sus tres archivos están en [A.4.2](./NOVA_Assets_Diseno.md#a42-protón-y-haces-de-poder--143), no en A.5. Es la misma excepción que ya tenían `FX-CAP`, `FX-DROP` y `FX-BUFF`, que salen de A.3 y A.4.4.
+
+**Si el haz se disipa, no hay `FX-PWR-*`.** Cuando el objetivo deja de ser válido durante esos 0.25 s ([7.2.2](./NOVA_GameDesign_Spec.md#722-el-haz)), `FX-BEAM` se reproduce entero y **no le sigue ningún impacto**: el haz llega, no pasa nada y la Energía se perdió. Esa ausencia es el feedback, y es deliberada.
+
 **El blanco puro es de `FX-CAP`**, y es el único efecto de esta tabla que lo usa. [8.1](./NOVA_GameDesign_Spec.md#81-reglas) permite que capturen un nodo **mientras se reconvierte**, así que los dos eventos pueden coincidir sobre el mismo sprite: `ART-ST-CONV` destella en color de facción precisamente para dejarle el blanco a este ([A.3.6](./NOVA_Assets_Diseno.md#a36-art-st-conv--reconvirtiendo), [A.3.7](./NOVA_Assets_Diseno.md#a37-art-st-cap--capturado)).
 
-**`FX-BUFF` no va sobre todos los nodos de la facción, aunque el efecto sí.** [9.1](./NOVA_GameDesign_Spec.md#91-funcionamiento) aplica el power-up a toda la facción, pero [9.2](./NOVA_GameDesign_Spec.md#92-tipos) dice a qué: el Rayo Cósmico a la cadencia del Magnetar y a la carga del Púlsar, la Nube de Hidrógeno al intervalo de la Estrella. **El Asteroide no gana nada con ninguno de los dos**, así que marcarlo sería prometerle una ventaja que no tiene. La regla de juego no cambia; lo que cambia es sobre qué sprites se dibuja la marca. Y de ahí sale que **ningún nodo lleve nunca los dos buffs a la vez**, aunque 9.1 permita que los dos estén activos.
+**`FX-BUFF` no va sobre todos los nodos de la facción, aunque el efecto sí.** [9.2](./NOVA_GameDesign_Spec.md#92-tipos) dice a qué afecta cada power-up, y el Asteroide no gana nada con ninguno de los dos: la regla de juego no cambia, cambia sobre qué sprites se dibuja la marca. De ahí sale además que **ningún nodo lleve nunca los dos buffs a la vez**. El reparto exacto y la medida están en [A.3.8](./NOVA_Assets_Diseno.md#a38-art-st-buff--power-up-activo).
 
-**Los catorce efectos que quedan por diseñar se diferencian de `FX-CAP`, no al revés.** Cuatro de ellos son destellos cortos sobre un nodo —`FX-DMG`, `FX-ABS`, `FX-KILL`, `FX-UPG`— y la captura es el suceso más importante de los cinco. Por eso `ART-ST-CAP` se cerró en **dos anillos que se cruzan** y no en el flash con onda que esta tabla daba por hecho: un fogonazo habría ocupado el gesto que los otros necesitan. La forma de cada uno se decide en [A.5](./NOVA_Assets_Diseno.md#a5-vfx-puntuales--145).
+**Los quince efectos que quedan por diseñar se diferencian de `FX-CAP`, no al revés.** Cuatro de ellos son destellos cortos sobre un nodo —`FX-DMG`, `FX-ABS`, `FX-KILL`, `FX-UPG`— y la captura es el suceso más importante de los cinco. Por eso `ART-ST-CAP` se cerró en **dos anillos que se cruzan** y no en el flash con onda que esta tabla daba por hecho: un fogonazo habría ocupado el gesto que los otros necesitan. La forma de cada uno se decide en [A.5](./NOVA_Assets_Diseno.md#a5-vfx-puntuales--145).
 
 ---
 
@@ -155,12 +169,12 @@ Efectos que se reproducen y terminan. No bloquean nada.
 | | `Asustado` | `Congelado` | `Infectado` | `Reconvirtiendo` |
 |---|---|---|---|---|
 | **`Asustado`** | — | Sí | **Sí** | Sí |
-| **`Congelado`** | Sí | — | Sí | **No** (ver caso 8) |
+| **`Congelado`** | Sí | — | Sí | **Sí** (la reconversión se pausa) |
 | **`Infectado`** | **Sí** | Sí | — | No |
-| **`Reconvirtiendo`** | Sí | **No** | No | — |
+| **`Reconvirtiendo`** | Sí | **Sí** | No | — |
 
 - `Congelado` + `Infectado`: posible. El nodo pierde Energía por Decaimiento mientras está congelado, lo que **acelera su propio deshielo**. Es intencional.
-- `Reconvirtiendo` es inmune a Cero Absoluto durante sus 3 s ([17](./NOVA_GameDesign_Spec.md#17-casos-borde-y-reglas-de-resolución), caso 8) y no puede iniciarse sobre un nodo congelado o infectado ([8.1](./NOVA_GameDesign_Spec.md#81-reglas)).
+- `Congelado` + `Reconvirtiendo`: posible. Cero Absoluto **sí** alcanza a un nodo que se reconvierte —[7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido) solo excluye Asteroides y nodos propios— y el temporizador de 3 s **se pausa**, igual que la carga de un Púlsar ([17](./NOVA_GameDesign_Spec.md#17-casos-borde-y-reglas-de-resolución), caso 8). Lo que sigue prohibido es **iniciar** una reconversión sobre un nodo congelado o infectado ([8.1](./NOVA_GameDesign_Spec.md#81-reglas)): iniciar y continuar son cosas distintas.
 - `Asustado` es compatible con todo: siempre debe poder avisar.
 
 ---

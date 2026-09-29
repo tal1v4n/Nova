@@ -18,7 +18,7 @@
 | Genera Energía | No | **Sí, único** | No | No |
 | Envía Energía | No | Sí | Sí | Sí |
 | Dispara | No | No | No | Sí |
-| Lanza poderes | No | No | Sí | No |
+| Lanza poderes | No | No | **Sí, alcance global** | No |
 | Resistencia a captura | ×1 | ×1 | ×1 | **×2** |
 | Cuenta en barra de poder | No | Sí | Sí | Sí |
 
@@ -61,7 +61,9 @@ Lanzador de poderes. No genera Energía, pero la almacena y la usa como munició
 - **Tope:** 100.
 - **Envía** Energía a cualquier nodo, igual que la Estrella.
 - **Carga y lanza** un poder a la vez (ver [sección 7](./NOVA_GameDesign_Spec.md#7-poderes-del-púlsar)).
-- 3 niveles. Cada nivel desbloquea un poder. El nivel no altera velocidad de carga ni alcance.
+- **Alcance global.** Un poder cargado puede lanzarse sobre **cualquier nodo encendido del mapa que no sea propio**, sin límite de distancia. El poder no viaja: se entrega por un **haz de 0.25 s** que no puede interceptarse ([7.2.2](./NOVA_GameDesign_Spec.md#722-el-haz)).
+- **No apunta a todo.** El objetivo válido es **cualquier nodo encendido que no sea propio** ([7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido)): los del Enemigo y el Magnetar neutral, que es el único nodo Neutral con nivel. **Ningún Asteroide** es objetivo, sea de quien sea; contra un Asteroide solo sirven los protones.
+- 3 niveles. Cada nivel desbloquea un poder. El nivel no altera la velocidad de carga, y el alcance no depende del nivel porque no hay alcance.
 
 | Nivel | Coste de mejora | Poder desbloqueado |
 |---|---|---|
@@ -70,6 +72,8 @@ Lanzador de poderes. No genera Energía, pero la almacena y la usa como munició
 | 3 | 40 | Agujero de Gusano |
 
 Un Púlsar de nivel 3 conserva el acceso a los tres poderes, pero solo puede tener **uno cargado a la vez**.
+
+> **Diseño:** el Púlsar es el único nodo al que la geometría del tablero no afecta. No genera y no dispara, así que moverlo —reconvertirlo en otro sitio— es caro y lento; a cambio, desde donde esté alcanza todo. Es artillería de posición: se protege, no se acerca. Lo que sí lo castiga es que un Agujero de Gusano enemigo se lo lleve con el poder ya cargado dentro ([7.5](./NOVA_GameDesign_Spec.md#75-agujero-de-gusano)).
 
 ### 4.4 Magnetar
 
@@ -102,6 +106,8 @@ Defensa de área. Derriba protones en tránsito.
 | **Enemigo** | Jugador |
 
 Un Magnetar nunca dispara a protones de su propia facción, ni siquiera si el protón va dirigido a un enemigo.
+
+**El Magnetar neutral es el único nodo Neutral al que se le puede lanzar un poder.** Cumple la regla de [7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido) —está encendido y no es de nadie—, así que un Agujero de Gusano se lo lleva entero por 60 de Energía en vez de los 200 de Carga que cuesta por la vía normal, un Cero Absoluto lo calla y un Decaimiento lo vacía. Los dos bandos tienen esa llave. Es lo que impide que un muro neutral bien colocado decida la partida por sí solo, y la razón de que su nivel importe tanto en el diseño de los niveles 5 a 9.
 
 ---
 

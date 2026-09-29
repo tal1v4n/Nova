@@ -1,6 +1,6 @@
 # NOVA — Especificación técnica de diseño y arquitectura
 
-> Juego de conquista de nodos en tiempo real, 2D, Unity. Un jugador contra IA.
+> Juego de conquista de nodos en tiempo real, 2D, Unity. Un jugador contra un algoritmo.
 > **Documento maestro.** Versión 1.1 (dividida en varios archivos).
 > Referencia de género: *JellyGo!* (AvoxGames). Tema: astrofísica.
 
@@ -12,10 +12,10 @@
 |---|---|---|
 | **NOVA_GameDesign_Spec.md** (este) | Reglas del juego, economía, poderes, niveles, UI, arquitectura, balance y casos borde. | Secciones 1–19 |
 | [NOVA_Nodos.md](./NOVA_Nodos.md) | Los 4 tipos de nodo: stats, niveles, costes y comportamiento. | Sección 4 |
-| [NOVA_IA_Algoritmos.md](./NOVA_IA_Algoritmos.md) | Algoritmos del Enemigo: ciclo de decisión, puntuación, amenaza, perfiles. | Sección 12 |
+| [NOVA_Algoritmo_Enemigo.md](./NOVA_Algoritmo_Enemigo.md) | El algoritmo que controla al Enemigo: ciclo de decisión, puntuación, amenaza, perfiles. | Sección 12 |
 | [NOVA_Estados_Animaciones.md](./NOVA_Estados_Animaciones.md) | Estados y animaciones: qué las dispara, sobre quién, cuánto duran, cómo salen. | Sección 14 |
 | [NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md) | Inventario de arte: cada sprite/VFX/UI con su ID, archivo esperado y estado. | Sección A |
-| [NOVA_Tracking.md](./NOVA_Tracking.md) | Seguimiento de desarrollo y prompt de continuación para la IA. | Sección T |
+| [NOVA_Tracking.md](./NOVA_Tracking.md) | Seguimiento de desarrollo y prompt de continuación para el **asistente de IA** con el que se trabaja. | Sección T |
 
 Las secciones extraídas **conservan su número original**. Una referencia a «ver 4.4» o «ver 12.5» sigue siendo válida; solo cambia el archivo.
 
@@ -34,14 +34,14 @@ Las secciones extraídas **conservan su número original**. Una referencia a «v
 9. [Power-ups del cielo](#9-power-ups-del-cielo)
 10. [Condiciones de victoria y derrota](#10-condiciones-de-victoria-y-derrota)
 11. [Progresión: 3 mapas × 3 niveles](#11-progresión-3-mapas--3-niveles)
-12. IA del Enemigo (algoritmos) → **[NOVA_IA_Algoritmos.md](./NOVA_IA_Algoritmos.md)**
+12. Algoritmo del Enemigo → **[NOVA_Algoritmo_Enemigo.md](./NOVA_Algoritmo_Enemigo.md)**
 13. [Controles y UI](#13-controles-y-ui)
 14. Feedback visual y estados → **[NOVA_Estados_Animaciones.md](./NOVA_Estados_Animaciones.md)**
 15. [Arquitectura en Unity](#15-arquitectura-en-unity)
 16. [Tablas de balance consolidadas](#16-tablas-de-balance-consolidadas)
 17. [Casos borde y reglas de resolución](#17-casos-borde-y-reglas-de-resolución)
 18. [Decisiones tomadas por defecto](#18-decisiones-tomadas-por-defecto)
-19. [Checklist de implementación por fases](#19-checklist-de-implementación-por-fases)
+19. [Fases y criterios de salida](#19-fases-y-criterios-de-salida)
 
 ---
 
@@ -57,9 +57,12 @@ El objetivo de cada nivel es que no quede ningún cuerpo del Enemigo ni ningún 
 
 | Aspecto | Decisión |
 |---|---|
-| Jugadores | 1 humano contra 1 IA. Sin multijugador, sin red. |
+| Jugadores | 1 humano contra 1 algoritmo. Sin multijugador, sin red. |
 | Dimensión | 2D, vista cenital ortográfica. |
-| Motor | Unity 2D, URP 2D o Built-in. Sin física de Rigidbody para el gameplay. |
+| Motor | **Unity 6.6 (6000.6.0f1)**, plantilla **Universal 2D v7.0.0** (URP con 2D Renderer). Sin física de Rigidbody para el gameplay. |
+| Plataforma | **PC Windows, 1080p.** Solo ratón, más `Esc`. Sin táctil, sin mando. |
+| Entrada | **Input System nuevo** (`com.unity.inputsystem`). Aislado en `InputRouter` ([15.7](#157-input-enemigo-y-ui)). |
+| Post-procesado | **Ninguno.** Un bloom o un tonemapper deshacen el dithering Bayer y el alfa binario del contrato de arte. La URP se usa por el 2D Renderer y la Pixel Perfect Camera, no por sus efectos. |
 | Niveles | 9 (3 mapas × 3 niveles). |
 | Tipos de nodo | 4 (Asteroide, Estrella, Púlsar, Magnetar). |
 | Progresión entre niveles | Ninguna. Cada nivel arranca desde cero, igual que en JellyGo. |
@@ -91,11 +94,18 @@ Estos términos son los que deben usarse en el código, sin sinónimos. Cualquie
 | **Reconversión** | Cambiar un nodo ya encendido a otro tipo. Lo devuelve a nivel 1. | `Conversion` |
 | **Mejora** | Subir un nivel dentro del mismo tipo. | `Upgrade` |
 | **Poder** | Habilidad del Púlsar. Cero Absoluto, Decaimiento o Agujero de Gusano. | `Power` |
+| **Haz** | Trazo recto del Púlsar a su objetivo por el que se entrega un Poder. Dura 0.25 s, no viaja y no es interceptable. Sustituye al antiguo proyectil de poder. | `PowerBeam` |
+| **Nodo encendido** | Nodo de nivel ≥ 1: Estrella, Púlsar o Magnetar, de la facción que sea. Un Asteroide nunca lo está. Junto con «no propio», es la condición que define a qué puede apuntar un Poder ([7.2.1](#721-objetivo-válido)). | `IsIgnited` |
 | **Cadencia** | Disparos por segundo del Magnetar. | `FireRate` |
 | **Velocidad de ataque** | Término visible en la UI. Se traduce distinto según tipo (ver 13.4). | `AttackSpeed` |
+| **Algoritmo del Enemigo** | El código que decide las acciones del Enemigo. Es un algoritmo determinista con ruido sembrado ([12.7](./NOVA_Algoritmo_Enemigo.md#127-contrato-de-implementación)), **no un modelo entrenado**: no aprende, no infiere y no cambia entre partidas. En prosa se abrevia «el algoritmo». **No se le llama «la IA»**, que en este proyecto designa al asistente con el que se escribe el código ([T.1](./NOVA_Tracking.md#t1-prompt-de-continuación)). | `EnemyController` |
 | **Barra de poder** | Barra inferior, comparativa e informativa. | `PowerBar` |
 
-**Unidad de distancia:** unidad de mundo de Unity (u). El área jugable mide **32 × 18 u** y coincide con una cámara ortográfica de `size = 9` en 16:9.
+**Unidad de distancia:** unidad de mundo de Unity (u). El área jugable mide **15 × 8.4375 u** y coincide con una cámara ortográfica de `size = 4.21875` en 16:9.
+
+> Cerrado el **2026-09-28**. Antes eran 32 × 18 u con `size = 9`; el motivo del cambio y las opciones evaluadas están en [T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada). A PPU 64 el tablero son **960 × 540 px de arte**, que escala **×2 a 1080p y ×4 a 2160p**, los dos enteros. El nodo pasa de ocupar el 4.7 % del ancho al **10 %**.
+>
+> **El mismo día se cerró primero en 20 × 11.25 u y se corrigió a 15 u.** La Pixel Perfect Camera solo amplía por factores enteros, así que el «×1.5 a 1080p» de 20 u no existía: a 1080p se veían 30 × 16.9 u de mundo con el tablero en el centro ([T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada), *Reajuste a 15 u*).
 
 ---
 
@@ -108,12 +118,12 @@ Faction { Neutral = 0, Player = 1, Enemy = 2 }
 | Facción | Color primario | Control | Notas |
 |---|---|---|---|
 | **Jugador** | Cian `#3FD7F5` | Ratón del usuario | Siempre es la facción 1. |
-| **Enemigo** | Magenta `#F2456B` | `EnemyBrain` (IA) | Ejecuta exactamente las mismas acciones legales que el jugador. Sin ventajas ocultas de reglas; solo varían sus parámetros de decisión. |
+| **Enemigo** | Magenta `#F2456B` | `EnemyController` (algoritmo) | Ejecuta exactamente las mismas acciones legales que el jugador. Sin ventajas ocultas de reglas; solo varían sus parámetros de decisión. |
 | **Neutral** | Gris `#8A93A6` | Nadie | Solo existe como Asteroide nivel 0. No actúa, no genera, no dispara, salvo el caso del Magnetar neutral descrito en [4.4](./NOVA_Nodos.md#44-magnetar). |
 
 ### 3.1 Regla de paridad
 
-El Enemigo y el Jugador comparten el mismo conjunto de acciones legales y la misma tabla de costes. Todo comando de ambos pasa por la misma interfaz (`INodeCommandIssuer`). Está prohibido que la IA modifique energía, niveles o estados por vías que el jugador no tenga.
+El Enemigo y el Jugador comparten el mismo conjunto de acciones legales y la misma tabla de costes. Todo comando de ambos pasa por la misma interfaz (`INodeCommandIssuer`). Está prohibido que el algoritmo modifique energía, niveles o estados por vías que el jugador no tenga.
 
 ### 3.2 Nota sobre el Magnetar neutral
 
@@ -253,24 +263,64 @@ Varios Magnetares que cubran el mismo tramo de trayectoria disparan de forma ind
 
 | Poder | Nivel req. | Coste | Tiempo de carga | Drenaje | Alcance | Objetivos válidos |
 |---|---|---|---|---|---|---|
-| **Cero Absoluto** | 1 | 20 | 8 s | 2.5 E/s | 7 u | Enemigo, Neutral |
-| **Decaimiento** | 2 | 35 | 12 s | 2.9 E/s | 7 u | Enemigo, Neutral |
-| **Agujero de Gusano** | 3 | 60 | 16 s | 3.75 E/s | 5 u | Cualquier nodo no propio |
+| **Cero Absoluto** | 1 | 20 | 8 s | 2.5 E/s | **Global** | Nodo encendido no propio |
+| **Decaimiento** | 2 | 35 | 12 s | 2.9 E/s | **Global** | Nodo encendido no propio |
+| **Agujero de Gusano** | 3 | 60 | 16 s | 3.75 E/s | **Global** | Nodo encendido no propio |
 
-El alcance se mide de centro a centro. Los objetivos fuera de alcance se muestran atenuados y no son clicables al apuntar.
+**El Púlsar no tiene alcance.** Cualquier nodo encendido que no sea propio es un objetivo legal, esté donde esté. La distancia no limita, no encarece y no retrasa: el coste, el tiempo de carga y el drenaje de esta tabla son idénticos para un objetivo pegado al Púlsar y para uno en la esquina opuesta del tablero.
 
-El proyectil del poder viaja a **6 u/s** y no puede ser derribado por un Magnetar. Solo los protones son derribables.
+Los tres poderes comparten alcance **y objetivo**, así que el nivel del Púlsar desbloquea **qué** puede lanzar, nunca **hasta dónde** ni **contra quién**.
+
+### 7.2.1 Objetivo válido
+
+Los tres poderes comparten una sola regla:
+
+> **Objetivo válido = cualquier nodo encendido que no sea propio.**
+
+Se descompone en dos condiciones, más una tercera de tiempo:
+
+1. **No es propio.** Vale un nodo del Enemigo y vale un nodo Neutral.
+2. **Está encendido**: es Estrella, Púlsar o Magnetar, es decir, nivel ≥ 1.
+3. Sigue cumpliendo 1 y 2 cuando el haz termina ([7.2.2](#722-el-haz)).
+
+De ahí salen exactamente **dos** exclusiones, y no admiten excepción:
+
+| No es objetivo | Por qué |
+|---|---|
+| Cualquier **Asteroide**, de la facción que sea: neutral, tuyo o del Enemigo | Es nivel 0: no genera, no dispara, no envía y no carga. **No hay nada que congelar, que infectar ni que robar.** Un Asteroide se toma con protones, que para eso cuestan 10, y se enciende con otros 10 ([4.1](./NOVA_Nodos.md#41-asteroide-nivel-0)). Permitir que un poder lo capturase saltaría ese doble coste, que es el precio de expandirse y la decisión más importante de la partida. |
+| Cualquier nodo **propio** | No hay poderes de apoyo en NOVA. Los tres hacen daño o roban. |
+
+**El Magnetar neutral sí es objetivo, y es el único nodo Neutral que lo es.** No por una excepción escrita para él, sino porque cumple la regla: está encendido y no es tuyo. [3.2](#32-nota-sobre-el-magnetar-neutral) lo deja claro —es el único nodo Neutral con nivel y con comportamiento activo; todo lo demás Neutral es un Asteroide de nivel 0—. Así que un Agujero de Gusano puede robarlo íntegro, un Cero Absoluto puede callarlo y un Decaimiento puede vaciarlo. Es la respuesta cara pero existente al muro que bloquea un corredor, y la tienen **los dos bandos por igual**.
+
+Mientras el cursor está en modo apuntado, todo lo que no cumple la regla se muestra **atenuado** y no es clicable. La atenuación ya no depende de la distancia, porque la distancia dejó de ser un límite: depende del nivel y de la facción.
+
+### 7.2.2 El haz
+
+El poder **no es un proyectil y no viaja**. Al lanzarlo sale del Púlsar un **haz** recto hasta el nodo objetivo.
+
+| Parámetro | Valor |
+|---|---|
+| Duración del haz | **0.25 s** (3 frames a 12 fps), constante |
+| Momento del efecto | Al **terminar** el haz, nunca al lanzarlo |
+| Interceptable | **No.** Ningún Magnetar puede cortarlo. Solo los protones son derribables. |
+| Color | El del **poder**, no el de la facción ([14.4](./NOVA_Estados_Animaciones.md#144-paleta-funcional)) |
+
+**La duración no depende de la distancia.** Un objetivo a 3 u y otro a 35 u reciben el efecto exactamente 0.25 s después del clic. Es la contrapartida de haber quitado el alcance: si el haz viajase a una velocidad fija, cruzar el tablero costaría más de 6 s y el poder dejaría de sentirse un poder.
+
+**La validez se comprueba dos veces:** al lanzar y al terminar el haz. Si en esos 0.25 s el objetivo deja de cumplir [7.2.1](#721-objetivo-válido) —porque un protón propio lo capturó primero y ya es del lanzador— **el haz se disipa sin efecto y la Energía invertida se pierde**. Es la misma lógica que el caso 2 de la [sección 17](#17-casos-borde-y-reglas-de-resolución): la facción se comprueba al resolver, no al lanzar.
+
+El color por poder es lo que hace legible el lanzamiento a distancia: el haz anuncia **qué** va a pasar antes de que pase, y **quién** lo lanza se lee por el extremo del que sale, que es un Púlsar con color de facción.
 
 ### 7.3 Cero Absoluto
 
-Congela el nodo objetivo. Representa un enfriamiento al cero absoluto: el cuerpo queda inerte.
+Congela el nodo objetivo. Representa un enfriamiento al cero absoluto: el cuerpo queda inerte. Objetivos válidos, los de [7.2.1](#721-objetivo-válido): cualquier Estrella, Púlsar o Magnetar que no sea propio, **incluido el Magnetar neutral**, que mientras esté congelado deja de disparar a los dos bandos.
 
 **Mientras está congelado, el nodo:**
 - No genera Energía (Estrella).
 - No dispara (Magnetar).
 - No carga ni lanza poderes (Púlsar). Una carga en curso queda **pausada**, no se pierde.
 - No puede enviar Energía.
-- No puede mejorarse ni reconvertirse.
+- No puede mejorarse ni **iniciar** una reconversión. Una que ya estuviera en curso **se pausa** y se reanuda al descongelar ([8.1](#81-reglas)).
 - **Sí puede recibir impactos.**
 
 **Deshielo.** Es la regla especial que invierte el sentido de recibir Energía:
@@ -296,10 +346,12 @@ ResolveImpact_Frozen(proton, target):
 - Un nodo congelado que ya está a **0 de Energía** se descongela y cambia de bando con el siguiente protón que lo alcance, de Carga 1 o superior.
 - El remanente de Carga se pierde: un nodo descongelado siempre queda a 0.
 - **Auto-deshielo de seguridad:** si un nodo congelado permanece 30 s sin recibir ningún impacto, se descongela solo, conservando su facción y su Energía. Evita nodos muertos permanentes que bloqueen la condición de victoria.
+- **Los 30 s son de inactividad, no un máximo.** Cada impacto **reinicia el contador**, así que un nodo golpeado en el segundo 29 sigue congelado pasado el 59. No hay tope superior a la duración del estado: lo termina el deshielo o el silencio, nunca el reloj por sí solo.
+- **El Decaimiento no descongela, y no reinicia el contador.** Un nodo `Congelado` + `Infectado` ([14.6](./NOVA_Estados_Animaciones.md#146-matriz-de-compatibilidad)) pierde 2 E/s, pero el deshielo vive dentro de `ResolveImpact_Frozen` y solo lo dispara un **impacto**. Al llegar a 0 el nodo sigue congelado y a 0, es decir **a un protón de Carga 1 de cambiar de bando**: eso es lo que 14.6 quiere decir con que el Decaimiento «acelera su propio deshielo». Lo abarata, no lo dispara. Y como el Decaimiento no es un impacto, si nadie le tira nada el nodo acaba auto-descongelándose a los 30 s, con su dueño, a 0 de Energía y todavía infectado.
 
 ### 7.4 Decaimiento
 
-Infecta el nodo objetivo con decaimiento radiactivo. Su Energía cae sola.
+Infecta el nodo objetivo con decaimiento radiactivo. Su Energía cae sola. Objetivos válidos, los de [7.2.1](#721-objetivo-válido): cualquier Estrella, Púlsar o Magnetar que no sea propio, **incluido el Magnetar neutral**.
 
 - **Tasa:** −2 de Energía por segundo, hasta 0.
 - Al llegar a 0, el nodo **permanece infectado** a 0 de Energía y sigue perteneciendo a su dueño.
@@ -308,6 +360,7 @@ Infecta el nodo objetivo con decaimiento radiactivo. Su Energía cae sola.
   - Si lo cura su propio dueño, recupera Energía y pierde la infección.
   - Si lo cura otra facción y la Carga basta para vaciarlo, cambia de bando sin infección.
   - Si lo cura otra facción y la Carga no basta, pierde la infección pero sigue siendo del dueño original.
+- **Sobre un nodo Neutral**, que no tiene dueño que lo cure, la infección se queda: baja a 0 y ahí sigue, infectado y disparando si es Magnetar, hasta que alguien le envíe Energía. Es el atajo lento contra el muro —35 de coste drenan sus 100 en 50 s y luego basta Carga 1 para tomarlo ([17](#17-casos-borde-y-reglas-de-resolución), caso 7)— y es **intencional**: cuesta medio minuto de exposición y lo puede hacer también el Enemigo.
 - No es acumulable: un segundo Decaimiento sobre un nodo ya infectado **reinicia** el efecto, no duplica la tasa.
 - Visual: aura verde pulsante `#7CF23F` y partículas descendentes. Un contador visible de la Energía cayendo.
 
@@ -315,7 +368,8 @@ Infecta el nodo objetivo con decaimiento radiactivo. Su Energía cae sola.
 
 Cambia de bando el nodo objetivo **conservando su Energía, su tipo y su nivel**. Es el poder definitivo y por eso es el más caro.
 
-- Funciona sobre cualquier nodo que no sea ya propio, incluidos Asteroides neutrales, Magnetares llenos y Púlsares.
+- Funciona sobre cualquier **nodo encendido que no sea propio** —Estrella, Púlsar o Magnetar— a cualquier nivel y con cualquier Energía, incluidos un Magnetar lleno y el **Magnetar neutral**. **No** funciona sobre ningún Asteroide, sea de quien sea ([7.2.1](#721-objetivo-válido)).
+- **Robar el Magnetar neutral es su mejor uso, y el más caro.** Ignora la resistencia ×2, así que se lleva entero un muro que por la vía de los protones costaría **200 de Carga**. Por 60 de Energía y 16 s de carga, es el único cambio de 200 por 60 que existe en el juego.
 - **Ignora la resistencia ×2 del Magnetar.** Un Magnetar con 100 de Energía cambia de bando íntegro.
 - Elimina los estados Congelado y Decaimiento del objetivo al capturarlo.
 
@@ -325,9 +379,11 @@ Cambia de bando el nodo objetivo **conservando su Energía, su tipo y su nivel**
 |---|---|
 | Carga en curso (1–99%) | El Púlsar cambia de bando y la carga **se resetea a 0%**. La Energía invertida se pierde. |
 | Carga al 100%, poder aún no lanzado | El Púlsar cambia de bando **con el poder cargado intacto**, utilizable de inmediato por el nuevo dueño. |
-| Poder ya lanzado (proyectil en vuelo) | El proyectil ya lanzado **completa su efecto** a favor de quien lo lanzó. El Púlsar cambia de bando vacío. |
+| Haz ya lanzado (dentro de sus 0.25 s) | El haz **completa su efecto** a favor de quien lo lanzó, aunque su Púlsar ya sea del otro bando cuando se resuelva. El Púlsar cambia de bando vacío. |
 
 Esta ventana es intencional y debe ser legible en pantalla: la barra de carga del Púlsar enemigo es visible para el jugador en todo momento.
+
+**Con alcance global, esa lectura es el contrajuego entero.** Un Púlsar enemigo cargado al 100 % amenaza el tablero completo y no hay distancia a la que ponerse a salvo; lo único que queda es verle la barra llena y robársela antes de que la gaste. Por eso `ART-UI-CHARGE` es visible también en el Púlsar enemigo y no es negociable.
 
 ---
 
@@ -341,8 +397,10 @@ Permite cambiar un nodo ya encendido a otro tipo. No existe en JellyGo; es propi
 - El nodo vuelve a **nivel 1** del nuevo tipo.
 - Conserva la Energía sobrante, recortada al tope del nuevo tipo.
 - Dura **3 segundos** con una animación de colapso y reencendido.
-- Durante esos 3 s el nodo **no genera, no dispara, no envía y no puede mejorarse**, pero **sí puede ser impactado y capturado**. Si es capturado durante la animación, la reconversión se cancela y el nodo queda como estaba antes de iniciarla, con el nuevo dueño.
-- **No se puede iniciar** si el nodo está Congelado, Infectado, cargando un poder o ya reconvirtiéndose.
+- **El coste se paga al iniciar; el tipo, el nivel y el tope cambian al terminar.** Durante los 3 s el nodo sigue siendo del tipo de origen a todos los efectos —un Magnetar reconvirtiéndose conserva su resistencia ×2 y su tope de 100— y al acabar pasa a nivel 1 del tipo nuevo, con la Energía que tenga en ese momento recortada al tope nuevo ([18](#18-decisiones-tomadas-por-defecto) #20).
+- Durante esos 3 s el nodo **no genera, no dispara, no envía y no puede mejorarse**, pero **sí puede ser impactado y capturado**. Si es capturado durante la animación, la reconversión se cancela y el nodo queda como estaba antes de iniciarla, con el nuevo dueño. **El coste pagado se pierde**: la Energía del nodo es la que deja la captura ([6.2](#62-resolución-de-impacto); [18](#18-decisiones-tomadas-por-defecto) #21).
+- **No se puede iniciar** si el nodo está Congelado, Infectado, cargando un poder, **con un poder ya cargado** o ya reconvirtiéndose. Un Púlsar con el poder listo tiene que lanzarlo o cancelarlo antes: si no, el poder desaparecería con el tipo ([18](#18-decisiones-tomadas-por-defecto) #19).
+- **Una reconversión ya empezada sí puede congelarse, y se pausa.** Cero Absoluto es legal sobre un nodo reconvirtiéndose —no hay más exclusiones que las dos de [7.2.1](#721-objetivo-válido)— y su efecto sobre el temporizador de 3 s es el mismo que sobre la carga de un Púlsar: **se detiene donde esté y se reanuda al descongelar**, sin perder lo invertido ([7.3](#73-cero-absoluto), [17](#17-casos-borde-y-reglas-de-resolución) caso 8). Iniciar y continuar son cosas distintas: lo primero es una acción del dueño, lo segundo un reloj que ya corre.
 - Un nodo **no puede volver a Asteroide**. La reconversión es solo entre Estrella, Púlsar y Magnetar.
 
 ### 8.2 Costes
@@ -435,11 +493,11 @@ El jugador puede reiniciar el nivel en cualquier momento desde el menú de pausa
 |---|---|---|---|
 | 1 | Sistema Interior | 1–3 | Envío, captura, Estrella, Magnetar, mejoras |
 | 2 | El Cinturón | 4–6 | Púlsar, Cero Absoluto, Decaimiento, Magnetar neutral |
-| 3 | Espacio Profundo | 7–9 | Agujero de Gusano, reconversión, IA agresiva |
+| 3 | Espacio Profundo | 7–9 | Agujero de Gusano, reconversión, algoritmo agresivo |
 
 ### 11.2 Diseño de niveles
 
-`N` = nodos totales. `Ast` = asteroides neutrales al inicio. Los nodos iniciales de cada bando se indican como tipo(nivel).
+**`N` es una columna derivada, no un presupuesto.** Es la suma de las cuatro siguientes —nodos del Jugador, nodos del Enemigo, `Ast` y neutrales especiales— y los Magnetares neutrales **cuentan**, porque son nodos. Al llegar a `T5-02` será literalmente `spawns.Count` de cada `LevelDefinition` ([15.4](#154-data--scriptableobjects)), así que si alguna vez no cuadra, lo que está mal es `N`. `Ast` = asteroides neutrales al inicio. Los nodos iniciales de cada bando se indican como tipo(nivel).
 
 | Nivel | N | Jugador inicia con | Enemigo inicia con | Ast | Neutrales especiales | Duración objetivo |
 |---|---|---|---|---|---|---|
@@ -447,42 +505,76 @@ El jugador puede reiniciar el nivel en cualquier momento desde el menú de pausa
 | 2 | 7 | Estrella(1) | Estrella(2) | 5 | — | 110 s |
 | 3 | 8 | Estrella(1), Asteroide | Estrella(2), Magnetar(1) | 4 | — | 130 s |
 | 4 | 9 | Estrella(1) | Estrella(2), Púlsar(1) | 6 | — | 150 s |
-| 5 | 10 | Estrella(1), Magnetar(1) | Estrella(2), Púlsar(1) | 6 | 1 Magnetar(2) neutral | 170 s |
+| 5 | 11 | Estrella(1), Magnetar(1) | Estrella(2), Púlsar(1) | 6 | 1 Magnetar(2) neutral | 170 s |
 | 6 | 11 | Estrella(2) | Estrella(3), Púlsar(2), Magnetar(2) | 6 | 1 Magnetar(3) neutral | 190 s |
-| 7 | 12 | Estrella(1), Estrella(1) | Estrella(3), Púlsar(3), Magnetar(3) | 7 | 1 Magnetar(3) neutral | 210 s |
-| 8 | 13 | Estrella(2) | Estrella(3)×2, Púlsar(3), Magnetar(3) | 7 | 2 Magnetar(3) neutrales | 230 s |
-| 9 | 14 | Estrella(2), Magnetar(1) | Estrella(4)×2, Púlsar(3)×2, Magnetar(4) | 7 | 2 Magnetar(4) neutrales | 240 s |
+| 7 | 13 | Estrella(1), Estrella(1) | Estrella(3), Púlsar(3), Magnetar(3) | 7 | 1 Magnetar(3) neutral | 210 s |
+| 8 | 14 | Estrella(2) | Estrella(3)×2, Púlsar(3), Magnetar(3) | 7 | 2 Magnetar(3) neutrales | 230 s |
+| 9 | 16 | Estrella(2), Magnetar(1) | Estrella(4)×2, Púlsar(3)×2, Magnetar(4) | 7 | 2 Magnetar(4) neutrales | 240 s |
 
 ### 11.3 Curva de dificultad
 
 La dificultad sube por tres vías simultáneas, todas parametrizadas en `LevelDefinition`:
 
 1. **Ventaja inicial del Enemigo:** más nodos y de mayor nivel.
-2. **Calidad de la IA:** intervalo de decisión más corto y mejor evaluación (ver [sección 12](./NOVA_IA_Algoritmos.md)).
+2. **Calidad del algoritmo:** intervalo de decisión más corto y mejor evaluación (ver [sección 12](./NOVA_Algoritmo_Enemigo.md)).
 3. **Geometría del mapa:** más Magnetares neutrales bloqueando rutas y mayores distancias entre los nodos del jugador.
 
-Ningún nivel debe ser imposible: en todos, el jugador debe tener al menos un Asteroide neutral a menos de 5 u de su posición inicial, alcanzable antes de que el Enemigo llegue a él.
+Ningún nivel debe ser imposible: en todos, el jugador debe tener al menos un Asteroide neutral a menos de **2.25 u** de su posición inicial, alcanzable antes de que el Enemigo llegue a él.
+
+> **Eran 5 u, luego 3 u y son 2.25 u desde el 2026-09-28**, porque la regla está escrita en unidades y el tablero encogió de 32 u a 20 u y, el mismo día, a 15 u ([T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada)). 5 u sobre 32 eran el 15.6 % del ancho; 2.25 u sobre 15 son el 15 %. Se conserva la proporción, que es lo que la regla quería decir: **cerca en pantalla, no cerca en números**.
+
+**La tercera vía ya no afecta a los poderes.** Desde que el Púlsar tiene alcance global ([7.2](#72-tabla-de-poderes)), la geometría del mapa solo encarece los protones: un Púlsar amenaza el tablero entero desde el primer segundo, y alejarse de él no protege de nada. Eso obliga a dos cosas al diseñar los 9 niveles:
+
+- **A partir del nivel 4, el Jugador no debería depender de una sola Estrella.** El Enemigo arranca con Púlsar(1) y puede congelarla o infectarla sin moverse ni acercarse. El nivel 4 de [11.2](#112-diseño-de-niveles) —Jugador con una única Estrella(1) contra Estrella(2) + Púlsar(1)— es el caso a vigilar en la primera prueba de juego: si resulta injusto, se corrige dándole un segundo nodo inicial, no devolviéndole el alcance al Púlsar.
+- **El Magnetar neutral sigue siendo el muro, pero tiene llave.** Es el único nodo Neutral que un poder puede tocar ([7.2.1](#721-objetivo-válido)): un Agujero de Gusano se lo lleva entero por 60, y un Decaimiento lo vacía en 50 s. Los dos bandos tienen esa llave, así que al diseñar los niveles 5 a 9 hay que contar con que **un Magnetar neutral cambia de dueño a mitad de partida**, y colocarlo donde eso sea interesante en vez de decisivo.
 
 ---
 
-## 12. IA del Enemigo — algoritmos
+## 12. Algoritmo del Enemigo
 
-> **Movido a [NOVA_IA_Algoritmos.md](./NOVA_IA_Algoritmos.md).** La numeración se conserva: toda referencia a «12.x» de este documento apunta a ese archivo.
+> **Movido a [NOVA_Algoritmo_Enemigo.md](./NOVA_Algoritmo_Enemigo.md).** La numeración se conserva: toda referencia a «12.x» de este documento apunta a ese archivo.
 
 ## 13. Controles y UI
 
 ### 13.1 Ratón
 
+El clic izquierdo significa una cosa u otra **según haya o no una selección activa**. Todo lo demás depende de esa regla, así que va primero:
+
+> **Sin selección, el clic izquierdo elige. Con selección, el clic izquierdo envía.**
+
+**Sin selección activa**
+
 | Entrada | Acción |
 |---|---|
-| **Clic izquierdo** sobre nodo propio | Seleccionar / deseleccionar |
-| **Clic izquierdo** sobre nodo destino (con selección activa) | Enviar el **50%** |
-| **Doble clic izquierdo** sobre nodo destino | Enviar el **100%** |
-| **Arrastre** desde nodo propio hasta destino | Equivalente al envío al 50% |
-| **Arrastre en vacío** (lazo) | Selección múltiple de nodos propios |
-| **Clic derecho** sobre cualquier nodo | Abrir panel de información y mejoras |
-| **Clic derecho** en vacío | Cancelar selección / cerrar panel |
+| **Clic izquierdo** sobre nodo propio que puede enviar —Estrella, Púlsar o Magnetar— | Lo selecciona |
+| **Clic izquierdo** sobre **Asteroide propio** | Abre el menú radial de encendido ([13.7](#137-menú-radial-de-encendido)) |
+| **Clic izquierdo** sobre nodo no propio | Nada |
+
+**Con selección activa**
+
+| Entrada | Acción |
+|---|---|
+| **Clic izquierdo** sobre cualquier nodo **no seleccionado** | Envía el **50%** desde **cada** origen seleccionado ([5.2](#52-envío)). Si el destino es propio, es un refuerzo; si no, un ataque |
+| **Doble clic izquierdo** sobre cualquier nodo no seleccionado | Envía el **100%** |
+| **Clic izquierdo** sobre un nodo **ya seleccionado** | Lo saca de la selección |
+
+**Siempre**
+
+| Entrada | Acción |
+|---|---|
+| **Arrastre** desde nodo propio hasta destino | Envío al 50% **desde ese único origen**, sea cual sea la selección activa |
+| **Arrastre en vacío** (lazo) | Selección múltiple de nodos propios **que puedan enviar**. Los Asteroides quedan fuera: no son orígenes legales ([5.2](#52-envío)) |
+| **Clic derecho** sobre cualquier nodo | Abre el panel de información y mejoras ([13.3](#133-panel-de-clic-derecho)) |
+| **Clic derecho** en vacío | Cancela la selección y cierra el panel |
 | **Esc** | Menú de pausa |
+
+**La selección se mantiene tras enviar.** Un lazo de cuatro nodos sirve para varias oleadas sin rehacerlo, y dos clics seguidos sobre el mismo destino acumulan 50% + 50% = 75%. Se cancela con clic derecho en vacío, nunca sola.
+
+La contrapartida está asumida: con una selección viva **no se puede cambiar de origen con un clic**, porque ese clic envía. Primero se cancela con clic derecho y luego se elige. Es el precio de que reforzar un nodo propio cueste un clic y no un gesto aparte, y reforzar es la primera respuesta defensiva que existe ([12.4](./NOVA_Algoritmo_Enemigo.md#124-detección-de-amenaza-y-defensa)), disponible igual para los dos bandos.
+
+Por el mismo motivo, **con una selección activa un Asteroide propio recibe Energía en vez de abrir su menú**, que es justo lo que hace falta para llevarlo a 10. Para encenderlo se cancela la selección primero.
+
+**El modo apuntado suspende esta tabla.** Mientras un Púlsar tiene un poder cargado y el cursor apunta ([13.5](#135-rueda-de-poderes-del-púlsar)), el clic izquierdo lanza sobre un objetivo válido y el **clic derecho cancela el apuntado sin abrir ningún panel**. Es la única excepción y tiene prioridad sobre todo lo anterior.
 
 ### 13.2 Resolución del doble clic
 
@@ -510,8 +602,8 @@ Contiene, en este orden:
 2. Energía actual / tope.
 3. **Velocidad de ataque** (ver 13.4).
 4. Botón de **mejora** con su coste, si el nodo no está al nivel máximo y si es propio. Si está al máximo, se muestra `NIVEL MÁXIMO` y el botón desaparece.
-5. Botón de **reconversión** con los tres destinos posibles y su coste.
-6. Si es un Púlsar propio: rueda de poderes (ver 13.5).
+5. Botón de **reconversión** con **los dos destinos posibles** y su coste, **si es propio**. Son dos y no tres: [8.1](#81-reglas) prohíbe volver a Asteroide, y un nodo no se reconvierte a su propio tipo. Los tres sí son correctos en el menú de *encendido*, que es otra cosa ([13.7](#137-menú-radial-de-encendido)).
+6. Si es un Púlsar propio: rueda de poderes ([13.5](#135-rueda-de-poderes-del-púlsar)). **Este panel es el único sitio desde el que se abre.**
 
 El botón de mejora se muestra **deshabilitado y con el coste en rojo** cuando no hay Energía suficiente, nunca oculto. El jugador necesita saber cuánto le falta.
 
@@ -528,10 +620,14 @@ Es un único campo en la UI que significa cosas distintas según el tipo:
 
 ### 13.5 Rueda de poderes del Púlsar
 
-Clic izquierdo sobre un Púlsar propio abre tres ranuras en orden fijo: **1 Cero Absoluto · 2 Decaimiento · 3 Agujero de Gusano**. Las no desbloqueadas aparecen con candado y el nivel requerido.
+La rueda vive en el **panel de clic derecho** del Púlsar ([13.3](#133-panel-de-clic-derecho), punto 6) y muestra tres ranuras en orden fijo: **1 Cero Absoluto · 2 Decaimiento · 3 Agujero de Gusano**. Las no desbloqueadas aparecen con candado y el nivel requerido.
+
+> **No la abre el clic izquierdo**, aunque una versión anterior de esta sección lo dijera. El clic izquierdo sobre un Púlsar propio ya significa seleccionarlo o enviarle Energía ([13.1](#131-ratón)), y el Púlsar **sí puede ser origen de un envío** ([4.3](./NOVA_Nodos.md#43-púlsar)): quitarle esa entrada para colgarle la rueda dejaría al único nodo con 100 de tope sin forma de repartirlos con un clic. El Asteroide es el caso contrario y por eso sí tiene acción propia en el clic izquierdo ([13.7](#137-menú-radial-de-encendido)).
 
 - Clic en una ranura: inicia la carga. Aparece una barra bajo el nodo.
 - Con un poder cargado, la ranura brilla y el cursor pasa a modo apuntado.
+- En modo apuntado se resaltan **todos los nodos encendidos que no son propios**, sin importar la distancia: los del Enemigo y el Magnetar neutral. Se atenúa lo demás, que son los nodos propios y los Asteroides de cualquier bando ([7.2.1](#721-objetivo-válido)).
+- **No se dibuja ningún círculo de alcance**, porque no hay alcance que dibujar.
 - Clic en un objetivo válido: lanza. Clic derecho: cancela el apuntado sin perder la carga.
 
 ### 13.6 HUD permanente
@@ -544,6 +640,27 @@ Clic izquierdo sobre un Púlsar propio abre tres ranuras en orden fijo: **1 Cero
 | Pausa | Superior derecha | Botón |
 
 La barra de poder suma la Energía de todos los nodos de cada bando. **No cuenta** la Materia Inerte de los Asteroides neutrales ni la Carga de los protones en vuelo.
+
+
+### 13.7 Menú radial de encendido
+
+Lo abre el **clic izquierdo sobre un Asteroide propio**, sin selección activa ([13.1](#131-ratón)), y sale en el cursor.
+
+**Por qué ahí y no en el panel.** Un Asteroide **no puede enviar nunca** ([5.2](#52-envío)), así que no es un origen legal y seleccionarlo no significaría nada: su clic izquierdo estaba libre. No es una excepción a la regla de 13.1, es el único nodo al que esa regla no le asigna nada. Encender es además la acción más repetida de la partida, y cobrarla a dos clics sería cobrarla caro.
+
+Tres opciones, siempre las mismas y siempre las tres, en el orden de [16.2](#162-costes-de-nivel):
+
+| Opción | Coste | Resultado |
+|---|---|---|
+| Estrella | 10 | Estrella nivel 1 con 0 de Energía |
+| Púlsar | 10 | Púlsar nivel 1 con 0 de Energía |
+| Magnetar | 10 | Magnetar nivel 1 con 0 de Energía |
+
+- Con `energy < 10` el menú **se abre igual**, con las tres opciones deshabilitadas y el coste en rojo. Es el mismo criterio que el botón de mejora de [13.3](#133-panel-de-clic-derecho): el jugador necesita saber cuánto le falta, y ocultarlo no se lo dice.
+- Clic derecho o clic en vacío: cierra el menú sin encender.
+- El panel de clic derecho de un Asteroide sigue siendo informativo: `DORMIDO` y el coste de encendido ([13.4](#134-traducción-de-velocidad-de-ataque)).
+
+El estado `SinEncender` ya avisa de cuál de las dos lecturas toca sin abrir nada: la brasa está quieta por debajo de 10 y crepita al llegar ([14.1](./NOVA_Estados_Animaciones.md#141-estados-del-nodo)).
 
 ---
 
@@ -560,10 +677,22 @@ La barra de poder suma la Energía de todos los nodos de cada bando. **No cuenta
 2. **Un script, una responsabilidad.** Si un script necesita la palabra "y" para describirse, hay que partirlo.
 3. **La presentación solo lee.** Ningún script de `Presentation` o `UI` modifica estado de juego. Se suscriben a eventos.
 4. **La lógica de reglas es estática y pura.** `ImpactResolver`, `EnergyMath` y `ConversionRules` no tienen estado ni referencias a escena, y son testeables sin abrir Unity.
-5. **Jugador e IA usan el mismo canal.** Ambos emiten comandos a través de `INodeCommandIssuer`. Es imposible que la IA haga algo ilegal porque no existe la vía.
-6. **Sin `Find`, sin `SendMessage`, sin singletons salvo los tres registros del apartado 15.6.**
+5. **Jugador y Enemigo usan el mismo canal.** Ambos emiten comandos a través de `INodeCommandIssuer`. Es imposible que el algoritmo haga algo ilegal porque no existe la vía.
+6. **Sin `Find`, sin `SendMessage`, sin singletons salvo tres**, declarados en [15.6](#156-systems--escena): `NodeRegistry`, `ProtonRegistry` y `GameManager`. Los dos primeros son registros; el tercero **no lo es**, es el flujo del nivel, y por eso decir «los tres registros» dejaba fuera al único singleton que no lo es.
 
 ### 15.2 Estructura de carpetas
+
+**Un solo repositorio.** `Assets/`, `art/`, `tools/`, `mds/` y `entregables_uni/`
+son carpetas hermanas de la misma raíz, versionadas juntas. Es lo que esta sección
+daba por supuesto al citar a la vez `Assets/Sprites/` y `tools/nova_core.py`, y quedó
+escrito el 2026-09-28, cuando el proyecto Unity se creó fuera del repositorio y hubo
+que fusionarlo. `Assets/Sprites/` es **salida derivada de `art/`** y está en el
+`.gitignore`: lo que se versiona es el generador, no el PNG.
+
+**Espacio de nombres raíz: `Nova`**, y cada ensamblado lleva el suyo —`Nova.Core`,
+`Nova.Gameplay`, `Nova.Enemy`…— coincidiendo con el nombre del `.asmdef` y con la
+carpeta. Los identificadores van en inglés, como manda el glosario de la
+[sección 2](#2-glosario-normativo); los comentarios, en español.
 
 ```
 Assets/
@@ -578,7 +707,7 @@ Assets/
 │   │   ├── Combat/
 │   │   ├── Powers/
 │   │   └── Economy/
-│   ├── AI/
+│   ├── Enemy/
 │   ├── Input/
 │   ├── Systems/
 │   ├── UI/
@@ -588,7 +717,7 @@ Assets/
 │   ├── Nodes/
 │   ├── Powers/
 │   ├── Levels/
-│   └── AIProfiles/
+│   └── EnemyProfiles/
 ├── Prefabs/
 ├── Art/
 ├── Audio/
@@ -611,7 +740,7 @@ Assets/
 | `EnergyMath.cs` | Multiplicadores, redondeos, cálculo de coste efectivo de captura |
 | `ImpactResolver.cs` | Resolución de impacto de protón, incluido el caso congelado. Entrada: snapshot. Salida: `ImpactResult` + deltas. **Sin efectos secundarios.** |
 | `ConversionRules.cs` | Validez y coste de encendido, mejora y reconversión |
-| `ThreatCalculator.cs` | Dado un nodo y los protones en vuelo, dice si está amenazado y en cuánto tiempo. Usado por la IA **y** por el estado `Asustado`. |
+| `ThreatCalculator.cs` | Dado un nodo y los protones en vuelo, dice si está amenazado y en cuánto tiempo. Usado por el algoritmo **y** por el estado `Asustado`. |
 | `GameEventChannels.cs` | Definición de los canales de evento |
 
 ### 15.4 Data — ScriptableObjects
@@ -620,12 +749,12 @@ Assets/
 |---|---|
 | `NodeDefinition.cs` | Tipo, tope, nº de niveles, array de `NodeLevelData`, prefab, sprites por facción |
 | `NodeLevelData.cs` | `[Serializable] struct`: coste de mejora, intervalo de generación, radio, cadencia |
-| `PowerDefinition.cs` | Tipo, coste, tiempo de carga, alcance, velocidad del proyectil, nivel requerido, VFX |
-| `BalanceConfig.cs` | Velocidad del protón, daño por disparo del Magnetar, multiplicador del Magnetar, buffer de doble clic, duración de reconversión, auto-deshielo, tasa de decaimiento |
-| `LevelDefinition.cs` | Lista de `NodeSpawnData`, referencia a `AIProfile`, config de drops, duración objetivo |
+| `PowerDefinition.cs` | Tipo, coste, tiempo de carga, duración del haz, nivel requerido, VFX. **Sin campo de alcance:** el alcance es global y por tanto no es un parámetro de balance ([7.2](#72-tabla-de-poderes)). |
+| `BalanceConfig.cs` | Velocidad del protón, daño por disparo del Magnetar, multiplicador del Magnetar, buffer de doble clic, duración de reconversión, auto-deshielo, tasa de decaimiento, **coste de encendido, Materia Inerte, umbral de susto y devolución al cancelar una carga** (los cuatro, de 16.1) |
+| `LevelDefinition.cs` | Lista de `NodeSpawnData`, referencia a `EnemyProfile`, config de drops, duración objetivo |
 | `NodeSpawnData.cs` | `[Serializable] struct`: posición, tipo, nivel, facción, energía inicial |
 | `PowerUpDefinition.cs` | Tipo, magnitud, duración, icono, estadística afectada |
-| `AIProfile.cs` | Los 8 parámetros de la tabla [12.5](./NOVA_IA_Algoritmos.md#125-perfiles-por-mapa) |
+| `EnemyProfile.cs` | Los 8 parámetros de la tabla [12.5](./NOVA_Algoritmo_Enemigo.md#125-perfiles-por-mapa) |
 
 ### 15.5 Gameplay — componentes de nodo
 
@@ -644,35 +773,35 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 | `PulsarCaster.cs` | Solo en Púlsar. Carga, pausa, cancelación, lanzamiento, robo de carga. |
 | `NodeIgnition.cs` | Encendido de Asteroide, incluida la recogida del power-up |
 | `NodeConverter.cs` | Reconversión y su ventana de vulnerabilidad de 3 s |
-| `NodeCollider2D` | Trigger circular, solo para input y detección. Sin Rigidbody. |
+| `NodeCollider2D` | Trigger circular, solo para input y detección. Sin Rigidbody. Es un `CircleCollider2D` *trigger* en la capa de física **`Nodes`**, con el radio de la huella sólida del nodo (0.3–0.6 u, [NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Huella del nodo*). El clic se resuelve con `Physics2D.OverlapPoint` sobre esa capa ([18](#18-decisiones-tomadas-por-defecto) #23). |
 
 ### 15.6 Systems — escena
 
 | Script | Responsabilidad única |
 |---|---|
 | `GameManager.cs` | Flujo del nivel: carga, inicio, pausa, fin. Único singleton de flujo. |
-| `NodeRegistry.cs` | Registro vivo de todos los nodos indexado por facción. Consultado por IA, victoria y barra de poder. **Singleton.** |
+| `NodeRegistry.cs` | Registro vivo de todos los nodos indexado por facción. Consultado por el algoritmo, la victoria y la barra de poder. **Singleton.** |
 | `ProtonRegistry.cs` | Registro de protones en vuelo indexado por destino. Lo usan `ThreatCalculator` y el Magnetar. **Singleton.** |
 | `LevelLoader.cs` | Instancia el mapa desde `LevelDefinition` |
 | `ProtonLauncher.cs` | Servicio de lanzamiento: valida, descuenta y pide un protón al pool |
 | `ProtonPool.cs` | Object pooling de protones |
 | `Proton.cs` | Movimiento, Carga, notificación de impacto. **No resuelve el impacto**, llama a `ImpactResolver`. |
-| `PowerProjectile.cs` | Movimiento del proyectil de poder y aplicación del efecto |
+| `PowerBeam.cs` | Haz de 0.25 s del Púlsar al objetivo. Revalida el objetivo al terminar y, según el resultado, aplica el efecto o lo disipa ([7.2.2](#722-el-haz)). **No se mueve ni colisiona:** origen y destino se conocen desde el lanzamiento. |
 | `PowerUpSpawner.cs` | Temporizadores, elección de Asteroide, expiración |
 | `FactionBuffs.cs` | Buffs activos por facción y su consulta por los componentes |
 | `WinConditionChecker.cs` | Victoria, derrota, estancamiento, cascada de conquista |
 | `ProgressSaver.cs` | Nivel máximo desbloqueado en `PlayerPrefs` |
 
-### 15.7 Input, IA y UI
+### 15.7 Input, Enemigo y UI
 
 | Script | Responsabilidad única |
 |---|---|
 | `InputRouter.cs` | Traduce ratón a intenciones. Buffer de doble clic. **No conoce reglas.** |
 | `SelectionManager.cs` | Conjunto de nodos seleccionados, lazo, feedback de selección |
 | `PlayerCommandIssuer.cs` | Implementa `INodeCommandIssuer` para el Jugador |
-| `EnemyBrain.cs` | Ciclo de decisión de [12.1](./NOVA_IA_Algoritmos.md#121-ciclo-de-decisión) |
-| `AIEvaluator.cs` | Función de puntuación de [12.3](./NOVA_IA_Algoritmos.md#123-función-de-puntuación-atacar). Pura, testeable. |
-| `AIThreatResponder.cs` | Refuerzo, congelación y evacuación de [12.4](./NOVA_IA_Algoritmos.md#124-detección-de-amenaza-y-defensa) |
+| `EnemyController.cs` | Ciclo de decisión de [12.1](./NOVA_Algoritmo_Enemigo.md#121-ciclo-de-decisión) |
+| `EnemyEvaluator.cs` | Función de puntuación de [12.3](./NOVA_Algoritmo_Enemigo.md#123-función-de-puntuación-atacar). Pura, testeable. |
+| `EnemyThreatResponder.cs` | Refuerzo, congelación y evacuación de [12.4](./NOVA_Algoritmo_Enemigo.md#124-detección-de-amenaza-y-defensa) |
 | `EnemyCommandIssuer.cs` | Implementa `INodeCommandIssuer` para el Enemigo |
 | `NodeHUD.cs` | Número de Energía sobre el nodo |
 | `NodeInfoPanel.cs` | Panel de clic derecho |
@@ -697,7 +826,7 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 ```
 InputRouter ──► PlayerCommandIssuer ──┐
                                       ├──► NodeController ──► Core.Rules
-EnemyBrain  ──► EnemyCommandIssuer ───┘           │
+EnemyController  ──► EnemyCommandIssuer ───┘           │
                                                   ▼
                                           GameEventChannels
                                                   │
@@ -715,15 +844,17 @@ Configurar en `Script Execution Order`:
 ```
 -100  NodeRegistry, ProtonRegistry
  -50  InputRouter
- -40  EnemyBrain
+ -40  EnemyController
    0  NodeController y componentes de nodo
-  10  Proton, PowerProjectile
+  10  Proton, PowerBeam
   20  WinConditionChecker
   50  UI
  100  Presentation
 ```
 
-Los impactos se resuelven en el orden en que los protones llegan dentro del mismo frame. Con empate exacto, el de mayor Carga primero.
+Los impactos se resuelven en el orden en que los protones llegan dentro del mismo tick. Con empate exacto, el de mayor Carga primero.
+
+**Paso de tiempo: toda la lógica de juego corre en `FixedUpdate` a 50 Hz** (`Fixed Timestep = 0.02` en *Project Settings → Time*). Generación de la Estrella, vuelo del protón, disparo del Magnetar, carga del Púlsar, temporizadores de estado y ciclo de decisión del Enemigo avanzan con `Time.fixedDeltaTime` y nunca con `Time.deltaTime`; `Presentation` y `UI` siguen en `Update`, porque solo leen. Es lo que permite cumplir el determinismo de [12.7](./NOVA_Algoritmo_Enemigo.md#127-contrato-de-implementación): con `deltaTime` variable, la misma semilla daba partidas distintas según los FPS. Un temporizador cuyo intervalo no es múltiplo de 20 ms —la Estrella N4 a 1.05 s— acumula el tiempo en enteros y arrastra el sobrante al siguiente intervalo, así que conserva su tasa media exacta. Cerrado el 2026-09-28 ([18](#18-decisiones-tomadas-por-defecto) #22, [T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #36).
 
 ---
 
@@ -736,7 +867,8 @@ Estos valores deben vivir en `BalanceConfig.asset` y en las `NodeDefinition`. No
 | Parámetro | Valor |
 |---|---|
 | Velocidad del protón | 2.5 u/s |
-| Velocidad del proyectil de poder | 6.0 u/s |
+| Alcance de los poderes | **Global** (sin límite) |
+| Duración del haz de poder | 0.25 s |
 | Daño del Magnetar por disparo | 2 de Carga |
 | Multiplicador de resistencia del Magnetar | 0.5 |
 | Buffer de doble clic | 0.25 s |
@@ -747,7 +879,9 @@ Estos valores deben vivir en `BalanceConfig.asset` y en las `NodeDefinition`. No
 | Magnitud de los power-ups | +50% |
 | Ventana de expiración del power-up | 30 s |
 | Umbral de susto | 1.5 s |
-| Área jugable | 32 × 18 u |
+| Área jugable | **15 × 8.4375 u** |
+| Cámara ortográfica | `size = 4.21875` (16:9), Pixel Perfect con referencia 960 × 540 |
+| Arte de fondo | 960 × 540 px a PPU 64 |
 | Coste de encendido | 10 |
 | Materia Inerte del Asteroide | 10 |
 | Devolución al cancelar carga | 50% |
@@ -763,13 +897,17 @@ Estos valores deben vivir en `BalanceConfig.asset` y en las `NodeDefinition`. No
 | 5 | 50 | — | 50 |
 | **Total a nivel máx.** | **150** | **75** | **150** |
 
+**La fila «1 (encendido)» es de referencia.** El coste de encendido es uno solo para los tres tipos y vive en `BalanceConfig` (16.1, *Coste de encendido*). En las `NodeDefinition` el nivel 1 lleva coste 0: a ese nivel no se llega mejorando ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #41, cerrado el 2026-09-28).
+
 ### 16.3 Poderes
 
-| Poder | Coste | Carga | Drenaje | Alcance |
-|---|---|---|---|---|
-| Cero Absoluto | 20 | 8 s | 2.50 E/s | 7 u |
-| Decaimiento | 35 | 12 s | 2.92 E/s | 7 u |
-| Agujero de Gusano | 60 | 16 s | 3.75 E/s | 5 u |
+| Poder | Coste | Carga | Drenaje | Alcance | Objetivo |
+|---|---|---|---|---|---|
+| Cero Absoluto | 20 | 8 s | 2.50 E/s | Global | Nodo encendido no propio |
+| Decaimiento | 35 | 12 s | 2.92 E/s | Global | Nodo encendido no propio |
+| Agujero de Gusano | 60 | 16 s | 3.75 E/s | Global | Nodo encendido no propio |
+
+**Los costes no se tocaron al quitar el alcance.** Es una decisión consciente ([18](#18-decisiones-tomadas-por-defecto) #13): el Púlsar sale reforzado y el ajuste, si hace falta, se hará sobre el diseño de los niveles de [11.2](#112-diseño-de-niveles) antes que sobre esta tabla.
 
 ### 16.4 Reconversión
 
@@ -793,14 +931,14 @@ Cada fila es un test de aceptación.
 | 4 | El nodo destino deja de existir | Imposible: los nodos nunca se destruyen, solo cambian de facción. |
 | 5 | Un protón excede el tope del destino aliado | El excedente se descarta. No rebota ni se redistribuye. |
 | 6 | Un Magnetar reduce un protón exactamente a 0 | El protón se destruye. No impacta. La Energía se pierde. |
-| 7 | Un protón de Carga 1 impacta un Magnetar con 0 de Energía | `floor(1 * 0.5) = 0`. **No lo captura.** Se requiere Carga ≥ 2 para capturar un Magnetar a 0. Es intencional y debe documentarse en la UI. |
-| 8 | Se congela un nodo que está reconvirtiéndose | No permitido. La reconversión es inmune a Cero Absoluto durante sus 3 s. |
+| 7 | Un protón de Carga 1 impacta un Magnetar con 0 de Energía | **Lo captura**, y queda a 0 de Energía. `effective = floor(1 * 0.5) = 0`, pero la condición de daño de [6.2](#62-resolución-de-impacto) es `effective < target.energy`, y `0 < 0` es **falsa**: se resuelve por la rama de captura con `remainder = 0`. La resistencia ×2 encarece **vaciar** un Magnetar, no rematarlo. Coherente con [6.4](#64-casos-de-captura-por-tipo) —cualquier nodo a 0 cae con Carga 1— y con [7.3](#73-cero-absoluto), que ya lo decía literalmente para el nodo congelado a 0. |
+| 8 | Se congela un nodo que está reconvirtiéndose | **Permitido.** Se congela, y los 3 s de la reconversión **quedan pausados**; se reanudan al descongelar. No hay inmunidad: [7.2.1](#721-objetivo-válido) tiene **dos** exclusiones y esta habría sido una tercera, aplicada además a un solo poder de los tres. Es el mismo trato que ya recibe la carga de un Púlsar congelado ([7.3](#73-cero-absoluto)). Lo que **no** cambia es que una reconversión no se puede **iniciar** sobre un nodo ya congelado ([8.1](#81-reglas)). |
 | 9 | Se congela un Púlsar a mitad de carga | La carga se pausa. Al descongelarse, se reanuda desde donde estaba. |
 | 10 | Un Púlsar es capturado con un poder cargado | Ver 7.5: si la carga está al 100%, el nuevo dueño lo hereda. Si no, se resetea. |
 | 11 | Un nodo infectado llega a 0 y sigue infectado | Correcto. Permanece en 0 y del mismo dueño hasta que alguien lo cure o lo capture. |
 | 12 | Un nodo infectado es curado por su propio dueño | Pierde la infección y suma la Energía recibida. |
 | 13 | Se lanza Decaimiento sobre un nodo ya infectado | Reinicia el efecto. No acumula la tasa. |
-| 14 | Se lanza Agujero de Gusano sobre un nodo congelado | Lo captura y elimina el congelamiento. |
+| 14 | Se lanza Agujero de Gusano sobre un nodo enemigo congelado | Lo captura y elimina el congelamiento. |
 | 15 | Un power-up cae y nadie enciende el Asteroide | Expira a los 30 s. Arranca el siguiente temporizador. |
 | 16 | Un power-up debe caer pero no hay Asteroides neutrales | El drop se salta. El temporizador se reinicia. No cuenta contra el máximo por nivel. |
 | 17 | Dos Nubes de Hidrógeno consecutivas en el mismo bando | La segunda reinicia la duración a 20 s. No acumula magnitud. |
@@ -813,6 +951,15 @@ Cada fila es un test de aceptación.
 | 24 | Un nodo alcanza el nivel máximo | El botón de mejora se sustituye por `NIVEL MÁXIMO`. |
 | 25 | Envío al 100% desde un nodo que está siendo atacado | Legal. Es la maniobra de evacuación, disponible también para el jugador. |
 | 26 | Un Asteroide propio recibe un power-up marcado | Imposible: los power-ups solo caen sobre Asteroides **neutrales**. |
+| 27 | Se lanza un poder y, antes de que termine el haz, el objetivo pasa a ser propio del lanzador | El haz **se disipa sin efecto**. La Energía invertida se pierde y el poder no vuelve a estar cargado ([7.2.2](#722-el-haz)). |
+| 28 | El Púlsar que lanzó es capturado durante los 0.25 s del haz | El haz **completa su efecto a favor de quien lo lanzó**. El Púlsar cambia de bando vacío ([7.5](#75-agujero-de-gusano), tabla de robo de carga). |
+| 29 | Dos Púlsares rivales se lanzan un poder el mismo frame, cada uno contra el Púlsar del otro | Los dos haces duran lo mismo, así que se resuelven por orden de lanzamiento; con empate exacto, primero el del Púlsar con más Energía. El segundo opera sobre el resultado del primero y puede disiparse por el caso 27. |
+| 30 | Se lanza Agujero de Gusano sobre un Magnetar neutral lleno | **Lo captura íntegro**, con sus 100 de Energía y su nivel. Es objetivo válido porque está encendido y no es propio ([7.2.1](#721-objetivo-válido)), e ignora la resistencia ×2. Cambia 200 de Carga por 60 de Energía. |
+| 31 | Se lanza Cero Absoluto sobre un Magnetar neutral | Se congela y **deja de disparar a los dos bandos** mientras dure. El deshielo sigue [7.3](#73-cero-absoluto) sin cambios: cualquier facción que le envíe Energía lo drena, y al llegar a 0 pasa al bando del último emisor. Es la única forma de abrir un corredor sin pagar el muro entero. |
+| 32 | Se lanza Decaimiento sobre un Magnetar neutral | Se infecta y pierde 2 E/s. Al llegar a 0 **sigue Neutral, sigue infectado y sigue disparando**: no tiene dueño que lo cure ([7.4](#74-decaimiento)). A partir de ahí basta Carga 1 para capturarlo (caso 7). Es lento y visible, y está disponible para los dos bandos. |
+| 33 | Se intenta apuntar un poder a un Asteroide, propio, neutral o enemigo | No es objetivo válido ([7.2.1](#721-objetivo-válido)). **Ningún Asteroide lo es nunca**, sea de quien sea y tenga la Energía que tenga. |
+| 34 | El Jugador tiene un poder cargado y no queda en el mapa ningún nodo encendido que no sea suyo | No hay objetivo legal y el poder **se queda cargado indefinidamente** ([7.1](#71-regla-de-carga)). No es un bloqueo: los Asteroides que queden se toman con protones y la partida termina igual. |
+| 35 | Un Magnetar intenta derribar un haz de poder que cruza su radio | Imposible. El haz no es un protón y no es interceptable ([7.2.2](#722-el-haz)). |
 
 ---
 
@@ -830,72 +977,43 @@ Reglas que no estaban en el diseño original y que se añadieron para cerrar hue
 | 6 | Un Magnetar aliado recibe Energía 1:1 | La resistencia ×2 penalizaría reforzar tu propia defensa |
 | 7 | Derrota por estancamiento | Evita partidas matemáticamente perdidas que no terminan |
 | 8 | Devolución del 50% al cancelar una carga | Permite rectificar sin castigo total |
-| 9 | Un Magnetar a 0 requiere Carga ≥ 2 | Consecuencia matemática del multiplicador 0.5 con redondeo hacia abajo |
-| 10 | Ruido de decisión en la IA | Hace torpe a la IA del mapa 1 sin escribir un algoritmo distinto |
-| 11 | Evacuación de la IA | Sin ella la IA regala nodos llenos y se siente tonta |
+| 9 | ~~Un Magnetar a 0 requiere Carga ≥ 2~~ → **un Magnetar a 0 cae con Carga 1** | **Nunca fue una decisión: era un error de cálculo.** Se leyó `floor(1 * 0.5) = 0` como «no pasa nada», pero la guarda de [6.2](#62-resolución-de-impacto) compara `effective < target.energy` y `0 < 0` es falsa, así que el pseudocódigo normativo **ya lo capturaba**. Corregido en [17](#17-casos-borde-y-reglas-de-resolución), caso 7. El multiplicador 0.5 y su redondeo hacia abajo **no se tocan** |
+| 10 | Ruido de decisión | Hace torpe al Enemigo del mapa 1 sin escribir un algoritmo distinto |
+| 11 | Evacuación | Sin ella el Enemigo regala nodos llenos y parece tonto |
 | 12 | Un nodo no puede volver a Asteroide | No aporta nada y complica el menú de reconversión |
+| 13 | Alcance **global** para los tres poderes, sin subir costes | El límite de rango obligaba a acercar el Púlsar, que es justo el nodo que menos debe moverse: no genera y no dispara. Con alcance global el Púlsar es artillería de posición, que es lo que su ficción pide. Los costes de [16.3](#163-poderes) se dejan intactos a propósito: el desequilibrio, si aparece, se corrige en el diseño de niveles |
+| 14 | Objetivo de un poder = **cualquier nodo encendido no propio**; ningún Asteroide lo es nunca | Una sola regla en vez de una lista por poder. Excluye al Asteroide por dos motivos: no tiene nada que congelar, infectar ni robar, y capturarlo con un poder saltaría el doble coste de 10 + 10 que es el precio de expandirse ([4.1](./NOVA_Nodos.md#41-asteroide-nivel-0)). El Magnetar neutral **sí** entra, no por excepción sino porque cumple la regla: es el único nodo Neutral con nivel |
+| 15 | El poder se entrega por **haz de 0.25 s**, no por proyectil | Con alcance global, un proyectil a 6 u/s tardaría 6.1 s en cruzar el tablero. El haz da una ventana de resolución mínima pero real, y la hace independiente de la distancia |
+| 16 | El haz se disipa si el objetivo deja de ser válido | Coherente con el caso 2 de la [sección 17](#17-casos-borde-y-reglas-de-resolución): la facción se comprueba al resolver, no al lanzar |
+| 17 | El haz se colorea por **poder**, no por facción | El color anuncia qué efecto va a caer antes de que caiga; quién lo lanza ya se lee por el extremo del que sale, que es un Púlsar con color de facción |
+| 18 | La **mejora** se paga con la Energía del propio nodo y solo la impiden `Congelado` ([7.3](#73-cero-absoluto)) y `Reconvirtiendo` ([8.1](#81-reglas)) | Ningún documento decía quién la pagaba. Es el mismo criterio que la reconversión. Un nodo infectado «sigue funcionando con normalidad» ([7.4](#74-decaimiento)) y un Púlsar cargando puede mejorar: no hay nada que perder al subir de nivel dentro del mismo tipo. Cerrado el 2026-09-28 en `T1-04` |
+| 19 | Un Púlsar **con un poder ya cargado** tampoco puede iniciar una reconversión, no solo mientras carga | 8.1 solo prohibía «cargando un poder». Si se permitiera con el poder listo, el poder desaparecería con el tipo. Para reconvertir hay que lanzarlo o cancelarlo antes. Cerrado el 2026-09-28 en `T1-04` |
+| 20 | La reconversión **se paga al iniciar** y el tipo, el nivel y el tope **cambian al terminar** | Durante los 3 s el nodo sigue siendo del tipo de origen: conserva resistencia y tope. Es lo que hace coherente que una captura lo deje «como estaba antes de iniciarla» ([8.1](#81-reglas)): no hay cambio que deshacer. Cerrado el 2026-09-28 en `T1-04` |
+| 21 | Si capturan un nodo que se reconvierte, **el coste pagado se pierde** | El nodo recupera tipo y nivel anteriores con la Energía que deja la captura ([6.2](#62-resolución-de-impacto)). Devolverlo regalaría Energía al captor. Mismo criterio que los protones derribados: la Energía gastada no vuelve. Cerrado el 2026-09-28 en `T1-04` |
+| 22 | La lógica de juego corre en **`FixedUpdate` a 50 Hz**; la presentación, en `Update` | [12.7](./NOVA_Algoritmo_Enemigo.md#127-contrato-de-implementación) exige «misma entrada más misma semilla, misma partida, siempre», y ningún documento fijaba el paso de tiempo: con `deltaTime` variable la partida dependía de los FPS. Se eligió el tick fijo de Unity frente a un tick propio con acumulador porque no añade ningún sistema. Detalle en [15.10](#1510-orden-de-ejecución). Cerrado el 2026-09-28 antes de `T1-08` |
+| 23 | **Picking:** el clic sobre un nodo se resuelve con `Physics2D.OverlapPoint` en la capa **`Nodes`**, contra el `CircleCollider2D` *trigger* de `NodeCollider2D` con el radio de la huella (0.3–0.6 u). **El lazo no usa física:** pide a `NodeRegistry` los nodos propios que pueden enviar y toma los que tienen el centro dentro del rectángulo arrastrado, Asteroides fuera ([13.1](#131-ratón)). `Nodes` es la única capa nueva: protones y haces no llevan collider, porque no colisionan ([6.1](#61-el-protón)) y el Magnetar los encuentra por `ProtonRegistry` | 15.5 declaraba el collider pero no cómo se resolvía el clic ni el lazo. Se mantiene lo ya escrito —trigger sin Rigidbody— frente a la alternativa sin física, que obligaba a corregir 15.5. Cerrado el 2026-09-28 antes de `T1-11` ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #37) |
 
 ---
 
-## 19. Checklist de implementación por fases
+## 19. Fases y criterios de salida
 
-### Fase 1 — Núcleo jugable (sin arte)
+**La lista de tareas de cada fase no vive aquí: vive en [T.4](./NOVA_Tracking.md#t4-tareas).** Esta sección define **cuándo una fase está terminada**; T.4 define **qué hay que hacer para terminarla**, con IDs, dependencias, bloqueo por arte y estado.
 
-- [ ] Enums de `Core`
-- [ ] `EnergyMath`, `ImpactResolver`, `ConversionRules` con tests unitarios
-- [ ] `NodeDefinition`, `NodeLevelData`, `BalanceConfig`
-- [ ] `NodeController` y sus componentes, con sprites provisionales
-- [ ] `StarGenerator`
-- [ ] `ProtonLauncher`, `Proton`, `ProtonPool`
-- [ ] `NodeRegistry`, `ProtonRegistry`
-- [ ] `InputRouter` con clic simple y buffer de doble clic
-- [ ] Captura y cambio de facción funcionando
-- **Criterio de salida:** se puede capturar un Asteroide, encenderlo como Estrella y tomar un nodo enemigo.
+Antes las dos enumeraban el mismo trabajo y derivaron: once tareas acabaron existiendo solo en T.4 y `NodeLevelComponent` figuraba en fases distintas en cada documento. De ahí salió que la fase 1 tuviera un criterio de salida que su propia lista de tareas no podía cumplir ([T.7 #33](./NOVA_Tracking.md#t7-pendientes-abiertos)). Una lista, un dueño.
 
-### Fase 2 — Tipos y defensa
+Ninguna fase se cierra sin cumplir su criterio, y el orden de fases es obligatorio ([T.2](./NOVA_Tracking.md#t2-reglas-del-ciclo-de-trabajo) #2). En las fases 1 a 5 las primitivas grises son arte válido; en la 6 no ([T.2](./NOVA_Tracking.md#t2-reglas-del-ciclo-de-trabajo) #4 y #5).
 
-- [ ] `NodeIgnition` y `IgnitionMenu`
-- [ ] `NodeLevelComponent` y mejoras
-- [ ] `MagnetarTurret` con radio, cadencia y desgaste del protón
-- [ ] Regla de resistencia ×2
-- [ ] Magnetar neutral disparando a ambos bandos
-- [ ] `NodeConverter` y reconversión
-- **Criterio de salida:** los cuatro tipos son funcionales y el nivel 3 es jugable.
+| Fase | Nombre | Criterio de salida |
+|---|---|---|
+| 0 | Proyecto | El proyecto abre en Unity, `Nova.Core` compila sin referenciar `UnityEngine` y un test vacío corre en EditMode. Creada el 2026-09-28: no existía proyecto y [T.4](./NOVA_Tracking.md#t4-tareas) empezaba dando por hecho que sí. |
+| 1 | Núcleo jugable | Se puede capturar un Asteroide, encenderlo como Estrella y tomar un nodo enemigo. |
+| 2 | Tipos y defensa | Los cuatro tipos son funcionales y el nivel 3 es jugable. |
+| 3 | Poderes | Los tres poderes funcionan y pasan los casos 8–14 y 27–35 de la [sección 17](#17-casos-borde-y-reglas-de-resolución). |
+| 4 | Algoritmo del Enemigo | El algoritmo del mapa 3 vence a un jugador descuidado. |
+| 5 | Flujo y contenido | Los 9 niveles son completables de principio a fin. |
+| 6 | Presentación | Todos los assets de [A.7](./NOVA_Assets_Diseno.md#a7-resumen-de-progreso) están ✅ **e integrados en Unity**. |
 
-### Fase 3 — Poderes
-
-- [ ] `PulsarCaster` con carga acoplada a la Energía
-- [ ] Cero Absoluto y la regla de deshielo invertida
-- [ ] Decaimiento
-- [ ] Agujero de Gusano y el robo de carga
-- [ ] `PulsarPowerWheel`
-- **Criterio de salida:** los tres poderes funcionan y pasan los casos 8 a 14 de la sección 17.
-
-### Fase 4 — IA
-
-- [ ] `AIEvaluator` con tests
-- [ ] `EnemyBrain` y el ciclo de decisión
-- [ ] `AIThreatResponder` con refuerzo, congelación y evacuación
-- [ ] Los tres `AIProfile` (ver [12.5](./NOVA_IA_Algoritmos.md#125-perfiles-por-mapa))
-- **Criterio de salida:** la IA del mapa 3 vence a un jugador descuidado.
-
-### Fase 5 — Flujo y contenido
-
-- [ ] `LevelDefinition` de los 9 niveles
-- [ ] `LevelLoader`
-- [ ] `WinConditionChecker` con cascada y estancamiento
-- [ ] `PowerUpSpawner` y `FactionBuffs`
-- [ ] `ProgressSaver`, selección de nivel, pantallas de fin
-- **Criterio de salida:** los 9 niveles son completables de principio a fin.
-
-### Fase 6 — Presentación
-
-- [ ] Sprites definitivos por tipo, nivel y facción (inventario en [NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md))
-- [ ] Todas las animaciones de estado de [14.1](./NOVA_Estados_Animaciones.md#141-estados-del-nodo)
-- [ ] Número de Carga sobre el protón
-- [ ] `PowerBarUI`
-- [ ] VFX, audio, pulido
-- **Criterio de salida:** ver el **documento 2** (paleta, pixel art y pipeline en Python).
+> **El criterio de la fase 6 estaba descolgado** y se corrige aquí: remitía a «el documento 2», que hoy se llama [NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md) y además describe el *pipeline*, no un criterio de cierre. Se adopta el que ya usaba [T.6](./NOVA_Tracking.md#t6-criterios-de-salida-por-fase), que sí es comprobable.
 
 ---
 
@@ -913,4 +1031,4 @@ Reglas que no estaban en el diseño original y que se añadieron para cerrar hue
 | Tipografía | ✅ Una pixel font libre en TextMeshPro |
 | Atlas y pivotes | ⬜ Pivote decidido (Bottom / Center); el empaquetado en atlas, no |
 | Estilo de la UI | ⬜ Solo está la paleta; falta el lenguaje de paneles y botones |
-| Diseño de los 9 niveles con coordenadas exactas | ⬜ Sin empezar |
+| Diseño de los 9 niveles con coordenadas exactas | ⬜ Sin empezar. **Desbloqueado el 2026-09-28**: la escala del tablero ya está cerrada en 15 × 8.4375 u ([T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada)) |

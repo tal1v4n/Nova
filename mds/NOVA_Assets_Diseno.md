@@ -736,7 +736,9 @@ Y de ahí sale gratis una propiedad que simplifica el asset: aunque 9.1 permita 
 
 #### Dónde cabe, medido
 
-Los anillos alrededor del nodo están adjudicados: A.4.3 reserva uno para la selección (`ART-WLD-SEL`) y otro para el alcance del poder (`ART-WLD-RANGE`), **y un nodo propio puede estar seleccionado y buffeado a la vez**. Los campos tramados sobre el cuerpo también: `Congelado` e `Infectado` ya son dos, y los dos conviven con este. Lo que queda libre es la esquina.
+Los anillos alrededor del nodo están adjudicados: A.4.3 reserva uno para la selección (`ART-WLD-SEL`), **y un nodo propio puede estar seleccionado y buffeado a la vez**. Los campos tramados sobre el cuerpo también: `Congelado` e `Infectado` ya son dos, y los dos conviven con este. Lo que queda libre es la esquina.
+
+> **El anillo de alcance del poder se ha liberado desde entonces, y no reabre esta decisión.** `ART-WLD-RANGE` desapareció con el alcance global del Púlsar (A.4.3), así que hoy hay un radio menos ocupado del que había cuando se eligió «El galón». No cambia nada: el argumento que mandó el buff a la esquina no era la competencia por los anillos, sino **A.3.4** —el contador de nivel y la cara se reparten entre las dos todos los radios de la celda entre 13 y 40 px— y eso sigue siendo cierto. El anillo liberado está **fuera** del cuerpo, no dentro, y ahí nunca estuvo el problema.
 
 > Medido sobre los 14 sprites en su variante de facción, el mayor cuadrado libre en la **esquina inferior derecha** es de **23 px** —y de 33 si solo se cuentan los ocho del Rayo—. A.3.1 midió 20 px y concluyó que ahí no cabe un `zzz`, que necesita 33×16. No cabe un `zzz`; **sí cabe una marca**.
 
@@ -791,16 +793,32 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 
 | ID | Elemento | Requisito | Archivo | Estado | Vista previa |
 |---|---|---|---|---|---|
-| `ART-WLD-RAD-IDLE` | Anillo de radio en reposo | Círculo tenue, radio exacto en unidades de mundo (2.0–3.6 u según nivel) | `art/world/world_radius_idle.png` | ⬜ | `![](art/world/world_radius_idle.png)` |
-| `ART-WLD-RAD-HOVER` | Anillo al pasar el ratón o seleccionar | Más brillante, con marca de nivel | `art/world/world_radius_hover.png` | ⬜ | `![](art/world/world_radius_hover.png)` |
-| `ART-WLD-RAD-NEUTRAL` | Variante neutral | Gris, para el Magnetar neutral que bloquea a ambos | `art/world/world_radius_neutral.png` | ⬜ | `![](art/world/world_radius_neutral.png)` |
-| `ART-WLD-RAD-SHOT` | Haz de disparo | Del centro al protón, instantáneo | `art/world/world_radius_shot.png` | ⬜ | `![](art/world/world_radius_shot.png)` |
+| `ART-WLD-RAD-IDLE` | Anillo de radio en reposo | Círculo tenue, radio exacto en unidades de mundo. **Cinco archivos**, uno por nivel | `art/world/world_radius_idle_lvl{1..5}.png` | ⬜ | `![](art/world/world_radius_idle_lvl5.png)` |
+| `ART-WLD-RAD-HOVER` | Anillo al pasar el ratón o seleccionar | Más brillante, con marca de nivel. **Cinco archivos** | `art/world/world_radius_hover_lvl{1..5}.png` | ⬜ | `![](art/world/world_radius_hover_lvl5.png)` |
+| `ART-WLD-RAD-NEUTRAL` | Variante neutral | Gris, para el Magnetar neutral que bloquea a ambos. **Cinco archivos** | `art/world/world_radius_neutral_lvl{1..5}.png` | ⬜ | `![](art/world/world_radius_neutral_lvl5.png)` |
+| `ART-WLD-RAD-SHOT` | Haz de disparo | Del centro al protón, instantáneo. **Un archivo**: es un trazo estirable, no depende del radio | `art/world/world_radius_shot.png` | ⬜ | `![](art/world/world_radius_shot.png)` |
+
+**Son 16 archivos, no 4, y el motivo no es estético.** Un solo anillo escalado a los cinco radios exigiría factores de ×0.556, ×0.667, ×0.778, ×0.889 y ×1. **Ninguno es entero**, y con `Filter Mode: Point` una escala no entera rompe el pixel-perfect: es exactamente por lo que el protón pasó a tres sprites discretos ([A.4.2](#a42-protón-y-haces-de-poder--143)) y el argumento con el que [T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada) descarta arreglar la escala del tablero desde Unity. Un radio, un archivo. El coste real es de inventario, no de trabajo: el generador es un bucle sobre cinco radios.
+
+> **Este anillo no se ve afectado por el alcance global del Púlsar.** El que desapareció es `ART-WLD-RANGE`, el círculo de alcance del *poder* (A.4.3). El radio del Magnetar mide dónde caen sus disparos y sigue siendo información defensiva crítica: un protón que pasa a 0.1 u no recibe disparos, y eso no ha cambiado. Lo que sí cambió es que el Magnetar neutral **puede cambiar de dueño a mitad de partida** por un Agujero de Gusano ([7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido)), así que su anillo tiene que seguir siendo legible **en las tres rampas**, no solo en la neutral.
 
 **Decisión cerrada (A.8 #1):** el radio es **siempre visible en los Magnetares neutrales y enemigos** —es información defensiva crítica para trazar una ruta— y **a demanda en los propios**, al seleccionar o pasar el ratón. Mostrar siempre los propios satura la pantalla sin aportar nada: el jugador ya sabe dónde están sus defensas.
 
-**Resolución:** hasta 384×384 px. Es una de las tres familias exentas de la celda de 96 ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), Resolución), porque 3.6 u a PPU 64 son 230 px de radio.
+**Resolución:** hasta **512×512 px**. Es una de las tres familias exentas de la celda de 96 ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Resolución*).
 
-### A.4.2 Protón y proyectiles — [14.3](./NOVA_Estados_Animaciones.md#143-protón)
+> **Decía 384×384 y no daba.** El cálculo original —«3.6 u a PPU 64 son 230 px de radio»— es correcto, pero **230 px es el radio**: el círculo mide **461 px** de lado. Con 384 no caben ni el nivel 4 (410 px) ni el nivel 5 (461 px), que son justo los dos que más importa ver. 512 es la potencia de dos que lo cubre y deja 25 px de margen para el trazo.
+
+| Nivel | Radio | Radio en px | Lado del lienzo |
+|---|---|---|---|
+| 1 | 2.0 u | 128 | 256 |
+| 2 | 2.4 u | 153.6 | 308 |
+| 3 | 2.8 u | 179.2 | 359 |
+| 4 | 3.2 u | 204.8 | 410 |
+| 5 | 3.6 u | 230.4 | 461 |
+
+**El anillo se dibuja al píxel entero más cercano; la lógica usa el valor exacto.** Tres de los cinco radios no caen en píxel redondo a PPU 64 —2.4 u son 153.6 px—, así que el dibujo redondea hasta 0.4 px. No afecta a nada: el margen que el jugador tiene que distinguir es de 0.1 u, que son 6.4 px. Lo que **no** puede redondear es `MagnetarTurret`, que compara distancias en unidades de mundo.
+
+### A.4.2 Protón y haces de poder — [14.3](./NOVA_Estados_Animaciones.md#143-protón)
 
 | ID | Elemento | Requisito | Archivo | Estado | Vista previa |
 |---|---|---|---|---|---|
@@ -808,9 +826,20 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 | `ART-WLD-PRO-E` | Protón del Enemigo | Ídem con la rampa del Enemigo | `art/world/world_proton_enemy_{s,m,l}.png` | ⬜ | `![](../art/world/world_proton_enemy_m.png)` |
 
 > **Cambio respecto a [14.3](./NOVA_Estados_Animaciones.md#143-protón):** la escala continua `0.6 + (carga/100)*0.6` queda anulada. Con `Filter Mode: Point`, una escala no entera rompe el pixel-perfect y produce filas de píxeles de distinto grosor dentro del mismo sprite. Se sustituye por tres sprites seleccionados por umbral de Carga. Son 6 archivos, no 2; el conteo de A.7 lo refleja.
-| `ART-WLD-PWR-ZER` | Proyectil Cero Absoluto | 6 u/s, no derribable, lectura distinta al protón | `art/world/world_bolt_zero.png` | ⬜ | `![](art/world/world_bolt_zero.png)` |
-| `ART-WLD-PWR-DEC` | Proyectil Decaimiento | Ídem, verde | `art/world/world_bolt_decay.png` | ⬜ | `![](art/world/world_bolt_decay.png)` |
-| `ART-WLD-PWR-WRM` | Proyectil Agujero de Gusano | Ídem, violeta | `art/world/world_bolt_wormhole.png` | ⬜ | `![](art/world/world_bolt_wormhole.png)` |
+| `ART-WLD-BEAM-ZER` | Haz de Cero Absoluto | Trazo **estirable** Púlsar→objetivo, rampa `hielo` con `#B8F0FF` literal en su índice 3 | `art/world/world_beam_zero.png` | ⬜ | `![](art/world/world_beam_zero.png)` |
+| `ART-WLD-BEAM-DEC` | Haz de Decaimiento | Ídem, rampa `decaimiento` con `#7CF23F` | `art/world/world_beam_decay.png` | ⬜ | `![](art/world/world_beam_decay.png)` |
+| `ART-WLD-BEAM-WRM` | Haz de Agujero de Gusano | Ídem, rampa `gusano` con `#9B5CF6` | `art/world/world_beam_wormhole.png` | ⬜ | `![](art/world/world_beam_wormhole.png)` |
+
+**Sustituyen a los tres `ART-WLD-PWR-*`, que eran proyectiles.** El poder dejó de viajar: [7.2.2](./NOVA_GameDesign_Spec.md#722-el-haz) lo entrega por un haz de 0.25 s entre dos nodos. Son tres archivos igual que antes, así que el total de A.4.2 sigue en 9, pero el asset es otra cosa y se construye al revés.
+
+**Un haz no es un sprite de celda, y esa es toda su dificultad.** Los otros assets de mundo viven en 96 px o en una resolución propia fija; este tiene que medir desde **1 u hasta 36.7 u** —la diagonal del tablero— porque el alcance es global. No se puede dibujar un haz por longitud. Se dibuja **una sección transversal** y se estira:
+
+- **Tres piezas, no una:** nacimiento (en el Púlsar), tramo intermedio **repetible en horizontal**, y punta (en el objetivo). Solo el tramo intermedio se escala, y solo en su eje largo, así que el pixel-perfect del contrato se conserva en el eje corto, que es donde se ve.
+- **Alto fijo:** 8 px de trazo dentro de un archivo de 16 px de alto, deja aire para el halo.
+- **Rotación libre**, que es la primera del proyecto: el haz sale en cualquier ángulo. Es rotación de un `transform`, no geometría rotada en Python, y por eso el trazo se diseña **simétrico respecto a su eje largo**: así la rotación no revela un lado más pesado que el otro.
+- **Tres frames**, uno por cada frame de los 0.25 s a 12 fps: el trazo entra, está y se apaga. No hay bucle: el haz nunca se repite.
+
+**Y el color es del poder, no de la facción** ([14.4](./NOVA_Estados_Animaciones.md#144-paleta-funcional)). Son los únicos assets de mundo que usan las rampas `hielo`, `decaimiento` y `gusano` en el tablero, que es exactamente para lo que el contrato las reservó y por lo que prohíbe usarlas en los fondos.
 
 ### A.4.3 Selección y apuntado — [13.1](./NOVA_GameDesign_Spec.md#131-ratón)
 
@@ -818,9 +847,12 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 |---|---|---|---|---|---|
 | `ART-WLD-SEL` | Anillo de selección | Sobre nodo propio seleccionado | `art/world/world_select_ring.png` | ⬜ | `![](art/world/world_select_ring.png)` |
 | `ART-WLD-LASSO` | Lazo de selección múltiple | Rectángulo punteado | `art/world/world_lasso.png` | ⬜ | `![](art/world/world_lasso.png)` |
-| `ART-WLD-AIM` | Cursor de apuntado de poder | Indica alcance 5 u o 7 u según poder | `art/world/world_aim_cursor.png` | ⬜ | `![](art/world/world_aim_cursor.png)` |
-| `ART-WLD-RANGE` | Círculo de alcance del poder | Radio exacto desde el Púlsar; los objetivos fuera se atenúan ([7.2](./NOVA_GameDesign_Spec.md#72-tabla-de-poderes)) | `art/world/world_power_range.png` | ⬜ | `![](art/world/world_power_range.png)` |
+| `ART-WLD-AIM` | Cursor de apuntado de poder | **Sin anillo de alcance.** Retícula que se posa sobre el objetivo bajo el cursor y solo sobre objetivos válidos ([7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido)) | `art/world/world_aim_cursor.png` | ⬜ | `![](art/world/world_aim_cursor.png)` |
 | `ART-WLD-LINK` | Línea de arrastre origen→destino | Feedback del arrastre | `art/world/world_drag_line.png` | ⬜ | `![](art/world/world_drag_line.png)` |
+
+**`ART-WLD-RANGE` queda eliminado del inventario.** Era el círculo de alcance del poder y ya no hay alcance que dibujar: el Púlsar llega a todo el tablero ([7.2](./NOVA_GameDesign_Spec.md#72-tabla-de-poderes)). A.4.3 pasa de 5 assets a 4 y el total del inventario de 95 a 94.
+
+**Lo que hay que resolver en su lugar es la atenuación, y no es un asset.** El modo apuntado ya no separa *dentro* de *fuera del círculo*, sino **válido** de **no válido**: nodos encendidos que no son propios —los del Enemigo y el Magnetar neutral—, contra todo lo demás. Se resuelve bajando el color de los no válidos, no dibujando una figura encima, así que sale del inventario de arte y entra en `PulsarPowerWheel` y `NodeVisual`. Es más barato en assets y más caro en código, y es la dirección correcta: una figura menos dentro del tablero.
 
 ### A.4.4 Power-ups — [9](./NOVA_GameDesign_Spec.md#9-power-ups-del-cielo)
 
@@ -846,7 +878,9 @@ Son los **únicos items del juego**. No hay más y no debe haber más: la [secci
 
 **Diseño cerrado.** Generador: `tools/gen_fondos_v1.py` sobre `tools/nova_fondo.py` → `art/bg/`.
 
-2048 × 1152 px = **32 × 18 u a PPU 64**: el área jugable entera, sin scroll. Es una de las tres familias exentas de la celda de 96 ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Resolución*).
+**960 × 540 px = 15 × 8.4375 u a PPU 64**: el área jugable entera, sin scroll. Es una de las tres familias exentas de la celda de 96 ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Resolución*).
+
+> **Los tres fondos vuelven a ⬜ el 2026-09-28.** Estaban ✅ a 2048 × 1152, que era el tablero de 32 × 18 u; al cerrarse [T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada) el lienzo pasa a **960 × 540** (primero se pidió 1280 × 720 y se corrigió el mismo día) y **hay que regenerarlos**. El diseño **no cambia** —las tres ideas, las tres reglas y la viñeta invertida se conservan— y tampoco cambia el generador: es `ANCHO, ALTO` en `tools/nova_fondo.py` y volver a lanzar `gen_fondos_v1.py`. Lo que sí hay que reajustar son las constantes que están **en píxeles**: `sigma`, la comba de la corriente de S2 y el tamaño de la grava, que a 0.469× del lienzo anterior dejarían de medir lo que medían en unidades de mundo. Y hay que volver a pasar `informe()`: el presupuesto de contraste se mide por ventana de 96 × 96 px, y esa ventana es ahora una fracción mayor de la imagen.
 
 #### Las tres reglas, y las tres son comprobables
 
@@ -864,9 +898,9 @@ Son los **únicos items del juego**. No hay más y no debe haber más: la [secci
 
 | ID | Elemento | Idea | Archivo | Estado |
 |---|---|---|---|---|
-| `ART-BG-01` | Mapa 1 — Sistema Interior | Lleno, polvoriento, **barrido por la luz de un sol que no se ve**: está fuera del encuadre. Dibujarlo dentro metería en el tablero un objeto más brillante que cualquier Estrella, y la Estrella es el nodo que hay que encontrar primero. Su resplandor lava las estrellas de la izquierda y explica el polvo zodiacal. Un planeta interior a contraluz, del que solo se ve el filo | `art/bg/bg_section1.png` | ✅ |
-| `ART-BG-02` | Mapa 2 — El Cinturón | Una corriente de escombro cruza el cielo **combada**, porque una banda recta de esquina a esquina pasa por el centro, que es donde se juega. Y **oculta estrellas**: es lo único que la hace leer como materia y no como una mancha clara | `art/bg/bg_section2.png` | ✅ |
-| `ART-BG-03` | Mapa 3 — Espacio Profundo | Vacío. El único cuya idea es la ausencia: media imagen es fondo plano. Dos velos de filamentos en esquinas opuestas y una galaxia del tamaño de una uña, que está ahí para dar **escala**, que es lo que convierte el vacío en distancia en vez de en un PNG sin terminar | `art/bg/bg_section3.png` | ✅ |
+| `ART-BG-01` | Mapa 1 — Sistema Interior | Lleno, polvoriento, **barrido por la luz de un sol que no se ve**: está fuera del encuadre. Dibujarlo dentro metería en el tablero un objeto más brillante que cualquier Estrella, y la Estrella es el nodo que hay que encontrar primero. Su resplandor lava las estrellas de la izquierda y explica el polvo zodiacal. Un planeta interior a contraluz, del que solo se ve el filo | `art/bg/bg_section1.png` | ⬜ |
+| `ART-BG-02` | Mapa 2 — El Cinturón | Una corriente de escombro cruza el cielo **combada**, porque una banda recta de esquina a esquina pasa por el centro, que es donde se juega. Y **oculta estrellas**: es lo único que la hace leer como materia y no como una mancha clara | `art/bg/bg_section2.png` | ⬜ |
+| `ART-BG-03` | Mapa 3 — Espacio Profundo | Vacío. El único cuya idea es la ausencia: media imagen es fondo plano. Dos velos de filamentos en esquinas opuestas y una galaxia del tamaño de una uña, que está ahí para dar **escala**, que es lo que convierte el vacío en distancia en vez de en un PNG sin terminar | `art/bg/bg_section3.png` | ⬜ |
 
 **Medido sobre el PNG final** (tope 26.9):
 
@@ -888,7 +922,9 @@ Ocho a diez colores por imagen de 2.4 millones de píxeles: son de paleta, no fo
 
 ## A.5 VFX puntuales — [14.5](./NOVA_Estados_Animaciones.md#145-animaciones-puntuales-sin-estado)
 
-Uno por cada `FX-*` de 14.5. Todos van al `VFXPool`. Frames = `ceil(duración × 12)`; `FX-SHOT` es instantáneo y se resuelve con el mínimo de 2 frames.
+Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `VFXPool`. Frames = `ceil(duración × 12)`; `FX-SHOT` es instantáneo y se resuelve con el mínimo de 2 frames.
+
+**Cuatro `FX-*` de 14.5 no tienen asset aquí, y cada uno por su motivo:** `FX-CAP` reutiliza `ART-ST-CAP` (A.3.7), `FX-DROP` y `FX-BUFF` salen de A.4.4 y A.3.8, y **`FX-BEAM` sale de A.4.2** porque un haz no cabe en una celda de 96: une dos puntos arbitrarios del tablero y se dibuja estirando, no reproduciendo. `FX-SHAKE` tampoco tiene asset: es cámara, no dibujo.
 
 | ID de asset | Evento (14.5) | Archivo | Duración | Frames | Estado |
 |---|---|---|---|---|---|
@@ -934,26 +970,28 @@ Uno por cada `FX-*` de 14.5. Todos van al `VFXPool`. Frames = `ceil(duración ×
 |---|---|---|---|
 | A.2 Nodos | 34 | **34** ✅ | — (ya no bloquea `T6-01`) |
 | A.3 Estados | **9** | **9** ✅ | — (ya no bloquea `T6-02` ni `T6-03`) |
-| A.4.1 Radio del Magnetar | 4 | 0 | Legibilidad del Magnetar (fase 2 visual) |
-| A.4.2 Protón y proyectiles | 9 | 0 | `ProtonVisual`, fase 6 |
-| A.4.3 Selección y apuntado | 5 | 0 | Pulido de input (fase 6) |
+| A.4.1 Radio del Magnetar | **16** | 0 | Legibilidad del Magnetar (fase 2 visual) |
+| A.4.2 Protón y haces de poder | 9 | 0 | `ProtonVisual`, `PowerBeam`, fase 6 |
+| A.4.3 Selección y apuntado | **4** | 0 | Pulido de input (fase 6) |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
-| A.4.5 Fondos | 3 | **3** ✅ | — |
+| A.4.5 Fondos | 3 | **0** | Nada de código. **Regeneración pendiente** a 960×540 por [T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada) |
 | A.5 VFX | 15 | 0 | `VFXPool`, fase 6 |
 | A.6 UI | 13 | 0 | Pulido de UI (fase 6) |
-| **Total** | **95** | **49** | — |
+| **Total** | **106** | **46** | — |
 
-El total sube de 90 a 94 porque el Protón pasa de 2 archivos a 6 (A.4.2), y de 94 a 95 porque `SinEncender` necesita **dos** assets y no uno: `ART-ST-IGN` y `ART-ST-READY` tienen distinto número de frames y no caben en una fila (A.3.2).
+**Y los ✅ bajan de 49 a 46 el 2026-09-28**, sin que nadie retire un asset: los tres fondos pasan a ⬜ porque el tablero encogió a 15 × 8.4375 u y su lienzo con él ([T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada)). **El total sigue en 106**; lo que cambia es el estado, no el inventario. Es la primera vez que una decisión de diseño **desmarca** arte ya terminado, y salió barato por donde el propio T.8 predijo: el fondo es una constante en un generador, no una pieza dibujada a mano.
+
+El total subió de 90 a 94 porque el Protón pasa de 2 archivos a 6 (A.4.2), y de 94 a 95 porque `SinEncender` necesita **dos** assets y no uno: `ART-ST-IGN` y `ART-ST-READY` tienen distinto número de frames y no caben en una fila (A.3.2). **Y baja de 95 a 94** al quitarse `ART-WLD-RANGE`: con alcance global no hay círculo de alcance que dibujar (A.4.3). **Y sube de 94 a 106** al descubrirse que el anillo del Magnetar necesita **un archivo por nivel** y no uno para los cinco: escalar uno solo daría factores no enteros (A.4.1). Los tres proyectiles de poder no alteran el conteo —pasan a ser tres haces— pero dejan de ser el mismo asset (A.4.2).
 
 **A.2 está cerrado: los cuatro nodos, 34 de 34.** Estrella `ART-NOD-STR-01…05` (10), Púlsar `ART-NOD-PUL-01…03` (6), Magnetar `ART-NOD-MAG-01…05` (15, tres facciones) y Asteroide `ART-NOD-AST-00N/P/E` (3). **`T6-01` deja de estar bloqueada por arte** ([NOVA_Tracking.md](./NOVA_Tracking.md), T.4): su dependencia `ART-NOD-*` está completa, y a partir de aquí solo la retiene su dependencia de código.
 
 Lo que sigue bloqueando la fase 6 son los otros nueve grupos de este inventario, empezando por A.4.1 (radio del Magnetar).
 
-**A.3 está cerrada: los nueve overlays de estado, 9 de 9.** Con `ART-NOD-*` (A.2) y `ART-ST-*` (A.3) completos, **`T6-02` y `T6-03` dejan de estar bloqueadas por arte** ([NOVA_Tracking.md](./NOVA_Tracking.md), T.4): las tres primeras tareas de la fase 6 solo las retiene ya su cadena de código. Lo que queda por delante son cuatro grupos de mundo y UI —A.4.1, A.4.2, A.4.3 y A.6— y los quince VFX de A.5.
+**A.3 está cerrada: los nueve overlays de estado, 9 de 9.** Con `ART-NOD-*` (A.2) y `ART-ST-*` (A.3) completos, **`T6-02` y `T6-03` dejan de estar bloqueadas por arte** ([NOVA_Tracking.md](./NOVA_Tracking.md), T.4): las tres primeras tareas de la fase 6 solo las retiene ya su cadena de código. Lo que queda por delante son cuatro grupos de mundo y UI —A.4.1, A.4.2, A.4.3 y A.6— y los quince VFX de A.5. **A.4.2 es ahora el grupo con más trabajo de diseño por delante**, no el más mecánico: los tres haces son la primera pieza del proyecto que se estira y se rota, y eso no lo ha hecho ningún asset todavía.
 
-**Esta sección daba por hecho que los cinco últimos de A.3 serían más fáciles que los cuatro primeros**: van sobre el cuerpo entero, así que no tienen que caber en un hueco como los dos del Asteroide ni registrar con nada como `Asustado`. **La segunda mitad resultó falsa las cinco veces.** Un tinte sí registra, y con tres cosas: la **cara**, porque 14.6 lo hace convivir con `Asustado`; el **contador de nivel**, porque A.8 #2 lo dejó solo en el sprite —y en los trece nodos encendidos esas dos ocupan entre las dos todos los radios de la celda (A.3.4)—; y **los otros tintes**, porque 14.6 también los hace coexistir y dos campos de Bayer apilados acaban en un borrón (A.3.5, A.3.8). Y el quinto ni siquiera era un tinte: el buff resultó ser un glifo de esquina (A.3.8).
+**La vara de verificación creció con los assets, no antes que ellos.** `verifica_tinte` empezó midiendo tres cosas y acabó midiendo nueve: cara libre, contador y contraste (A.3.4); cierre del bucle, frames distintos, convivencia con otro overlay y reparto aire/cuerpo (A.3.5); modo transitorio con frames ciegos (A.3.6); y arranque en el pico (A.3.7). **Ninguna se añadió por precaución; todas después de que algo se colara.**
 
-**Lo que sí quedó de aquella previsión es la vara.** `verifica_tinte` empezó midiendo tres cosas y acabó midiendo nueve, y cada una la pidió un asset concreto: cara libre, contador, contraste (A.3.4), cierre del bucle, frames distintos, convivencia con otro overlay (A.3.5), reparto aire/cuerpo (A.3.5), modo transitorio con frames ciegos (A.3.6) y arranque en el pico (A.3.7). **Ninguna se añadió por precaución; todas se añadieron después de que algo se colara.**
+**Pendiente de verificación, no de diseño:** `ART-ST-FROZEN` y `ART-ST-DECAY` se midieron con `verifica_tinte` sobre los trece congelables en sus rampas de Jugador y Enemigo. Desde que el Magnetar neutral es objetivo de poder ([7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido)), los dos tintes pueden caer también sobre la rampa **neutral**, que es la más apagada de las tres. La geometría es la misma y los assets no cambian; lo que falta es **pasar la vara otra vez** sobre `mag_lvl1..5_neutral.png`. Los dos siguen ✅ mientras no se demuestre lo contrario, y el riesgo está acotado a cinco sprites. Ver [NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #29.
 
 **Pendiente aparte del inventario:** las hojas de idle de Estrella y Púlsar (16 frames cada una) no tienen ID propio todavía. Su idle está diseñado y los dos generadores animan por `t`; falta volcarlas a `_sheet.png`. El Magnetar no aporta hojas: resuelve su idle por transform (A.2.4). Las 15 que hay generadas son de la v2 descartada y se quedan en `v2/`.
 
@@ -989,7 +1027,7 @@ Lo que sigue bloqueando la fase 6 son los otros nueve grupos de este inventario,
 
 `elipse_base_plana` aparece en el catálogo de [NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md) pero **no está implementada**. Ver T.7 en [NOVA_Tracking.md](./NOVA_Tracking.md).
 
-**Ningún nodo heredó de otro, y es deliberado.** Este documento dio por hecho una vez que el Magnetar heredaría `anillo` y `anillo_orbital`. No heredó ninguna de las dos, y fue lo mejor que le pasó al diseño; el Asteroide tampoco heredó nada de los tres anteriores. Cada uno estrenó las primitivas que su material pedía, y por eso el catálogo pasó de 9 a 16 mientras se cerraban dos nodos. **Un nodo construido con las piezas de otro se parece a otro** (A.8, y contrato, *Reglas de trabajo*). `anillo` sigue sin estrenar: la usará el radio del Magnetar.
+**Ningún nodo heredó de otro, y es deliberado.** Cada uno estrenó las primitivas que su material pedía, y por eso el catálogo pasó de 9 a 16 mientras se cerraban dos nodos: **un nodo construido con las piezas de otro se parece a otro** (A.8, y contrato, *Reglas de trabajo*). `anillo` sigue sin estrenar; la usará el radio del Magnetar.
 
 ---
 
@@ -1010,14 +1048,17 @@ Ninguna decisión de art design queda abierta. Se conservan aquí con su motivo,
 | Asunto | Decisión | Dónde vive ahora |
 |---|---|---|
 | Contradicción de frames | **12 fps fijo**, `frames = ceil(duración × 12)`; bucles a 16 | A.3, A.5 y el contrato |
-| Idle de los nodos | Híbrido: transform para Asteroide y Magnetar, hoja de 16 frames para Estrella y Púlsar | Contrato, sección Animación |
+| Idle de los nodos | Híbrido: **cabeceo por transform** en píxeles enteros para Asteroide y Magnetar, hoja de 16 frames para Estrella y Púlsar. **Un transform nunca escala un nodo** | Contrato, sección Animación |
 | Tipografía | Una única pixel font libre, en TextMeshPro | Contrato, Importación en Unity |
 | Escala del protón | Tres sprites discretos de 48 px, no escala continua | A.4.2 |
+| Geometría del haz de poder | **Tres piezas y estiramiento**, no un sprite por longitud: nacimiento, tramo repetible y punta, con rotación por `transform` | A.4.2 |
+| Color del haz de poder | **Por poder, no por facción.** Reutiliza `hielo`, `decaimiento` y `gusano`; la autoría se lee por el Púlsar del que sale | A.4.2, [14.4](./NOVA_Estados_Animaciones.md#144-paleta-funcional) |
+| Círculo de alcance del poder | **No existe.** La separación válido/no válido se resuelve atenuando en código | A.4.3 |
 | Assets fuera de la celda de 96 | Radio del Magnetar, fondos y protón son familias con resolución propia | Contrato, sección Resolución |
 | Señal de nivel del Púlsar | **Frentes de onda contables** sobre un eje inclinado, no púas radiales. Se descartó una v1 entera por parecerse a la Estrella | A.2.3 |
-| Señal de nivel del Magnetar | **Esquirlas capturadas**, una por nivel, aditivas y posicionales: el ángulo y la distancia de cada una son fijos y la más externa marca el alcance. Se descartó una v2 entera («La Botella») por leer recinto en vez de densidad y por dejar la cara más pequeña de los cuatro | A.2.4 |
-| Partición de materiales | Estrella **luz continua**, Púlsar **luz tramada**, Magnetar **materia** (cero `glow`). Es un eje de separación de primer orden, como la silueta o la simetría | Contrato, A.2.4 |
-| Idle del Magnetar | **Transform**, el lado que le da el contrato: no tiene nada interno que mover. La excepción se abrió para «La Botella» y se cierra con ella | Contrato, A.2.4 |
+| Señal de nivel del Magnetar | **Esquirlas capturadas**, una por nivel, aditivas y posicionales; la más externa marca el alcance | A.2.4 |
+| Partición de materiales | Estrella **luz continua**, Púlsar **luz tramada**, Magnetar **materia** (cero `glow`). | Contrato, A.2.4 |
+| Idle del Magnetar | **Transform**, y por tanto **cabeceo de 2 px** y no squash: escalar por transform rompe la rejilla | Contrato, A.2.4 |
 | Luz propia del Asteroide | **Ninguna.** Es el único nodo que solo refleja; su píxel más claro es un reflejo. Cierra la partición de materiales | A.2.1 |
 | Acabado del Asteroide | **Mate, sin especular.** Única excepción a la regla 3 del contrato: una roca lijada por micrometeoritos no es material pulido | Contrato, A.2.1 |
 | Cara del Asteroide | **Ojos cerrados**, dos rendijas asimétricas. Sirve igual para `Dormido` y para `SinEncender`; los abre `ART-ST-SCARE` | A.2.1 |
@@ -1029,36 +1070,36 @@ Ninguna decisión de art design queda abierta. Se conservan aquí con su motivo,
 | Señal de nivel del Asteroide | No tiene: un solo nivel. Todo el trabajo de lectura se va a la facción | A.2.1 |
 | Varias propuestas por nodo | Conviven en `art/nodes/<nodo>/v<n>/`; la descartada no se borra | A.1 |
 | Varias propuestas por overlay | Misma regla que los nodos, en `art/states/<estado>/v<n>/`. El generador declara `ESTADO` y `VERSION` y escribe con `dir_estado(estado, version)` | A.1, A.3 |
-| Trama en los overlays | **Solo los que cubren el cuerpo** —tintes y auras: `Congelado`, `Infectado`, buff—. Un **glifo** de estado (`zzz`, icono de ignición) va sólido y con contorno: vive fuera del cuerpo y compite con el fondo, no con el nodo. Tramado sería un borrón | A.3, A.3.1 |
-| Independencia del tipo en los overlays | **Vale para los cuatro que van sobre cualquier nodo.** `Dormido` y `SinEncender` solo se aplican al Asteroide, y se colocan contra su silueta: la unión de los cuatro nodos deja un hueco libre de 20 px en esquina y un `zzz` legible necesita 33×16 | A.3.1 |
-| Señal de `Dormido` | **Tres glifos `Z` que cabecean en su sitio**, con la fase retrasada hacia fuera. No viajan: un estado permanente no avanza. Se descartó una v1 entera («La escalera») porque su relevo apaga un glifo de golpe | A.3.1 |
-| Señal de `SinEncender` | **Una brasa**, quieta mientras `energy < 10` y abierta en cinco trazos que crepitan cuando llega a 10. Se descartó una v1 entera («El interruptor») por meter el primer icono de interfaz dentro del tablero | A.3.2 |
-| Señal de `Asustado` | **Un ojo muy abierto**, esclerótica clara y pupila contraída y baja. Se instancia dos veces por nodo. Se descartó una v2 entera («La pupila dilatada») por hablar de pavor y no de sobresalto, que es lo que 14.2 describe | A.3.3 |
-| Anclaje de un overlay que va sobre la cara | **Tallas discretas más desplazamiento entero**, nunca escala: una escala no entera rompe el pixel-perfect. Es la misma decisión que el protón, aplicada a otro sitio. La tabla vive en `tools/nova_estados.py` | A.3.3, A.4.2 |
-| Forma del ojo asustado | **Más alto que ancho.** No es una licencia: el ancho lo raciona la separación entre ojos —9.5 px en el Púlsar N1— y el ojo tiene que tapar uno de 10 px en la Estrella N5. Con ojos redondos el intervalo es vacío | A.3.3 |
-| Cuándo un asset pequeño no se anima | **Cuando la rejilla se come el movimiento.** Si una hoja de 16 frames no contiene 16 imágenes distintas, no es una animación. Medido antes de decidir, no después | A.3.3, contrato |
-| Las dos lecturas de `SinEncender` | **Variante visual, no estado nuevo.** El animador lee `energy >= 10` (14.0 #1); `NodeState` y la matriz de 14.6 no se tocan. El *parpadeo* que 14.1 pedía para todo el estado pasa a ser la firma de la lectura accionable | A.3.2, 14.1 |
-| Peso relativo de dos lecturas del mismo overlay | **La accionable nunca pesa menos que la pasiva**, en ningún frame. 141 px la brasa contra 143–196 el abanico. Es lo que fija el suelo del parpadeo, no el gusto | A.3.2 |
-| Señal de `Congelado` | **Una red de grietas que cruza el nodo**, sin centro ni eje, con la escarcha brotando de la propia grieta. El hielo no es una capa, es una fractura: una línea cruza y no tapa. Se descartaron dos propuestas enteras, «La escarcha» y «El bloque»; la segunda llegó a estar elegida y se cayó por ser la primera figura de contorno recto y regular dentro del tablero, que es el argumento que ya descartó la v1 de `ART-ST-IGN` | A.3.4 |
-| Cómo cruza la cara un overlay | **Por el pasillo de 4 px que hay entre los dos ojos** en los trece nodos encendidos, `x 45-49`. Medido, no supuesto. Es lo que permite que una grieta atraviese la cara sin tocarla, y cruzarla es lo que la hace leer como grieta | A.3.4 |
-| Señal de `Infectado` | **Una nube tramada con cizalla, sesgada hacia abajo, que respira**, más cinco gotas que caen. Es la lectura literal de 14.1 y gana por presencia: es la única de las tres propuestas que se lee de un vistazo en los trece. Un estado indefinido que el jugador tiene que curar no se puede permitir pasar desapercibido | A.3.5 |
-| Ciclo de un aura | **Radial, no giratorio.** Hacer viajar la fase de la onda no cierra el bucle salvo dando una vuelta entera, y una vuelta en 16 frames a 12 fps es un aura que gira, que es lo que la regla 6 del contrato quiere evitar. El ciclo lo llevan el radio y la densidad, desfasados entre sí | A.3.5, contrato |
-| Alcance real de cada overlay | **Ninguno va sobre los cuatro nodos.** `Congelado`, `Infectado` y el buff son **trece** sprites: 14.1 los limita a nodos encendidos y el Asteroide nunca lo está. `Reconvirtiendo` son doce (solo propios). Solo `Asustado` y `Capturado` van sobre los catorce. La lista vive en `tools/nova_estados.py` | A.3, A.3.4 |
-| Contorno en algo que se dibuja encima de un nodo | **Ninguno.** Sobre un sprite ya terminado el contorno no separa, tacha: engorda cada línea de 1 a 3 px y los dos de más son negros. Medido, doce aristas con contorno se comían el 71 % de un frente de onda del Púlsar. Se añade `veta_luz` para eso; `veta` sigue siendo materia y sigue llevándolo | Contrato, A.3.4 |
-| Qué se le mide a un overlay que cubre el cuerpo | **Cara libre, contador de nivel y contraste.** Las tres sobre los sprites reales, en `verifica_tinte`. La vara de un glifo —cero píxeles sobre el cuerpo, `glow` limpia— suspendería a un tinte por hacer su trabajo | A.3 |
-| Facciones en los overlays | **Las llevan `ART-ST-IGN`, `ART-ST-READY` y `ART-ST-CONV`**, y por dos motivos distintos. Los dos primeros porque A.2.1 cerró que la marca de posesión del Asteroide es el overlay y no el sprite; el tercero porque durante la reconversión el nodo **sigue siendo tuyo** (8.1) y pintarlo de gris diría lo contrario. Color literal de 14.4 en `str_p` y `str_e`; no hay rampa de facción genérica | A.2.1, A.3.2, A.3.6 |
-| Qué quiere decir «silueta neutra» en 14.1 | **Sin tipo, no sin bando.** 8.1 dice que el nodo sigue siendo suyo los 3 s —tanto que puede ser capturado, y entonces la reconversión se cancela—. Leído como «gris Neutral», el texto contradice a 8.1 | A.3.6, 14.1 |
-| Quién dibuja el colapso de `Reconvirtiendo` | **El animador, cambiando de sprite.** Un overlay aditivo no puede borrar ni recolorear lo que hay debajo. El asset solo tapa el corte, y para eso hace falta cubrir la unión de los trece reconvertibles: un disco de radio 45, medido | A.3.6 |
-| El blanco puro dentro del tablero | **Es de `ART-ST-CAP`.** La reconversión destella en el color de facción y no en blanco, porque 8.1 permite que capturen un nodo mientras se reconvierte y los dos eventos no pueden empezar igual. El índice 0 de toda rampa está reservado al especular, y este es el único overlay que lo usa como color propio | A.3.6, A.3.7, 14.5 |
-| Señal de `Capturado` | **Dos anillos blancos que se cruzan en el frame central**, uno cerrándose y otro saliendo. No es una explosión, es un cambio de manos, y es lo único del tablero que lo dibuja en vez de solo anunciarlo. Se descartó «El fogonazo», la lectura literal, por gastar el gesto más genérico del juego en uno de los quince VFX de A.5 | A.3.7 |
-| Si la geometría cambia con la facción | **No cambia en ninguno de los catorce**, comprobado byte a byte sobre los 34 sprites. Por eso `ChangeFaction()` no deja corte que tapar y `ART-ST-CAP` puede prescindir del relleno, al revés que `ART-ST-CONV` | A.3.7, 14.0 #3 |
-| Cómo entra un efecto con duración | **Depende de si se prepara o se dispara.** Uno que se prepara —`Reconvirtiendo`— entra desde nada; uno que se dispara —`Capturado`— arranca en su pico, porque el suceso que lo lanza es instantáneo. **Salir a nada lo cumplen los dos**, porque después de los dos viene `Normal` | A.3.6, A.3.7, contrato |
-| Qué se le mide a un efecto con duración | **Que entre desde nada y salga a nada**, que todos sus frames interiores sean distintos, y **cuántos frames deja la cara ciega** —no si la tapa—. La unión de frames, que es la vara de un estado, aquí no dice nada: un efecto que tapa el nodo un instante no tapa la cara, la tapa durante N frames, y lo que hay que acotar es N | A.3.6 |
-| Señal de un power-up activo | **Un galón de dos chevrones en la esquina inferior derecha**, en el color del power-up y **estático**. No es un tinte: es un glifo, y cae entero fuera del sprite en los trece. Se descartó «El sobrecalentado», el aura que late, porque sobre un nodo infectado y buffeado se funde con la nube de `Infectado` | A.3.8 |
-| Sobre qué nodos va el buff | **Solo sobre los que el power-up afecta**: Rayo a Magnetar y Púlsar, Hidrógeno a Estrella. El Asteroide no gana nada con ninguno y marcarlo prometería una ventaja que no tiene. Consecuencia: ningún nodo lleva nunca los dos buffs, aunque 9.1 permita que los dos estén activos | A.3.8 |
-| Color de un overlay de power-up | **El del power-up, no el de la facción.** A.4.4 decidió lo contrario para el halo del drop porque allí el icono flotante dice cuál es; sobre un nodo buffeado no flota nada, así que el overlay es lo único que puede decirlo | A.3.8, A.4.4 |
-| El cuadrado libre de la esquina | **23 px en los catorce nodos**, 33 si solo se cuentan Magnetar y Púlsar. A.3.1 midió 20 y concluyó que ahí no cabe un `zzz` de 33×16; sí cabe una marca | A.3.1, A.3.8 |
-| Exenciones al contador de nivel | **Una sola, y es `Reconvirtiendo`**: durante esos 3 s el nivel está cambiando —acaba en N1 del tipo nuevo— y no hay contador fiable que proteger. No se hereda: la tiene porque su duración coincide con la del cambio | A.3.6 |
+| Trama en los overlays | **Solo los que cubren el cuerpo** —tintes y auras: `Congelado`, `Infectado`, buff— | A.3, A.3.1 |
+| Independencia del tipo en los overlays | **Vale para los cuatro que van sobre cualquier nodo.** | A.3.1 |
+| Señal de `Dormido` | **Tres glifos `Z` que cabecean en su sitio**, con la fase retrasada hacia fuera | A.3.1 |
+| Señal de `SinEncender` | **Una brasa**, quieta mientras `energy < 10` y abierta en cinco trazos que crepitan cuando llega a 10 | A.3.2 |
+| Señal de `Asustado` | **Un ojo muy abierto**, esclerótica clara y pupila contraída y baja | A.3.3 |
+| Anclaje de un overlay que va sobre la cara | **Tallas discretas más desplazamiento entero**, nunca escala: una escala no entera rompe el pixel-perfect | A.3.3, A.4.2 |
+| Forma del ojo asustado | **Más alto que ancho.** No es una licencia: el ancho lo raciona la separación entre ojos —9 | A.3.3 |
+| Cuándo un asset pequeño no se anima | **Cuando la rejilla se come el movimiento.** Si una hoja de 16 frames no contiene 16 imágenes distintas, no es una animación | A.3.3, contrato |
+| Las dos lecturas de `SinEncender` | **Variante visual, no estado nuevo.** El animador lee `energy >= 10` (14 | A.3.2, 14.1 |
+| Peso relativo de dos lecturas del mismo overlay | **La accionable nunca pesa menos que la pasiva**, en ningún frame | A.3.2 |
+| Señal de `Congelado` | **Una red de grietas que cruza el nodo**, sin centro ni eje, con la escarcha brotando de la propia grieta | A.3.4 |
+| Cómo cruza la cara un overlay | **Por el pasillo de 4 px que hay entre los dos ojos** en los trece nodos encendidos, `x 45-49` | A.3.4 |
+| Señal de `Infectado` | **Una nube tramada con cizalla, sesgada hacia abajo, que respira**, más cinco gotas que caen | A.3.5 |
+| Ciclo de un aura | **Radial, no giratorio.** El ciclo lo llevan el radio y la densidad, desfasados entre sí | A.3.5, contrato |
+| Alcance real de cada overlay | **Ninguno va sobre los cuatro nodos.** `Congelado`, `Infectado` y el buff son **trece** sprites: 14 | A.3, A.3.4 |
+| Contorno en algo que se dibuja encima de un nodo | **Ninguno.** Sobre un sprite ya terminado el contorno no separa, tacha: engorda cada línea de 1 a 3 px y los dos de más son negros | Contrato, A.3.4 |
+| Qué se le mide a un overlay que cubre el cuerpo | **Cara libre, contador de nivel y contraste.** Las tres sobre los sprites reales, en `verifica_tinte` | A.3 |
+| Facciones en los overlays | **Las llevan `ART-ST-IGN`, `ART-ST-READY` y `ART-ST-CONV`**, y por dos motivos distintos | A.2.1, A.3.2, A.3.6 |
+| Qué quiere decir «silueta neutra» en 14.1 | **Sin tipo, no sin bando**: durante la reconversión el nodo sigue siendo de su dueño | A.3.6, 14.1 |
+| Quién dibuja el colapso de `Reconvirtiendo` | **El animador, cambiando de sprite.** Un overlay aditivo no puede borrar ni recolorear lo que hay debajo | A.3.6 |
+| El blanco puro dentro del tablero | **Es de `ART-ST-CAP`.** La reconversión destella en el color de facción y no en blanco, porque 8 | A.3.6, A.3.7, 14.5 |
+| Señal de `Capturado` | **Dos anillos blancos que se cruzan en el frame central**, uno cerrándose y otro saliendo | A.3.7 |
+| Si la geometría cambia con la facción | **No cambia en ninguno de los catorce**, comprobado byte a byte sobre los 34 sprites | A.3.7, 14.0 #3 |
+| Cómo entra un efecto con duración | **Depende de si se prepara o se dispara.** Uno que se prepara —`Reconvirtiendo`— entra desde nada | A.3.6, A.3.7, contrato |
+| Qué se le mide a un efecto con duración | **Que entre desde nada y salga a nada**, y cuántos frames deja la cara ciega | A.3.6 |
+| Señal de un power-up activo | **Un galón de dos chevrones en la esquina inferior derecha**, en el color del power-up y **estático** | A.3.8 |
+| Sobre qué nodos va el buff | **Solo sobre los que el power-up afecta** : Rayo a Magnetar y Púlsar, Hidrógeno a Estrella | A.3.8 |
+| Color de un overlay de power-up | **El del power-up, no el de la facción.** A | A.3.8, A.4.4 |
+| El cuadrado libre de la esquina | **23 px en los catorce nodos**, 33 si solo se cuentan Magnetar y Púlsar | A.3.1, A.3.8 |
+| Exenciones al contador de nivel | **Una sola, y es `Reconvirtiendo`** : durante esos 3 s el nivel está cambiando —acaba en N1 del tipo nuevo— y no hay contador fiable que proteger | A.3.6 |
 
 ### Ejes de diseño ya ocupados
 
