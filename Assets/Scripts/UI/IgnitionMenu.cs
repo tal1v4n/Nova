@@ -1,4 +1,5 @@
 using Nova.Core;
+using Nova.Data;
 using Nova.Gameplay;
 using Nova.Input;
 using Nova.Utils;
@@ -44,8 +45,8 @@ namespace Nova.UI
         [Tooltip("Jersey10 Raster56 (T0-06).")]
         [SerializeField] TMP_FontAsset font;
 
-        [Tooltip("Nombre de cada opción, en el orden de IgnitionMenuState.Options. Pendiente de T.7 #39 (idioma).")]
-        [SerializeField] string[] optionNames = { "Estrella", "Púlsar", "Magnetar" };
+        [Tooltip("Textos de la UI (T.7 #39): de aquí salen los nombres de las opciones.")]
+        [SerializeField] UiText text;
 
         GameObject root;
         SpriteRenderer[] discs;
@@ -73,11 +74,12 @@ namespace Nova.UI
         }
 
         // Para la escena de prueba y los tests: el cableado normal es por el Inspector.
-        public void Configure(IgnitionMenuState state, TMP_FontAsset fontAsset)
+        public void Configure(IgnitionMenuState state, TMP_FontAsset fontAsset, UiText uiText)
         {
             Unsubscribe();
             menu = state;
             font = fontAsset;
+            text = uiText;
         }
 
         internal void Subscribe()
@@ -176,7 +178,7 @@ namespace Nova.UI
                 // La etiqueta va hacia fuera, para no tapar el Asteroide del centro.
                 Vector2 outward = offset.normalized * (IgnitionMenuState.OptionRadius + NameGap);
                 names[i] = Label(disc.transform, outward, 1, diameter * 3);
-                names[i].text = i < optionNames.Length ? optionNames[i] : IgnitionMenuState.Options[i].ToString();
+                names[i].text = text != null ? text.TypeName(IgnitionMenuState.Options[i]) : IgnitionMenuState.Options[i].ToString();
             }
             root.SetActive(false);
         }

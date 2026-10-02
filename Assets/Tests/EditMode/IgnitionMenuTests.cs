@@ -34,7 +34,7 @@ namespace Nova.Tests
             spawned.Add(go);
             menu = go.AddComponent<IgnitionMenuState>();
             view = go.AddComponent<IgnitionMenu>();
-            view.Configure(menu, AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontPath));
+            view.Configure(menu, AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontPath), AssetDatabase.LoadAssetAtPath<UiText>("Assets/Data/UiText.asset"));
             view.Subscribe();
         }
 

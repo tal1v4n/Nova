@@ -45,6 +45,7 @@ namespace Nova.Input
         [SerializeField] SelectionManager selection;
         [SerializeField] PlayerCommandIssuer issuer;
         [SerializeField] IgnitionMenuState ignitionMenu;
+        [SerializeField] InfoPanelState infoPanel;
 
         [Tooltip("Opcional: sin ella se usa Camera.main.")]
         [SerializeField] Camera worldCamera;
@@ -70,9 +71,7 @@ namespace Nova.Input
         NodeController ignoredNode;
         long ignoredUntil;
 
-        // Intenciones que todavía no tienen quien las atienda: el panel de clic derecho llega
-        // con T2-03 y el menú de pausa con T5-05.
-        public event Action<NodeController> OnInfoRequested;
+        // Intención que todavía no tiene quien la atienda: el menú de pausa llega con T5-05.
         public event Action OnPauseRequested;
 
         public bool IsBufferActive => bufferActive;
@@ -173,6 +172,16 @@ namespace Nova.Input
                 Menu.Close();
             }
 
+            // Panel de clic derecho (13.3): un clic dentro es suyo y no llega a lo que haya
+            // debajo; sobre el botón, mejora. Las reglas deciden si se puede: con el botón
+            // deshabilitado o ausente, el clic no hace nada.
+            if (!dragging && Panel.Contains(pressWorld))
+            {
+                if (Panel.IsOnButton(pressWorld))
+                    Issuer.Upgrade(Panel.Node);
+                return;
+            }
+
             if (!dragging)
             {
                 Click(pressNode, pressWorld);
@@ -202,13 +211,15 @@ namespace Nova.Input
                 return;
             }
 
+            // Sobre un nodo, cualquiera, abre su panel; la selección no cambia (13.1).
             if (node != null)
             {
-                OnInfoRequested?.Invoke(node);
+                Panel.Open(node, PanelCenterFor(node));
                 return;
             }
-            // Clic derecho en vacío: cancela la selección (y cerrará el panel, T2-03).
+            // Clic derecho en vacío: cancela la selección y cierra el panel.
             Selection.Clear();
+            Panel.Close();
         }
 
         public void PressEscape()
@@ -217,6 +228,12 @@ namespace Nova.Input
             if (Menu.IsOpen)
             {
                 Menu.Close();
+                return;
+            }
+            // Y con el panel abierto, lo cierra.
+            if (Panel.IsOpen)
+            {
+                Panel.Close();
                 return;
             }
             OnPauseRequested?.Invoke();
@@ -235,12 +252,13 @@ namespace Nova.Input
 
         // Para la escena de prueba y los tests: el cableado normal es por el Inspector.
         public void Configure(BalanceConfig config, SelectionManager selectionManager, PlayerCommandIssuer commandIssuer,
-            IgnitionMenuState menu, Camera cam = null)
+            IgnitionMenuState menu, InfoPanelState panel, Camera cam = null)
         {
             balance = config;
             selection = selectionManager;
             issuer = commandIssuer;
             ignitionMenu = menu;
+            infoPanel = panel;
             worldCamera = cam;
         }
 
@@ -270,7 +288,7 @@ namespace Nova.Input
                 {
                     // Abre el menú radial en el cursor (13.7), también sin Energía suficiente:
                     // las opciones salen deshabilitadas con el coste en rojo.
-                    Menu.Open(node, KeepInView(world), player);
+                    Menu.Open(node, KeepInView(world, IgnitionMenuState.Extent, IgnitionMenuState.Extent), player);
                 }
                 // Sobre un nodo que no es propio, nada.
                 return;
@@ -311,20 +329,46 @@ namespace Nova.Input
                 Menu.Close();
         }
 
-        // Desplaza el centro del menú lo justo para que no se salga de la cámara ortográfica.
-        // Sin cámara —en los tests— lo deja donde está.
-        Vector2 KeepInView(Vector2 center)
+        // Desplaza un centro lo justo para que lo que ocupa alrededor —la mitad de ancho y de alto
+        // dadas— no se salga de la cámara. Sin cámara, en los tests, lo deja donde está.
+        Vector2 KeepInView(Vector2 center, float halfWidthUsed, float halfHeightUsed)
         {
-            Camera cam = worldCamera != null ? worldCamera : Camera.main;
-            if (cam == null || !cam.orthographic)
+            Camera cam = ViewCamera;
+            if (cam == null)
                 return center;
 
             Vector2 camera = cam.transform.position;
-            float halfHeight = Mathf.Max(0f, cam.orthographicSize - IgnitionMenuState.Extent);
-            float halfWidth = Mathf.Max(0f, cam.orthographicSize * cam.aspect - IgnitionMenuState.Extent);
+            float halfHeight = Mathf.Max(0f, cam.orthographicSize - halfHeightUsed);
+            float halfWidth = Mathf.Max(0f, cam.orthographicSize * cam.aspect - halfWidthUsed);
             return new Vector2(
                 Mathf.Clamp(center.x, camera.x - halfWidth, camera.x + halfWidth),
                 Mathf.Clamp(center.y, camera.y - halfHeight, camera.y + halfHeight));
+        }
+
+        // El panel se abre a la derecha del nodo, o a la izquierda si a la derecha no cabe, y
+        // se desplaza en vertical lo justo para no salirse de la cámara.
+        Vector2 PanelCenterFor(NodeController node)
+        {
+            Vector2 position = node.transform.position;
+            Vector2 center = InfoPanelState.CenterBeside(position, false);
+            Camera cam = ViewCamera;
+            if (cam != null)
+            {
+                float right = cam.transform.position.x + cam.orthographicSize * cam.aspect;
+                if (center.x + InfoPanelState.Width / 2f > right)
+                    center = InfoPanelState.CenterBeside(position, true);
+            }
+            return KeepInView(center, InfoPanelState.Width / 2f, InfoPanelState.Height / 2f);
+        }
+
+        // Cámara ortográfica del tablero; null en los tests, donde nada se desplaza.
+        Camera ViewCamera
+        {
+            get
+            {
+                Camera cam = worldCamera != null ? worldCamera : Camera.main;
+                return cam != null && cam.orthographic ? cam : null;
+            }
         }
 
         // Vence el buffer, o lo interrumpe un clic en otro destino: 50 % desde cada origen.
@@ -345,5 +389,6 @@ namespace Nova.Input
         SelectionManager Selection => selection != null ? selection : throw new InvalidOperationException("InputRouter necesita SelectionManager.");
         PlayerCommandIssuer Issuer => issuer != null ? issuer : throw new InvalidOperationException("InputRouter necesita PlayerCommandIssuer.");
         IgnitionMenuState Menu => ignitionMenu != null ? ignitionMenu : throw new InvalidOperationException("InputRouter necesita IgnitionMenuState.");
+        InfoPanelState Panel => infoPanel != null ? infoPanel : throw new InvalidOperationException("InputRouter necesita InfoPanelState.");
     }
 }

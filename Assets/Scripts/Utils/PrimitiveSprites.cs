@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Nova.Utils
 {
-    // Primitivas de la regla 4 de T.2 para las vistas provisionales: discos blancos de alfa
+    // Primitivas de la regla 4 de T.2 para las vistas provisionales: discos y rectángulos blancos de alfa
     // binario y filtro Point a PPU 64 (T0-04), teñidos por SpriteRenderer.color. Las comparten la
     // presentación y la UI, que no se referencian entre sí. Desaparecen con el arte de la fase 6.
     public static class PrimitiveSprites
@@ -11,6 +11,32 @@ namespace Nova.Utils
         public const int PixelsPerUnit = 64; // T0-04
 
         static readonly Dictionary<int, Sprite> DiscCache = new Dictionary<int, Sprite>();
+        static readonly Dictionary<long, Sprite> RectCache = new Dictionary<long, Sprite>();
+
+        // Rectángulo opaco de width x height píxeles: fondos de panel y botones (T2-03).
+        public static Sprite Rect(int width, int height)
+        {
+            long key = ((long)width << 32) | (uint)height;
+            if (RectCache.TryGetValue(key, out Sprite cached) && cached != null)
+                return cached;
+
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false)
+            {
+                name = $"ProvisionalRect{width}x{height}",
+                filterMode = FilterMode.Point,
+                wrapMode = TextureWrapMode.Clamp
+            };
+            var pixels = new Color32[width * height];
+            for (int i = 0; i < pixels.Length; i++)
+                pixels[i] = new Color32(255, 255, 255, 255);
+            texture.SetPixels32(pixels);
+            texture.Apply();
+
+            Sprite sprite = Sprite.Create(texture, new Rect(0, 0, width, height), new Vector2(0.5f, 0.5f), PixelsPerUnit);
+            sprite.name = texture.name;
+            RectCache[key] = sprite;
+            return sprite;
+        }
 
         public static Sprite Disc(int diameter)
         {

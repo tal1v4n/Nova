@@ -31,6 +31,7 @@ namespace Nova.Tests
         SelectionManager selection;
         InputRouter router;
         IgnitionMenuState menu;
+        InfoPanelState panel;
         ProvisionalSelectionView selectionView;
         ProvisionalProtonView protonView;
 
@@ -59,8 +60,9 @@ namespace Nova.Tests
             var issuer = go.AddComponent<PlayerCommandIssuer>();
             issuer.Configure(launcher);
             menu = go.AddComponent<IgnitionMenuState>();
+            panel = go.AddComponent<InfoPanelState>();
             router = go.AddComponent<InputRouter>();
-            router.Configure(Balance, selection, issuer, menu);
+            router.Configure(Balance, selection, issuer, menu, panel);
             selectionView = go.AddComponent<ProvisionalSelectionView>();
             selectionView.Configure(selection);
             selectionView.Subscribe();

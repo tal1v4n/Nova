@@ -618,6 +618,14 @@ Contiene, en este orden:
 
 El botón de mejora se muestra **deshabilitado y con el coste en rojo** cuando no hay Energía suficiente, nunca oculto. El jugador necesita saber cuánto le falta.
 
+Cómo se comporta ([18](#18-decisiones-tomadas-por-defecto) #30, desde `T2-03`):
+
+- Se abre **a la derecha del nodo**, o a la izquierda si a la derecha no cabe, sin tapar su círculo. Lo abre el clic derecho sobre **cualquier** nodo, propio o no: de uno ajeno se ve la información, sin botones.
+- `NIVEL MÁXIMO` sale en cualquier nodo que esté al máximo, sea de quien sea: es información.
+- Sigue abierto mientras se juega y se repinta al cambiar la Energía, el nivel, el tipo o el dueño del nodo; si lo capturan, pierde el botón. Lo cierran el clic derecho en vacío y `Esc`; el clic derecho sobre otro nodo lo lleva a ese nodo.
+- Un clic izquierdo **dentro** del panel es suyo y no llega a lo que haya debajo; el botón mejora sin tocar la selección y sin enviar nada. Fuera del panel, el clic izquierdo sigue su curso normal.
+- Los puntos 5 y 6 llegan con sus tareas: la reconversión con `T2-07` y la rueda con `T3-03`.
+
 ### 13.4 Traducción de "velocidad de ataque"
 
 Es un único campo en la UI que significa cosas distintas según el tipo:
@@ -628,6 +636,8 @@ Es un único campo en la UI que significa cosas distintas según el tipo:
 | Magnetar | Cadencia: `X.X disparos/s` |
 | Púlsar | Carga: `X.XX E/s` |
 | Asteroide | El panel solo muestra `DORMIDO` y el coste de encendido |
+
+Los decimales van con **punto**, como en esta tabla, sea cual sea la configuración regional de la máquina. La línea del Púlsar está pendiente de [T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #49.
 
 ### 13.5 Rueda de poderes del Púlsar
 
@@ -771,6 +781,7 @@ Assets/
 | `NodeSpawnData.cs` | `[Serializable] struct`: posición, tipo, nivel, facción, energía inicial |
 | `PowerUpDefinition.cs` | Tipo, magnitud, duración, icono, estadística afectada |
 | `EnemyProfile.cs` | Los 8 parámetros de la tabla [12.5](./NOVA_Algoritmo_Enemigo.md#125-perfiles-por-mapa) |
+| `UiText.cs` | **Todos los textos de la UI**, en español: nombres de tipo, formatos del panel, `DORMIDO`, `NIVEL MÁXIMO`… Una instancia, `Assets/Data/UiText.asset`. El juego es solo en español, pero ningún texto se escribe en un script o un prefab ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #39) |
 
 ### 15.5 Gameplay — componentes de nodo
 
@@ -821,7 +832,8 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 | `EnemyThreatResponder.cs` | Refuerzo, congelación y evacuación de [12.4](./NOVA_Algoritmo_Enemigo.md#124-detección-de-amenaza-y-defensa) |
 | `EnemyCommandIssuer.cs` | Implementa `INodeCommandIssuer` para el Enemigo |
 | `NodeHUD.cs` | Número de Energía sobre el nodo |
-| `NodeInfoPanel.cs` | Panel de clic derecho |
+| `InfoPanelState.cs` | Estado del panel de clic derecho: abierto o no, de qué nodo, dónde y la geometría del botón. Lo abre y lo cierra `InputRouter`; vive en `Nova.Input` por lo mismo que `IgnitionMenuState` |
+| `NodeInfoPanel.cs` | Dibuja el panel de clic derecho. Solo lee `InfoPanelState` y valida el botón con `NodeController.CheckUpgrade` |
 | `PulsarPowerWheel.cs` | Rueda de poderes |
 | `IgnitionMenuState.cs` | Estado del menú radial de encendido: abierto o no, sobre qué Asteroide, dónde y la geometría de sus opciones. Lo abre y lo cierra `InputRouter`; vive en `Nova.Input` porque el router resuelve el clic contra él |
 | `IgnitionMenu.cs` | Dibuja el menú radial de encendido. Solo lee `IgnitionMenuState` y valida cada opción con `NodeIgnition.Check` |
@@ -1017,6 +1029,7 @@ Reglas que no estaban en el diseño original y que se añadieron para cerrar hue
 | 27 | Un nodo que deja de ser propio **sale solo de la selección**; un doble clic sobre un nodo seleccionado **lo deselecciona y no envía** | Sin lo primero, la selección guardaría nodos del rival como orígenes. Sin lo segundo, deseleccionar con doble clic lanzaría un 50% sin querer contra el nodo recién soltado. Cerrado el 2026-09-29 antes de `T1-11` |
 | 28 | Con el menú de encendido abierto, un clic izquierdo fuera de las opciones o un arrastre **lo cierra y sigue su curso**; el clic derecho y `Esc` **solo** lo cierran | 13.7 decía qué cerraba el menú, pero no qué más hacía ese clic. Que siga su curso evita un clic perdido al querer seleccionar otra cosa; el clic derecho y `Esc` se consumen porque abrir el panel o pausar al cerrar un menú sorprende. Decidido en `T2-02` |
 | 29 | Las opciones del menú de encendido de un tipo que la partida no tiene salen **deshabilitadas, en gris y sin coste**, distintas de las que solo esperan Energía | 13.7 da siempre las tres opciones. En la fase 2 el Magnetar no existe hasta `T2-04` ni el Púlsar hasta `T3-02`, y encenderlos ya daría nodos a medias. Se resuelve con datos: cada `NodeIgnition` ofrece los tipos cuya `NodeDefinition` tiene, y el bloqueo `ActionBlock.Unavailable` va por delante de la Energía. Es también la vía de T.7 #46 si hace falta un bloqueo por nivel. Decidido con el usuario en `T2-02` |
+| 30 | El panel de clic derecho se abre **junto al nodo**, también en nodos ajenos (sin botones); **se queda abierto** hasta el clic derecho en vacío o `Esc`, y un clic izquierdo dentro es suyo | 13.3 decía qué contiene, no dónde ni cuándo se cierra. Abierto mientras se juega, porque mejorar varias veces seguidas es lo normal; que se trague el clic evita mandar un protón al nodo que hay debajo del botón. Decidido en `T2-03` |
 
 ---
 

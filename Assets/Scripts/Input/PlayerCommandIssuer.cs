@@ -32,6 +32,13 @@ namespace Nova.Input
             return ignition.TryIgnite(Faction, targetType);
         }
 
+        public ActionCheck Upgrade(NodeController node)
+        {
+            if (node == null)
+                throw new ArgumentNullException(nameof(node));
+            return node.TryUpgrade(Faction);
+        }
+
         // Con varios orígenes seleccionados, cada uno lanza su propio protón con su propio cálculo
         // (5.2). Los que no pueden enviar se ignoran en silencio (17, caso 22). Devuelve cuántos salieron.
         public int SendFromEach(IReadOnlyList<NodeController> sources, NodeController target, bool fullSend)

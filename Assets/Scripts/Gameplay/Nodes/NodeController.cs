@@ -141,10 +141,24 @@ namespace Nova.Gameplay
             StateMachine.Evaluate(definition.Type, Faction);
         }
 
-        // Validación de mejora (15.5). Ejecutarla y pagarla es T2-03.
+        // Validación de mejora (15.5), sin efectos. La usa también el panel de clic derecho para
+        // pintar el botón deshabilitado con el coste en rojo (13.3).
         public ActionCheck CheckUpgrade(Faction actor)
         {
             return LevelComponent.CheckUpgrade(Snapshot(), actor);
+        }
+
+        // Mejora (16.2, T2-03): cobra el coste de la Energía del propio nodo y sube un nivel del
+        // mismo tipo. Tope y estado no cambian: el Tope es del tipo, no del nivel.
+        public ActionCheck TryUpgrade(Faction actor)
+        {
+            ActionCheck check = CheckUpgrade(actor);
+            if (!check.IsAllowed)
+                return check;
+
+            EnergyComponent.Subtract(check.Cost);
+            LevelComponent.Apply(Definition, Level + 1);
+            return check;
         }
 
         void OnDestroy()

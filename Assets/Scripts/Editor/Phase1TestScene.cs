@@ -23,13 +23,15 @@ namespace Nova.Editor
     //
     // Desde T2-02 lleva también el menú radial de encendido. Los nodos solo ofrecen la Estrella:
     // el Magnetar llega con T2-04 y el Púlsar con T3-02, y hasta entonces el menú los enseña
-    // deshabilitados. Al cerrar cada una de esas tareas se añade aquí su NodeDefinition.
+    // deshabilitados. Al cerrar cada una de esas tareas se añade aquí su NodeDefinition. Desde
+    // T2-03, también el panel de clic derecho con el botón de mejora.
     public static class Phase1TestScene
     {
         const string ScenePath = "Assets/Scenes/Tests/Fase1.unity";
         const string BalancePath = "Assets/Data/BalanceConfig.asset";
         const string NodesFolder = "Assets/Data/Nodes";
         const string FontPath = "Assets/Art/Fonts/Jersey10 Raster56.asset";
+        const string TextPath = "Assets/Data/UiText.asset";
 
         const string NodesLayer = InputRouter.NodesLayer; // 18 #23
 
@@ -55,9 +57,10 @@ namespace Nova.Editor
 
             var balance = AssetDatabase.LoadAssetAtPath<BalanceConfig>(BalancePath);
             var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontPath);
-            if (balance == null || font == null)
+            var text = AssetDatabase.LoadAssetAtPath<UiText>(TextPath);
+            if (balance == null || font == null || text == null)
             {
-                Debug.LogError($"[Nova] Faltan {BalancePath} o {FontPath}.");
+                Debug.LogError($"[Nova] Faltan {BalancePath}, {FontPath} o {TextPath}.");
                 return;
             }
             if (LayerMask.NameToLayer(NodesLayer) < 0)
@@ -70,7 +73,7 @@ namespace Nova.Editor
 
             Camera camera = CreateCamera();
             ProtonRegistry protons;
-            NodeRegistry registry = CreateSystems(balance, font, camera, out protons);
+            NodeRegistry registry = CreateSystems(balance, font, text, camera, out protons);
 
             NodeDefinition[] ignitionTargets = { Definition("Star") };
             foreach (var spec in Nodes)
@@ -93,7 +96,7 @@ namespace Nova.Editor
             return camera;
         }
 
-        static NodeRegistry CreateSystems(BalanceConfig balance, TMP_FontAsset font, Camera camera, out ProtonRegistry protons)
+        static NodeRegistry CreateSystems(BalanceConfig balance, TMP_FontAsset font, UiText text, Camera camera, out ProtonRegistry protons)
         {
             var go = new GameObject("Systems");
 
@@ -108,12 +111,14 @@ namespace Nova.Editor
             var issuer = go.AddComponent<PlayerCommandIssuer>();
             issuer.Configure(launcher);
             var menu = go.AddComponent<IgnitionMenuState>();
+            var panel = go.AddComponent<InfoPanelState>();
             var router = go.AddComponent<InputRouter>();
-            router.Configure(balance, selection, issuer, menu, camera);
+            router.Configure(balance, selection, issuer, menu, panel, camera);
 
             go.AddComponent<ProvisionalSelectionView>().Configure(selection);
             go.AddComponent<ProvisionalProtonView>().Configure(protons, font);
-            go.AddComponent<IgnitionMenu>().Configure(menu, font);
+            go.AddComponent<IgnitionMenu>().Configure(menu, font, text);
+            go.AddComponent<NodeInfoPanel>().Configure(panel, font, text);
 
             EditorUtility.SetDirty(go);
             return registry;

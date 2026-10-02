@@ -19,5 +19,8 @@ namespace Nova.Gameplay
 
         // Enciende un Asteroide propio como targetType, nivel 1 (4.1). T1-11b.
         ActionCheck Ignite(NodeController node, NodeType targetType);
+
+        // Sube un nivel un nodo propio encendido, pagando con su Energía (16.2). T2-03.
+        ActionCheck Upgrade(NodeController node);
     }
 }

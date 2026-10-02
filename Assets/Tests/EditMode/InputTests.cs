@@ -22,6 +22,7 @@ namespace Nova.Tests
         PlayerCommandIssuer issuer;
         InputRouter router;
         IgnitionMenuState menu;
+        InfoPanelState panel;
 
         static NodeDefinition Definition(string name) =>
             AssetDatabase.LoadAssetAtPath<NodeDefinition>($"Assets/Data/Nodes/{name}.asset");
@@ -44,8 +45,9 @@ namespace Nova.Tests
             issuer = go.AddComponent<PlayerCommandIssuer>();
             issuer.Configure(launcher);
             menu = go.AddComponent<IgnitionMenuState>();
+            panel = go.AddComponent<InfoPanelState>();
             router = go.AddComponent<InputRouter>();
-            router.Configure(Balance, selection, issuer, menu);
+            router.Configure(Balance, selection, issuer, menu, panel);
         }
 
         [TearDown]
@@ -212,14 +214,12 @@ namespace Nova.Tests
         public void RightClickClosesTheMenuAndDoesNothingElse()
         {
             NodeController asteroid = Node("Asteroid", Faction.Player, 10);
-            NodeController requested = null;
-            router.OnInfoRequested += n => requested = n;
 
             Click(asteroid);
             router.ClickRight(asteroid);
 
             Assert.IsFalse(menu.IsOpen);
-            Assert.IsNull(requested, "El clic derecho que cierra el menú no abre el panel.");
+            Assert.IsFalse(panel.IsOpen, "El clic derecho que cierra el menú no abre el panel.");
             Assert.AreEqual(NodeType.Asteroid, asteroid.Type);
         }
 
@@ -527,18 +527,145 @@ namespace Nova.Tests
         }
 
         [Test]
-        public void RightClickOnNodeRequestsInfoAndKeepsSelection()
+        public void RightClickOnNodeOpensItsPanelAndKeepsSelection()
         {
             NodeController source = Node("Star", Faction.Player, 40);
             NodeController enemy = Node("Star", Faction.Enemy, 10, new Vector2(3f, 0f));
-            NodeController requested = null;
-            router.OnInfoRequested += n => requested = n;
             Click(source);
 
             router.ClickRight(enemy);
 
-            Assert.AreSame(enemy, requested);
+            Assert.IsTrue(panel.IsOpen);
+            Assert.AreSame(enemy, panel.Node);
+            Assert.AreEqual(InfoPanelState.CenterBeside(enemy.transform.position, false), panel.Center, "A la derecha del nodo.");
             Assert.IsTrue(selection.IsSelected(source));
+        }
+
+        // --- Panel de clic derecho y mejora (13.3, T2-03) ---
+
+        // Clic sin movimiento en un punto del mundo, sin nodo debajo.
+        void ClickAt(Vector2 at, NodeController node = null)
+        {
+            router.PressLeft(at, node);
+            router.ReleaseLeft(at, node);
+        }
+
+        Vector2 UpgradeButton => panel.Center + InfoPanelState.ButtonOffset;
+
+        [Test]
+        public void RightClickOnAnotherNodeMovesThePanel()
+        {
+            NodeController first = Node("Star", Faction.Player, 10);
+            NodeController second = Node("Star", Faction.Enemy, 10, new Vector2(0f, 3f));
+
+            router.ClickRight(first);
+            router.ClickRight(second);
+
+            Assert.AreSame(second, panel.Node);
+        }
+
+        [Test]
+        public void RightClickOnEmptyClosesThePanel()
+        {
+            NodeController star = Node("Star", Faction.Player, 10);
+            router.ClickRight(star);
+
+            router.ClickRight(null);
+
+            Assert.IsFalse(panel.IsOpen);
+        }
+
+        [Test]
+        public void EscapeClosesThePanelInsteadOfPausing()
+        {
+            NodeController star = Node("Star", Faction.Player, 10);
+            bool paused = false;
+            router.OnPauseRequested += () => paused = true;
+            router.ClickRight(star);
+
+            router.PressEscape();
+
+            Assert.IsFalse(panel.IsOpen);
+            Assert.IsFalse(paused);
+        }
+
+        [Test]
+        public void UpgradeButtonUpgradesAndCharges()
+        {
+            NodeController star = Node("Star", Faction.Player, 30);
+            router.ClickRight(star);
+
+            ClickAt(UpgradeButton);
+
+            Assert.AreEqual(2, star.Level);
+            Assert.AreEqual(10, star.Energy, "16.2: pasar a nivel 2 cuesta 20.");
+            Assert.IsTrue(panel.IsOpen, "El panel sigue abierto para seguir mejorando.");
+        }
+
+        [Test]
+        public void UpgradeButtonWithoutEnoughEnergyDoesNothing()
+        {
+            NodeController star = Node("Star", Faction.Player, 19);
+            router.ClickRight(star);
+
+            ClickAt(UpgradeButton);
+
+            Assert.AreEqual(1, star.Level);
+            Assert.AreEqual(19, star.Energy);
+        }
+
+        [Test]
+        public void UpgradeButtonOnAForeignNodeDoesNothing()
+        {
+            NodeController enemy = Node("Star", Faction.Enemy, 50);
+            router.ClickRight(enemy);
+
+            ClickAt(UpgradeButton);
+
+            Assert.AreEqual(1, enemy.Level);
+            Assert.AreEqual(50, enemy.Energy);
+        }
+
+        [Test]
+        public void ClickInsideThePanelDoesNotReachTheNodeUnderneath()
+        {
+            NodeController star = Node("Star", Faction.Player, 10);
+            router.ClickRight(star);
+            NodeController hidden = Node("Star", Faction.Player, 10, panel.Center);
+            Vector2 inside = panel.Center + new Vector2(0f, InfoPanelState.Height / 4f);
+            Assert.IsFalse(panel.IsOnButton(inside));
+
+            ClickAt(inside, hidden);
+
+            Assert.IsFalse(selection.HasSelection, "El clic es del panel.");
+        }
+
+        [Test]
+        public void UpgradeButtonDoesNotSendWithASelection()
+        {
+            NodeController star = Node("Star", Faction.Player, 30);
+            NodeController other = Node("Star", Faction.Player, 30, new Vector2(-4f, 0f));
+            Click(other);
+            router.ClickRight(star);
+
+            ClickAt(UpgradeButton);
+            WaitBuffer();
+
+            Assert.AreEqual(2, star.Level);
+            Assert.AreEqual(30, other.Energy, "El clic en el botón no es un envío.");
+            Assert.IsTrue(selection.IsSelected(other));
+        }
+
+        [Test]
+        public void ClicksOutsideThePanelKeepWorking()
+        {
+            NodeController star = Node("Star", Faction.Player, 10, new Vector2(-4f, 0f));
+            router.ClickRight(Node("Star", Faction.Enemy, 10, new Vector2(4f, 0f)));
+
+            Click(star);
+
+            Assert.IsTrue(selection.IsSelected(star));
+            Assert.IsTrue(panel.IsOpen, "Solo lo cierran el clic derecho en vacío y Esc.");
         }
 
         [Test]
