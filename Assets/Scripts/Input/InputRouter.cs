@@ -44,6 +44,7 @@ namespace Nova.Input
         [SerializeField] BalanceConfig balance;
         [SerializeField] SelectionManager selection;
         [SerializeField] PlayerCommandIssuer issuer;
+        [SerializeField] IgnitionMenuState ignitionMenu;
 
         [Tooltip("Opcional: sin ella se usa Camera.main.")]
         [SerializeField] Camera worldCamera;
@@ -159,9 +160,22 @@ namespace Nova.Input
             MoveTo(world);
             pressing = false;
 
+            // Menú de encendido abierto (13.7): un clic sobre una opción la elige; cualquier otro
+            // clic o arrastre lo cierra sin encender y sigue su curso normal.
+            if (Menu.IsOpen)
+            {
+                int option = dragging ? -1 : Menu.OptionAt(pressWorld);
+                if (option >= 0)
+                {
+                    ChooseIgnition(option);
+                    return;
+                }
+                Menu.Close();
+            }
+
             if (!dragging)
             {
-                Click(pressNode);
+                Click(pressNode, pressWorld);
                 return;
             }
 
@@ -181,6 +195,13 @@ namespace Nova.Input
 
         public void ClickRight(NodeController node)
         {
+            // 13.7: el clic derecho cierra el menú sin encender, y no hace nada más.
+            if (Menu.IsOpen)
+            {
+                Menu.Close();
+                return;
+            }
+
             if (node != null)
             {
                 OnInfoRequested?.Invoke(node);
@@ -192,6 +213,12 @@ namespace Nova.Input
 
         public void PressEscape()
         {
+            // Con el menú abierto, Esc lo cierra en vez de pausar.
+            if (Menu.IsOpen)
+            {
+                Menu.Close();
+                return;
+            }
             OnPauseRequested?.Invoke();
         }
 
@@ -207,16 +234,18 @@ namespace Nova.Input
         }
 
         // Para la escena de prueba y los tests: el cableado normal es por el Inspector.
-        public void Configure(BalanceConfig config, SelectionManager selectionManager, PlayerCommandIssuer commandIssuer, Camera cam = null)
+        public void Configure(BalanceConfig config, SelectionManager selectionManager, PlayerCommandIssuer commandIssuer,
+            IgnitionMenuState menu, Camera cam = null)
         {
             balance = config;
             selection = selectionManager;
             issuer = commandIssuer;
+            ignitionMenu = menu;
             worldCamera = cam;
         }
 
-        // Clic izquierdo sin arrastre (13.1).
-        void Click(NodeController node)
+        // Clic izquierdo sin arrastre (13.1), con el cursor en world.
+        void Click(NodeController node, Vector2 world)
         {
             // 18 #27: el segundo clic de un doble clic sobre un nodo recién deseleccionado se
             // ignora en cualquier modo, también si la deselección dejó la selección vacía.
@@ -239,10 +268,9 @@ namespace Nova.Input
                     Selection.Select(node);
                 else if (node.IsInitialized && node.Type == NodeType.Asteroid && node.Faction == player)
                 {
-                    // Provisional hasta el menú radial de T2-02 (13.7): en la fase 1 solo existe
-                    // la Estrella, así que el clic enciende a Estrella directamente (T1-11b).
-                    // Sin Energía suficiente no hace nada; el menú lo enseñará deshabilitado.
-                    Issuer.Ignite(node, NodeType.Star);
+                    // Abre el menú radial en el cursor (13.7), también sin Energía suficiente:
+                    // las opciones salen deshabilitadas con el coste en rojo.
+                    Menu.Open(node, KeepInView(world), player);
                 }
                 // Sobre un nodo que no es propio, nada.
                 return;
@@ -275,6 +303,30 @@ namespace Nova.Input
             bufferDeadline = nowMicros + BufferMicros;
         }
 
+        // Una opción deshabilitada no hace nada y deja el menú abierto: el jugador sigue viendo
+        // cuánto le falta. Si enciende, el cambio de tipo cierra el menú.
+        void ChooseIgnition(int option)
+        {
+            if (Issuer.Ignite(Menu.Node, IgnitionMenuState.Options[option]).IsAllowed)
+                Menu.Close();
+        }
+
+        // Desplaza el centro del menú lo justo para que no se salga de la cámara ortográfica.
+        // Sin cámara —en los tests— lo deja donde está.
+        Vector2 KeepInView(Vector2 center)
+        {
+            Camera cam = worldCamera != null ? worldCamera : Camera.main;
+            if (cam == null || !cam.orthographic)
+                return center;
+
+            Vector2 camera = cam.transform.position;
+            float halfHeight = Mathf.Max(0f, cam.orthographicSize - IgnitionMenuState.Extent);
+            float halfWidth = Mathf.Max(0f, cam.orthographicSize * cam.aspect - IgnitionMenuState.Extent);
+            return new Vector2(
+                Mathf.Clamp(center.x, camera.x - halfWidth, camera.x + halfWidth),
+                Mathf.Clamp(center.y, camera.y - halfHeight, camera.y + halfHeight));
+        }
+
         // Vence el buffer, o lo interrumpe un clic en otro destino: 50 % desde cada origen.
         void FlushBuffer()
         {
@@ -292,5 +344,6 @@ namespace Nova.Input
         BalanceConfig Balance => balance != null ? balance : throw new InvalidOperationException("InputRouter necesita BalanceConfig.");
         SelectionManager Selection => selection != null ? selection : throw new InvalidOperationException("InputRouter necesita SelectionManager.");
         PlayerCommandIssuer Issuer => issuer != null ? issuer : throw new InvalidOperationException("InputRouter necesita PlayerCommandIssuer.");
+        IgnitionMenuState Menu => ignitionMenu != null ? ignitionMenu : throw new InvalidOperationException("InputRouter necesita IgnitionMenuState.");
     }
 }

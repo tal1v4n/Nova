@@ -21,6 +21,7 @@ namespace Nova.Tests
         SelectionManager selection;
         PlayerCommandIssuer issuer;
         InputRouter router;
+        IgnitionMenuState menu;
 
         static NodeDefinition Definition(string name) =>
             AssetDatabase.LoadAssetAtPath<NodeDefinition>($"Assets/Data/Nodes/{name}.asset");
@@ -42,8 +43,9 @@ namespace Nova.Tests
             selection.Configure(registry);
             issuer = go.AddComponent<PlayerCommandIssuer>();
             issuer.Configure(launcher);
+            menu = go.AddComponent<IgnitionMenuState>();
             router = go.AddComponent<InputRouter>();
-            router.Configure(Balance, selection, issuer);
+            router.Configure(Balance, selection, issuer, menu);
         }
 
         [TearDown]
@@ -74,6 +76,24 @@ namespace Nova.Tests
             Vector2 at = node != null ? (Vector2)node.transform.position : new Vector2(5f, 5f);
             router.PressLeft(at, node);
             router.ReleaseLeft(at, node);
+        }
+
+        // Clic sobre la opción del menú radial que enciende a type.
+        void ChooseOption(NodeType type)
+        {
+            Vector2 at = IgnitionMenuState.OptionPosition(menu.Center, OptionIndex(type));
+            router.PressLeft(at, null);
+            router.ReleaseLeft(at, null);
+        }
+
+        static int OptionIndex(NodeType type)
+        {
+            for (int i = 0; i < IgnitionMenuState.Options.Count; i++)
+            {
+                if (IgnitionMenuState.Options[i] == type)
+                    return i;
+            }
+            throw new System.ArgumentException(type.ToString());
         }
 
         void Wait(float seconds)
@@ -112,28 +132,164 @@ namespace Nova.Tests
             Assert.AreEqual(10, node.Energy);
         }
 
-        [Test]
-        public void ClickOnOwnAsteroidWithoutSelectionIgnitesItAsStar()
+        // --- Menú radial de encendido (13.7, T2-02) ---
+
+        [TestCase(10)]
+        [TestCase(9)]
+        public void ClickOnOwnAsteroidWithoutSelectionOpensTheMenuWithoutIgniting(int energy)
+        {
+            NodeController asteroid = Node("Asteroid", Faction.Player, energy);
+
+            Click(asteroid);
+
+            Assert.IsTrue(menu.IsOpen, "13.7: el menú se abre también sin Energía suficiente.");
+            Assert.AreSame(asteroid, menu.Node);
+            Assert.AreEqual((Vector2)asteroid.transform.position, menu.Center, "Sale en el cursor.");
+            Assert.AreEqual(Faction.Player, menu.Actor);
+            Assert.AreEqual(NodeType.Asteroid, asteroid.Type, "Abrir no enciende.");
+            Assert.AreEqual(energy, asteroid.Energy);
+            Assert.IsFalse(selection.HasSelection, "Un Asteroide no se selecciona.");
+        }
+
+        [TestCase(NodeType.Star)]
+        [TestCase(NodeType.Pulsar)]
+        [TestCase(NodeType.Magnetar)]
+        public void ChoosingAnOptionIgnitesThatTypeAndClosesTheMenu(NodeType type)
         {
             NodeController asteroid = Node("Asteroid", Faction.Player, 10);
 
             Click(asteroid);
+            ChooseOption(type);
 
-            Assert.AreEqual(NodeType.Star, asteroid.Type, "T1-11b: sin menú, el clic enciende a Estrella.");
+            Assert.AreEqual(type, asteroid.Type);
             Assert.AreEqual(1, asteroid.Level);
             Assert.AreEqual(0, asteroid.Energy);
+            Assert.IsFalse(menu.IsOpen);
             Assert.IsFalse(selection.HasSelection, "Encender no selecciona.");
         }
 
         [Test]
-        public void ClickOnOwnAsteroidWithoutEnoughEnergyDoesNothing()
+        public void ChoosingWithoutEnoughEnergyDoesNothingAndKeepsTheMenuOpen()
         {
             NodeController asteroid = Node("Asteroid", Faction.Player, 9);
 
             Click(asteroid);
+            ChooseOption(NodeType.Star);
 
             Assert.AreEqual(NodeType.Asteroid, asteroid.Type);
             Assert.AreEqual(9, asteroid.Energy);
+            Assert.IsTrue(menu.IsOpen, "La opción deshabilitada no cierra: el jugador sigue viendo cuánto le falta.");
+        }
+
+        [Test]
+        public void UnavailableTypeIsNotIgnited()
+        {
+            NodeController asteroid = Node("Asteroid", Faction.Player, 10);
+            asteroid.GetComponent<NodeIgnition>().Configure(Balance, new[] { Definition("Star") });
+
+            Click(asteroid);
+            ChooseOption(NodeType.Magnetar);
+
+            Assert.AreEqual(NodeType.Asteroid, asteroid.Type);
+            Assert.AreEqual(10, asteroid.Energy);
+            Assert.IsTrue(menu.IsOpen);
+        }
+
+        [Test]
+        public void ClickOnEmptyClosesTheMenuWithoutIgniting()
+        {
+            NodeController asteroid = Node("Asteroid", Faction.Player, 10);
+
+            Click(asteroid);
+            Click(null);
+
+            Assert.IsFalse(menu.IsOpen);
+            Assert.AreEqual(NodeType.Asteroid, asteroid.Type);
+            Assert.AreEqual(10, asteroid.Energy);
+        }
+
+        [Test]
+        public void RightClickClosesTheMenuAndDoesNothingElse()
+        {
+            NodeController asteroid = Node("Asteroid", Faction.Player, 10);
+            NodeController requested = null;
+            router.OnInfoRequested += n => requested = n;
+
+            Click(asteroid);
+            router.ClickRight(asteroid);
+
+            Assert.IsFalse(menu.IsOpen);
+            Assert.IsNull(requested, "El clic derecho que cierra el menú no abre el panel.");
+            Assert.AreEqual(NodeType.Asteroid, asteroid.Type);
+        }
+
+        [Test]
+        public void EscapeClosesTheMenuInsteadOfPausing()
+        {
+            NodeController asteroid = Node("Asteroid", Faction.Player, 10);
+            bool paused = false;
+            router.OnPauseRequested += () => paused = true;
+
+            Click(asteroid);
+            router.PressEscape();
+
+            Assert.IsFalse(menu.IsOpen);
+            Assert.IsFalse(paused);
+        }
+
+        [Test]
+        public void ClickOnAnotherNodeClosesTheMenuAndActsNormally()
+        {
+            NodeController asteroid = Node("Asteroid", Faction.Player, 10);
+            NodeController star = Node("Star", Faction.Player, 10, new Vector2(-4f, 0f));
+
+            Click(asteroid);
+            Click(star);
+
+            Assert.IsFalse(menu.IsOpen);
+            CollectionAssert.AreEqual(new[] { star }, selection.Selected, "El clic sigue su curso: sin selección, elige.");
+            Assert.AreEqual(NodeType.Asteroid, asteroid.Type);
+        }
+
+        [Test]
+        public void ClickOnAnOptionWinsOverANodeUnderneath()
+        {
+            NodeController asteroid = Node("Asteroid", Faction.Player, 10);
+            Vector2 starOption = IgnitionMenuState.OptionPosition(asteroid.transform.position, OptionIndex(NodeType.Star));
+            NodeController star = Node("Star", Faction.Player, 10, starOption);
+
+            Click(asteroid);
+            router.PressLeft(starOption, star);
+            router.ReleaseLeft(starOption, star);
+
+            Assert.AreEqual(NodeType.Star, asteroid.Type);
+            Assert.IsFalse(selection.HasSelection);
+        }
+
+        [Test]
+        public void LassoClosesTheMenu()
+        {
+            NodeController asteroid = Node("Asteroid", Faction.Player, 10);
+            NodeController star = Node("Star", Faction.Player, 10, new Vector2(-4f, 0f));
+
+            Click(asteroid);
+            router.PressLeft(new Vector2(-5f, -1f), null);
+            router.ReleaseLeft(new Vector2(-3f, 1f), null);
+
+            Assert.IsFalse(menu.IsOpen);
+            CollectionAssert.AreEqual(new[] { star }, selection.Selected);
+        }
+
+        [Test]
+        public void CapturedAsteroidClosesTheMenu()
+        {
+            NodeController asteroid = Node("Asteroid", Faction.Player, 10);
+
+            Click(asteroid);
+            asteroid.ApplyImpact(ImpactResolver.Resolve(new ProtonSnapshot(Faction.Enemy, 30), asteroid.Snapshot(), Balance.MagnetarResistance));
+
+            Assert.AreEqual(Faction.Enemy, asteroid.Faction);
+            Assert.IsFalse(menu.IsOpen);
         }
 
         [Test]
@@ -142,6 +298,7 @@ namespace Nova.Tests
             NodeController asteroid = Node("Asteroid", Faction.Player, 10);
 
             Click(asteroid);
+            ChooseOption(NodeType.Star);
             WaitBuffer();
             Click(asteroid);
 
@@ -268,6 +425,7 @@ namespace Nova.Tests
             WaitBuffer();
 
             Assert.AreEqual(NodeType.Asteroid, asteroid.Type, "13.1: con selección, un Asteroide propio recibe en vez de encenderse.");
+            Assert.IsFalse(menu.IsOpen, "13.7: el menú solo se abre sin selección.");
             Assert.AreEqual(20, source.Energy);
         }
 

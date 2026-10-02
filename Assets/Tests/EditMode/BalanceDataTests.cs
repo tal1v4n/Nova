@@ -64,14 +64,14 @@ namespace Nova.Tests
             CollectionAssert.AreEqual(new[] { 2.00f, 1.60f, 1.30f, 1.05f, 0.85f }, intervals);
         }
 
-        // 4.4. Radios vigentes mientras T.7 #35 siga abierta.
+        // 4.4, con los radios ×0.75 y la cadencia ×4/3 de T.7 #35.
         [Test]
         public void MagnetarRadiiAndFireRatesMatchSpec()
         {
             var magnetar = Node("Magnetar");
             var levels = Enumerable.Range(1, magnetar.MaxLevel).Select(magnetar.GetLevel).ToArray();
-            CollectionAssert.AreEqual(new[] { 2.0f, 2.4f, 2.8f, 3.2f, 3.6f }, levels.Select(l => l.Radius).ToArray());
-            CollectionAssert.AreEqual(new[] { 1.0f, 1.4f, 1.9f, 2.5f, 3.2f }, levels.Select(l => l.FireRate).ToArray());
+            CollectionAssert.AreEqual(new[] { 1.5f, 1.75f, 2.0f, 2.25f, 2.5f }, levels.Select(l => l.Radius).ToArray());
+            CollectionAssert.AreEqual(new[] { 1.33f, 1.87f, 2.53f, 3.33f, 4.27f }, levels.Select(l => l.FireRate).ToArray());
         }
 
         // 16.1.

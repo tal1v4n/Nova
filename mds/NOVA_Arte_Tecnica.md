@@ -455,7 +455,7 @@ los nodos:
 | Familia | Resolución | Motivo |
 |---|---|---|
 | `art/bg/*` | **960×540** | Ver *Fondos*. Son 15 × 8.4375 u a PPU 64: el tablero entero ([T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada), cerrada el 2026-09-28). Eran 2048×1152 cuando el tablero medía 32 × 18 u, y llegaron a pedirse a 1280×720 durante unas horas, con el tablero de 20 u. |
-| `art/world/world_radius_*` | Hasta 512×512 | El radio del Magnetar mide 2.0–3.6 u, y 3.6 u a PPU 64 son 230 px **de radio**: 461 px de lado ([A.4.1](./NOVA_Assets_Diseno.md#a41-radio-de-alcance-del-magnetar)). **Un archivo por nivel**, porque escalar uno solo daría factores no enteros. |
+| `art/world/world_radius_*` | Hasta 384×384 | El radio del Magnetar mide 1.5–2.5 u, y 2.5 u a PPU 64 son 160 px **de radio**: 320 px de lado ([A.4.1](./NOVA_Assets_Diseno.md#a41-radio-de-alcance-del-magnetar)). **Un archivo por nivel**, porque escalar uno solo daría factores no enteros. |
 | `art/world/world_proton_*` | 48×48 | Ver abajo. |
 
 **El protón no escala de forma continua.** [14.3](./NOVA_Estados_Animaciones.md#143-protón)

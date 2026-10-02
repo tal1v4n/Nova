@@ -18,6 +18,7 @@ namespace Nova.Core
         PowerCharge,        // Púlsar cargando un poder o con uno cargado (8.1)
         Converting,         // Ya reconvirtiéndose (8.1)
         InsufficientEnergy,
+        Unavailable,        // El nodo no ofrece ese tipo: aún no existe en esta fase (NodeIgnition, T2-02)
     }
 
     // Resultado de validar una acción: si se puede y cuánto cuesta.

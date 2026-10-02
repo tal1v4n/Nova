@@ -17,21 +17,21 @@ MonoBehaviour:
   levels:
   - upgradeCost: 0
     generationInterval: 0
-    radius: 2
-    fireRate: 1
+    radius: 1.5
+    fireRate: 1.33
   - upgradeCost: 20
     generationInterval: 0
-    radius: 2.4
-    fireRate: 1.4
+    radius: 1.75
+    fireRate: 1.87
   - upgradeCost: 30
     generationInterval: 0
-    radius: 2.8
-    fireRate: 1.9
+    radius: 2
+    fireRate: 2.53
   - upgradeCost: 40
     generationInterval: 0
-    radius: 3.2
-    fireRate: 2.5
+    radius: 2.25
+    fireRate: 3.33
   - upgradeCost: 50
     generationInterval: 0
-    radius: 3.6
-    fireRate: 3.2
+    radius: 2.5
+    fireRate: 4.27

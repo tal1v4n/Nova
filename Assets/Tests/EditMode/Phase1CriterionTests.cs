@@ -18,6 +18,8 @@ namespace Nova.Tests
     // de la fase 1 (19) con clics de ratón simulados: capturar un Asteroide, encenderlo como
     // Estrella y tomar un nodo enemigo. Cada tick imita el orden de 15.10: router (−50), nodos (0),
     // protones (+10) y resolución de impactos tras todos los FixedUpdate.
+    //
+    // Desde T2-02 el encendido pasa por el menú radial, y la escena solo ofrece la Estrella.
     public class Phase1CriterionTests
     {
         const float Tick = 0.02f;
@@ -28,6 +30,7 @@ namespace Nova.Tests
         ProtonRegistry protons;
         SelectionManager selection;
         InputRouter router;
+        IgnitionMenuState menu;
         ProvisionalSelectionView selectionView;
         ProvisionalProtonView protonView;
 
@@ -55,8 +58,9 @@ namespace Nova.Tests
             selection.Configure(registry);
             var issuer = go.AddComponent<PlayerCommandIssuer>();
             issuer.Configure(launcher);
+            menu = go.AddComponent<IgnitionMenuState>();
             router = go.AddComponent<InputRouter>();
-            router.Configure(Balance, selection, issuer);
+            router.Configure(Balance, selection, issuer, menu);
             selectionView = go.AddComponent<ProvisionalSelectionView>();
             selectionView.Configure(selection);
             selectionView.Subscribe();
@@ -88,7 +92,7 @@ namespace Nova.Tests
             go.AddComponent<NodeController>();
             var placed = go.AddComponent<PlacedNode>();
             placed.Configure(Definition(type), faction, energy);
-            go.AddComponent<NodeIgnition>().Configure(Balance, new[] { Definition("Star"), Definition("Pulsar"), Definition("Magnetar") });
+            go.AddComponent<NodeIgnition>().Configure(Balance, new[] { Definition("Star") });
             go.AddComponent<StarGenerator>();
             return placed.Place(registry);
         }
@@ -124,6 +128,15 @@ namespace Nova.Tests
             Vector2 at = node != null ? (Vector2)node.transform.position : new Vector2(0f, -4f);
             router.PressLeft(at, node);
             router.ReleaseLeft(at, node);
+        }
+
+        // Clic sobre una opción del menú radial abierto.
+        void ChooseOption(NodeType type)
+        {
+            int index = IgnitionMenuState.Options.ToList().IndexOf(type);
+            Vector2 at = IgnitionMenuState.OptionPosition(menu.Center, index);
+            router.PressLeft(at, null);
+            router.ReleaseLeft(at, null);
         }
 
         void DoubleClick(NodeController node)
@@ -170,10 +183,14 @@ namespace Nova.Tests
             }
             Assert.AreEqual(Balance.IgnitionCost, asteroid.Energy);
 
-            // 3. Encenderlo como Estrella: cancelar la selección y hacer clic en él (13.1, T1-11b).
+            // 3. Encenderlo como Estrella: cancelar la selección, hacer clic en él para abrir el
+            // menú radial y elegir la Estrella (13.1, 13.7).
             router.ClickRight(null);
             Assert.IsFalse(selection.HasSelection);
             Click(asteroid);
+            Assert.IsTrue(menu.IsOpen);
+            ChooseOption(NodeType.Star);
+            Assert.IsFalse(menu.IsOpen);
 
             Assert.AreEqual(NodeType.Star, asteroid.Type, "Encendido.");
             Assert.AreEqual(1, asteroid.Level);

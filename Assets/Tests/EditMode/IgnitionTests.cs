@@ -179,14 +179,43 @@ namespace Nova.Tests
             Assert.AreEqual(10, node.Energy);
         }
 
+        // T2-02: un tipo sin NodeDefinition es un tipo que esta fase todavía no tiene. El menú
+        // lo enseña deshabilitado, y encenderlo no cobra ni cambia nada.
         [Test]
-        public void MissingDefinitionIsAConfigurationError()
+        public void TypeWithoutDefinitionIsUnavailable()
         {
             NodeController node = Node("Asteroid", Faction.Player, 10);
             IgnitionOf(node).Configure(Balance, new[] { Definition("Star") });
 
-            Assert.Throws<System.InvalidOperationException>(() => IgnitionOf(node).TryIgnite(Faction.Player, NodeType.Pulsar));
-            Assert.AreEqual(10, node.Energy, "Un error de configuración no cobra el coste.");
+            Assert.IsTrue(IgnitionOf(node).Offers(NodeType.Star));
+            Assert.IsFalse(IgnitionOf(node).Offers(NodeType.Pulsar));
+            ActionCheck result = IgnitionOf(node).TryIgnite(Faction.Player, NodeType.Pulsar);
+
+            Assert.AreEqual(ActionBlock.Unavailable, result.Block);
+            Assert.AreEqual(Balance.IgnitionCost, result.Cost);
+            Assert.AreEqual(NodeType.Asteroid, node.Type);
+            Assert.AreEqual(10, node.Energy);
+        }
+
+        // Reunir la Energía no arregla un tipo que no existe: Unavailable va por delante.
+        [Test]
+        public void UnavailableWinsOverMissingEnergy()
+        {
+            NodeController node = Node("Asteroid", Faction.Player, 5);
+            IgnitionOf(node).Configure(Balance, new[] { Definition("Star") });
+
+            Assert.AreEqual(ActionBlock.InsufficientEnergy, IgnitionOf(node).Check(Faction.Player, NodeType.Star).Block);
+            Assert.AreEqual(ActionBlock.Unavailable, IgnitionOf(node).Check(Faction.Player, NodeType.Magnetar).Block);
+        }
+
+        // Las reglas de dueño y tipo siguen mandando sobre la disponibilidad.
+        [Test]
+        public void OwnershipIsCheckedBeforeAvailability()
+        {
+            NodeController node = Node("Asteroid", Faction.Neutral, 10);
+            IgnitionOf(node).Configure(Balance, new[] { Definition("Star") });
+
+            Assert.AreEqual(ActionBlock.NotOwner, IgnitionOf(node).Check(Faction.Player, NodeType.Magnetar).Block);
         }
 
         [Test]

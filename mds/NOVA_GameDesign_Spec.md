@@ -669,6 +669,9 @@ Tres opciones, siempre las mismas y siempre las tres, en el orden de [16.2](#162
 
 - Con `energy < 10` el menú **se abre igual**, con las tres opciones deshabilitadas y el coste en rojo. Es el mismo criterio que el botón de mejora de [13.3](#133-panel-de-clic-derecho): el jugador necesita saber cuánto le falta, y ocultarlo no se lo dice.
 - Clic derecho o clic en vacío: cierra el menú sin encender.
+- Con el menú abierto, cualquier otro clic izquierdo —sobre un nodo— o un arrastre **lo cierra sin encender y sigue su curso**: un clic sobre una Estrella propia la selecciona, y un lazo selecciona. El clic derecho y `Esc` **solo** lo cierran: no abren el panel ni pausan ([18](#18-decisiones-tomadas-por-defecto) #28).
+- Una opción deshabilitada no hace nada al pulsarla y **deja el menú abierto**, para que se siga viendo cuánto falta.
+- Un tipo que la partida todavía no tiene sale **deshabilitado, en gris y sin coste** ([18](#18-decisiones-tomadas-por-defecto) #29). Durante el desarrollo es el Magnetar hasta `T2-04` y el Púlsar hasta `T3-02`.
 - El panel de clic derecho de un Asteroide sigue siendo informativo: `DORMIDO` y el coste de encendido ([13.4](#134-traducción-de-velocidad-de-ataque)).
 
 El estado `SinEncender` ya avisa de cuál de las dos lecturas toca sin abrir nada: la brasa está quieta por debajo de 10 y crepita al llegar ([14.1](./NOVA_Estados_Animaciones.md#141-estados-del-nodo)).
@@ -723,7 +726,7 @@ Assets/
 │   ├── Systems/              # Nova.Systems.asmref: compila dentro de Nova.Gameplay
 │   ├── UI/
 │   ├── Presentation/
-│   ├── Utils/
+│   ├── Utils/                # PrimitiveSprites: discos de las vistas provisionales (T2-02)
 │   └── Editor/               # Nova.Editor, solo Editor: configuración, puente de arte, fuente
 ├── Data/                     # Instancias .asset de los SO
 │   ├── Nodes/
@@ -820,7 +823,8 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 | `NodeHUD.cs` | Número de Energía sobre el nodo |
 | `NodeInfoPanel.cs` | Panel de clic derecho |
 | `PulsarPowerWheel.cs` | Rueda de poderes |
-| `IgnitionMenu.cs` | Menú radial de encendido |
+| `IgnitionMenuState.cs` | Estado del menú radial de encendido: abierto o no, sobre qué Asteroide, dónde y la geometría de sus opciones. Lo abre y lo cierra `InputRouter`; vive en `Nova.Input` porque el router resuelve el clic contra él |
+| `IgnitionMenu.cs` | Dibuja el menú radial de encendido. Solo lee `IgnitionMenuState` y valida cada opción con `NodeIgnition.Check` |
 | `PowerBarUI.cs` | Barra inferior. Lee de `NodeRegistry`, no acumula estado. |
 | `EndLevelScreen.cs` | Victoria y derrota |
 
@@ -1011,6 +1015,8 @@ Reglas que no estaban en el diseño original y que se añadieron para cerrar hue
 | 25 | **Umbral de arrastre de 4 px** de la referencia (8 px a 1080p); el arrastre envía al soltar, **sin buffer** | 13.1 no separaba clic de arrastre. Un arrastre no puede ser doble clic, así que esperar 0.25 s solo añadiría latencia. El valor va en `BalanceConfig`. Cerrado el 2026-09-29 antes de `T1-11` |
 | 26 | El lazo **sustituye** a la selección; el clic izquierdo en vacío **no hace nada** | Mantiene que la selección solo la cancela el clic derecho en vacío (13.1) y que un lazo siempre da el mismo resultado, haya lo que haya seleccionado. Cerrado el 2026-09-29 antes de `T1-11` |
 | 27 | Un nodo que deja de ser propio **sale solo de la selección**; un doble clic sobre un nodo seleccionado **lo deselecciona y no envía** | Sin lo primero, la selección guardaría nodos del rival como orígenes. Sin lo segundo, deseleccionar con doble clic lanzaría un 50% sin querer contra el nodo recién soltado. Cerrado el 2026-09-29 antes de `T1-11` |
+| 28 | Con el menú de encendido abierto, un clic izquierdo fuera de las opciones o un arrastre **lo cierra y sigue su curso**; el clic derecho y `Esc` **solo** lo cierran | 13.7 decía qué cerraba el menú, pero no qué más hacía ese clic. Que siga su curso evita un clic perdido al querer seleccionar otra cosa; el clic derecho y `Esc` se consumen porque abrir el panel o pausar al cerrar un menú sorprende. Decidido en `T2-02` |
+| 29 | Las opciones del menú de encendido de un tipo que la partida no tiene salen **deshabilitadas, en gris y sin coste**, distintas de las que solo esperan Energía | 13.7 da siempre las tres opciones. En la fase 2 el Magnetar no existe hasta `T2-04` ni el Púlsar hasta `T3-02`, y encenderlos ya daría nodos a medias. Se resuelve con datos: cada `NodeIgnition` ofrece los tipos cuya `NodeDefinition` tiene, y el bloqueo `ActionBlock.Unavailable` va por delante de la Energía. Es también la vía de T.7 #46 si hace falta un bloqueo por nivel. Decidido con el usuario en `T2-02` |
 
 ---
 

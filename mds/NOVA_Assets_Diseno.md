@@ -191,11 +191,13 @@ Un magnetar es una estrella de neutrones con el campo magnético más intenso de
 
 | ID | Nivel | Radio asociado | Señal de nivel | Huella | Archivos en `art/nodes/magnetar/v1/` | Estado | Vista previa |
 |---|---|---|---|---|---|---|---|
-| `ART-NOD-MAG-01` | 1 | 2.0 u | Una esquirla | 0.64 u | `mag_lvl1_neutral.png` · `_player` · `_enemy` | ✅ | ![](../art/nodes/magnetar/v1/mag_lvl1_neutral.png) ![](../art/nodes/magnetar/v1/mag_lvl1_player.png) ![](../art/nodes/magnetar/v1/mag_lvl1_enemy.png) |
-| `ART-NOD-MAG-02` | 2 | 2.4 u | Dos esquirlas | 0.94 u | `mag_lvl2_neutral.png` · `_player` · `_enemy` | ✅ | ![](../art/nodes/magnetar/v1/mag_lvl2_neutral.png) ![](../art/nodes/magnetar/v1/mag_lvl2_player.png) ![](../art/nodes/magnetar/v1/mag_lvl2_enemy.png) |
-| `ART-NOD-MAG-03` | 3 | 2.8 u | Tres esquirlas | 0.94 u | `mag_lvl3_neutral.png` · `_player` · `_enemy` | ✅ | ![](../art/nodes/magnetar/v1/mag_lvl3_neutral.png) ![](../art/nodes/magnetar/v1/mag_lvl3_player.png) ![](../art/nodes/magnetar/v1/mag_lvl3_enemy.png) |
-| `ART-NOD-MAG-04` | 4 | 3.2 u | Cuatro esquirlas | 1.05 u | `mag_lvl4_neutral.png` · `_player` · `_enemy` | ✅ | ![](../art/nodes/magnetar/v1/mag_lvl4_neutral.png) ![](../art/nodes/magnetar/v1/mag_lvl4_player.png) ![](../art/nodes/magnetar/v1/mag_lvl4_enemy.png) |
-| `ART-NOD-MAG-05` | 5 | 3.6 u | Cinco esquirlas | 1.05 u | `mag_lvl5_neutral.png` · `_player` · `_enemy` | ✅ | ![](../art/nodes/magnetar/v1/mag_lvl5_neutral.png) ![](../art/nodes/magnetar/v1/mag_lvl5_player.png) ![](../art/nodes/magnetar/v1/mag_lvl5_enemy.png) |
+| `ART-NOD-MAG-01` | 1 | 1.5 u | Una esquirla | 0.64 u | `mag_lvl1_neutral.png` · `_player` · `_enemy` | ✅ | ![](../art/nodes/magnetar/v1/mag_lvl1_neutral.png) ![](../art/nodes/magnetar/v1/mag_lvl1_player.png) ![](../art/nodes/magnetar/v1/mag_lvl1_enemy.png) |
+| `ART-NOD-MAG-02` | 2 | 1.75 u | Dos esquirlas | 0.94 u | `mag_lvl2_neutral.png` · `_player` · `_enemy` | ✅ | ![](../art/nodes/magnetar/v1/mag_lvl2_neutral.png) ![](../art/nodes/magnetar/v1/mag_lvl2_player.png) ![](../art/nodes/magnetar/v1/mag_lvl2_enemy.png) |
+| `ART-NOD-MAG-03` | 3 | 2.0 u | Tres esquirlas | 0.94 u | `mag_lvl3_neutral.png` · `_player` · `_enemy` | ✅ | ![](../art/nodes/magnetar/v1/mag_lvl3_neutral.png) ![](../art/nodes/magnetar/v1/mag_lvl3_player.png) ![](../art/nodes/magnetar/v1/mag_lvl3_enemy.png) |
+| `ART-NOD-MAG-04` | 4 | 2.25 u | Cuatro esquirlas | 1.05 u | `mag_lvl4_neutral.png` · `_player` · `_enemy` | ✅ | ![](../art/nodes/magnetar/v1/mag_lvl4_neutral.png) ![](../art/nodes/magnetar/v1/mag_lvl4_player.png) ![](../art/nodes/magnetar/v1/mag_lvl4_enemy.png) |
+| `ART-NOD-MAG-05` | 5 | 2.5 u | Cinco esquirlas | 1.05 u | `mag_lvl5_neutral.png` · `_player` · `_enemy` | ✅ | ![](../art/nodes/magnetar/v1/mag_lvl5_neutral.png) ![](../art/nodes/magnetar/v1/mag_lvl5_player.png) ![](../art/nodes/magnetar/v1/mag_lvl5_enemy.png) |
+
+> **Los sprites no cambian con los radios de 2026-10-02** ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #35). El generador coloca la esquirla `i` a `ORBITA_0 + ORBITA_K · (radio(i+1) − radio(1))`, y las dos familias son escaleras de paso constante (0.4 u antes, 0.25 u ahora): la nueva es la vieja multiplicada por 0.625, así que basta con `ORBITA_K × 1.6` para obtener las mismas órbitas píxel a píxel. `tools/gen_magnetar_v1.py` conserva los radios viejos en `RADIO_U`; si se regenera, se cambian los dos a la vez.
 
 **La huella no crece en todos los escalones, y no es un fallo.** Como el ángulo áureo decide dónde cae cada esquirla, la extensión del sprite la fija la pieza más excéntrica, no la última en añadirse: N2 y N3 comparten huella (0.94 u) y N4 y N5 también (1.05 u). El contador de nivel sigue siendo exacto —la esquirla nueva está siempre ahí, en un sitio que antes estaba vacío—; lo que no es monótono es el rectángulo que la contiene. Ningún nivel toca el borde de la celda y los cinco caben en la banda de 0.6 a 1.2 u de A.8 #4, con N1 justo en el suelo de la banda.
 
@@ -798,25 +800,27 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 | `ART-WLD-RAD-NEUTRAL` | Variante neutral | Gris, para el Magnetar neutral que bloquea a ambos. **Cinco archivos** | `art/world/world_radius_neutral_lvl{1..5}.png` | ⬜ | `![](art/world/world_radius_neutral_lvl5.png)` |
 | `ART-WLD-RAD-SHOT` | Haz de disparo | Del centro al protón, instantáneo. **Un archivo**: es un trazo estirable, no depende del radio | `art/world/world_radius_shot.png` | ⬜ | `![](art/world/world_radius_shot.png)` |
 
-**Son 16 archivos, no 4, y el motivo no es estético.** Un solo anillo escalado a los cinco radios exigiría factores de ×0.556, ×0.667, ×0.778, ×0.889 y ×1. **Ninguno es entero**, y con `Filter Mode: Point` una escala no entera rompe el pixel-perfect: es exactamente por lo que el protón pasó a tres sprites discretos ([A.4.2](#a42-protón-y-haces-de-poder--143)) y el argumento con el que [T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada) descarta arreglar la escala del tablero desde Unity. Un radio, un archivo. El coste real es de inventario, no de trabajo: el generador es un bucle sobre cinco radios.
+**Son 16 archivos, no 4, y el motivo no es estético.** Un solo anillo escalado a los cinco radios exigiría factores de ×0.6, ×0.7, ×0.8, ×0.9 y ×1. **Ninguno es entero**, y con `Filter Mode: Point` una escala no entera rompe el pixel-perfect: es exactamente por lo que el protón pasó a tres sprites discretos ([A.4.2](#a42-protón-y-haces-de-poder--143)) y el argumento con el que [T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada) descarta arreglar la escala del tablero desde Unity. Un radio, un archivo. El coste real es de inventario, no de trabajo: el generador es un bucle sobre cinco radios.
 
 > **Este anillo no se ve afectado por el alcance global del Púlsar.** El que desapareció es `ART-WLD-RANGE`, el círculo de alcance del *poder* (A.4.3). El radio del Magnetar mide dónde caen sus disparos y sigue siendo información defensiva crítica: un protón que pasa a 0.1 u no recibe disparos, y eso no ha cambiado. Lo que sí cambió es que el Magnetar neutral **puede cambiar de dueño a mitad de partida** por un Agujero de Gusano ([7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido)), así que su anillo tiene que seguir siendo legible **en las tres rampas**, no solo en la neutral.
 
 **Decisión cerrada (A.8 #1):** el radio es **siempre visible en los Magnetares neutrales y enemigos** —es información defensiva crítica para trazar una ruta— y **a demanda en los propios**, al seleccionar o pasar el ratón. Mostrar siempre los propios satura la pantalla sin aportar nada: el jugador ya sabe dónde están sus defensas.
 
-**Resolución:** hasta **512×512 px**. Es una de las tres familias exentas de la celda de 96 ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Resolución*).
+**Resolución:** hasta **384×384 px**. Es una de las tres familias exentas de la celda de 96 ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Resolución*).
 
 > **Decía 384×384 y no daba.** El cálculo original —«3.6 u a PPU 64 son 230 px de radio»— es correcto, pero **230 px es el radio**: el círculo mide **461 px** de lado. Con 384 no caben ni el nivel 4 (410 px) ni el nivel 5 (461 px), que son justo los dos que más importa ver. 512 es la potencia de dos que lo cubre y deja 25 px de margen para el trazo.
 
-| Nivel | Radio | Radio en px | Lado del lienzo |
-|---|---|---|---|
-| 1 | 2.0 u | 128 | 256 |
-| 2 | 2.4 u | 153.6 | 308 |
-| 3 | 2.8 u | 179.2 | 359 |
-| 4 | 3.2 u | 204.8 | 410 |
-| 5 | 3.6 u | 230.4 | 461 |
+> **Y vuelve a 384 el 2026-10-02**, con los radios ×0.75 de [T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #35: el N5 mide 2.5 u, 160 px de radio y **320 px** de lado, y 384 le deja 32 px de margen por lado para el trazo.
 
-**El anillo se dibuja al píxel entero más cercano; la lógica usa el valor exacto.** Tres de los cinco radios no caen en píxel redondo a PPU 64 —2.4 u son 153.6 px—, así que el dibujo redondea hasta 0.4 px. No afecta a nada: el margen que el jugador tiene que distinguir es de 0.1 u, que son 6.4 px. Lo que **no** puede redondear es `MagnetarTurret`, que compara distancias en unidades de mundo.
+| Nivel | Radio | Radio en px | Lado del círculo |
+|---|---|---|---|
+| 1 | 1.5 u | 96 | 192 |
+| 2 | 1.75 u | 112 | 224 |
+| 3 | 2.0 u | 128 | 256 |
+| 4 | 2.25 u | 144 | 288 |
+| 5 | 2.5 u | 160 | 320 |
+
+**Los cinco radios caen en píxel exacto** a PPU 64, así que el anillo dibujado y el radio de `MagnetarTurret`, que compara distancias en unidades de mundo, coinciden sin redondeo. Antes tres de los cinco no caían (2.4 u eran 153.6 px) y el dibujo redondeaba hasta 0.4 px.
 
 ### A.4.2 Protón y haces de poder — [14.3](./NOVA_Estados_Animaciones.md#143-protón)
 

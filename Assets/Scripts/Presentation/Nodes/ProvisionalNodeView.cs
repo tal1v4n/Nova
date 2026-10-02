@@ -1,6 +1,6 @@
-using System.Collections.Generic;
 using Nova.Core;
 using Nova.Gameplay;
+using Nova.Utils;
 using TMPro;
 using UnityEngine;
 
@@ -28,8 +28,6 @@ namespace Nova.Presentation
 
         // TextMeshPro en mundo mide el em en fontSize × 0.1 unidades.
         const float WorldTextScale = 0.1f;
-
-        static readonly Dictionary<int, Sprite> CircleCache = new Dictionary<int, Sprite>();
 
         [Tooltip("Jersey10 Raster56 (T0-06).")]
         [SerializeField] TMP_FontAsset font;
@@ -152,37 +150,6 @@ namespace Nova.Presentation
         }
 
         // Disco blanco de alfa binario y filtro Point, teñido por SpriteRenderer.color.
-        internal static Sprite CircleSprite(int diameter)
-        {
-            if (CircleCache.TryGetValue(diameter, out Sprite cached) && cached != null)
-                return cached;
-
-            var texture = new Texture2D(diameter, diameter, TextureFormat.RGBA32, false)
-            {
-                name = $"ProvisionalCircle{diameter}",
-                filterMode = FilterMode.Point,
-                wrapMode = TextureWrapMode.Clamp
-            };
-
-            float radius = diameter / 2f;
-            var pixels = new Color32[diameter * diameter];
-            for (int y = 0; y < diameter; y++)
-            {
-                for (int x = 0; x < diameter; x++)
-                {
-                    float dx = x + 0.5f - radius;
-                    float dy = y + 0.5f - radius;
-                    bool inside = dx * dx + dy * dy <= radius * radius;
-                    pixels[y * diameter + x] = inside ? new Color32(255, 255, 255, 255) : new Color32(0, 0, 0, 0);
-                }
-            }
-            texture.SetPixels32(pixels);
-            texture.Apply();
-
-            Sprite sprite = Sprite.Create(texture, new Rect(0, 0, diameter, diameter), new Vector2(0.5f, 0.5f), PixelsPerUnit);
-            sprite.name = texture.name;
-            CircleCache[diameter] = sprite;
-            return sprite;
-        }
+        internal static Sprite CircleSprite(int diameter) => PrimitiveSprites.Disc(diameter);
     }
 }

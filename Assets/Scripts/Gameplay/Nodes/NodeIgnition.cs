@@ -22,12 +22,22 @@ namespace Nova.Gameplay
 
         NodeController node;
 
-        // Validación sin efectos. La usan el comando y, en T2-02, el menú radial para pintar
-        // cada opción deshabilitada con el coste en rojo (13.7).
+        // Validación sin efectos. La usan el comando y el menú radial (T2-02), que pinta cada
+        // opción deshabilitada con el coste en rojo (13.7) o como no disponible.
+        //
+        // Un tipo sin NodeDefinition en targets es Unavailable: el menú enseña siempre las tres
+        // opciones, pero las de tipos que todavía no existen —Magnetar hasta T2-04, Púlsar hasta
+        // T3-02— salen deshabilitadas. Va por delante de la Energía porque reunir 10 no lo arregla.
         public ActionCheck Check(Faction actor, NodeType targetType)
         {
-            return ConversionRules.CheckIgnition(Node.Snapshot(), actor, targetType, Balance.IgnitionCost);
+            ActionCheck rules = ConversionRules.CheckIgnition(Node.Snapshot(), actor, targetType, Balance.IgnitionCost);
+            bool reachable = rules.IsAllowed || rules.Block == ActionBlock.InsufficientEnergy;
+            if (reachable && !Offers(targetType))
+                return new ActionCheck(ActionBlock.Unavailable, rules.Cost);
+            return rules;
         }
+
+        public bool Offers(NodeType type) => FindDefinition(type) != null;
 
         public ActionCheck TryIgnite(Faction actor, NodeType targetType)
         {
@@ -50,12 +60,20 @@ namespace Nova.Gameplay
 
         NodeDefinition DefinitionFor(NodeType type)
         {
+            NodeDefinition definition = FindDefinition(type);
+            if (definition == null)
+                throw new InvalidOperationException($"{name}: NodeIgnition no tiene la NodeDefinition de {type}.");
+            return definition;
+        }
+
+        NodeDefinition FindDefinition(NodeType type)
+        {
             foreach (NodeDefinition definition in targets)
             {
                 if (definition != null && definition.Type == type)
                     return definition;
             }
-            throw new InvalidOperationException($"{name}: NodeIgnition no tiene la NodeDefinition de {type}.");
+            return null;
         }
 
         BalanceConfig Balance => balance != null ? balance : throw new InvalidOperationException("NodeIgnition necesita BalanceConfig.");

@@ -5,6 +5,7 @@ using Nova.Gameplay;
 using Nova.Input;
 using Nova.Presentation;
 using Nova.Systems;
+using Nova.UI;
 using TMPro;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -19,6 +20,10 @@ namespace Nova.Editor
     // Es idempotente: sobrescribe la escena entera cada vez. Todo lo que no es cableado —tipo,
     // facción, Energía y posición de cada nodo— queda serializado en la escena y se ajusta en el
     // Inspector, no aquí.
+    //
+    // Desde T2-02 lleva también el menú radial de encendido. Los nodos solo ofrecen la Estrella:
+    // el Magnetar llega con T2-04 y el Púlsar con T3-02, y hasta entonces el menú los enseña
+    // deshabilitados. Al cerrar cada una de esas tareas se añade aquí su NodeDefinition.
     public static class Phase1TestScene
     {
         const string ScenePath = "Assets/Scenes/Tests/Fase1.unity";
@@ -67,7 +72,7 @@ namespace Nova.Editor
             ProtonRegistry protons;
             NodeRegistry registry = CreateSystems(balance, font, camera, out protons);
 
-            NodeDefinition[] ignitionTargets = { Definition("Star"), Definition("Pulsar"), Definition("Magnetar") };
+            NodeDefinition[] ignitionTargets = { Definition("Star") };
             foreach (var spec in Nodes)
                 CreateNode(spec.name, Definition(spec.type), spec.faction, spec.energy, spec.position, balance, font, ignitionTargets);
 
@@ -102,11 +107,13 @@ namespace Nova.Editor
             selection.Configure(registry);
             var issuer = go.AddComponent<PlayerCommandIssuer>();
             issuer.Configure(launcher);
+            var menu = go.AddComponent<IgnitionMenuState>();
             var router = go.AddComponent<InputRouter>();
-            router.Configure(balance, selection, issuer, camera);
+            router.Configure(balance, selection, issuer, menu, camera);
 
             go.AddComponent<ProvisionalSelectionView>().Configure(selection);
             go.AddComponent<ProvisionalProtonView>().Configure(protons, font);
+            go.AddComponent<IgnitionMenu>().Configure(menu, font);
 
             EditorUtility.SetDirty(go);
             return registry;
