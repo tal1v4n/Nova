@@ -85,14 +85,14 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ hecha · 🔴 bloqueada.
 |---|---|---|---|---|---|
 | 0 | Proyecto | 6 | 6 | ✅ | El proyecto abre en Unity, `Nova.Core` compila sin referenciar `UnityEngine` y un test vacío corre en EditMode |
 | 1 | Núcleo jugable | 14 | 14 | ✅ | Capturar un Asteroide, encenderlo como Estrella y tomar un nodo enemigo |
-| 2 | Tipos y defensa | 7 | 3 | 🟨 | Los cuatro tipos funcionan y el nivel 3 es jugable |
+| 2 | Tipos y defensa | 7 | 4 | 🟨 | Los cuatro tipos funcionan y el nivel 3 es jugable |
 | 3 | Poderes | 8 | 0 | ⬜ | Los tres poderes funcionan y pasan los casos 8–14 y 27–35 de la sección 17 |
 | 4 | Algoritmo del Enemigo | 6 | 0 | ⬜ | El algoritmo del mapa 3 vence a un jugador descuidado |
 | 5 | Flujo y contenido | 7 | 0 | ⬜ | Los 9 niveles son completables de principio a fin |
 | 6 | Presentación | 11 | 0 | 🔴 | 46 de 106 assets listos. **`T6-01`, `T6-02` y `T6-03` ya no están bloqueadas por arte**; las otras ocho sí ([A.7](./NOVA_Assets_Diseno.md#a7-resumen-de-progreso)) |
-| | **Total** | **59** | **23** | | |
+| | **Total** | **59** | **24** | | |
 
-**Siguiente tarea:** `T2-05`, resistencia ×2 en impactos hostiles y 1:1 en refuerzos aliados.
+**Siguiente tarea:** `T2-06`, el Magnetar neutral disparando a ambos bandos ([3.2](./NOVA_GameDesign_Spec.md#32-nota-sobre-el-magnetar-neutral), [4.4](./NOVA_Nodos.md#44-magnetar)). La torreta ya existe y lo deja apagado a propósito (desviación 160).
 
 ---
 
@@ -141,7 +141,7 @@ Creada el **2026-09-28**. `T.4` empezaba en `T1-01` dando por hecho un proyecto 
 | T2-02 | `IgnitionMenu`: menú radial de 3 opciones en el cursor, abierto por clic izquierdo sobre Asteroide propio | [13.7](./NOVA_GameDesign_Spec.md#137-menú-radial-de-encendido) | T1-11b | No | ✅ |
 | T2-03 | Mejoras de nivel y `NodeInfoPanel` de clic derecho, con botón deshabilitado y coste en rojo | [13.3](./NOVA_GameDesign_Spec.md#133-panel-de-clic-derecho), [13.4](./NOVA_GameDesign_Spec.md#134-traducción-de-velocidad-de-ataque) | T1-11b | No | ✅ |
 | T2-04 | `MagnetarTurret`: radio, cadencia, objetivo más cercano al centro, −2 de Carga | [4.4](./NOVA_Nodos.md#44-magnetar), [6.3](./NOVA_GameDesign_Spec.md#63-efecto-del-magnetar-sobre-protones) | T1-12 | No | ✅ |
-| T2-05 | Resistencia ×2 en impactos hostiles y 1:1 en refuerzos aliados | [5.3](./NOVA_GameDesign_Spec.md#53-recepción), [6.2](./NOVA_GameDesign_Spec.md#62-resolución-de-impacto) | T2-04 | No | ⬜ |
+| T2-05 | Resistencia ×2 en impactos hostiles y 1:1 en refuerzos aliados | [5.3](./NOVA_GameDesign_Spec.md#53-recepción), [6.2](./NOVA_GameDesign_Spec.md#62-resolución-de-impacto) | T2-04 | No | ✅ |
 | T2-06 | Magnetar neutral disparando a ambos bandos | [3.2](./NOVA_GameDesign_Spec.md#32-nota-sobre-el-magnetar-neutral), [4.4](./NOVA_Nodos.md#44-magnetar) | T2-04 | No | ⬜ |
 | T2-07 | `NodeConverter`: reconversión de 3 s con ventana de vulnerabilidad | [8.1](./NOVA_GameDesign_Spec.md#81-reglas) | T1-04, T2-03 | No | ⬜ |
 | T2-08 | `ThreatCalculator` + estado `Asustado` | [14.2](./NOVA_Estados_Animaciones.md#142-animación-de-susto) | T1-10 | No | ⬜ |
@@ -216,6 +216,7 @@ Una línea por tarea completada. La más reciente arriba.
 
 | Fecha | Tarea | Resultado | Notas / desviaciones de la spec |
 |---|---|---|---|
+| 2026-10-02 | **T2-05** | Sin código de juego nuevo: la resistencia ×2 y la absorción 1:1 ya las aplicaba `ImpactResolver` desde `T1-03`, y `Proton.Impact` le pasa `BalanceConfig.MagnetarResistance` desde `T1-09`. `ResistanceTests`: 6 tests de punta a punta con protones lanzados por `ProtonLauncher` y resueltos por `ProtonRegistry` contra nodos de escena: un protón hostil hace la mitad de daño a un Magnetar y el entero a una Estrella, el refuerzo aliado suma 1:1, un Magnetar lleno necesita 200 de Carga (199 no bastan), el remanente de la captura también se divide, y otro `BalanceConfig` da otro resultado | Suite completa en verde en el Test Runner de Unity y resistencia comprobada a mano en Play con `Fase2.unity`. Desviación 164 abajo |
 | 2026-10-02 | **T2-04** | `MagnetarTurret` en `Gameplay/Nodes/`: en el tick fijo, a 0, busca en `ProtonRegistry` el protón hostil más cercano dentro del radio de su nivel (borde incluido; desempates por Carga y por orden de lanzamiento) y le resta `MagnetarShotDamage`. Cadencia en microsegundos enteros con el sobrante arrastrado; en reposo espera cargada sin acumular. Solo actúa siendo Magnetar de Jugador o Enemigo: el neutral es `T2-06`. Emite `OnShot`. `Proton.TakeShot` y `Proton.OnShotDown`: a 0 de Carga el protón sale sin impactar y su Energía se pierde (17, caso 6). `ImpactResult.Destroyed` eliminado. `ProvisionalMagnetarView`: anillo del radio exacto y trazo de cada disparo. El generador de escenas pasa a `TestScenes` con dos menús: la fase 1 de siempre y **`Fase2.unity`**, con un Magnetar enemigo en medio del camino; los nodos ofrecen Estrella y Magnetar en el menú de encendido y llevan la torreta. `MagnetarTests`: 23 tests, 27 casos | Suite completa en verde en el Test Runner de Unity y torreta probada a mano en Play con `Fase2.unity`: anillo visible, disparos sobre los protones que cruzan el radio y derribo de los pequeños. T.7 #40 cerrada. Desviaciones 159–163 abajo |
 | 2026-10-02 | **T2-03** | **Mejora:** `NodeController.TryUpgrade` cobra de la Energía del propio nodo el coste de 16.2 y sube un nivel por `NodeLevelComponent.Apply`; Tope, tipo y estado no cambian. `INodeCommandIssuer.Upgrade` y `PlayerCommandIssuer` la exponen. **Panel:** `InfoPanelState` en `Nova.Input` (abierto o no, nodo, centro y geometría del botón, 208 × 112 px) y `NodeInfoPanel` en `Nova.UI` (a +50): título con tipo y nivel, Energía / Tope, generación de la Estrella o cadencia del Magnetar, y botón `Mejorar · coste` en cian, deshabilitado con el coste en rojo o sustituido por `NIVEL MÁXIMO`; el Asteroide enseña `DORMIDO` y el coste de encendido; en un nodo ajeno, sin botón. Se repinta con los eventos del nodo. `InputRouter`: el clic derecho sobre un nodo abre su panel (sustituye a `OnInfoRequested`), el clic derecho en vacío y `Esc` lo cierran, y un clic dentro del panel es suyo. **Textos:** `UiText` (`Nova.Data`) y `Assets/Data/UiText.asset`, que el menú de encendido también usa. `PrimitiveSprites.Rect`. La escena de prueba gana el panel. `UpgradeTests`: 22 tests, 30 casos; `InputTests` gana 9 del panel | Suite completa en verde en el Test Runner de Unity y panel probado a mano en Play con la escena regenerada: mejora con el botón, coste en rojo sin Energía, nodos ajenos sin botón, cierre con clic derecho en vacío y `Esc`. T.7 #39 cerrada, #49 abierta. Desviaciones 154–158 abajo |
 | 2026-10-02 | **T2-02** | `IgnitionMenuState` en `Nova.Input`: abierto o no, Asteroide, centro, actor y geometría —tres opciones a 1 u del cursor en el orden de 16.2, Estrella arriba, discos de 0.375 u de radio que son a la vez dibujo y blanco del clic—; se cierra solo si el Asteroide cambia de facción o de tipo. `InputRouter`: el clic sobre Asteroide propio sin selección **abre el menú** en el cursor, desplazado lo justo para no salirse de la cámara; un clic sobre una opción enciende ese tipo por `PlayerCommandIssuer.Ignite`; cualquier otro clic o arrastre lo cierra y sigue su curso; clic derecho y `Esc` solo lo cierran. `IgnitionMenu` en `Nova.UI` (a +50): tres discos con el coste dentro y el tipo por fuera, en cian si se puede, con el coste en rojo si falta Energía y en gris sin coste si el tipo no existe todavía; se repinta al cambiar la Energía. `NodeIgnition.Offers` y `ActionBlock.Unavailable`. `Nova.Utils.PrimitiveSprites` con el disco provisional, que `ProvisionalNodeView` pasa a usar. La escena de prueba gana el menú y sus nodos solo ofrecen la Estrella. `IgnitionMenuTests` (12 tests); `InputTests` cambia los 2 tests de encendido directo por 11 del menú, 14 casos; `IgnitionTests` cambia el error de configuración por 3 tests de disponibilidad; `Phase1CriterionTests` enciende por el menú | Suite completa en verde en el Test Runner de Unity y menú probado a mano en Play con la escena regenerada: se abre con el coste en rojo por debajo de 10, enciende a Estrella y enseña Púlsar y Magnetar en gris. Desviaciones 149–153 abajo |
@@ -267,6 +268,10 @@ Una línea por tarea completada. La más reciente arriba.
 | — | — | Proyecto de código sin iniciar | — |
 
 > **Cómo leer esta lista.** Una línea por desviación: **qué cambió** y **dónde vive ahora**. El razonamiento completo está en el documento que se cita, que es el que manda; aquí solo está el rastro de cuándo y por qué se movió. Los números no se reutilizan nunca, ni siquiera cuando una desviación queda revertida.
+
+**Al implementar `T2-05` (2026-10-02).**
+
+164. **`T2-05` repetía trabajo de `T1-03`.** La fila de `T1-03` en T.4 ya decía «resistencia ×2», y sus tests lo cubrían sobre instantáneas. Lo único que faltaba era probarlo con protones y nodos de escena, que es lo que hace esta tarea. Al planificar las fases siguientes conviene mirar si otra tarea ya está hecha a medias por una regla pura de `Core`.
 
 **Al implementar `T2-04` (2026-10-02).**
 
