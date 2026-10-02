@@ -1,7 +1,7 @@
 {
     "name": "Nova.Presentation",
     "rootNamespace": "Nova.Presentation",
-    "references": ["Nova.Core", "Nova.Data", "Nova.Gameplay", "Unity.TextMeshPro"],
+    "references": ["Nova.Core", "Nova.Data", "Nova.Gameplay", "Nova.Input", "Unity.TextMeshPro"],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

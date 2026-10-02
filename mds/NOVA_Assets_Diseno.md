@@ -46,7 +46,7 @@ art/
 `<tipo>`: `ast` · `str` · `pul` · `mag` — `<faccion>`: `neutral` · `player` · `enemy`.
 Sin espacios, sin mayúsculas, sin acentos. Las hojas de animación llevan sufijo `_sheet` y su número de frames documentado en la columna correspondiente.
 
-**Un nodo por carpeta, una propuesta por subcarpeta.** Los nodos fueron lo primero que se diseñó a base de descartar, y el primer overlay de estado siguió el mismo camino (A.3.1): la Estrella descartó tres anatomías, y el Púlsar, el Magnetar, el Asteroide y el `zzz` de `Dormido` una versión completa cada uno. Las propuestas vivas de un mismo asset conviven en `v1/`, `v2/`… —`art/nodes/<nodo>/v<n>/` para los nodos, `art/states/v<n>/` para los overlays— con **los mismos nombres de archivo dentro de cada una**, así que elegir una es cambiar de carpeta y no renombrar treinta sprites. Una versión descartada no se borra: la razón por la que perdió es la documentación más útil que hay cuando alguien propone lo mismo seis meses después.
+**Un nodo por carpeta, una propuesta por subcarpeta.** Los nodos fueron lo primero que se diseñó a base de descartar, y el primer overlay de estado siguió el mismo camino (A.3.1): la Estrella descartó tres anatomías, y el Púlsar, el Magnetar, el Asteroide y el `zzz` de `Dormido` una versión completa cada uno. Las propuestas vivas de un mismo asset conviven en `v1/`, `v2/`… —`art/nodes/<nodo>/v<n>/` para los nodos, `art/states/<estado>/v<n>/` para los overlays— con **los mismos nombres de archivo dentro de cada una**, así que elegir una es cambiar de carpeta y no renombrar treinta sprites. Una versión descartada no se borra: la razón por la que perdió es la documentación más útil que hay cuando alguien propone lo mismo seis meses después.
 
 **Qué versión es la buena.** La marca este documento, no la carpeta. La columna *Archivos* de cada tabla lleva la ruta con su versión.
 
@@ -832,7 +832,7 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 
 **Sustituyen a los tres `ART-WLD-PWR-*`, que eran proyectiles.** El poder dejó de viajar: [7.2.2](./NOVA_GameDesign_Spec.md#722-el-haz) lo entrega por un haz de 0.25 s entre dos nodos. Son tres archivos igual que antes, así que el total de A.4.2 sigue en 9, pero el asset es otra cosa y se construye al revés.
 
-**Un haz no es un sprite de celda, y esa es toda su dificultad.** Los otros assets de mundo viven en 96 px o en una resolución propia fija; este tiene que medir desde **1 u hasta 36.7 u** —la diagonal del tablero— porque el alcance es global. No se puede dibujar un haz por longitud. Se dibuja **una sección transversal** y se estira:
+**Un haz no es un sprite de celda, y esa es toda su dificultad.** Los otros assets de mundo viven en 96 px o en una resolución propia fija; este tiene que medir desde **1 u hasta 17.2 u** —la diagonal del tablero de 15 × 8.4375 u ([T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada))— porque el alcance es global. No se puede dibujar un haz por longitud. Se dibuja **una sección transversal** y se estira:
 
 - **Tres piezas, no una:** nacimiento (en el Púlsar), tramo intermedio **repetible en horizontal**, y punta (en el objetivo). Solo el tramo intermedio se escala, y solo en su eje largo, así que el pixel-perfect del contrato se conserva en el eje corto, que es donde se ve.
 - **Alto fijo:** 8 px de trazo dentro de un archivo de 16 px de alto, deja aire para el halo.
@@ -951,7 +951,7 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-UI-HUD-ENERGY` | Número de Energía sobre el nodo | Legible sobre cualquier estado (14.7) | `art/ui/ui_energy_label.png` | ⬜ |
 | `ART-UI-PANEL` | Panel de clic derecho | 6 bloques de [13.3](./NOVA_GameDesign_Spec.md#133-panel-de-clic-derecho) | `art/ui/ui_info_panel.png` | ⬜ |
 | `ART-UI-BTN-UPG` | Botón de mejora | Estados normal / deshabilitado con coste en rojo / `NIVEL MÁXIMO` | `art/ui/ui_btn_upgrade.png` | ⬜ |
-| `ART-UI-BTN-CONV` | Botón de reconversión | Tres destinos con coste | `art/ui/ui_btn_convert.png` | ⬜ |
+| `ART-UI-BTN-CONV` | Botón de reconversión | **Dos** destinos con coste: nunca a Asteroide ni al propio tipo ([13.3](./NOVA_GameDesign_Spec.md#133-panel-de-clic-derecho) #5) | `art/ui/ui_btn_convert.png` | ⬜ |
 | `ART-UI-IGN-MENU` | Menú radial de encendido | 3 opciones: Estrella, Púlsar, Magnetar | `art/ui/ui_ignition_menu.png` | ⬜ |
 | `ART-UI-WHEEL` | Rueda de poderes del Púlsar | 3 ranuras fijas + candado con nivel requerido ([13.5](./NOVA_GameDesign_Spec.md#135-rueda-de-poderes-del-púlsar)) | `art/ui/ui_power_wheel.png` | ⬜ |
 | `ART-UI-CHARGE` | Barra de carga bajo el Púlsar | **Visible también en el Púlsar enemigo** ([7.5](./NOVA_GameDesign_Spec.md#75-agujero-de-gusano)) | `art/ui/ui_charge_bar.png` | ⬜ |
@@ -1027,7 +1027,7 @@ Lo que sigue bloqueando la fase 6 son los otros nueve grupos de este inventario,
 
 `elipse_base_plana` aparece en el catálogo de [NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md) pero **no está implementada**. Ver T.7 en [NOVA_Tracking.md](./NOVA_Tracking.md).
 
-**Ningún nodo heredó de otro, y es deliberado.** Cada uno estrenó las primitivas que su material pedía, y por eso el catálogo pasó de 9 a 16 mientras se cerraban dos nodos: **un nodo construido con las piezas de otro se parece a otro** (A.8, y contrato, *Reglas de trabajo*). `anillo` sigue sin estrenar; la usará el radio del Magnetar.
+**Ningún nodo heredó de otro, y es deliberado.** Cada uno estrenó las primitivas que su material pedía, y por eso el catálogo pasó de 9 a 16 mientras se cerraban dos nodos: **un nodo construido con las piezas de otro se parece a otro** (A.8, y contrato, *Reglas de trabajo*). `anillo` la estrenó el halo de power-up (A.4.4) y la reutilizará el radio del Magnetar.
 
 ---
 

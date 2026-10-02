@@ -222,7 +222,7 @@ ResolveImpact(proton, target):
 
 Notas obligatorias:
 - El redondeo del multiplicador es **hacia abajo**, y se aplica una sola vez sobre la Carga total, no disparo a disparo.
-- En una captura, el remanente también está afectado por el multiplicador. Un protón de 120 contra un Magnetar con 50 lo captura y le deja `120*0.5 - 50 = 10`.
+- En una captura, el remanente también está afectado por el multiplicador. Un protón de 100 contra un Magnetar con 40 lo captura y le deja `100*0.5 - 40 = 10`. (El ejemplo anterior, 120 contra 50, no se puede producir: ningún tope pasa de 100, así que ningún protón lleva más de 100.)
 - Al capturar, el nodo **conserva su tipo y su nivel**. Solo cambia de facción.
 - Un nodo capturado a 0 de Energía sigue siendo un nodo válido del nuevo bando.
 
@@ -305,7 +305,7 @@ El poder **no es un proyectil y no viaja**. Al lanzarlo sale del Púlsar un **ha
 | Interceptable | **No.** Ningún Magnetar puede cortarlo. Solo los protones son derribables. |
 | Color | El del **poder**, no el de la facción ([14.4](./NOVA_Estados_Animaciones.md#144-paleta-funcional)) |
 
-**La duración no depende de la distancia.** Un objetivo a 3 u y otro a 35 u reciben el efecto exactamente 0.25 s después del clic. Es la contrapartida de haber quitado el alcance: si el haz viajase a una velocidad fija, cruzar el tablero costaría más de 6 s y el poder dejaría de sentirse un poder.
+**La duración no depende de la distancia.** Un objetivo a 1 u y otro a 17 u —la diagonal del tablero de 15 × 8.4375 u mide 17.2— reciben el efecto exactamente 0.25 s después del clic. Es la contrapartida de haber quitado el alcance: si el poder viajase como el antiguo proyectil de 6 u/s, cruzar esa diagonal costaría casi 3 s, y a la velocidad de un protón, casi 7; el poder dejaría de sentirse un poder.
 
 **La validez se comprueba dos veces:** al lanzar y al terminar el haz. Si en esos 0.25 s el objetivo deja de cumplir [7.2.1](#721-objetivo-válido) —porque un protón propio lo capturó primero y ya es del lanzador— **el haz se disipa sin efecto y la Energía invertida se pierde**. Es la misma lógica que el caso 2 de la [sección 17](#17-casos-borde-y-reglas-de-resolución): la facción se comprueba al resolver, no al lanzar.
 
@@ -525,7 +525,7 @@ Ningún nivel debe ser imposible: en todos, el jugador debe tener al menos un As
 
 **La tercera vía ya no afecta a los poderes.** Desde que el Púlsar tiene alcance global ([7.2](#72-tabla-de-poderes)), la geometría del mapa solo encarece los protones: un Púlsar amenaza el tablero entero desde el primer segundo, y alejarse de él no protege de nada. Eso obliga a dos cosas al diseñar los 9 niveles:
 
-- **A partir del nivel 4, el Jugador no debería depender de una sola Estrella.** El Enemigo arranca con Púlsar(1) y puede congelarla o infectarla sin moverse ni acercarse. El nivel 4 de [11.2](#112-diseño-de-niveles) —Jugador con una única Estrella(1) contra Estrella(2) + Púlsar(1)— es el caso a vigilar en la primera prueba de juego: si resulta injusto, se corrige dándole un segundo nodo inicial, no devolviéndole el alcance al Púlsar.
+- **A partir del nivel 4, el Jugador no debería depender de una sola Estrella.** El Enemigo arranca con Púlsar(1) y puede congelarla o infectarla sin moverse ni acercarse. El nivel 4 de [11.2](#112-diseño-de-niveles) —Jugador con una única Estrella(1) contra Estrella(2) + Púlsar(1)— es uno de los tres casos a vigilar en la primera prueba de juego, y no el peor: el orden de revisión es 8, 6, 4 ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #28). Si alguno resulta injusto, se corrige dándole un segundo nodo inicial, no devolviéndole el alcance al Púlsar.
 - **El Magnetar neutral sigue siendo el muro, pero tiene llave.** Es el único nodo Neutral que un poder puede tocar ([7.2.1](#721-objetivo-válido)): un Agujero de Gusano se lo lleva entero por 60, y un Decaimiento lo vacía en 50 s. Los dos bandos tienen esa llave, así que al diseñar los niveles 5 a 9 hay que contar con que **un Magnetar neutral cambia de dueño a mitad de partida**, y colocarlo donde eso sea interesante en vez de decisivo.
 
 ---
@@ -556,19 +556,24 @@ El clic izquierdo significa una cosa u otra **según haya o no una selección ac
 |---|---|
 | **Clic izquierdo** sobre cualquier nodo **no seleccionado** | Envía el **50%** desde **cada** origen seleccionado ([5.2](#52-envío)). Si el destino es propio, es un refuerzo; si no, un ataque |
 | **Doble clic izquierdo** sobre cualquier nodo no seleccionado | Envía el **100%** |
-| **Clic izquierdo** sobre un nodo **ya seleccionado** | Lo saca de la selección |
+| **Clic izquierdo** sobre un nodo **ya seleccionado** | Lo saca de la selección. Un segundo clic sobre ese mismo nodo dentro del buffer de doble clic **se ignora**: un doble clic sobre un nodo seleccionado lo deselecciona y no envía nada |
+| **Clic izquierdo** en vacío | Nada. La selección solo se cancela con clic derecho en vacío |
 
 **Siempre**
 
 | Entrada | Acción |
 |---|---|
-| **Arrastre** desde nodo propio hasta destino | Envío al 50% **desde ese único origen**, sea cual sea la selección activa |
-| **Arrastre en vacío** (lazo) | Selección múltiple de nodos propios **que puedan enviar**. Los Asteroides quedan fuera: no son orígenes legales ([5.2](#52-envío)) |
+| **Arrastre** desde nodo propio que puede enviar hasta destino | Envío al 50% **desde ese único origen**, sea cual sea la selección activa. Se envía **al soltar** sobre el destino, **sin pasar por el buffer** de doble clic. Soltar en vacío o sobre el propio origen no hace nada |
+| **Arrastre en vacío** (lazo) | Selección múltiple de nodos propios **que puedan enviar**. Los Asteroides quedan fuera: no son orígenes legales ([5.2](#52-envío)). El lazo **sustituye** a la selección activa, no se suma a ella |
 | **Clic derecho** sobre cualquier nodo | Abre el panel de información y mejoras ([13.3](#133-panel-de-clic-derecho)) |
 | **Clic derecho** en vacío | Cancela la selección y cierra el panel |
 | **Esc** | Menú de pausa |
 
-**La selección se mantiene tras enviar.** Un lazo de cuatro nodos sirve para varias oleadas sin rehacerlo, y dos clics seguidos sobre el mismo destino acumulan 50% + 50% = 75%. Se cancela con clic derecho en vacío, nunca sola.
+**Clic o arrastre.** Una pulsación pasa a ser arrastre cuando el cursor se aleja más de **4 px de la referencia de 960 × 540** —8 px físicos a 1080p— del punto donde se pulsó ([16.1](#161-globales)). Por debajo es un clic.
+
+**Un nodo que deja de ser propio sale de la selección solo**, en el mismo tick en que cambia de facción. Si la selección queda vacía, se vuelve al modo *sin selección*.
+
+**La selección se mantiene tras enviar.** Un lazo de cuatro nodos sirve para varias oleadas sin rehacerlo, y dos clics simples sobre el mismo destino, **separados más que el buffer de doble clic** ([13.2](#132-resolución-del-doble-clic)), acumulan 50% + 50% = 75%. Dentro del buffer son un doble clic y envían el 100%. Se cancela con clic derecho en vacío, nunca sola.
 
 La contrapartida está asumida: con una selección viva **no se puede cambiar de origen con un clic**, porque ese clic envía. Primero se cancela con clic derecho y luego se elige. Es el precio de que reforzar un nodo propio cueste un clic y no un gesto aparte, y reforzar es la primera respuesta defensiva que existe ([12.4](./NOVA_Algoritmo_Enemigo.md#124-detección-de-amenaza-y-defensa)), disponible igual para los dos bandos.
 
@@ -578,21 +583,27 @@ Por el mismo motivo, **con una selección activa un Asteroide propio recibe Ener
 
 ### 13.2 Resolución del doble clic
 
-Clic simple y doble clic comparten el primer evento, así que el envío **no se ejecuta en el primer clic**. Se usa un buffer:
+Clic simple y doble clic comparten el primer evento, así que el envío **no se ejecuta en el primer clic**. Se usa un buffer. 0.25 s de latencia es imperceptible y evita el bug de enviar 50% + 50% = 75% acumulado.
+
+**Solo es doble clic si los dos clics caen en el mismo nodo.** Si el segundo clic cae en **otro** destino antes de que venza el buffer, el primero no se pierde: su 50% se envía en ese momento y el segundo destino abre su propio buffer ([18](#18-decisiones-tomadas-por-defecto) #24).
 
 ```
-OnClickDestino():
-    if bufferActivo:
+OnClickDestino(destino):
+    if bufferActivo and destino == destinoPendiente:
         CancelarBuffer()
-        Enviar(100%)
+        Enviar(destino, 100%)
     else:
+        if bufferActivo:
+            CancelarBuffer()
+            Enviar(destinoPendiente, 50%)
+        destinoPendiente = destino
         bufferActivo = true
         EsperarSegundos(0.25)   # cancelable
-        Enviar(50%)
+        Enviar(destino, 50%)
         bufferActivo = false
 ```
 
-0.25 s de latencia es imperceptible y evita el bug de enviar 50% + 50% = 75% acumulado.
+El arrastre no pasa por aquí: envía al soltar ([13.1](#131-ratón)).
 
 ### 13.3 Panel de clic derecho
 
@@ -697,7 +708,7 @@ carpeta. Los identificadores van en inglés, como manda el glosario de la
 ```
 Assets/
 ├── Scripts/
-│   ├── Core/                 # C# puro, sin UnityEngine salvo tipos básicos
+│   ├── Core/                 # C# puro, SIN referencia a UnityEngine (T0-03)
 │   │   ├── Enums/
 │   │   ├── Rules/
 │   │   └── Events/
@@ -709,10 +720,11 @@ Assets/
 │   │   └── Economy/
 │   ├── Enemy/
 │   ├── Input/
-│   ├── Systems/
+│   ├── Systems/              # Nova.Systems.asmref: compila dentro de Nova.Gameplay
 │   ├── UI/
 │   ├── Presentation/
-│   └── Utils/
+│   ├── Utils/
+│   └── Editor/               # Nova.Editor, solo Editor: configuración, puente de arte, fuente
 ├── Data/                     # Instancias .asset de los SO
 │   ├── Nodes/
 │   ├── Powers/
@@ -725,7 +737,8 @@ Assets/
     ├── Boot.unity
     ├── MainMenu.unity
     ├── LevelSelect.unity
-    └── Game.unity            # Escena única reutilizada por los 9 niveles
+    ├── Game.unity            # Escena única reutilizada por los 9 niveles
+    └── Tests/                # Escenas de prueba, fuera de Build Settings (Fase1.unity, T1-12)
 ```
 
 ### 15.3 Core — reglas puras (sin MonoBehaviour)
@@ -773,6 +786,7 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 | `PulsarCaster.cs` | Solo en Púlsar. Carga, pausa, cancelación, lanzamiento, robo de carga. |
 | `NodeIgnition.cs` | Encendido de Asteroide, incluida la recogida del power-up |
 | `NodeConverter.cs` | Reconversión y su ventana de vulnerabilidad de 3 s |
+| `INodeCommandIssuer.cs` | Canal único de comandos de Jugador y Enemigo (3.1, 15.1 #5), en `Gameplay/Commands/`. Expone la facción y un método por acción de [12.2](./NOVA_Algoritmo_Enemigo.md#122-acciones-candidatas), y **crece con la tarea que implementa cada acción**: `Send` desde `T1-11` |
 | `NodeCollider2D` | Trigger circular, solo para input y detección. Sin Rigidbody. Es un `CircleCollider2D` *trigger* en la capa de física **`Nodes`**, con el radio de la huella sólida del nodo (0.3–0.6 u, [NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Huella del nodo*). El clic se resuelve con `Physics2D.OverlapPoint` sobre esa capa ([18](#18-decisiones-tomadas-por-defecto) #23). |
 
 ### 15.6 Systems — escena
@@ -839,7 +853,7 @@ EnemyController  ──► EnemyCommandIssuer ───┘           │
 
 ### 15.10 Orden de ejecución
 
-Configurar en `Script Execution Order`:
+Se fija con el atributo `[DefaultExecutionOrder]` en cada script, no en *Project Settings → Script Execution Order*:
 
 ```
 -100  NodeRegistry, ProtonRegistry
@@ -852,7 +866,7 @@ Configurar en `Script Execution Order`:
  100  Presentation
 ```
 
-Los impactos se resuelven en el orden en que los protones llegan dentro del mismo tick. Con empate exacto, el de mayor Carga primero.
+Los impactos se resuelven en el orden en que los protones llegan dentro del mismo tick. Con empate exacto, el de mayor Carga primero; con llegada y Carga iguales, el que se lanzó antes. El protón que llega se encola y `ProtonRegistry` resuelve los impactos del tick **después de todos los `FixedUpdate`**, así que `WinConditionChecker` los ve en el tick siguiente (`T1-10`).
 
 **Paso de tiempo: toda la lógica de juego corre en `FixedUpdate` a 50 Hz** (`Fixed Timestep = 0.02` en *Project Settings → Time*). Generación de la Estrella, vuelo del protón, disparo del Magnetar, carga del Púlsar, temporizadores de estado y ciclo de decisión del Enemigo avanzan con `Time.fixedDeltaTime` y nunca con `Time.deltaTime`; `Presentation` y `UI` siguen en `Update`, porque solo leen. Es lo que permite cumplir el determinismo de [12.7](./NOVA_Algoritmo_Enemigo.md#127-contrato-de-implementación): con `deltaTime` variable, la misma semilla daba partidas distintas según los FPS. Un temporizador cuyo intervalo no es múltiplo de 20 ms —la Estrella N4 a 1.05 s— acumula el tiempo en enteros y arrastra el sobrante al siguiente intervalo, así que conserva su tasa media exacta. Cerrado el 2026-09-28 ([18](#18-decisiones-tomadas-por-defecto) #22, [T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #36).
 
@@ -872,6 +886,7 @@ Estos valores deben vivir en `BalanceConfig.asset` y en las `NodeDefinition`. No
 | Daño del Magnetar por disparo | 2 de Carga |
 | Multiplicador de resistencia del Magnetar | 0.5 |
 | Buffer de doble clic | 0.25 s |
+| Umbral de arrastre | 4 px de la referencia 960 × 540 (8 px a 1080p) |
 | Duración de la reconversión | 3.0 s |
 | Auto-deshielo | 30 s |
 | Tasa de Decaimiento | 2 E/s |
@@ -925,7 +940,7 @@ Cada fila es un test de aceptación.
 
 | # | Caso | Resolución |
 |---|---|---|
-| 1 | Dos protones de facciones distintas impactan el mismo nodo en el mismo frame | Se resuelven secuencialmente por orden de llegada; con empate exacto, primero el de mayor Carga. El segundo opera sobre el resultado del primero. |
+| 1 | Dos protones de facciones distintas impactan el mismo nodo en el mismo frame | Se resuelven secuencialmente por orden de llegada; con empate exacto, primero el de mayor Carga, y con Carga igual, el que se lanzó antes ([15.10](#1510-orden-de-ejecución)). El segundo opera sobre el resultado del primero. |
 | 2 | Un protón llega a un nodo que ya cambió a su propia facción | Se resuelve como absorción, no como ataque. La facción se comprueba **en el impacto**, no en el lanzamiento. |
 | 3 | El nodo origen cambia de bando con protones en vuelo | Los protones conservan la facción del emisor en el momento del lanzamiento y completan su viaje. |
 | 4 | El nodo destino deja de existir | Imposible: los nodos nunca se destruyen, solo cambian de facción. |
@@ -983,7 +998,7 @@ Reglas que no estaban en el diseño original y que se añadieron para cerrar hue
 | 12 | Un nodo no puede volver a Asteroide | No aporta nada y complica el menú de reconversión |
 | 13 | Alcance **global** para los tres poderes, sin subir costes | El límite de rango obligaba a acercar el Púlsar, que es justo el nodo que menos debe moverse: no genera y no dispara. Con alcance global el Púlsar es artillería de posición, que es lo que su ficción pide. Los costes de [16.3](#163-poderes) se dejan intactos a propósito: el desequilibrio, si aparece, se corrige en el diseño de niveles |
 | 14 | Objetivo de un poder = **cualquier nodo encendido no propio**; ningún Asteroide lo es nunca | Una sola regla en vez de una lista por poder. Excluye al Asteroide por dos motivos: no tiene nada que congelar, infectar ni robar, y capturarlo con un poder saltaría el doble coste de 10 + 10 que es el precio de expandirse ([4.1](./NOVA_Nodos.md#41-asteroide-nivel-0)). El Magnetar neutral **sí** entra, no por excepción sino porque cumple la regla: es el único nodo Neutral con nivel |
-| 15 | El poder se entrega por **haz de 0.25 s**, no por proyectil | Con alcance global, un proyectil a 6 u/s tardaría 6.1 s en cruzar el tablero. El haz da una ventana de resolución mínima pero real, y la hace independiente de la distancia |
+| 15 | El poder se entrega por **haz de 0.25 s**, no por proyectil | Con alcance global, un proyectil a 6 u/s tardaba 6.1 s en cruzar la diagonal del tablero de 32 u, y todavía casi 3 s en la de 17.2 u del tablero actual. El haz da una ventana de resolución mínima pero real, y la hace independiente de la distancia |
 | 16 | El haz se disipa si el objetivo deja de ser válido | Coherente con el caso 2 de la [sección 17](#17-casos-borde-y-reglas-de-resolución): la facción se comprueba al resolver, no al lanzar |
 | 17 | El haz se colorea por **poder**, no por facción | El color anuncia qué efecto va a caer antes de que caiga; quién lo lanza ya se lee por el extremo del que sale, que es un Púlsar con color de facción |
 | 18 | La **mejora** se paga con la Energía del propio nodo y solo la impiden `Congelado` ([7.3](#73-cero-absoluto)) y `Reconvirtiendo` ([8.1](#81-reglas)) | Ningún documento decía quién la pagaba. Es el mismo criterio que la reconversión. Un nodo infectado «sigue funcionando con normalidad» ([7.4](#74-decaimiento)) y un Púlsar cargando puede mejorar: no hay nada que perder al subir de nivel dentro del mismo tipo. Cerrado el 2026-09-28 en `T1-04` |
@@ -992,6 +1007,10 @@ Reglas que no estaban en el diseño original y que se añadieron para cerrar hue
 | 21 | Si capturan un nodo que se reconvierte, **el coste pagado se pierde** | El nodo recupera tipo y nivel anteriores con la Energía que deja la captura ([6.2](#62-resolución-de-impacto)). Devolverlo regalaría Energía al captor. Mismo criterio que los protones derribados: la Energía gastada no vuelve. Cerrado el 2026-09-28 en `T1-04` |
 | 22 | La lógica de juego corre en **`FixedUpdate` a 50 Hz**; la presentación, en `Update` | [12.7](./NOVA_Algoritmo_Enemigo.md#127-contrato-de-implementación) exige «misma entrada más misma semilla, misma partida, siempre», y ningún documento fijaba el paso de tiempo: con `deltaTime` variable la partida dependía de los FPS. Se eligió el tick fijo de Unity frente a un tick propio con acumulador porque no añade ningún sistema. Detalle en [15.10](#1510-orden-de-ejecución). Cerrado el 2026-09-28 antes de `T1-08` |
 | 23 | **Picking:** el clic sobre un nodo se resuelve con `Physics2D.OverlapPoint` en la capa **`Nodes`**, contra el `CircleCollider2D` *trigger* de `NodeCollider2D` con el radio de la huella (0.3–0.6 u). **El lazo no usa física:** pide a `NodeRegistry` los nodos propios que pueden enviar y toma los que tienen el centro dentro del rectángulo arrastrado, Asteroides fuera ([13.1](#131-ratón)). `Nodes` es la única capa nueva: protones y haces no llevan collider, porque no colisionan ([6.1](#61-el-protón)) y el Magnetar los encuentra por `ProtonRegistry` | 15.5 declaraba el collider pero no cómo se resolvía el clic ni el lazo. Se mantiene lo ya escrito —trigger sin Rigidbody— frente a la alternativa sin física, que obligaba a corregir 15.5. Cerrado el 2026-09-28 antes de `T1-11` ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #37) |
+| 24 | Un segundo clic en **otro** destino dentro del buffer **envía ya el 50% pendiente** y abre un buffer nuevo; solo es doble clic sobre el mismo nodo | 13.2 no decía qué pasaba. Descartar el primer envío castigaría al jugador que reparte rápido entre dos destinos. Cerrado el 2026-09-29 antes de `T1-11` |
+| 25 | **Umbral de arrastre de 4 px** de la referencia (8 px a 1080p); el arrastre envía al soltar, **sin buffer** | 13.1 no separaba clic de arrastre. Un arrastre no puede ser doble clic, así que esperar 0.25 s solo añadiría latencia. El valor va en `BalanceConfig`. Cerrado el 2026-09-29 antes de `T1-11` |
+| 26 | El lazo **sustituye** a la selección; el clic izquierdo en vacío **no hace nada** | Mantiene que la selección solo la cancela el clic derecho en vacío (13.1) y que un lazo siempre da el mismo resultado, haya lo que haya seleccionado. Cerrado el 2026-09-29 antes de `T1-11` |
+| 27 | Un nodo que deja de ser propio **sale solo de la selección**; un doble clic sobre un nodo seleccionado **lo deselecciona y no envía** | Sin lo primero, la selección guardaría nodos del rival como orígenes. Sin lo segundo, deseleccionar con doble clic lanzaría un 50% sin querer contra el nodo recién soltado. Cerrado el 2026-09-29 antes de `T1-11` |
 
 ---
 

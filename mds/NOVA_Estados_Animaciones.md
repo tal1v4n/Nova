@@ -54,7 +54,7 @@ Es la señal de lectura más importante del juego: indica de un vistazo qué est
 
 **Sobre quién:** todos los nodos, **incluidos los neutrales y los del Enemigo**. Sin excepciones.
 
-**Condición exacta** (evaluada cada frame por `ThreatCalculator`, el mismo que usa el algoritmo del Enemigo — ver [12.4](./NOVA_Algoritmo_Enemigo.md#124-detección-de-amenaza-y-defensa)):
+**Condición exacta** (evaluada en cada tick de lógica, a 50 Hz en `FixedUpdate` ([15.10](./NOVA_GameDesign_Spec.md#1510-orden-de-ejecución)), por `ThreatCalculator`, el mismo que usa el algoritmo del Enemigo — ver [12.4](./NOVA_Algoritmo_Enemigo.md#124-detección-de-amenaza-y-defensa)):
 
 ```
 EstaAsustado(nodo):
@@ -62,8 +62,8 @@ EstaAsustado(nodo):
         si p.faction == nodo.faction: continuar        # un aliado no asusta
         multiplicador = (nodo.type == Magnetar) ? 0.5 : 1.0
         efectiva = floor(p.charge * multiplicador)
-        tiempoLlegada = distancia(p.pos, nodo.pos) / 2.5
-        si efectiva >= nodo.energy Y tiempoLlegada < 1.5:
+        tiempoLlegada = distancia(p.pos, nodo.pos) / VelocidadProton   # 2.5 u/s, BalanceConfig (16.1)
+        si efectiva >= nodo.energy Y tiempoLlegada < UmbralSusto:      # 1.5 s, BalanceConfig (16.1)
             devolver true
     devolver false
 ```
@@ -152,7 +152,7 @@ Efectos que se reproducen y terminan. No bloquean nada.
 
 **`FX-BEAM` se solapa con `FX-CAST`, no va detrás.** Los dos arrancan en el mismo frame: el fogonazo dura 0.4 s en el Púlsar y el haz 0.25 s entre los dos nodos, así que el efecto cae mientras el Púlsar todavía está retrocediendo. Encadenarlos sumaría 0.65 s entre el clic y la consecuencia, y con alcance global un poder tiene que sentirse inmediato ([18](./NOVA_GameDesign_Spec.md#18-decisiones-tomadas-por-defecto) #15).
 
-**Y es el único `FX-*` cuyo asset no vive en [A.5](./NOVA_Assets_Diseno.md#a5-vfx-puntuales--145).** Un VFX puntual es una hoja de frames que se reproduce **sobre un nodo**, dentro de su celda de 96. El haz no cabe en esa definición: une dos puntos arbitrarios del tablero y puede medir 3 u o 35 u, así que se dibuja estirando un asset de mundo, como el radio del Magnetar o la línea de arrastre. Sus tres archivos están en [A.4.2](./NOVA_Assets_Diseno.md#a42-protón-y-haces-de-poder--143), no en A.5. Es la misma excepción que ya tenían `FX-CAP`, `FX-DROP` y `FX-BUFF`, que salen de A.3 y A.4.4.
+**Y es el único `FX-*` cuyo asset no vive en [A.5](./NOVA_Assets_Diseno.md#a5-vfx-puntuales--145).** Un VFX puntual es una hoja de frames que se reproduce **sobre un nodo**, dentro de su celda de 96. El haz no cabe en esa definición: une dos puntos arbitrarios del tablero y puede medir 1 u o 17 u, así que se dibuja estirando un asset de mundo, como el radio del Magnetar o la línea de arrastre. Sus tres archivos están en [A.4.2](./NOVA_Assets_Diseno.md#a42-protón-y-haces-de-poder--143), no en A.5. Es la misma excepción que ya tenían `FX-CAP`, `FX-DROP` y `FX-BUFF`, que salen de A.3 y A.4.4.
 
 **Si el haz se disipa, no hay `FX-PWR-*`.** Cuando el objetivo deja de ser válido durante esos 0.25 s ([7.2.2](./NOVA_GameDesign_Spec.md#722-el-haz)), `FX-BEAM` se reproduce entero y **no le sigue ningún impacto**: el haz llega, no pasa nada y la Energía se perdió. Esa ausencia es el feedback, y es deliberada.
 

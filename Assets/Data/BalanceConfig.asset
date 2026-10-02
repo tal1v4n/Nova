@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Nova.Data::Nova.Data.BalanceConfig
   protonSpeed: 2.5
   doubleClickBuffer: 0.25
+  dragThreshold: 4
   magnetarShotDamage: 2
   magnetarResistance: 0.5
   ignitionCost: 10

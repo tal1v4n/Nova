@@ -1,7 +1,7 @@
 {
     "name": "Nova.Input",
     "rootNamespace": "Nova.Input",
-    "references": ["Nova.Core", "Nova.Data", "Nova.Gameplay"],
+    "references": ["Nova.Core", "Nova.Data", "Nova.Gameplay", "Unity.InputSystem"],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

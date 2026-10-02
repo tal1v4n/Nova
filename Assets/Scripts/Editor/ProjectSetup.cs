@@ -81,6 +81,16 @@ namespace Nova.Editor
                 return;
             }
 
+            ConfigureCamera(camera);
+
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+        }
+
+        // Cámara ortográfica con Pixel Perfect de T0-04 y sin post-procesado (1.2). La reutiliza
+        // la escena de prueba de la fase 1 (T1-12).
+        internal static void ConfigureCamera(Camera camera)
+        {
             camera.orthographic = true;
             camera.orthographicSize = OrthographicSize;
             camera.clearFlags = CameraClearFlags.SolidColor;
@@ -97,9 +107,6 @@ namespace Nova.Editor
             pixelPerfect.refResolutionY = RefResolutionY;
             // PixelSnapping = Upscale Render Texture apagado y Pixel Snapping encendido.
             pixelPerfect.gridSnapping = PixelPerfectCamera.GridSnapping.PixelSnapping;
-
-            EditorSceneManager.MarkSceneDirty(scene);
-            EditorSceneManager.SaveScene(scene);
         }
     }
 }

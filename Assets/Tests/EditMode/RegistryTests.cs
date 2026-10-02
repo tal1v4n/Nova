@@ -301,6 +301,7 @@ namespace Nova.Tests
 
         [TestCase(typeof(NodeRegistry), -100)]
         [TestCase(typeof(ProtonRegistry), -100)]
+        [TestCase(typeof(Nova.Input.InputRouter), -50)]
         [TestCase(typeof(NodeController), 0)]
         [TestCase(typeof(NodeIdentity), 0)]
         [TestCase(typeof(NodeOwnership), 0)]

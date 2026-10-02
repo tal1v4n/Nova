@@ -44,3 +44,6 @@ crashlynx/
 *.claude
 
 *entregables_uni
+
+# Capturas de las pruebas a mano en Play: evidencia local, no se versiona
+/mds/evidencias/

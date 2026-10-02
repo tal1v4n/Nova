@@ -82,6 +82,7 @@ namespace Nova.Tests
             Assert.IsNotNull(balance, $"Falta {BalancePath}");
             Assert.AreEqual(2.5f, balance.ProtonSpeed);
             Assert.AreEqual(0.25f, balance.DoubleClickBuffer);
+            Assert.AreEqual(4, balance.DragThreshold);
             Assert.AreEqual(2, balance.MagnetarShotDamage);
             Assert.AreEqual(0.5f, balance.MagnetarResistance);
             Assert.AreEqual(10, balance.IgnitionCost);

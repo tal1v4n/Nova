@@ -7,7 +7,8 @@ using UnityEngine;
 namespace Nova.Presentation
 {
     // T1-06b: vista provisional del nodo. Un círculo del color de su facción (14.4) con la
-    // Energía encima en Jersey 10. Primitiva de la regla 4 de T.2: no es arte, es desechable
+    // Energía encima en Jersey 10. Desde T1-12 el Asteroide es un círculo más pequeño, para que
+    // el encendido se vea sin leer números. Primitiva de la regla 4 de T.2: no es arte, es desechable
     // y la sustituye NodeVisual en T6-01. Solo lee eventos de NodeController, nunca escribe en él.
     [DefaultExecutionOrder(100)] // Presentation, 15.10
     [DisallowMultipleComponent]
@@ -33,8 +34,11 @@ namespace Nova.Presentation
         [Tooltip("Jersey10 Raster56 (T0-06).")]
         [SerializeField] TMP_FontAsset font;
 
-        [Tooltip("Diámetro del círculo en píxeles. La huella de un nodo va de 38 a 77 px (A.8 #4).")]
+        [Tooltip("Diámetro del círculo de un nodo encendido, en píxeles. La huella de un nodo va de 38 a 77 px (A.8 #4).")]
         [SerializeField, Range(38, 77)] int diameterPixels = 64;
+
+        [Tooltip("Diámetro del círculo del Asteroide, en píxeles. Menor que el encendido para que el encendido se vea.")]
+        [SerializeField, Range(38, 77)] int asteroidDiameterPixels = 48;
 
         [Tooltip("Múltiplo entero del tamaño nativo de Jersey 10: un tamaño intermedio se interpola.")]
         [SerializeField, Range(1, 4)] int textScale = 2;
@@ -75,6 +79,7 @@ namespace Nova.Presentation
                 return;
 
             body.color = ColorOf(Node.Faction);
+            body.sprite = CircleSprite(Node.Type == NodeType.Asteroid ? asteroidDiameterPixels : diameterPixels);
             label.text = Node.Energy.ToString();
         }
 
@@ -99,6 +104,7 @@ namespace Nova.Presentation
                 return;
             Node.OnFactionChanged += HandleFactionChanged;
             Node.OnEnergyChanged += HandleEnergyChanged;
+            Node.OnTypeChanged += HandleTypeChanged;
             subscribed = true;
         }
 
@@ -108,11 +114,13 @@ namespace Nova.Presentation
                 return;
             Node.OnFactionChanged -= HandleFactionChanged;
             Node.OnEnergyChanged -= HandleEnergyChanged;
+            Node.OnTypeChanged -= HandleTypeChanged;
             subscribed = false;
         }
 
         void HandleFactionChanged(Faction previous, Faction current) => Refresh();
         void HandleEnergyChanged(int previous, int current) => Refresh();
+        void HandleTypeChanged(NodeType previous, NodeType current) => Refresh();
 
         // Se resuelve a demanda y no en Awake, que no se ejecuta en los tests de EditMode.
         NodeController Node => node != null ? node : node = GetComponent<NodeController>();

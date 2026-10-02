@@ -12,8 +12,12 @@ namespace Nova.Data
         [Tooltip("u/s, constante (6.1).")]
         [SerializeField, Min(0f)] float protonSpeed;
 
+        [Header("Entrada")]
         [Tooltip("Buffer del doble clic en segundos (13.2).")]
         [SerializeField, Min(0f)] float doubleClickBuffer;
+
+        [Tooltip("Píxeles de la referencia 960x540 que separan un clic de un arrastre (13.1). 4 = 8 px físicos a 1080p.")]
+        [SerializeField, Min(0)] int dragThreshold;
 
         [Header("Magnetar")]
         [Tooltip("Carga que resta cada disparo (6.3).")]
@@ -48,6 +52,7 @@ namespace Nova.Data
 
         public float ProtonSpeed => protonSpeed;
         public float DoubleClickBuffer => doubleClickBuffer;
+        public int DragThreshold => dragThreshold;
         public int MagnetarShotDamage => magnetarShotDamage;
         public float MagnetarResistance => magnetarResistance;
         public int IgnitionCost => ignitionCost;

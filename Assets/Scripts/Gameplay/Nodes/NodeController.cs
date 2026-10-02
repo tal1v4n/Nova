@@ -54,6 +54,12 @@ namespace Nova.Gameplay
             remove => StateMachine.OnStateChanged -= value;
         }
 
+        public event Action<NodeType, NodeType> OnTypeChanged
+        {
+            add => Identity.OnTypeChanged += value;
+            remove => Identity.OnTypeChanged -= value;
+        }
+
         // Estado de partida. Lo llama quien crea el nodo (LevelLoader, T5-01; hoy la escena de prueba).
         // Sin nivel explícito, el Asteroide empieza en 0 y los tipos encendidos en 1.
         public void Initialize(NodeDefinition definition, Faction faction, int initialEnergy)
@@ -69,7 +75,7 @@ namespace Nova.Gameplay
                 throw new ArgumentNullException(nameof(definition));
 
             LevelComponent.Initialize(definition, initialLevel);
-            Identity.SetDefinition(definition);
+            Identity.Initialize(definition);
             Ownership.SetInitialFaction(faction);
             EnergyComponent.Initialize(initialEnergy, definition.EnergyCap);
             StateMachine.Initialize(definition.Type, faction);
@@ -115,6 +121,24 @@ namespace Nova.Gameplay
                 EnergyComponent.Add(delta);
             else if (delta < 0)
                 EnergyComponent.Subtract(-delta);
+        }
+
+        // Cambia el nodo a otro tipo y nivel conservando facción y Energía, recortada al Tope
+        // nuevo (8.1). Es la mitad mecánica del encendido (NodeIgnition, 4.1) y del final de una
+        // reconversión (NodeConverter, T2-07): quien lo llama ya validó la acción y cobró su coste.
+        public void ChangeType(NodeDefinition definition, int level)
+        {
+            if (definition == null)
+                throw new ArgumentNullException(nameof(definition));
+            if (!IsInitialized)
+                throw new InvalidOperationException($"{name}: ChangeType antes de Initialize.");
+
+            // Nivel primero: valida el par tipo/nivel antes de tocar nada más.
+            LevelComponent.Apply(definition, level);
+            Identity.SetDefinition(definition);
+            EnergyComponent.SetCap(definition.EnergyCap);
+            EnergyComponent.Clamp();
+            StateMachine.Evaluate(definition.Type, Faction);
         }
 
         // Validación de mejora (15.5). Ejecutarla y pagarla es T2-03.

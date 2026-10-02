@@ -2,6 +2,11 @@
     "name": "Nova.Editor",
     "rootNamespace": "Nova.Editor",
     "references": [
+        "Nova.Core",
+        "Nova.Data",
+        "Nova.Gameplay",
+        "Nova.Input",
+        "Nova.Presentation",
         "Unity.RenderPipelines.Universal.Runtime",
         "Unity.RenderPipelines.Universal.2D.Runtime",
         "Unity.2D.Sprite.Editor",
