@@ -15,19 +15,20 @@ using UnityEngine.SceneManagement;
 
 namespace Nova.Editor
 {
-    // T1-12: genera la escena de prueba de la fase 1 con tres nodos, para comprobar su criterio
-    // de salida jugando: capturar un Asteroide, encenderlo como Estrella y tomar un nodo enemigo.
-    // Es idempotente: sobrescribe la escena entera cada vez. Todo lo que no es cableado —tipo,
-    // facción, Energía y posición de cada nodo— queda serializado en la escena y se ajusta en el
-    // Inspector, no aquí.
+    // Escenas de prueba que se juegan a mano (desviación 144). Cada menú escribe la suya entera,
+    // de forma idempotente. Todo lo que no es cableado —tipo, facción, Energía y posición de cada
+    // nodo— queda serializado en la escena y se ajusta en el Inspector, no aquí.
     //
-    // Desde T2-02 lleva también el menú radial de encendido. Los nodos solo ofrecen la Estrella:
-    // el Magnetar llega con T2-04 y el Púlsar con T3-02, y hasta entonces el menú los enseña
-    // deshabilitados. Al cerrar cada una de esas tareas se añade aquí su NodeDefinition. Desde
-    // T2-03, también el panel de clic derecho con el botón de mejora.
-    public static class Phase1TestScene
+    // Fase 1 (T1-12): tres nodos para el criterio de salida, capturar un Asteroide, encenderlo
+    // como Estrella y tomar un nodo enemigo. Fase 2 (T2-04): los mismos más un Magnetar enemigo en
+    // medio del camino, para ver la defensa.
+    //
+    // Las dos llevan el menú radial de encendido (T2-02) y el panel de clic derecho (T2-03). El
+    // menú ofrece los tipos que ya existen: Estrella y, desde T2-04, Magnetar; el Púlsar llega con
+    // T3-02 y hasta entonces sale deshabilitado. Al cerrar esa tarea se añade a IgnitionTargets.
+    public static class TestScenes
     {
-        const string ScenePath = "Assets/Scenes/Tests/Fase1.unity";
+        const string ScenesFolder = "Assets/Scenes/Tests";
         const string BalancePath = "Assets/Data/BalanceConfig.asset";
         const string NodesFolder = "Assets/Data/Nodes";
         const string FontPath = "Assets/Art/Fonts/Jersey10 Raster56.asset";
@@ -39,19 +40,39 @@ namespace Nova.Editor
         // (desviación 138). El Asteroide provisional es más pequeño, pero conserva el mismo blanco.
         const float ColliderRadius = 0.5f;
 
-        // Los tres nodos de la prueba, sobre el tablero de 15 x 8.4375 u (T.8). El Asteroide queda
+        static readonly string[] IgnitionTargets = { "Star", "Magnetar" };
+
+        // Los tres nodos de la fase 1, sobre el tablero de 15 x 8.4375 u (T.8). El Asteroide queda
         // a 2.12 u de la Estrella del Jugador, dentro de la regla de 2.25 u de 11.3. El Enemigo no
         // actúa hasta la fase 4, pero su Estrella genera.
-        static readonly (string name, string type, Faction faction, int energy, Vector2 position)[] Nodes =
+        static readonly (string name, string type, Faction faction, int energy, Vector2 position)[] Phase1Nodes =
         {
             ("Player Star", "Star", Faction.Player, 30, new Vector2(-5f, 0f)),
             ("Neutral Asteroid", "Asteroid", Faction.Neutral, 10, new Vector2(-3.5f, 1.5f)),
             ("Enemy Star", "Star", Faction.Enemy, 10, new Vector2(5f, 0f)),
         };
 
-        [MenuItem("Nova/Fase 1/Generar escena de prueba")]
-        public static void Generate()
+        // Fase 2: un Magnetar enemigo de nivel 1 en el centro, sobre la recta entre las dos
+        // Estrellas. Un protón que la recorra cruza su radio de 1.5 u entero (3 u, 1.2 s) y pierde
+        // de media 3 de Carga (4.4).
+        static readonly (string name, string type, Faction faction, int energy, Vector2 position)[] Phase2Nodes =
         {
+            ("Player Star", "Star", Faction.Player, 30, new Vector2(-5f, 0f)),
+            ("Neutral Asteroid", "Asteroid", Faction.Neutral, 10, new Vector2(-3.5f, 1.5f)),
+            ("Enemy Magnetar", "Magnetar", Faction.Enemy, 10, new Vector2(0f, 0f)),
+            ("Enemy Star", "Star", Faction.Enemy, 10, new Vector2(5f, 0f)),
+        };
+
+        [MenuItem("Nova/Fase 1/Generar escena de prueba")]
+        public static void GeneratePhase1() => Generate("Fase1", Phase1Nodes);
+
+        [MenuItem("Nova/Fase 2/Generar escena de prueba")]
+        public static void GeneratePhase2() => Generate("Fase2", Phase2Nodes);
+
+        static void Generate(string sceneName, (string name, string type, Faction faction, int energy, Vector2 position)[] nodes)
+        {
+            string scenePath = $"{ScenesFolder}/{sceneName}.unity";
+
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
                 return;
 
@@ -75,15 +96,15 @@ namespace Nova.Editor
             ProtonRegistry protons;
             NodeRegistry registry = CreateSystems(balance, font, text, camera, out protons);
 
-            NodeDefinition[] ignitionTargets = { Definition("Star") };
-            foreach (var spec in Nodes)
-                CreateNode(spec.name, Definition(spec.type), spec.faction, spec.energy, spec.position, balance, font, ignitionTargets);
+            NodeDefinition[] ignitionTargets = System.Array.ConvertAll(IgnitionTargets, Definition);
+            foreach (var spec in nodes)
+                CreateNode(spec.name, Definition(spec.type), spec.faction, spec.energy, spec.position, balance, font, ignitionTargets, protons);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
-            EditorSceneManager.SaveScene(scene, ScenePath);
+            Directory.CreateDirectory(ScenesFolder);
+            EditorSceneManager.SaveScene(scene, scenePath);
             AssetDatabase.Refresh();
 
-            Debug.Log($"[Nova] Escena de prueba de la fase 1 generada en {ScenePath}. Dale a Play.");
+            Debug.Log($"[Nova] Escena de prueba generada en {scenePath}. Dale a Play.");
         }
 
         static Camera CreateCamera()
@@ -125,7 +146,7 @@ namespace Nova.Editor
         }
 
         static void CreateNode(string name, NodeDefinition definition, Faction faction, int energy, Vector2 position,
-            BalanceConfig balance, TMP_FontAsset font, NodeDefinition[] ignitionTargets)
+            BalanceConfig balance, TMP_FontAsset font, NodeDefinition[] ignitionTargets, ProtonRegistry protons)
         {
             var go = new GameObject(name) { layer = LayerMask.NameToLayer(NodesLayer) };
             go.transform.position = position;
@@ -134,6 +155,7 @@ namespace Nova.Editor
             go.AddComponent<PlacedNode>().Configure(definition, faction, energy);
             go.AddComponent<NodeIgnition>().Configure(balance, ignitionTargets);
             go.AddComponent<StarGenerator>(); // desviación 143: en todo nodo que pueda ser Estrella
+            go.AddComponent<MagnetarTurret>().Configure(balance, protons); // y en todo el que pueda ser Magnetar
 
             var trigger = go.AddComponent<CircleCollider2D>();
             trigger.isTrigger = true;
@@ -143,6 +165,7 @@ namespace Nova.Editor
             var serialized = new SerializedObject(view);
             serialized.FindProperty("font").objectReferenceValue = font;
             serialized.ApplyModifiedPropertiesWithoutUndo();
+            go.AddComponent<ProvisionalMagnetarView>();
 
             EditorUtility.SetDirty(go);
         }

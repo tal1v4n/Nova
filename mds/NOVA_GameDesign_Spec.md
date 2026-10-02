@@ -751,7 +751,7 @@ Assets/
     ├── MainMenu.unity
     ├── LevelSelect.unity
     ├── Game.unity            # Escena única reutilizada por los 9 niveles
-    └── Tests/                # Escenas de prueba, fuera de Build Settings (Fase1.unity, T1-12)
+    └── Tests/                # Escenas de prueba, fuera de Build Settings (Fase1.unity, T1-12; Fase2.unity, T2-04)
 ```
 
 ### 15.3 Core — reglas puras (sin MonoBehaviour)
@@ -762,7 +762,7 @@ Assets/
 | `NodeType.cs` | Enum de tipos |
 | `NodeState.cs` | Enum de estados |
 | `PowerType.cs` | Enum de poderes |
-| `ImpactResult.cs` | Enum: Absorbed, Damaged, Captured, ThawProgress, ThawedAndCaptured, Destroyed |
+| `ImpactResult.cs` | Enum: Absorbed, Damaged, Captured, ThawProgress, ThawedAndCaptured. Es lo que pasa cuando un protón **llega**; el derribado por un Magnetar no llega y lo avisa el propio protón (`Proton.OnShotDown`, [T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #40) |
 | `EnergyMath.cs` | Multiplicadores, redondeos, cálculo de coste efectivo de captura |
 | `ImpactResolver.cs` | Resolución de impacto de protón, incluido el caso congelado. Entrada: snapshot. Salida: `ImpactResult` + deltas. **Sin efectos secundarios.** |
 | `ConversionRules.cs` | Validez y coste de encendido, mejora y reconversión |
@@ -1030,6 +1030,7 @@ Reglas que no estaban en el diseño original y que se añadieron para cerrar hue
 | 28 | Con el menú de encendido abierto, un clic izquierdo fuera de las opciones o un arrastre **lo cierra y sigue su curso**; el clic derecho y `Esc` **solo** lo cierran | 13.7 decía qué cerraba el menú, pero no qué más hacía ese clic. Que siga su curso evita un clic perdido al querer seleccionar otra cosa; el clic derecho y `Esc` se consumen porque abrir el panel o pausar al cerrar un menú sorprende. Decidido en `T2-02` |
 | 29 | Las opciones del menú de encendido de un tipo que la partida no tiene salen **deshabilitadas, en gris y sin coste**, distintas de las que solo esperan Energía | 13.7 da siempre las tres opciones. En la fase 2 el Magnetar no existe hasta `T2-04` ni el Púlsar hasta `T3-02`, y encenderlos ya daría nodos a medias. Se resuelve con datos: cada `NodeIgnition` ofrece los tipos cuya `NodeDefinition` tiene, y el bloqueo `ActionBlock.Unavailable` va por delante de la Energía. Es también la vía de T.7 #46 si hace falta un bloqueo por nivel. Decidido con el usuario en `T2-02` |
 | 30 | El panel de clic derecho se abre **junto al nodo**, también en nodos ajenos (sin botones); **se queda abierto** hasta el clic derecho en vacío o `Esc`, y un clic izquierdo dentro es suyo | 13.3 decía qué contiene, no dónde ni cuándo se cierra. Abierto mientras se juega, porque mejorar varias veces seguidas es lo normal; que se trague el clic evita mandar un protón al nodo que hay debajo del botón. Decidido en `T2-03` |
+| 31 | Torreta del Magnetar: con empate en distancia **y** en Carga dispara al protón **lanzado antes**; un protón a distancia **igual** al radio está dentro; el arma **espera cargada** en reposo y dispara en cuanto entra un objetivo, sin acumular disparos, y disparando sin pausa conserva su cadencia exacta | 4.4 solo daba el primer desempate y no decía nada del borde ni de qué hace el arma sin objetivo. El tercer desempate es el mismo que el de los impactos (15.10); el borde incluido es el que se dibuja (A.4.1); y un arma que acumulase disparos en reposo vaciaría de golpe un protón al entrar. Decidido en `T2-04` |
 
 ---
 

@@ -20,7 +20,7 @@ namespace Nova.Tests
         [TestCase(typeof(NodeType), 4)]     // Glosario: Asteroide, Estrella, Púlsar, Magnetar
         [TestCase(typeof(NodeState), 8)]    // 14.1
         [TestCase(typeof(PowerType), 3)]    // Sección 7
-        [TestCase(typeof(ImpactResult), 6)] // 15.3
+        [TestCase(typeof(ImpactResult), 5)] // 15.3, sin Destroyed (T.7 #40)
         public void EnumHasExactlyTheSpecifiedValues(Type enumType, int expected)
         {
             Assert.AreEqual(expected, Enum.GetValues(enumType).Length);

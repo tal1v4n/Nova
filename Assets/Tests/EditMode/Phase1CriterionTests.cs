@@ -19,7 +19,7 @@ namespace Nova.Tests
     // Estrella y tomar un nodo enemigo. Cada tick imita el orden de 15.10: router (−50), nodos (0),
     // protones (+10) y resolución de impactos tras todos los FixedUpdate.
     //
-    // Desde T2-02 el encendido pasa por el menú radial, y la escena solo ofrece la Estrella.
+    // Desde T2-02 el encendido pasa por el menú radial; la escena ofrece Estrella y Magnetar.
     public class Phase1CriterionTests
     {
         const float Tick = 0.02f;
@@ -69,7 +69,7 @@ namespace Nova.Tests
             protonView = go.AddComponent<ProvisionalProtonView>();
             protonView.Configure(protons, AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontPath));
 
-            // Los tres nodos de Phase1TestScene.
+            // Los tres nodos de TestScenes.Phase1Nodes.
             playerStar = Place("Player Star", "Star", Faction.Player, 30, new Vector2(-5f, 0f));
             asteroid = Place("Neutral Asteroid", "Asteroid", Faction.Neutral, 10, new Vector2(-3.5f, 1.5f));
             enemyStar = Place("Enemy Star", "Star", Faction.Enemy, 10, new Vector2(5f, 0f));
@@ -94,8 +94,9 @@ namespace Nova.Tests
             go.AddComponent<NodeController>();
             var placed = go.AddComponent<PlacedNode>();
             placed.Configure(Definition(type), faction, energy);
-            go.AddComponent<NodeIgnition>().Configure(Balance, new[] { Definition("Star") });
+            go.AddComponent<NodeIgnition>().Configure(Balance, new[] { Definition("Star"), Definition("Magnetar") });
             go.AddComponent<StarGenerator>();
+            go.AddComponent<MagnetarTurret>().Configure(Balance, protons);
             return placed.Place(registry);
         }
 
@@ -104,7 +105,10 @@ namespace Nova.Tests
         {
             router.Step(Tick);
             foreach (NodeController node in registry.All)
+            {
                 node.GetComponent<StarGenerator>().Tick(Tick);
+                node.GetComponent<MagnetarTurret>().Tick(Tick);
+            }
             foreach (Proton proton in protons.InFlight.ToList())
                 proton.Tick(Tick);
             protons.ResolveArrivals();

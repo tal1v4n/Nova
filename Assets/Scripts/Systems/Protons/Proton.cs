@@ -42,6 +42,10 @@ namespace Nova.Systems
         // Fin del vuelo por cualquier motivo, con Target todavía asignado.
         public event Action<Proton> OnFinished;
 
+        // Derribado por un Magnetar (6.3): no llega, no impacta y su Energía se pierde. Se emite
+        // justo antes de OnFinished, con el protón todavía en su sitio.
+        public event Action<Proton> OnShotDown;
+
         // Microsegundos dentro del tick en que llegó: el criterio de orden de 15.10.
         public long ArrivalOffsetMicros { get; private set; }
 
@@ -127,6 +131,24 @@ namespace Nova.Systems
             destination.ApplyImpact(outcome);
             Finish();
             OnImpact?.Invoke(this, destination, outcome);
+        }
+
+        // Un disparo de Magnetar (6.3): resta damage de Carga y, si llega a 0, el protón
+        // desaparece sin impactar (17, caso 6). Devuelve true si lo derriba.
+        public bool TakeShot(int damage)
+        {
+            if (!inFlight)
+                throw new InvalidOperationException("El protón no está en vuelo.");
+            if (damage < 0)
+                throw new ArgumentOutOfRangeException(nameof(damage), damage, "Un disparo no suma Carga.");
+
+            charge = Math.Max(0, charge - damage);
+            if (charge > 0)
+                return false;
+
+            OnShotDown?.Invoke(this);
+            Finish();
+            return true;
         }
 
         void Finish()

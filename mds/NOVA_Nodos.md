@@ -97,7 +97,9 @@ Defensa de área. Derriba protones en tránsito.
 
 > **Radios ×0.75 y cadencia ×4/3 desde el 2026-10-02** ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #35). Los radios eran `2.0 · 2.4 · 2.8 · 3.2 · 3.6 u`, pensados para un tablero de 32 u: en el de 15 u ([T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada)) un N5 cubría el 48 % del ancho de diámetro, y ahora el 33 %. Los cinco caen en píxel exacto a PPU 64 (96, 112, 128, 144 y 160 px). Como el protón no cambió de velocidad, el radio menor por sí solo restaba un 30 % de Carga anulada; la cadencia sube ×4/3 (era `1.0 · 1.4 · 1.9 · 2.5 · 3.2`) para que la defensa valga lo mismo. Los valores viven en `Magnetar.asset` y se afinan jugando en `T2-04`.
 
-**Selección de objetivo:** el Magnetar dispara siempre al protón hostil **más cercano a su propio centro**. Si hay empate, al que lleve más Carga. Un solo disparo afecta a un solo protón (sin daño en área).
+**Selección de objetivo:** el Magnetar dispara siempre al protón hostil **más cercano a su propio centro**. Si hay empate, al que lleve más Carga, y si también empatan, al que se lanzó antes ([18](./NOVA_GameDesign_Spec.md#18-decisiones-tomadas-por-defecto) #31). Un protón justo en el borde del radio está dentro. Un solo disparo afecta a un solo protón (sin daño en área).
+
+**Cadencia:** sin objetivo, el arma espera cargada y dispara en cuanto entra uno; no acumula disparos en reposo. Disparando sin pausa, conserva la cadencia exacta de la tabla.
 
 **A quién dispara, según su bando:**
 

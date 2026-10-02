@@ -72,7 +72,6 @@ namespace Nova.Core
 
     // Resolución del impacto de un protón sobre un nodo: 6.2 y, si el nodo está congelado,
     // 7.3. Función pura: no modifica nada y siempre da la misma salida para la misma entrada.
-    // No devuelve ImpactResult.Destroyed: ninguno de los dos pseudocódigos lo contempla.
     public static class ImpactResolver
     {
         public static ImpactOutcome Resolve(ProtonSnapshot proton, NodeSnapshot target, float magnetarResistance)
