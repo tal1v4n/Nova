@@ -21,7 +21,7 @@ namespace Nova.Editor
     //
     // Fase 1 (T1-12): tres nodos para el criterio de salida, capturar un Asteroide, encenderlo
     // como Estrella y tomar un nodo enemigo. Fase 2 (T2-04): los mismos más un Magnetar enemigo en
-    // medio del camino, para ver la defensa.
+    // medio del camino, para ver la defensa, y desde T2-06 un Magnetar neutral apartado.
     //
     // Las dos llevan el menú radial de encendido (T2-02) y el panel de clic derecho (T2-03). El
     // menú ofrece los tipos que ya existen: Estrella y, desde T2-04, Magnetar; el Púlsar llega con
@@ -61,6 +61,9 @@ namespace Nova.Editor
             ("Neutral Asteroid", "Asteroid", Faction.Neutral, 10, new Vector2(-3.5f, 1.5f)),
             ("Enemy Magnetar", "Magnetar", Faction.Enemy, 10, new Vector2(0f, 0f)),
             ("Enemy Star", "Star", Faction.Enemy, 10, new Vector2(5f, 0f)),
+            // T2-06: neutral, abajo y fuera de los dos caminos de la Estrella del Jugador. El
+            // protón que va hacia él pasa a 2.57 u del Magnetar enemigo: solo le dispara el neutral.
+            ("Neutral Magnetar", "Magnetar", Faction.Neutral, 20, new Vector2(0f, -3f)),
         };
 
         [MenuItem("Nova/Fase 1/Generar escena de prueba")]

@@ -141,15 +141,64 @@ namespace Nova.Tests
             Assert.AreEqual(10, own.Charge);
         }
 
-        [Test]
-        public void NeutralMagnetarDoesNotShootYet()
+        // --- Magnetar neutral (3.2, T2-06) ---
+
+        [TestCase(Faction.Player)]
+        [TestCase(Faction.Enemy)]
+        public void NeutralMagnetarShootsBothSides(Faction side)
         {
             MagnetarTurret turret = Magnetar(Faction.Neutral);
-            Proton proton = Fly(Faction.Player, 10, new Vector2(0.5f, 0f));
+            Proton proton = Fly(side, 10, new Vector2(0.5f, 0f));
 
-            Run(turret, 50);
+            turret.Tick(Tick);
 
-            Assert.AreEqual(10, proton.Charge, "El neutral disparando a los dos bandos es T2-06.");
+            Assert.AreEqual(8, proton.Charge);
+        }
+
+        [Test]
+        public void NeutralMagnetarPicksByDistanceWhateverTheSide()
+        {
+            MagnetarTurret turret = Magnetar(Faction.Neutral);
+            Proton player = Fly(Faction.Player, 20, new Vector2(1f, 0f));
+            Proton enemy = Fly(Faction.Enemy, 5, new Vector2(0f, 0.5f));
+
+            turret.Tick(Tick);
+
+            Assert.AreEqual(3, enemy.Charge, "El más cercano, sea del bando que sea.");
+            Assert.AreEqual(20, player.Charge);
+        }
+
+        [Test]
+        public void NeutralMagnetarWearsDownBothSidesInTurn()
+        {
+            MagnetarTurret turret = Magnetar(Faction.Neutral);
+            Proton player = Fly(Faction.Player, 2, new Vector2(0.3f, 0f));
+            Proton enemy = Fly(Faction.Enemy, 10, new Vector2(0.9f, 0f));
+            int shots = 0;
+            turret.OnShot += (m, p) => shots++;
+
+            Run(turret, 100);
+
+            Assert.IsFalse(player.InFlight, "Primero derriba al más cercano.");
+            Assert.AreEqual(10 - 2 * (shots - 1), enemy.Charge, "Y sigue con el otro bando.");
+            Assert.Greater(shots, 1);
+        }
+
+        // 3.2: un Magnetar capturado nunca vuelve a Neutral, y deja de disparar a su nuevo dueño.
+        [Test]
+        public void CapturedNeutralMagnetarSparesItsNewOwner()
+        {
+            MagnetarTurret turret = Magnetar(Faction.Neutral);
+            NodeController node = turret.GetComponent<NodeController>();
+            node.ApplyImpact(ImpactResolver.Resolve(new ProtonSnapshot(Faction.Enemy, 40), node.Snapshot(), Balance.MagnetarResistance));
+            Assert.AreEqual(Faction.Enemy, node.Faction);
+
+            Proton enemy = Fly(Faction.Enemy, 10, new Vector2(0.3f, 0f));
+            Proton player = Fly(Faction.Player, 10, new Vector2(0.6f, 0f));
+            turret.Tick(Tick);
+
+            Assert.AreEqual(10, enemy.Charge);
+            Assert.AreEqual(8, player.Charge);
         }
 
         [TestCase("Star")]

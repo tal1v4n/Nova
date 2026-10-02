@@ -20,7 +20,8 @@ namespace Nova.Gameplay
     // siguiente, como el temporizador de la Estrella: 1/1.33 s no es múltiplo de 20 ms.
     //
     // Como StarGenerator, va en todo nodo que pueda llegar a ser Magnetar y solo actúa cuando lo
-    // es (desviación 143). El Magnetar neutral no dispara hasta T2-06; congelado, hasta T3-04.
+    // es (desviación 143). El Magnetar neutral dispara a los dos bandos (3.2, T2-06); congelado
+    // dejará de disparar con T3-04.
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NodeController))]
     public sealed class MagnetarTurret : MonoBehaviour
@@ -114,7 +115,8 @@ namespace Nova.Gameplay
             return best;
         }
 
-        // Tabla de 4.4: nunca a los de su facción. El Magnetar neutral, a los dos bandos, es T2-06.
+        // Tabla de 4.4: nunca a los de su facción. Un protón siempre es de Jugador o de Enemigo,
+        // así que el Magnetar neutral, que no tiene facción que proteger, dispara a los dos (3.2).
         public bool IsHostile(Faction protonFaction)
         {
             return protonFaction != Node.Faction && protonFaction != Faction.Neutral;
@@ -133,7 +135,7 @@ namespace Nova.Gameplay
             target.TakeShot(Balance.MagnetarShotDamage);
         }
 
-        bool CanFire => Node.IsInitialized && Node.Type == NodeType.Magnetar && Node.Faction != Faction.Neutral;
+        bool CanFire => Node.IsInitialized && Node.Type == NodeType.Magnetar;
 
         ProtonRegistry Registry => protons != null ? protons : ProtonRegistry.Instance;
 
