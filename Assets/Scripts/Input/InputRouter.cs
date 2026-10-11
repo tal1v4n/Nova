@@ -25,7 +25,7 @@ namespace Nova.Input
         const float PixelsPerUnit = 64f;
         const double MicrosPerSecond = 1_000_000d;
 
-        enum PointerKind { LeftDown, Move, LeftUp, Right, Escape }
+        enum PointerKind { LeftDown, Move, LeftUp, RightDown, RightUp, Escape }
 
         readonly struct PointerEvent
         {
@@ -50,6 +50,9 @@ namespace Nova.Input
         [Tooltip("Opcional: sin ella se usa Camera.main.")]
         [SerializeField] Camera worldCamera;
 
+        [Tooltip("Opcional: sin él no hay línea de envío (T2-09).")]
+        [SerializeField] SendLineState sendLine;
+
         readonly Queue<PointerEvent> pending = new Queue<PointerEvent>();
         int nodesMask = -1;
 
@@ -60,6 +63,13 @@ namespace Nova.Input
         bool dragging;
         Vector2 pressWorld;
         NodeController pressNode;
+
+        // Pulsación derecha en curso (T2-09): actúa al soltar, porque hasta entonces no se sabe
+        // si es un clic —panel o cancelar— o un arrastre que envía (13.1).
+        bool rightPressing;
+        bool rightDragging;
+        Vector2 rightPressWorld;
+        NodeController rightPressNode;
 
         // Buffer del doble clic (13.2).
         bool bufferActive;
@@ -83,14 +93,23 @@ namespace Nova.Input
             if (mouse != null && cam != null)
             {
                 Vector2 world = cam.ScreenToWorldPoint(mouse.position.ReadValue());
+
+                // La línea de envío sigue al cursor en cada frame (14.9): es presentación, no
+                // pasa por la cola del tick.
+                if (sendLine != null)
+                    sendLine.SetCursor(world);
+
                 if (mouse.leftButton.wasPressedThisFrame)
                     pending.Enqueue(new PointerEvent(PointerKind.LeftDown, world, PickNode(world)));
-                if (mouse.leftButton.isPressed || mouse.leftButton.wasReleasedThisFrame)
+                if (mouse.rightButton.wasPressedThisFrame)
+                    pending.Enqueue(new PointerEvent(PointerKind.RightDown, world, PickNode(world)));
+                if (mouse.leftButton.isPressed || mouse.leftButton.wasReleasedThisFrame
+                    || mouse.rightButton.isPressed || mouse.rightButton.wasReleasedThisFrame)
                     pending.Enqueue(new PointerEvent(PointerKind.Move, world, null));
                 if (mouse.leftButton.wasReleasedThisFrame)
                     pending.Enqueue(new PointerEvent(PointerKind.LeftUp, world, PickNode(world)));
-                if (mouse.rightButton.wasPressedThisFrame)
-                    pending.Enqueue(new PointerEvent(PointerKind.Right, world, PickNode(world)));
+                if (mouse.rightButton.wasReleasedThisFrame)
+                    pending.Enqueue(new PointerEvent(PointerKind.RightUp, world, PickNode(world)));
             }
 
             Keyboard keyboard = Keyboard.current;
@@ -108,7 +127,8 @@ namespace Nova.Input
                     case PointerKind.LeftDown: PressLeft(e.World, e.Node); break;
                     case PointerKind.Move: MoveTo(e.World); break;
                     case PointerKind.LeftUp: ReleaseLeft(e.World, e.Node); break;
-                    case PointerKind.Right: ClickRight(e.Node); break;
+                    case PointerKind.RightDown: PressRight(e.World, e.Node); break;
+                    case PointerKind.RightUp: ReleaseRight(e.World, e.Node); break;
                     case PointerKind.Escape: PressEscape(); break;
                 }
             }
@@ -131,8 +151,9 @@ namespace Nova.Input
             return hit != null ? hit.GetComponentInParent<NodeController>() : null;
         }
 
-        // Los cinco eventos de entrada, ya traducidos a mundo y a nodo. Públicos para los tests,
-        // que no tienen ratón; en partida los llama FixedUpdate.
+        // Los eventos de entrada, ya traducidos a mundo y a nodo. Públicos para los tests, que no
+        // tienen ratón; en partida los llama FixedUpdate. ClickRight es el clic derecho ya resuelto
+        // como clic, sin arrastre: lo llama ReleaseRight.
 
         public void PressLeft(Vector2 world, NodeController node)
         {
@@ -142,14 +163,21 @@ namespace Nova.Input
             pressNode = node;
         }
 
+        // 13.1: una pulsación pasa a arrastre cuando el cursor se aleja MÁS del umbral; por debajo
+        // es un clic. La regla es la misma para los dos botones.
         public void MoveTo(Vector2 world)
         {
-            if (!pressing || dragging)
-                return;
-            // 13.1: arrastre cuando el cursor se aleja MÁS del umbral; por debajo es un clic.
-            float threshold = Balance.DragThreshold / PixelsPerUnit;
-            if ((world - pressWorld).sqrMagnitude > threshold * threshold)
+            if (pressing && !dragging && BeyondThreshold(world, pressWorld))
                 dragging = true;
+
+            if (rightPressing && !rightDragging && BeyondThreshold(world, rightPressWorld))
+            {
+                rightDragging = true;
+                // La línea sale solo de un origen legal; desde cualquier otro sitio el arrastre
+                // no dibuja nada y al soltar no hace nada.
+                if (sendLine != null && SelectionManager.CanSelect(rightPressNode, Issuer.Faction))
+                    sendLine.BeginDrag(rightPressNode);
+            }
         }
 
         public void ReleaseLeft(Vector2 world, NodeController node)
@@ -196,18 +224,49 @@ namespace Nova.Input
                 return;
             }
 
-            if (pressNode == null)
+            // El arrastre izquierdo es siempre lazo, empiece donde empiece (13.1, 18 #32): el
+            // envío por arrastre es del botón derecho. Sustituye a la selección (18 #26).
+            Selection.SelectInRect(pressWorld, world);
+        }
+
+        public void PressRight(Vector2 world, NodeController node)
+        {
+            // 13.7: con el menú de encendido abierto, el clic derecho lo cierra al pulsar y se
+            // traga la pulsación: no empieza un arrastre ni abre el panel al soltar.
+            if (Menu.IsOpen)
             {
-                // Arrastre en vacío: lazo, que sustituye a la selección (18 #26).
-                Selection.SelectInRect(pressWorld, world);
+                Menu.Close();
+                return;
             }
-            else if (SelectionManager.CanSelect(pressNode, Issuer.Faction) && node != null && node != pressNode)
+
+            rightPressing = true;
+            rightDragging = false;
+            rightPressWorld = world;
+            rightPressNode = node;
+        }
+
+        public void ReleaseRight(Vector2 world, NodeController node)
+        {
+            if (!rightPressing)
+                return;
+            MoveTo(world);
+            rightPressing = false;
+            NodeController origin = rightPressNode;
+            rightPressNode = null;
+            if (sendLine != null)
+                sendLine.EndDrag();
+
+            if (!rightDragging)
             {
-                // Arrastre desde un origen propio: 50 % desde ese único origen, al soltar y sin
-                // buffer (13.1, 18 #25). Soltar en vacío o sobre el origen no hace nada.
-                Issuer.Send(pressNode, node, false);
+                ClickRight(origin);
+                return;
             }
-            // Un arrastre que empieza sobre un nodo que no es origen legal no hace nada.
+
+            // Arrastre desde un origen propio: 50 % desde ese único origen, al soltar y sin buffer
+            // (13.1, 18 #25). Soltar en vacío o sobre el origen no envía, y en ningún caso se abre
+            // el panel ni se cancela la selección.
+            if (SelectionManager.CanSelect(origin, Issuer.Faction) && node != null && node != origin)
+                Issuer.Send(origin, node, false);
         }
 
         public void ClickRight(NodeController node)
@@ -260,7 +319,7 @@ namespace Nova.Input
 
         // Para la escena de prueba y los tests: el cableado normal es por el Inspector.
         public void Configure(BalanceConfig config, SelectionManager selectionManager, PlayerCommandIssuer commandIssuer,
-            IgnitionMenuState menu, InfoPanelState panel, Camera cam = null)
+            IgnitionMenuState menu, InfoPanelState panel, Camera cam = null, SendLineState line = null)
         {
             balance = config;
             selection = selectionManager;
@@ -268,6 +327,13 @@ namespace Nova.Input
             ignitionMenu = menu;
             infoPanel = panel;
             worldCamera = cam;
+            sendLine = line;
+        }
+
+        bool BeyondThreshold(Vector2 world, Vector2 pressedAt)
+        {
+            float threshold = Balance.DragThreshold / PixelsPerUnit;
+            return (world - pressedAt).sqrMagnitude > threshold * threshold;
         }
 
         // Clic izquierdo sin arrastre (13.1), con el cursor en world.

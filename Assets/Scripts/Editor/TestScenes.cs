@@ -137,10 +137,13 @@ namespace Nova.Editor
             issuer.Configure(launcher);
             var menu = go.AddComponent<IgnitionMenuState>();
             var panel = go.AddComponent<InfoPanelState>();
+            var sendLine = go.AddComponent<SendLineState>(); // T2-09
+            sendLine.Configure(selection, menu);
             var router = go.AddComponent<InputRouter>();
-            router.Configure(balance, selection, issuer, menu, panel, camera);
+            router.Configure(balance, selection, issuer, menu, panel, camera, sendLine);
 
             go.AddComponent<ProvisionalSelectionView>().Configure(selection);
+            go.AddComponent<ProvisionalSendLineView>().Configure(sendLine);
             go.AddComponent<ProvisionalProtonView>().Configure(protons, font);
             go.AddComponent<IgnitionMenu>().Configure(menu, font, text);
             go.AddComponent<NodeInfoPanel>().Configure(panel, font, text);

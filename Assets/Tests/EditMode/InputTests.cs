@@ -4,6 +4,7 @@ using Nova.Core;
 using Nova.Data;
 using Nova.Gameplay;
 using Nova.Input;
+using Nova.Presentation;
 using Nova.Systems;
 using UnityEditor;
 using UnityEngine;
@@ -23,6 +24,7 @@ namespace Nova.Tests
         InputRouter router;
         IgnitionMenuState menu;
         InfoPanelState panel;
+        SendLineState sendLine;
 
         static NodeDefinition Definition(string name) =>
             AssetDatabase.LoadAssetAtPath<NodeDefinition>($"Assets/Data/Nodes/{name}.asset");
@@ -46,8 +48,10 @@ namespace Nova.Tests
             issuer.Configure(launcher);
             menu = go.AddComponent<IgnitionMenuState>();
             panel = go.AddComponent<InfoPanelState>();
+            sendLine = go.AddComponent<SendLineState>();
+            sendLine.Configure(selection, menu);
             router = go.AddComponent<InputRouter>();
-            router.Configure(Balance, selection, issuer, menu, panel);
+            router.Configure(Balance, selection, issuer, menu, panel, null, sendLine);
         }
 
         [TearDown]
@@ -752,31 +756,51 @@ namespace Nova.Tests
             Assert.IsTrue(selection.IsSelected(source));
         }
 
+        // --- Arrastre derecho (13.1, T2-09) ---
+
+        static readonly Vector2 Empty = new Vector2(5f, 5f);
+
+        // Pulsación derecha sobre un nodo (o en vacío con null), arrastre hasta to y suelta allí.
+        void RightDrag(NodeController from, Vector2 to, NodeController dropOn)
+        {
+            router.PressRight(from != null ? (Vector2)from.transform.position : Empty, from);
+            router.MoveTo(to);
+            router.ReleaseRight(to, dropOn);
+        }
+
+        void RightClick(NodeController node)
+        {
+            Vector2 at = node != null ? (Vector2)node.transform.position : Empty;
+            router.PressRight(at, node);
+            router.ReleaseRight(at, node);
+        }
+
         [Test]
-        public void DragFromOwnNodeSendsHalfOnReleaseWithoutBuffer()
+        public void RightDragFromOwnNodeSendsHalfOnReleaseWithoutBuffer()
         {
             NodeController source = Node("Star", Faction.Player, 40);
             NodeController target = Node("Asteroid", Faction.Neutral, 10, new Vector2(3f, 0f));
 
-            router.PressLeft(source.transform.position, source);
+            router.PressRight(source.transform.position, source);
             router.MoveTo(new Vector2(1.5f, 0f));
-            router.ReleaseLeft(target.transform.position, target);
+            Assert.AreEqual(40, source.Energy, "Nada sale antes de soltar.");
+            router.ReleaseRight(target.transform.position, target);
 
             Assert.AreEqual(20, source.Energy, "18 #25: sale al soltar.");
             Assert.IsFalse(router.IsBufferActive);
             Assert.IsFalse(selection.HasSelection, "Un arrastre no selecciona.");
+            Assert.IsFalse(panel.IsOpen, "Un arrastre no abre el panel.");
         }
 
         [Test]
-        public void DragSendsOnlyFromItsOriginWhateverTheSelection()
+        public void RightDragSendsOnlyFromItsOriginWhateverTheSelection()
         {
             NodeController selected = Node("Star", Faction.Player, 40);
             NodeController origin = Node("Magnetar", Faction.Player, 40, new Vector2(0f, 2f));
             NodeController target = Node("Star", Faction.Enemy, 10, new Vector2(3f, 0f));
             selection.Select(selected);
 
-            router.PressLeft(origin.transform.position, origin);
-            router.ReleaseLeft(target.transform.position, target);
+            RightDrag(origin, target.transform.position, target);
 
             Assert.AreEqual(20, origin.Energy);
             Assert.AreEqual(40, selected.Energy);
@@ -784,35 +808,243 @@ namespace Nova.Tests
         }
 
         [Test]
-        public void DragReleasedOnEmptyOrOnItsOriginDoesNothing()
+        public void RightDragReleasedOnEmptyOrOnItsOriginDoesNothing()
         {
             NodeController source = Node("Star", Faction.Player, 40);
+            NodeController other = Node("Star", Faction.Player, 40, new Vector2(-4f, 0f));
+            selection.Select(other);
 
-            router.PressLeft(source.transform.position, source);
-            router.ReleaseLeft(new Vector2(4f, 4f), null);
-            router.PressLeft(source.transform.position, source);
+            RightDrag(source, Empty, null);
+            router.PressRight(source.transform.position, source);
             router.MoveTo(new Vector2(1f, 1f));
-            router.ReleaseLeft(source.transform.position, source);
+            router.ReleaseRight(source.transform.position, source);
 
             Assert.AreEqual(40, source.Energy);
-            Assert.IsFalse(selection.HasSelection);
+            Assert.IsFalse(panel.IsOpen, "Hubo arrastre: ni panel ni cancelación, se suelte donde se suelte.");
+            Assert.IsTrue(selection.IsSelected(other));
         }
 
         [Test]
-        public void DragFromForeignNodeOrAsteroidDoesNothing()
+        public void RightDragFromForeignNodeAsteroidOrEmptyDoesNothing()
         {
             NodeController enemy = Node("Star", Faction.Enemy, 40);
             NodeController asteroid = Node("Asteroid", Faction.Player, 10, new Vector2(0f, 2f));
             NodeController target = Node("Star", Faction.Player, 0, new Vector2(3f, 0f));
+            NodeController selected = Node("Star", Faction.Player, 40, new Vector2(-4f, 0f));
+            selection.Select(selected);
 
-            router.PressLeft(enemy.transform.position, enemy);
-            router.ReleaseLeft(target.transform.position, target);
-            router.PressLeft(asteroid.transform.position, asteroid);
-            router.ReleaseLeft(target.transform.position, target);
+            RightDrag(enemy, target.transform.position, target);
+            RightDrag(asteroid, target.transform.position, target);
+            RightDrag(null, target.transform.position, target);
 
             Assert.AreEqual(40, enemy.Energy);
             Assert.AreEqual(10, asteroid.Energy);
+            Assert.AreEqual(0, target.Energy);
+            Assert.IsFalse(panel.IsOpen);
+            Assert.IsTrue(selection.IsSelected(selected), "Un arrastre en vacío no cancela la selección.");
+        }
+
+        [Test]
+        public void RightClickActsOnReleaseNotOnPress()
+        {
+            NodeController star = Node("Star", Faction.Player, 10);
+
+            router.PressRight(star.transform.position, star);
+            Assert.IsFalse(panel.IsOpen, "Al pulsar todavía no se sabe si es clic o arrastre.");
+
+            router.ReleaseRight(star.transform.position, star);
+            Assert.IsTrue(panel.IsOpen);
+            Assert.AreSame(star, panel.Node);
+        }
+
+        [Test]
+        public void RightMovingUpToTheThresholdIsStillAClick()
+        {
+            NodeController star = Node("Star", Faction.Player, 10);
+            Vector2 at = star.transform.position;
+
+            router.PressRight(at, star);
+            router.ReleaseRight(at + new Vector2(Threshold, 0f), null);
+
+            Assert.IsTrue(panel.IsOpen, "La regla del umbral es la misma para los dos botones.");
+            Assert.AreSame(star, panel.Node, "El clic es del nodo donde se pulsó.");
+        }
+
+        [Test]
+        public void RightClickOnEmptyStillClearsSelectionAndPanel()
+        {
+            NodeController source = Node("Star", Faction.Player, 40);
+            Click(source);
+            RightClick(source);
+
+            RightClick(null);
+
             Assert.IsFalse(selection.HasSelection);
+            Assert.IsFalse(panel.IsOpen);
+        }
+
+        [Test]
+        public void RightPressWithTheMenuOpenClosesItAndIsSwallowed()
+        {
+            NodeController asteroid = Node("Asteroid", Faction.Player, 10);
+            NodeController target = Node("Star", Faction.Player, 0, new Vector2(3f, 0f));
+            Click(asteroid);
+            Assert.IsTrue(menu.IsOpen);
+
+            router.PressRight(asteroid.transform.position, asteroid);
+            Assert.IsFalse(menu.IsOpen, "13.7: lo cierra al pulsar.");
+
+            router.MoveTo(target.transform.position);
+            router.ReleaseRight(target.transform.position, target);
+
+            Assert.IsFalse(panel.IsOpen, "La pulsación era del menú: al soltar no pasa nada.");
+            Assert.IsNull(sendLine.DragOrigin);
+        }
+
+        // --- Arrastre izquierdo: siempre lazo ---
+
+        [Test]
+        public void LeftDragFromANodeIsALassoAndSendsNothing()
+        {
+            NodeController source = Node("Star", Faction.Player, 40);
+            NodeController other = Node("Star", Faction.Player, 40, new Vector2(1f, 1f));
+            NodeController enemy = Node("Star", Faction.Enemy, 10, new Vector2(4f, 0f));
+
+            router.PressLeft(source.transform.position, source);
+            router.MoveTo(new Vector2(1.5f, 1.5f));
+            router.ReleaseLeft(new Vector2(1.5f, 1.5f), null);
+
+            CollectionAssert.AreEquivalent(new[] { source, other }, selection.Selected);
+            Assert.AreEqual(40, source.Energy, "18 #32: el arrastre izquierdo ya no envía.");
+
+            router.PressLeft(enemy.transform.position, enemy);
+            router.ReleaseLeft(new Vector2(5f, 1f), null);
+
+            Assert.IsFalse(selection.HasSelection, "Un lazo sin nodos propios deja la selección vacía.");
+            Assert.AreEqual(10, enemy.Energy);
+        }
+
+        // --- Línea de envío (13.1, T2-09) ---
+
+        [Test]
+        public void WithoutSelectionThereIsNoLine()
+        {
+            Node("Star", Faction.Player, 40);
+            CollectionAssert.IsEmpty(sendLine.Origins);
+        }
+
+        [Test]
+        public void ASelectionDrawsALineFromEachSelectedNode()
+        {
+            NodeController a = Node("Star", Faction.Player, 40);
+            NodeController b = Node("Magnetar", Faction.Player, 40, new Vector2(0f, 2f));
+            selection.Select(a);
+            selection.Select(b);
+
+            CollectionAssert.AreEqual(new[] { a, b }, sendLine.Origins, "En el orden de la selección.");
+
+            selection.Deselect(a);
+            CollectionAssert.AreEqual(new[] { b }, sendLine.Origins, "Sale de la selección y pierde su línea.");
+
+            RightClick(null);
+            CollectionAssert.IsEmpty(sendLine.Origins, "Cancelar la selección quita las líneas.");
+        }
+
+        [Test]
+        public void ARightDragShowsOnlyItsOriginOnceItPassesTheThreshold()
+        {
+            NodeController selected = Node("Star", Faction.Player, 40);
+            NodeController origin = Node("Magnetar", Faction.Player, 40, new Vector2(0f, 2f));
+            selection.Select(selected);
+
+            router.PressRight(origin.transform.position, origin);
+            router.MoveTo((Vector2)origin.transform.position + new Vector2(Threshold, 0f));
+            CollectionAssert.AreEqual(new[] { selected }, sendLine.Origins, "Por debajo del umbral es un clic.");
+
+            router.MoveTo(new Vector2(2f, 2f));
+            CollectionAssert.AreEqual(new[] { origin }, sendLine.Origins, "Las líneas de la selección se ocultan.");
+            Assert.AreSame(origin, sendLine.DragOrigin);
+
+            router.ReleaseRight(Empty, null);
+            CollectionAssert.AreEqual(new[] { selected }, sendLine.Origins, "Al soltar vuelven.");
+            Assert.IsNull(sendLine.DragOrigin);
+        }
+
+        [Test]
+        public void ARightDragFromAnIllegalOriginDrawsNoLine()
+        {
+            NodeController enemy = Node("Star", Faction.Enemy, 40);
+            NodeController asteroid = Node("Asteroid", Faction.Player, 10, new Vector2(0f, 2f));
+
+            router.PressRight(enemy.transform.position, enemy);
+            router.MoveTo(new Vector2(2f, 0f));
+            Assert.IsNull(sendLine.DragOrigin);
+            CollectionAssert.IsEmpty(sendLine.Origins);
+            router.ReleaseRight(new Vector2(2f, 0f), null);
+
+            router.PressRight(asteroid.transform.position, asteroid);
+            router.MoveTo(new Vector2(2f, 2f));
+            Assert.IsNull(sendLine.DragOrigin);
+            router.ReleaseRight(new Vector2(2f, 2f), null);
+        }
+
+        [Test]
+        public void AnOriginThatChangesSidesMidDragLosesItsLine()
+        {
+            NodeController origin = Node("Star", Faction.Player, 0);
+
+            router.PressRight(origin.transform.position, origin);
+            router.MoveTo(new Vector2(2f, 0f));
+            Assert.AreEqual(1, sendLine.Origins.Count);
+
+            origin.ApplyImpact(ImpactResolver.Resolve(new ProtonSnapshot(Faction.Enemy, 5), origin.Snapshot(), Balance.MagnetarResistance));
+
+            CollectionAssert.IsEmpty(sendLine.Origins);
+        }
+
+        [Test]
+        public void TheOpenIgnitionMenuHidesTheLines()
+        {
+            NodeController asteroid = Node("Asteroid", Faction.Player, 10);
+            NodeController star = Node("Star", Faction.Player, 40, new Vector2(-4f, 0f));
+            Click(asteroid);
+            selection.Select(star);
+
+            CollectionAssert.IsEmpty(sendLine.Origins);
+
+            menu.Close();
+            CollectionAssert.AreEqual(new[] { star }, sendLine.Origins);
+        }
+
+        [Test]
+        public void TheLineEndsAtTheCursor()
+        {
+            sendLine.SetCursor(new Vector2(1.25f, -2f));
+            Assert.AreEqual(new Vector2(1.25f, -2f), sendLine.Cursor);
+        }
+
+        [Test]
+        public void TheProvisionalViewDrawsOneStrokeFromEachOriginToTheCursor()
+        {
+            NodeController a = Node("Star", Faction.Player, 40);
+            NodeController b = Node("Star", Faction.Player, 40, new Vector2(0f, 2f));
+            var view = new GameObject("SendLineView").AddComponent<ProvisionalSendLineView>();
+            spawned.Add(view.gameObject);
+            view.Configure(sendLine);
+            selection.Select(a);
+            selection.Select(b);
+            sendLine.SetCursor(new Vector2(4f, 0f));
+
+            view.Refresh();
+
+            Assert.AreEqual(2, view.VisibleCount);
+            SpriteRenderer first = view.Lines[0];
+            Assert.AreEqual(new Vector3(2f, 0f, 0f), first.transform.position, "En el punto medio.");
+            Assert.AreEqual(4f * 64f, first.transform.localScale.x, 1e-3f, "4 u de largo, en píxeles.");
+
+            selection.Clear();
+            view.Refresh();
+            Assert.AreEqual(0, view.VisibleCount);
         }
 
         [Test]
