@@ -138,8 +138,8 @@ namespace Nova.UI
             PaintConversion(node, t);
         }
 
-        // 13.4: un solo campo que significa algo distinto en cada tipo. El del Púlsar depende
-        // del poder que carga y llega con PulsarCaster (T3-02).
+        // 13.4: un solo campo que significa algo distinto en cada tipo. El del Púlsar es el drenaje
+        // del poder que carga o tiene cargado, y en reposo queda vacío (T.7 #49, T3-02).
         static string AttackSpeed(NodeController node, UiText t)
         {
             NodeLevelData data = node.CurrentLevelData;
@@ -149,6 +149,10 @@ namespace Nova.UI
                     return data.GenerationInterval > 0f ? t.Generation(1f / data.GenerationInterval) : null;
                 case NodeType.Magnetar:
                     return t.FireRate(data.FireRate);
+                case NodeType.Pulsar:
+                    return node.TryGetComponent(out PulsarCaster caster) && caster.Power != null
+                        ? t.Charge(caster.Power.DrainRate)
+                        : null;
                 default:
                     return null;
             }
@@ -268,6 +272,8 @@ namespace Nova.UI
                 watched.OnTypeChanged -= HandleTypeChanged;
                 watched.OnFactionChanged -= HandleFactionChanged;
                 watched.OnStateFlagsChanged -= HandleFlagsChanged;
+                if (watched.TryGetComponent(out PulsarCaster previousCaster))
+                    previousCaster.OnStateChanged -= HandleChargeChanged;
             }
             watched = node;
             if (watched != null)
@@ -277,6 +283,8 @@ namespace Nova.UI
                 watched.OnTypeChanged += HandleTypeChanged;
                 watched.OnFactionChanged += HandleFactionChanged;
                 watched.OnStateFlagsChanged += HandleFlagsChanged;
+                if (watched.TryGetComponent(out PulsarCaster caster))
+                    caster.OnStateChanged += HandleChargeChanged;
             }
         }
 
@@ -285,6 +293,8 @@ namespace Nova.UI
         void HandleFactionChanged(Faction previous, Faction current) => Refresh();
         // Reconvirtiendo empieza, termina o se cancela; desde T3-04, también Congelado.
         void HandleFlagsChanged(NodeStateFlags previous, NodeStateFlags current) => Refresh();
+        // La carga empieza, se cancela o se pierde: la línea de 13.4 del Púlsar cambia (T3-02).
+        void HandleChargeChanged(PowerChargeState previous, PowerChargeState current) => Refresh();
 
         void EnsureBuilt()
         {

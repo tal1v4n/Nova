@@ -20,6 +20,7 @@ MonoBehaviour:
   energyFormat: "Energ\u00EDa {0} / {1}"
   generationFormat: "Generaci\u00F3n: {0:0.00} E/s"
   fireRateFormat: "Cadencia: {0:0.0} disparos/s"
+  chargeFormat: "Carga: {0:0.00} E/s"
   sleeping: DORMIDO
   ignitionCostFormat: "Encender: {0}"
   upgradeFormat: "Mejorar \u00B7 {0}"

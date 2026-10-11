@@ -657,7 +657,7 @@ Es un único campo en la UI que significa cosas distintas según el tipo:
 | Púlsar | Carga: `X.XX E/s` |
 | Asteroide | El panel solo muestra `DORMIDO` y el coste de encendido |
 
-Los decimales van con **punto**, como en esta tabla, sea cual sea la configuración regional de la máquina. La línea del Púlsar está pendiente de [T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #49.
+Los decimales van con **punto**, como en esta tabla, sea cual sea la configuración regional de la máquina. La línea del Púlsar enseña el drenaje del poder que carga o tiene cargado (16.3), y en reposo queda vacía ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #49, cerrado en `T3-02`).
 
 ### 13.5 Rueda de poderes del Púlsar
 

@@ -33,6 +33,9 @@ namespace Nova.Data
         [Tooltip("{0} disparos por segundo del Magnetar.")]
         [SerializeField] string fireRateFormat = "Cadencia: {0:0.0} disparos/s";
 
+        [Tooltip("{0} drenaje del poder que carga o tiene cargado el Púlsar (T.7 #49).")]
+        [SerializeField] string chargeFormat = "Carga: {0:0.00} E/s";
+
         [SerializeField] string sleeping = "DORMIDO";
 
         [Tooltip("{0} coste de encendido.")]
@@ -68,6 +71,7 @@ namespace Nova.Data
         public string EnergyLine(int energy, int cap) => Format(energyFormat, energy, cap);
         public string Generation(float energyPerSecond) => Format(generationFormat, energyPerSecond);
         public string FireRate(float shotsPerSecond) => Format(fireRateFormat, shotsPerSecond);
+        public string Charge(float energyPerSecond) => Format(chargeFormat, energyPerSecond);
         public string Sleeping => sleeping;
         public string IgnitionCost(int cost) => Format(ignitionCostFormat, cost);
         // El coste llega ya escrito: el panel lo pinta en rojo cuando no se alcanza (13.3).

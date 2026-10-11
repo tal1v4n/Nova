@@ -26,5 +26,12 @@ namespace Nova.Gameplay
         // Inicia la reconversión de un nodo propio encendido a targetType: paga al iniciar y
         // cambia de tipo a los 3 s (8.1). T2-07.
         ActionCheck Convert(NodeController node, NodeType targetType);
+
+        // Empieza a cargar un poder en un Púlsar propio; la Energía se va invirtiendo sola (7.1). T3-02.
+        ActionCheck ChargePower(NodeController node, PowerType power);
+
+        // Cancela la carga o el poder ya cargado de un Púlsar propio y devuelve la mitad de lo
+        // invertido (7.1). T3-02.
+        ActionCheck CancelCharge(NodeController node);
     }
 }

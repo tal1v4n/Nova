@@ -48,6 +48,25 @@ namespace Nova.Input
             return converter.TryConvert(Faction, targetType);
         }
 
+        public ActionCheck ChargePower(NodeController node, PowerType power)
+        {
+            return Caster(node).TryCharge(Faction, power);
+        }
+
+        public ActionCheck CancelCharge(NodeController node)
+        {
+            return Caster(node).TryCancel(Faction);
+        }
+
+        static PulsarCaster Caster(NodeController node)
+        {
+            if (node == null)
+                throw new ArgumentNullException(nameof(node));
+            if (!node.TryGetComponent(out PulsarCaster caster))
+                throw new InvalidOperationException($"{node.name} no tiene PulsarCaster.");
+            return caster;
+        }
+
         // Con varios orígenes seleccionados, cada uno lanza su propio protón con su propio cálculo
         // (5.2). Los que no pueden enviar se ignoran en silencio (17, caso 22). Devuelve cuántos salieron.
         public int SendFromEach(IReadOnlyList<NodeController> sources, NodeController target, bool fullSend)

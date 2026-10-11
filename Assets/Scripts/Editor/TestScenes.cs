@@ -24,9 +24,8 @@ namespace Nova.Editor
     // medio del camino, para ver la defensa, y desde T2-06 un Magnetar neutral apartado.
     //
     // Las dos llevan el menú radial de encendido (T2-02) y el panel de clic derecho (T2-03), con la
-    // reconversión desde T2-07. Encendido y reconversión ofrecen los tipos que ya existen: Estrella
-    // y, desde T2-04, Magnetar; el Púlsar llega con T3-02 y hasta entonces sale deshabilitado. Al
-    // cerrar esa tarea se añade a IgnitionTargets.
+    // reconversión desde T2-07. Encendido y reconversión ofrecen los tres tipos desde T3-02, que
+    // trae el Púlsar con su carga de poderes.
     public static class TestScenes
     {
         const string ScenesFolder = "Assets/Scenes/Tests";
@@ -41,7 +40,11 @@ namespace Nova.Editor
         // (desviación 138). El Asteroide provisional es más pequeño, pero conserva el mismo blanco.
         const float ColliderRadius = 0.5f;
 
-        static readonly string[] IgnitionTargets = { "Star", "Magnetar" };
+        static readonly string[] IgnitionTargets = { "Star", "Pulsar", "Magnetar" };
+
+        // T3-02: los tres poderes, en todo nodo que pueda ser Púlsar.
+        const string PowersFolder = "Assets/Data/Powers";
+        static readonly string[] Powers = { "AbsoluteZero", "Decay", "Wormhole" };
 
         // Los tres nodos de la fase 1, sobre el tablero de 15 x 8.4375 u (T.8). El Asteroide queda
         // a 2.12 u de la Estrella del Jugador, dentro de la regla de 2.25 u de 11.3. El Enemigo no
@@ -101,8 +104,9 @@ namespace Nova.Editor
             NodeRegistry registry = CreateSystems(balance, font, text, camera, out protons);
 
             NodeDefinition[] ignitionTargets = System.Array.ConvertAll(IgnitionTargets, Definition);
+            PowerDefinition[] powers = System.Array.ConvertAll(Powers, Power);
             foreach (var spec in nodes)
-                CreateNode(spec.name, Definition(spec.type), spec.faction, spec.energy, spec.position, balance, font, ignitionTargets, protons);
+                CreateNode(spec.name, Definition(spec.type), spec.faction, spec.energy, spec.position, balance, font, ignitionTargets, powers, protons);
 
             Directory.CreateDirectory(ScenesFolder);
             EditorSceneManager.SaveScene(scene, scenePath);
@@ -153,7 +157,7 @@ namespace Nova.Editor
         }
 
         static void CreateNode(string name, NodeDefinition definition, Faction faction, int energy, Vector2 position,
-            BalanceConfig balance, TMP_FontAsset font, NodeDefinition[] ignitionTargets, ProtonRegistry protons)
+            BalanceConfig balance, TMP_FontAsset font, NodeDefinition[] ignitionTargets, PowerDefinition[] powers, ProtonRegistry protons)
         {
             var go = new GameObject(name) { layer = LayerMask.NameToLayer(NodesLayer) };
             go.transform.position = position;
@@ -164,6 +168,7 @@ namespace Nova.Editor
             go.AddComponent<NodeConverter>().Configure(balance, ignitionTargets); // T2-07: mismos tipos que el encendido
             go.AddComponent<StarGenerator>(); // desviación 143: en todo nodo que pueda ser Estrella
             go.AddComponent<MagnetarTurret>().Configure(balance, protons); // y en todo el que pueda ser Magnetar
+            go.AddComponent<PulsarCaster>().Configure(balance, powers); // T3-02: y en todo el que pueda ser Púlsar
             go.AddComponent<NodeScare>().Configure(balance, protons); // T2-08: todo nodo se asusta (14.2)
 
             var trigger = go.AddComponent<CircleCollider2D>();
@@ -175,8 +180,17 @@ namespace Nova.Editor
             serialized.FindProperty("font").objectReferenceValue = font;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             go.AddComponent<ProvisionalMagnetarView>();
+            go.AddComponent<ProvisionalPulsarView>();
 
             EditorUtility.SetDirty(go);
+        }
+
+        static PowerDefinition Power(string name)
+        {
+            var power = AssetDatabase.LoadAssetAtPath<PowerDefinition>($"{PowersFolder}/{name}.asset");
+            if (power == null)
+                throw new FileNotFoundException($"Falta {PowersFolder}/{name}.asset");
+            return power;
         }
 
         static NodeDefinition Definition(string type)

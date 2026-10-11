@@ -19,6 +19,9 @@ namespace Nova.Core
         Converting,         // Ya reconvirtiéndose (8.1)
         InsufficientEnergy,
         Unavailable,        // El nodo no ofrece ese tipo: aún no existe en esta fase (NodeIgnition, T2-02)
+        NotPulsar,          // Solo un Púlsar carga poderes (4.3, T3-02)
+        LevelTooLow,        // El nivel del Púlsar no desbloquea ese poder (7.2)
+        NoPowerCharge,      // No hay carga que cancelar (7.1)
     }
 
     // Resultado de validar una acción: si se puede y cuánto cuesta.
@@ -111,7 +114,7 @@ namespace Nova.Core
             return Math.Min(energyAtEnd, newTypeEnergyCap);
         }
 
-        static bool IsOwner(NodeSnapshot node, Faction actor) =>
+        internal static bool IsOwner(NodeSnapshot node, Faction actor) =>
             actor != Faction.Neutral && node.Faction == actor;
 
         static ActionCheck WithEnergy(NodeSnapshot node, int cost) =>

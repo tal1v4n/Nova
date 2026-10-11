@@ -17,6 +17,7 @@ namespace Nova.Gameplay
         NodeEnergy energy;
         NodeLevelComponent levelComponent;
         NodeStateMachine stateMachine;
+        PulsarCaster caster;
         bool listening;
 
         public NodeType Type => Identity.Type;
@@ -98,14 +99,15 @@ namespace Nova.Gameplay
         }
 
         // El nodo tal como lo leen las reglas de Core. Los estados salen de las banderas de
-        // NodeStateMachine; la carga de poder llega con PulsarCaster (T3-02).
+        // NodeStateMachine, y la carga de poder, de PulsarCaster si el nodo lo lleva (T3-02).
         public NodeSnapshot Snapshot()
         {
             return new NodeSnapshot(Faction, Type, Energy, EnergyCap,
                 isFrozen: HasState(NodeStateFlags.Frozen),
                 isInfected: HasState(NodeStateFlags.Infected),
                 level: Level,
-                isConverting: HasState(NodeStateFlags.Converting));
+                isConverting: HasState(NodeStateFlags.Converting),
+                hasPowerCharge: Caster != null && Caster.HasPowerCharge);
         }
 
         // Pone o quita una bandera de estado (14.1). La llaman los componentes que provocan cada
@@ -200,5 +202,8 @@ namespace Nova.Gameplay
         NodeEnergy EnergyComponent => energy != null ? energy : energy = GetComponent<NodeEnergy>();
         NodeLevelComponent LevelComponent => levelComponent != null ? levelComponent : levelComponent = GetComponent<NodeLevelComponent>();
         NodeStateMachine StateMachine => stateMachine != null ? stateMachine : stateMachine = GetComponent<NodeStateMachine>();
+
+        // Opcional: solo lo llevan los nodos que pueden ser Púlsar (T3-02).
+        PulsarCaster Caster => caster != null ? caster : caster = GetComponent<PulsarCaster>();
     }
 }

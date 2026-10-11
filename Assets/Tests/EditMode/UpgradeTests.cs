@@ -195,6 +195,27 @@ namespace Nova.Tests
             Assert.AreEqual("Cadencia: 4.3 disparos/s", view.Line(2));
         }
 
+        // T.7 #49, cerrado en T3-02: el drenaje del poder que carga; en reposo, nada.
+        [Test]
+        public void PulsarShowsTheDrainOfThePowerItCharges()
+        {
+            NodeController pulsar = Node("Pulsar", Faction.Player, 50, 2);
+            var caster = pulsar.gameObject.AddComponent<PulsarCaster>();
+            caster.Configure(Balance, new[]
+            {
+                AssetDatabase.LoadAssetAtPath<PowerDefinition>("Assets/Data/Powers/AbsoluteZero.asset"),
+                AssetDatabase.LoadAssetAtPath<PowerDefinition>("Assets/Data/Powers/Decay.asset"),
+            });
+            panel.Open(pulsar, Vector2.zero);
+            Assert.IsNull(view.Line(2), "En reposo no hay drenaje que enseñar.");
+
+            Assert.IsTrue(caster.TryCharge(Faction.Player, PowerType.Decay).IsAllowed);
+            Assert.AreEqual("Carga: 2.92 E/s", view.Line(2), "35 / 12 s.");
+
+            caster.TryCancel(Faction.Player);
+            Assert.IsNull(view.Line(2));
+        }
+
         [Test]
         public void MissingEnergyShowsTheButtonWithTheCostInRed()
         {
