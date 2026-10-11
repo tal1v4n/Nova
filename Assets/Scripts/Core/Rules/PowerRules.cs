@@ -46,6 +46,32 @@ namespace Nova.Core
             return new ActionCheck(ActionBlock.None, 0);
         }
 
+        // 7.2.1: objetivo válido = cualquier nodo encendido que no sea del lanzador. Vale el
+        // Magnetar neutral y ningún Asteroide, sea de quien sea. Es la misma regla para los tres
+        // poderes, y la misma al lanzar y al terminar el haz (7.2.2).
+        public static bool IsValidTarget(NodeSnapshot target, Faction launcher)
+        {
+            return target.Faction != launcher && target.Type != NodeType.Asteroid;
+        }
+
+        // Lanzar (7.2.2): el Púlsar propio con el poder cargado al 100 %, no congelado (7.3), sobre
+        // un objetivo válido. El coste ya se pagó al cargar: lanzar no cuesta nada más.
+        public static ActionCheck CheckLaunch(NodeSnapshot pulsar, Faction actor, bool powerReady, NodeSnapshot target)
+        {
+            if (!ConversionRules.IsOwner(pulsar, actor))
+                return new ActionCheck(ActionBlock.NotOwner, 0);
+            if (pulsar.Type != NodeType.Pulsar)
+                return new ActionCheck(ActionBlock.NotPulsar, 0);
+            if (!powerReady)
+                return new ActionCheck(ActionBlock.NotReady, 0);
+            if (pulsar.IsFrozen)
+                return new ActionCheck(ActionBlock.Frozen, 0);
+            if (!IsValidTarget(target, actor))
+                return new ActionCheck(ActionBlock.InvalidTarget, 0);
+
+            return new ActionCheck(ActionBlock.None, 0);
+        }
+
         // Energía invertida tras progressMicros de carga sin pausa, de chargeMicros en total:
         // las dos curvas están acopladas (7.1), redondeando hacia abajo.
         public static int InvestedAt(int cost, long progressMicros, long chargeMicros)

@@ -33,5 +33,9 @@ namespace Nova.Gameplay
         // Cancela la carga o el poder ya cargado de un Púlsar propio y devuelve la mitad de lo
         // invertido (7.1). T3-02.
         ActionCheck CancelCharge(NodeController node);
+
+        // Lanza el poder cargado de un Púlsar propio sobre un nodo encendido no propio: un haz de
+        // 0.25 s que revalida el objetivo al terminar (7.2.2). T3-03.
+        ActionCheck LaunchPower(NodeController node, NodeController target);
     }
 }

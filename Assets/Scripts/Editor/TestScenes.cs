@@ -101,12 +101,13 @@ namespace Nova.Editor
 
             Camera camera = CreateCamera();
             ProtonRegistry protons;
-            NodeRegistry registry = CreateSystems(balance, font, text, camera, out protons);
+            PowerBeamSystem beams;
+            NodeRegistry registry = CreateSystems(balance, font, text, camera, out protons, out beams);
 
             NodeDefinition[] ignitionTargets = System.Array.ConvertAll(IgnitionTargets, Definition);
             PowerDefinition[] powers = System.Array.ConvertAll(Powers, Power);
             foreach (var spec in nodes)
-                CreateNode(spec.name, Definition(spec.type), spec.faction, spec.energy, spec.position, balance, font, ignitionTargets, powers, protons);
+                CreateNode(spec.name, Definition(spec.type), spec.faction, spec.energy, spec.position, balance, font, ignitionTargets, powers, protons, beams);
 
             Directory.CreateDirectory(ScenesFolder);
             EditorSceneManager.SaveScene(scene, scenePath);
@@ -125,12 +126,13 @@ namespace Nova.Editor
             return camera;
         }
 
-        static NodeRegistry CreateSystems(BalanceConfig balance, TMP_FontAsset font, UiText text, Camera camera, out ProtonRegistry protons)
+        static NodeRegistry CreateSystems(BalanceConfig balance, TMP_FontAsset font, UiText text, Camera camera, out ProtonRegistry protons, out PowerBeamSystem beams)
         {
             var go = new GameObject("Systems");
 
             var registry = go.AddComponent<NodeRegistry>();
             protons = go.AddComponent<ProtonRegistry>();
+            beams = go.AddComponent<PowerBeamSystem>(); // T3-03
             var pool = go.AddComponent<ProtonPool>();
             var launcher = go.AddComponent<ProtonLauncher>();
             launcher.Configure(balance, pool, protons);
@@ -149,6 +151,7 @@ namespace Nova.Editor
             go.AddComponent<ProvisionalSelectionView>().Configure(selection);
             go.AddComponent<ProvisionalSendLineView>().Configure(sendLine);
             go.AddComponent<ProvisionalProtonView>().Configure(protons, font);
+            go.AddComponent<ProvisionalBeamView>().Configure(beams);
             go.AddComponent<IgnitionMenu>().Configure(menu, font, text);
             go.AddComponent<NodeInfoPanel>().Configure(panel, font, text);
 
@@ -157,7 +160,7 @@ namespace Nova.Editor
         }
 
         static void CreateNode(string name, NodeDefinition definition, Faction faction, int energy, Vector2 position,
-            BalanceConfig balance, TMP_FontAsset font, NodeDefinition[] ignitionTargets, PowerDefinition[] powers, ProtonRegistry protons)
+            BalanceConfig balance, TMP_FontAsset font, NodeDefinition[] ignitionTargets, PowerDefinition[] powers, ProtonRegistry protons, PowerBeamSystem beams)
         {
             var go = new GameObject(name) { layer = LayerMask.NameToLayer(NodesLayer) };
             go.transform.position = position;
@@ -168,7 +171,7 @@ namespace Nova.Editor
             go.AddComponent<NodeConverter>().Configure(balance, ignitionTargets); // T2-07: mismos tipos que el encendido
             go.AddComponent<StarGenerator>(); // desviación 143: en todo nodo que pueda ser Estrella
             go.AddComponent<MagnetarTurret>().Configure(balance, protons); // y en todo el que pueda ser Magnetar
-            go.AddComponent<PulsarCaster>().Configure(balance, powers); // T3-02: y en todo el que pueda ser Púlsar
+            go.AddComponent<PulsarCaster>().Configure(balance, powers, beams); // T3-02: y en todo el que pueda ser Púlsar
             go.AddComponent<NodeScare>().Configure(balance, protons); // T2-08: todo nodo se asusta (14.2)
 
             var trigger = go.AddComponent<CircleCollider2D>();

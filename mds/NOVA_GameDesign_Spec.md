@@ -835,7 +835,8 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 | `ProtonLauncher.cs` | Servicio de lanzamiento: valida, descuenta y pide un protón al pool |
 | `ProtonPool.cs` | Object pooling de protones |
 | `Proton.cs` | Movimiento, Carga, notificación de impacto. **No resuelve el impacto**, llama a `ImpactResolver`. |
-| `PowerBeam.cs` | Haz de 0.25 s del Púlsar al objetivo. Revalida el objetivo al terminar y, según el resultado, aplica el efecto o lo disipa ([7.2.2](#722-el-haz)). **No se mueve ni colisiona:** origen y destino se conocen desde el lanzamiento. |
+| `PowerBeam.cs` | Haz de 0.25 s del Púlsar al objetivo: datos del haz (poder, extremos, facción del lanzador). **No se mueve ni colisiona:** origen y destino se conocen desde el lanzamiento. |
+| `PowerBeamSystem.cs` | Reloj de los haces a +10. Revalida el objetivo al terminar y, según el resultado, aplica el efecto o lo disipa ([7.2.2](#722-el-haz)); ordena los que terminan en el mismo tick (17 caso 29). **Singleton** (`T3-03`). |
 | `PowerUpSpawner.cs` | Temporizadores, elección de Asteroide, expiración |
 | `FactionBuffs.cs` | Buffs activos por facción y su consulta por los componentes |
 | `WinConditionChecker.cs` | Victoria, derrota, estancamiento, cascada de conquista |

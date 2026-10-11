@@ -22,6 +22,8 @@ namespace Nova.Core
         NotPulsar,          // Solo un Púlsar carga poderes (4.3, T3-02)
         LevelTooLow,        // El nivel del Púlsar no desbloquea ese poder (7.2)
         NoPowerCharge,      // No hay carga que cancelar (7.1)
+        NotReady,           // El poder no está cargado al 100 % (7.1, T3-03)
+        InvalidTarget,      // El objetivo no es un nodo encendido no propio (7.2.1)
     }
 
     // Resultado de validar una acción: si se puede y cuánto cuesta.

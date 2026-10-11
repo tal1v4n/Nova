@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Nova.Core;
 using Nova.Data;
+using Nova.Systems;
 using UnityEngine;
 
 namespace Nova.Gameplay
@@ -15,7 +16,8 @@ namespace Nova.Gameplay
     }
 
     // Carga de poderes del Púlsar (7.1, 15.5, T3-02). Las reglas son de PowerRules; aquí se lleva
-    // el reloj, se cobra la Energía y se devuelve al cancelar. El lanzamiento llega con T3-03.
+    // el reloj, se cobra la Energía y se devuelve al cancelar. Al lanzar (T3-03) el
+    // Púlsar queda vacío y el haz lo lleva PowerBeamSystem.
     //
     // - Un poder a la vez. La Energía del Púlsar baja a la vez que sube la barra: la carga cobra
     //   cada punto cuando le toca, al ritmo coste / tiempo de carga (16.3).
@@ -38,6 +40,9 @@ namespace Nova.Gameplay
 
         [Tooltip("Un PowerDefinition por poder que este Púlsar puede cargar.")]
         [SerializeField] PowerDefinition[] powers = Array.Empty<PowerDefinition>();
+
+        [Tooltip("Opcional: sin él se usa PowerBeamSystem.Instance.")]
+        [SerializeField] PowerBeamSystem beams;
 
         NodeController node;
         PowerDefinition power;
@@ -74,6 +79,9 @@ namespace Nova.Gameplay
 
         // (poder) cuando una captura se lleva la carga a medias (7.5).
         public event Action<PowerType> OnLost;
+
+        // (haz) al lanzar: el Púlsar ya está vacío (T3-03).
+        public event Action<PowerBeam> OnLaunched;
 
         // Validación sin efectos. Como en NodeConverter (18 #29), un poder sin PowerDefinition en
         // powers es Unavailable cuando lo demás lo permitiría: subir de nivel no lo arregla.
@@ -120,6 +128,32 @@ namespace Nova.Gameplay
             if (refund > 0)
                 Node.AddEnergy(refund);
             OnCancelled?.Invoke(type, refund);
+            return check;
+        }
+
+        public ActionCheck CheckLaunch(Faction actor, NodeController target)
+        {
+            if (target == null)
+                throw new ArgumentNullException(nameof(target));
+            return PowerRules.CheckLaunch(Node.Snapshot(), actor, state == PowerChargeState.Ready, target.Snapshot());
+        }
+
+        // Lanza el poder cargado (7.2.2, T3-03): el Púlsar queda vacío en el acto y el haz sale hacia
+        // el objetivo. El efecto, o la disipación, llega al terminar el haz (PowerBeamSystem).
+        public ActionCheck TryLaunch(Faction actor, NodeController target)
+        {
+            ActionCheck check = CheckLaunch(actor, target);
+            if (!check.IsAllowed)
+                return check;
+
+            PowerBeamSystem beams = Beams;
+            if (beams == null)
+                throw new InvalidOperationException($"{name}: no hay PowerBeamSystem para lanzar.");
+
+            PowerDefinition launched = power;
+            Clear();
+            PowerBeam beam = beams.Launch(Node, target, actor, launched);
+            OnLaunched?.Invoke(beam);
             return check;
         }
 
@@ -175,10 +209,11 @@ namespace Nova.Gameplay
         }
 
         // Para la escena de prueba y los tests: el cableado normal es por el Inspector.
-        public void Configure(BalanceConfig config, IEnumerable<PowerDefinition> available)
+        public void Configure(BalanceConfig config, IEnumerable<PowerDefinition> available, PowerBeamSystem beamSystem = null)
         {
             balance = config;
             powers = available != null ? new List<PowerDefinition>(available).ToArray() : Array.Empty<PowerDefinition>();
+            beams = beamSystem;
         }
 
         // 7.5: capturado a mitad de carga, la carga se pierde; con el poder listo, lo hereda el
@@ -244,6 +279,8 @@ namespace Nova.Gameplay
         static long ToMicros(float seconds) => (long)Math.Round(seconds * MicrosPerSecond);
 
         BalanceConfig Balance => balance != null ? balance : throw new InvalidOperationException("PulsarCaster necesita BalanceConfig.");
+
+        PowerBeamSystem Beams => beams != null ? beams : PowerBeamSystem.Instance;
 
         // Se resuelve a demanda y no en Awake, que no se ejecuta en los tests de EditMode.
         NodeController Node => node != null ? node : node = GetComponent<NodeController>();

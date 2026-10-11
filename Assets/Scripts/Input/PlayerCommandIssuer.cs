@@ -58,6 +58,11 @@ namespace Nova.Input
             return Caster(node).TryCancel(Faction);
         }
 
+        public ActionCheck LaunchPower(NodeController node, NodeController target)
+        {
+            return Caster(node).TryLaunch(Faction, target);
+        }
+
         static PulsarCaster Caster(NodeController node)
         {
             if (node == null)
