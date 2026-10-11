@@ -795,7 +795,7 @@ Assets/
 |---|---|
 | `NodeDefinition.cs` | Tipo, tope, **coste de reconversión** ([16.4](#164-reconversión): depende del tipo de origen), nº de niveles, array de `NodeLevelData`, prefab, sprites por facción |
 | `NodeLevelData.cs` | `[Serializable] struct`: coste de mejora, intervalo de generación, radio, cadencia |
-| `PowerDefinition.cs` | Tipo, coste, tiempo de carga, duración del haz, nivel requerido, VFX. **Sin campo de alcance:** el alcance es global y por tanto no es un parámetro de balance ([7.2](#72-tabla-de-poderes)). |
+| `PowerDefinition.cs` | Tipo, coste, tiempo de carga, duración del haz, nivel requerido, color del haz ([14.4](./NOVA_Estados_Animaciones.md#144-paleta-funcional)) y, con la fase 6, VFX. El drenaje se calcula como coste / tiempo de carga (`T3-01`). **Sin campo de alcance:** el alcance es global y por tanto no es un parámetro de balance ([7.2](#72-tabla-de-poderes)). |
 | `BalanceConfig.cs` | Velocidad del protón, daño por disparo del Magnetar, multiplicador del Magnetar, buffer de doble clic, duración de reconversión, auto-deshielo, tasa de decaimiento, **coste de encendido, Materia Inerte, umbral de susto y devolución al cancelar una carga** (los cuatro, de 16.1) |
 | `LevelDefinition.cs` | Lista de `NodeSpawnData`, referencia a `EnemyProfile`, config de drops, duración objetivo |
 | `NodeSpawnData.cs` | `[Serializable] struct`: posición, tipo, nivel, facción, energía inicial |

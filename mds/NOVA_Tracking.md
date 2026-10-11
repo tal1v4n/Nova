@@ -86,13 +86,13 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ hecha · 🔴 bloqueada.
 | 0 | Proyecto | 6 | 6 | ✅ | El proyecto abre en Unity, `Nova.Core` compila sin referenciar `UnityEngine` y un test vacío corre en EditMode |
 | 1 | Núcleo jugable | 14 | 14 | ✅ | Capturar un Asteroide, encenderlo como Estrella y tomar un nodo enemigo |
 | 2 | Tipos y defensa | 8 | 8 | ✅ | Los cuatro tipos funcionan y el nivel 3 es jugable |
-| 3 | Poderes | 8 | 0 | ⬜ | Los tres poderes funcionan y pasan los casos 8–14 y 27–35 de la sección 17 |
+| 3 | Poderes | 8 | 1 | 🟨 | Los tres poderes funcionan y pasan los casos 8–14 y 27–35 de la sección 17 |
 | 4 | Algoritmo del Enemigo | 6 | 0 | ⬜ | El algoritmo del mapa 3 vence a un jugador descuidado |
 | 5 | Flujo y contenido | 7 | 0 | ⬜ | Los 9 niveles son completables de principio a fin |
 | 6 | Presentación | 11 | 0 | 🔴 | 46 de 108 assets listos. **`T6-01`, `T6-02` y `T6-03` ya no están bloqueadas por arte**; las otras ocho sí ([A.7](./NOVA_Assets_Diseno.md#a7-resumen-de-progreso)) |
-| | **Total** | **60** | **28** | | |
+| | **Total** | **60** | **29** | | |
 
-**Siguiente tarea:** `T3-01`, `PowerDefinition` + assets de los tres poderes ([16.3](./NOVA_GameDesign_Spec.md#163-poderes)). La fase 2 se cerró con su criterio aplazado (desviación 185).
+**Siguiente tarea:** `T3-02`, `PulsarCaster`: carga acoplada a la Energía, pausa y cancelación con devolución del 50 % ([7.1](./NOVA_GameDesign_Spec.md#71-regla-de-carga)). La fase 2 se cerró con su criterio aplazado (desviación 185).
 
 ---
 
@@ -151,7 +151,7 @@ Creada el **2026-09-28**. `T.4` empezaba en `T1-01` dando por hecho un proyecto 
 
 | ID | Tarea | Ref | Depende de | Arte | Estado |
 |---|---|---|---|---|---|
-| T3-01 | `PowerDefinition` + assets de los tres poderes | [16.3](./NOVA_GameDesign_Spec.md#163-poderes) | T2-08 | No | ⬜ |
+| T3-01 | `PowerDefinition` + assets de los tres poderes | [16.3](./NOVA_GameDesign_Spec.md#163-poderes) | T2-08 | No | ✅ |
 | T3-02 | `PulsarCaster`: carga acoplada a la Energía, pausa, cancelación con devolución del 50 % | [7.1](./NOVA_GameDesign_Spec.md#71-regla-de-carga) | T3-01 | No | ⬜ |
 | T3-03 | `PowerBeam`: haz de 0.25 s, **alcance global**, no interceptable, revalidación del objetivo al terminar | [7.2.2](./NOVA_GameDesign_Spec.md#722-el-haz) | T3-02 | No | ⬜ |
 | T3-03b | Filtro de objetivo válido: **nodo encendido no propio**. Incluye el Magnetar neutral; excluye todo Asteroide | [7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido) | T3-03 | No | ⬜ |
@@ -217,6 +217,7 @@ Una línea por tarea completada. La más reciente arriba.
 
 | Fecha | Tarea | Resultado | Notas / desviaciones de la spec |
 |---|---|---|---|
+| 2026-10-11 | **T3-01** | `PowerDefinition` en `Nova.Data`: tipo, nivel requerido, coste, tiempo de carga, duración del haz y color del haz, más `DrainRate` calculado. Tres assets escritos a mano en `Assets/Data/Powers/` (`AbsoluteZero`, `Decay`, `Wormhole`) con los valores de 7.2 y 16.3 y el color de 14.4. Tests en `BalanceDataTests`: uno por poder, valores, drenaje y color | Suite completa en verde en el Test Runner de Unity. Desviaciones 186–188 abajo |
 | 2026-10-11 | **T2-09** | `InputRouter` lee el botón derecho como pulsación y suelta (`PressRight`, `ReleaseRight`) y resuelve al soltar: sin arrastre, `ClickRight` de siempre (panel o cancelar); con arrastre desde un origen legal, 50 % de ese único origen al nodo bajo el cursor, sin buffer y sin tocar selección ni panel. El umbral de arrastre es el mismo para los dos botones. Con el menú de encendido abierto, la pulsación derecha lo cierra y se la traga. El arrastre izquierdo es siempre lazo. **`SendLineState`** en `Nova.Input`: cursor y origen del arrastre; `Origins` da un origen durante el arrastre derecho, la selección en su orden fuera de él y ninguno con el menú abierto. **`ProvisionalSendLineView`** en `Presentation/Selection/`: un trazo recto cian de 2 px por origen, del centro al cursor, en `LateUpdate`. `TestScenes` cablea los dos. Tests: los cuatro de arrastre izquierdo pasan a derecho, y se añaden clic al soltar, umbral, menú, lazo desde nodo, línea y vista en `InputTests` | Suite completa en verde en el Test Runner de Unity. Desviaciones 181–185 abajo |
 | 2026-10-11 | **T2-08** | **`ThreatCalculator`** en `Core/Rules/`, puro y sin `UnityEngine`: `TimeToArrival`, `HostileCharge`, `IsLethal`, `IsScared` (la condición de 14.2, protón a protón y con umbral estricto) y `Assess` (la amenaza de 12.4: suma de Carga hostil efectiva y tiempo hasta la captura). Entrada nueva `IncomingProton` (facción, Carga, distancia) y salida `ThreatAssessment`. **`NodeScare`** en `Gameplay/Nodes/`: en cada tick fijo lee `ProtonRegistry.GetIncoming`, mide distancias y pone o quita `Scared`; vale para cualquier facción y tipo. `TestScenes` lo añade a cada nodo. `ProvisionalNodeView` hace temblar 1 px a los lados el círculo y el número mientras dura el susto. Tests: `ThreatCalculatorTests` y `ScareTests` (nuevos) | Suite completa en verde en el Test Runner de Unity. `Fase2.unity` regenerada con `NodeScare` en sus cinco nodos y probada en Play: tiemblan el Asteroide, los dos Magnetares y la Estrella enemiga ante un protón letal, y ninguno ante uno que no lo es. Desviaciones 176–180 abajo |
 | 2026-10-10 | **T2-07** | **T.7 #43 cerrado:** `NodeState` se queda con la base y nace `NodeStateFlags`; `NodeStateMachine` guarda las banderas, emite `OnFlagsChanged` y rechaza Infectado + Reconvirtiendo (14.6). `NodeController` las expone (`StateFlags`, `HasState`, `SetStateFlag`, `OnStateFlagsChanged`) y su `Snapshot()` ya lee Congelado, Infectado y Reconvirtiendo de ellas. **`NodeConverter`** en `Gameplay/Nodes/`: valida con `ConversionRules.CheckConversion` (Púlsar `Unavailable` hasta `T3-02`, como el encendido), cobra al iniciar, pone `Converting`, cuenta 3 s en microsegundos en el tick fijo, se pausa congelado, se cancela al cambiar de facción sin devolver el coste y al terminar llama a `ChangeType(destino, 1)`. Emite inicio, fin y cancelación. Reconvirtiendo, `StarGenerator` no genera, `MagnetarTurret` no dispara, `ProtonLauncher` devuelve `LaunchBlock.Converting` y la mejora queda bloqueada. `INodeCommandIssuer.Convert` y `PlayerCommandIssuer.Convert`. Panel de clic derecho a 208 × 160 px con la fila «Reconvertir» y dos botones de destino (18 #33); `InputRouter` los atiende. `NodeDefinition.ConversionCost` (16.4) en los cuatro assets y tres textos nuevos en `UiText`. `ProvisionalNodeView` oscurece el círculo mientras dura. `TestScenes` añade `NodeConverter` a cada nodo. Tests: `ConversionTests` (nuevo), banderas en `NodeLevelAndStateTests`, panel en `InputTests`, `CoreEnumsTests`, `BalanceDataTests` y `RegistryTests` | Suite completa en verde en el Test Runner de Unity: **441 tests**. La primera pasada dejó uno en rojo: `TryConvert` ponía la bandera antes de guardar el destino, y el panel, que se repinta en ese aviso, seguía enseñando los botones (desviación 175). Prueba en Play con `Fase2.unity` regenerada, pendiente. Desviaciones 170–175 abajo |
@@ -273,6 +274,12 @@ Una línea por tarea completada. La más reciente arriba.
 | — | — | Proyecto de código sin iniciar | — |
 
 > **Cómo leer esta lista.** Una línea por desviación: **qué cambió** y **dónde vive ahora**. El razonamiento completo está en el documento que se cita, que es el que manda; aquí solo está el rastro de cuándo y por qué se movió. Los números no se reutilizan nunca, ni siquiera cuando una desviación queda revertida.
+
+**Al implementar `T3-01` (2026-10-11).**
+
+186. **El drenaje no se guarda, se calcula:** `DrainRate = coste / tiempo de carga`. 7.1 acopla las dos curvas, así que un drenaje guardado aparte podría contradecirlas. Sale 2.50, 2.9167 y 3.75 E/s: coincide con 16.3 (2.92) y redondea distinto que 7.2, que da 2.9 para el Decaimiento. → [7.2](./NOVA_GameDesign_Spec.md#72-tabla-de-poderes).
+187. **`PowerDefinition` no tiene campo de VFX todavía y sí uno de color del haz.** El VFX es arte y llega con la fase 6; el color es paleta funcional de 14.4 y lo necesita la vista provisional del haz en `T3-03`. → [15.4](./NOVA_GameDesign_Spec.md#154-data--scriptableobjects).
+188. **Los assets de los poderes se llaman por su tipo en inglés** (`AbsoluteZero`, `Decay`, `Wormhole`), como los de los nodos (`Star`, `Magnetar`).
 
 **Al implementar `T2-09` (2026-10-11).**
 

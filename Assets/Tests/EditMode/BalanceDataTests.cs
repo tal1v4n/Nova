@@ -110,5 +110,57 @@ namespace Nova.Tests
         {
             Assert.AreEqual(1, AssetDatabase.FindAssets("t:BalanceConfig").Length);
         }
+
+        // --- Poderes (T3-01) ---
+
+        const string PowersFolder = "Assets/Data/Powers";
+
+        static PowerDefinition Power(string name) =>
+            AssetDatabase.LoadAssetAtPath<PowerDefinition>($"{PowersFolder}/{name}.asset");
+
+        [Test]
+        public void ThereIsExactlyOneDefinitionPerPower()
+        {
+            var types = AssetDatabase.FindAssets("t:PowerDefinition")
+                .Select(guid => AssetDatabase.LoadAssetAtPath<PowerDefinition>(AssetDatabase.GUIDToAssetPath(guid)).Type)
+                .OrderBy(t => t)
+                .ToArray();
+
+            CollectionAssert.AreEqual(new[] { PowerType.AbsoluteZero, PowerType.Decay, PowerType.Wormhole }, types);
+        }
+
+        // 7.2 y 16.3. El haz dura 0.25 s en los tres (7.2.2).
+        [TestCase("AbsoluteZero", PowerType.AbsoluteZero, 1, 20, 8f)]
+        [TestCase("Decay", PowerType.Decay, 2, 35, 12f)]
+        [TestCase("Wormhole", PowerType.Wormhole, 3, 60, 16f)]
+        public void PowerDefinitionMatchesSpec(string asset, PowerType type, int level, int cost, float chargeTime)
+        {
+            var power = Power(asset);
+            Assert.IsNotNull(power, $"Falta {PowersFolder}/{asset}.asset");
+            Assert.AreEqual(type, power.Type);
+            Assert.AreEqual(level, power.RequiredLevel);
+            Assert.AreEqual(cost, power.Cost);
+            Assert.AreEqual(chargeTime, power.ChargeTime);
+            Assert.AreEqual(0.25f, power.BeamDuration);
+        }
+
+        // 16.3: el drenaje es coste / tiempo de carga, con dos decimales en la tabla.
+        [TestCase("AbsoluteZero", 2.50f)]
+        [TestCase("Decay", 2.92f)]
+        [TestCase("Wormhole", 3.75f)]
+        public void DrainRateMatchesSpec(string asset, float drain)
+        {
+            Assert.AreEqual(drain, Power(asset).DrainRate, 0.005f);
+        }
+
+        // 14.4: el haz va en el color del poder, no de la facción.
+        [TestCase("AbsoluteZero", 0xB8, 0xF0, 0xFF)]
+        [TestCase("Decay", 0x7C, 0xF2, 0x3F)]
+        [TestCase("Wormhole", 0x9B, 0x5C, 0xF6)]
+        public void BeamColorMatchesThePalette(string asset, int r, int g, int b)
+        {
+            UnityEngine.Color32 color = Power(asset).BeamColor;
+            Assert.AreEqual(new UnityEngine.Color32((byte)r, (byte)g, (byte)b, 0xFF), color);
+        }
     }
 }
