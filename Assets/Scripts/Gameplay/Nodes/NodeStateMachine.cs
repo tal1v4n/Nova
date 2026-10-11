@@ -7,7 +7,7 @@ namespace Nova.Gameplay
     // Estados del nodo de 14.1 (15.5): un estado de base excluyente más banderas (T.7 #43).
     // La base se deduce del tipo y la facción: Dormido, SinEncender y Normal. Las banderas las
     // ponen y las quitan los componentes que las provocan —Reconvirtiendo, NodeConverter desde
-    // T2-07; Asustado, Congelado e Infectado llegan con T2-08, T3-04 y T3-05— y aquí solo se
+    // T2-07; Asustado, NodeScare desde T2-08; Congelado e Infectado llegan con T3-04 y T3-05— y aquí solo se
     // guardan y se comprueban contra la matriz de 14.6.
     [DisallowMultipleComponent]
     public sealed class NodeStateMachine : MonoBehaviour

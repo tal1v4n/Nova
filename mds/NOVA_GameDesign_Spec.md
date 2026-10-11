@@ -820,6 +820,7 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 | `PulsarCaster.cs` | Solo en Púlsar. Carga, pausa, cancelación, lanzamiento, robo de carga. |
 | `NodeIgnition.cs` | Encendido de Asteroide, incluida la recogida del power-up |
 | `NodeConverter.cs` | Reconversión y su ventana de vulnerabilidad de 3 s |
+| `NodeScare.cs` | En todo nodo. Cada tick pregunta a `ThreatCalculator` con los protones de `ProtonRegistry` y pone o quita la bandera `Scared` ([14.2](./NOVA_Estados_Animaciones.md#142-animación-de-susto), `T2-08`) |
 | `INodeCommandIssuer.cs` | Canal único de comandos de Jugador y Enemigo (3.1, 15.1 #5), en `Gameplay/Commands/`. Expone la facción y un método por acción de [12.2](./NOVA_Algoritmo_Enemigo.md#122-acciones-candidatas), y **crece con la tarea que implementa cada acción**: `Send` desde `T1-11` |
 | `NodeCollider2D` | Trigger circular, solo para input y detección. Sin Rigidbody. Es un `CircleCollider2D` *trigger* en la capa de física **`Nodes`**, con el radio de la huella sólida del nodo (0.3–0.6 u, [NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Huella del nodo*). El clic se resuelve con `Physics2D.OverlapPoint` sobre esa capa ([18](#18-decisiones-tomadas-por-defecto) #23). |
 

@@ -85,14 +85,14 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ hecha · 🔴 bloqueada.
 |---|---|---|---|---|---|
 | 0 | Proyecto | 6 | 6 | ✅ | El proyecto abre en Unity, `Nova.Core` compila sin referenciar `UnityEngine` y un test vacío corre en EditMode |
 | 1 | Núcleo jugable | 14 | 14 | ✅ | Capturar un Asteroide, encenderlo como Estrella y tomar un nodo enemigo |
-| 2 | Tipos y defensa | 8 | 6 | 🟨 | Los cuatro tipos funcionan y el nivel 3 es jugable |
+| 2 | Tipos y defensa | 8 | 7 | 🟨 | Los cuatro tipos funcionan y el nivel 3 es jugable |
 | 3 | Poderes | 8 | 0 | ⬜ | Los tres poderes funcionan y pasan los casos 8–14 y 27–35 de la sección 17 |
 | 4 | Algoritmo del Enemigo | 6 | 0 | ⬜ | El algoritmo del mapa 3 vence a un jugador descuidado |
 | 5 | Flujo y contenido | 7 | 0 | ⬜ | Los 9 niveles son completables de principio a fin |
 | 6 | Presentación | 11 | 0 | 🔴 | 46 de 108 assets listos. **`T6-01`, `T6-02` y `T6-03` ya no están bloqueadas por arte**; las otras ocho sí ([A.7](./NOVA_Assets_Diseno.md#a7-resumen-de-progreso)) |
-| | **Total** | **60** | **26** | | |
+| | **Total** | **60** | **27** | | |
 
-**Siguiente tarea:** `T2-08`, `ThreatCalculator` + estado `Asustado` ([14.2](./NOVA_Estados_Animaciones.md#142-animación-de-susto)).
+**Siguiente tarea:** `T2-09`, envío por arrastre derecho con línea de envío ([13.1](./NOVA_GameDesign_Spec.md#131-ratón)). Es la última de la fase 2.
 
 ---
 
@@ -144,7 +144,7 @@ Creada el **2026-09-28**. `T.4` empezaba en `T1-01` dando por hecho un proyecto 
 | T2-05 | Resistencia ×2 en impactos hostiles y 1:1 en refuerzos aliados | [5.3](./NOVA_GameDesign_Spec.md#53-recepción), [6.2](./NOVA_GameDesign_Spec.md#62-resolución-de-impacto) | T2-04 | No | ✅ |
 | T2-06 | Magnetar neutral disparando a ambos bandos | [3.2](./NOVA_GameDesign_Spec.md#32-nota-sobre-el-magnetar-neutral), [4.4](./NOVA_Nodos.md#44-magnetar) | T2-04 | No | ✅ |
 | T2-07 | `NodeConverter`: reconversión de 3 s con ventana de vulnerabilidad | [8.1](./NOVA_GameDesign_Spec.md#81-reglas) | T1-04, T2-03 | No | ✅ |
-| T2-08 | `ThreatCalculator` + estado `Asustado` | [14.2](./NOVA_Estados_Animaciones.md#142-animación-de-susto) | T1-10 | No | ⬜ |
+| T2-08 | `ThreatCalculator` + estado `Asustado` | [14.2](./NOVA_Estados_Animaciones.md#142-animación-de-susto) | T1-10 | No | ✅ |
 | T2-09 | Envío por **arrastre derecho** con línea de envío: `InputRouter` resuelve el clic derecho **al soltar** (clic → panel o cancelar; arrastre → envío al 50 % desde ese origen), el arrastre izquierdo pasa a ser siempre lazo, y `SendLineState` + `SendLine` dibujan la línea del origen al cursor, también desde cada nodo de una selección activa. Línea provisional: trazo recto de color liso (regla 4 de T.2); el plasma lo pone `T6-06` | [13.1](./NOVA_GameDesign_Spec.md#131-ratón), [18](./NOVA_GameDesign_Spec.md#18-decisiones-tomadas-por-defecto) #32 | T2-03 | No | ⬜ |
 
 ### Fase 3 — Poderes
@@ -217,6 +217,7 @@ Una línea por tarea completada. La más reciente arriba.
 
 | Fecha | Tarea | Resultado | Notas / desviaciones de la spec |
 |---|---|---|---|
+| 2026-10-11 | **T2-08** | **`ThreatCalculator`** en `Core/Rules/`, puro y sin `UnityEngine`: `TimeToArrival`, `HostileCharge`, `IsLethal`, `IsScared` (la condición de 14.2, protón a protón y con umbral estricto) y `Assess` (la amenaza de 12.4: suma de Carga hostil efectiva y tiempo hasta la captura). Entrada nueva `IncomingProton` (facción, Carga, distancia) y salida `ThreatAssessment`. **`NodeScare`** en `Gameplay/Nodes/`: en cada tick fijo lee `ProtonRegistry.GetIncoming`, mide distancias y pone o quita `Scared`; vale para cualquier facción y tipo. `TestScenes` lo añade a cada nodo. `ProvisionalNodeView` hace temblar 1 px a los lados el círculo y el número mientras dura el susto. Tests: `ThreatCalculatorTests` y `ScareTests` (nuevos) | Suite completa en verde en el Test Runner de Unity. `Fase2.unity` regenerada con `NodeScare` en sus cinco nodos; prueba en Play, pendiente. Desviaciones 176–180 abajo |
 | 2026-10-10 | **T2-07** | **T.7 #43 cerrado:** `NodeState` se queda con la base y nace `NodeStateFlags`; `NodeStateMachine` guarda las banderas, emite `OnFlagsChanged` y rechaza Infectado + Reconvirtiendo (14.6). `NodeController` las expone (`StateFlags`, `HasState`, `SetStateFlag`, `OnStateFlagsChanged`) y su `Snapshot()` ya lee Congelado, Infectado y Reconvirtiendo de ellas. **`NodeConverter`** en `Gameplay/Nodes/`: valida con `ConversionRules.CheckConversion` (Púlsar `Unavailable` hasta `T3-02`, como el encendido), cobra al iniciar, pone `Converting`, cuenta 3 s en microsegundos en el tick fijo, se pausa congelado, se cancela al cambiar de facción sin devolver el coste y al terminar llama a `ChangeType(destino, 1)`. Emite inicio, fin y cancelación. Reconvirtiendo, `StarGenerator` no genera, `MagnetarTurret` no dispara, `ProtonLauncher` devuelve `LaunchBlock.Converting` y la mejora queda bloqueada. `INodeCommandIssuer.Convert` y `PlayerCommandIssuer.Convert`. Panel de clic derecho a 208 × 160 px con la fila «Reconvertir» y dos botones de destino (18 #33); `InputRouter` los atiende. `NodeDefinition.ConversionCost` (16.4) en los cuatro assets y tres textos nuevos en `UiText`. `ProvisionalNodeView` oscurece el círculo mientras dura. `TestScenes` añade `NodeConverter` a cada nodo. Tests: `ConversionTests` (nuevo), banderas en `NodeLevelAndStateTests`, panel en `InputTests`, `CoreEnumsTests`, `BalanceDataTests` y `RegistryTests` | Suite completa en verde en el Test Runner de Unity: **441 tests**. La primera pasada dejó uno en rojo: `TryConvert` ponía la bandera antes de guardar el destino, y el panel, que se repinta en ese aviso, seguía enseñando los botones (desviación 175). Prueba en Play con `Fase2.unity` regenerada, pendiente. Desviaciones 170–175 abajo |
 | 2026-10-02 | **T2-06** | `MagnetarTurret` deja de apagarse en un Magnetar neutral (desviación 160): como un protón siempre es de Jugador o de Enemigo, la regla de 4.4 «nunca a los de su facción» ya da los dos bandos al neutral, y la misma selección por distancia y Carga vale para ambos. Capturado, deja de disparar a su nuevo dueño (3.2). `Fase2.unity` gana un Magnetar neutral de nivel 1 con 20 en (0, −3), fuera de los caminos de la Estrella del Jugador. `MagnetarTests`: el test que lo mantenía callado pasa a 4 del neutral, 5 casos | Suite completa en verde en el Test Runner de Unity y Magnetar neutral probado a mano en Play con `Fase2.unity` regenerada: dispara a los protones del Jugador, se captura con 40 de Carga y entonces los deja pasar |
 | 2026-10-02 | **T2-05** | Sin código de juego nuevo: la resistencia ×2 y la absorción 1:1 ya las aplicaba `ImpactResolver` desde `T1-03`, y `Proton.Impact` le pasa `BalanceConfig.MagnetarResistance` desde `T1-09`. `ResistanceTests`: 6 tests de punta a punta con protones lanzados por `ProtonLauncher` y resueltos por `ProtonRegistry` contra nodos de escena: un protón hostil hace la mitad de daño a un Magnetar y el entero a una Estrella, el refuerzo aliado suma 1:1, un Magnetar lleno necesita 200 de Carga (199 no bastan), el remanente de la captura también se divide, y otro `BalanceConfig` da otro resultado | Suite completa en verde en el Test Runner de Unity y resistencia comprobada a mano en Play con `Fase2.unity`. Desviación 164 abajo |
@@ -271,6 +272,14 @@ Una línea por tarea completada. La más reciente arriba.
 | — | — | Proyecto de código sin iniciar | — |
 
 > **Cómo leer esta lista.** Una línea por desviación: **qué cambió** y **dónde vive ahora**. El razonamiento completo está en el documento que se cita, que es el que manda; aquí solo está el rastro de cuándo y por qué se movió. Los números no se reutilizan nunca, ni siquiera cuando una desviación queda revertida.
+
+**Al implementar `T2-08` (2026-10-11).**
+
+176. **Nace `NodeScare`, un componente de nodo que 15.5 no listaba.** 14.2 decía quién evalúa la condición (`ThreatCalculator`) pero no quién pone la bandera, y `NodeStateMachine` solo guarda banderas (desviación 170). Como `NodeConverter` con `Converting`, la pone el componente que la provoca. → [15.5](./NOVA_GameDesign_Spec.md#155-gameplay--componentes-de-nodo).
+177. **El susto llega con un tick (20 ms) de retraso.** `NodeScare` corre a 0, como los demás componentes de nodo: ve los protones antes de que vuelen (+10) y los impactos del tick anterior, que `ProtonRegistry` resuelve al final (15.10). Empieza y termina un tick después del hecho, que a 50 Hz no se ve. → [14.2](./NOVA_Estados_Animaciones.md#142-animación-de-susto).
+178. **La amenaza de 12.4 suma golpes, no Carga.** «La suma de Carga aplicando su multiplicador» se lee como la suma de la Carga efectiva de cada protón, redondeada por separado, porque los impactos se restan uno tras otro (6.2, 15.10): en un Magnetar, 3 + 3 de Carga son 1 + 1, no `floor(6 × 0.5)`. «En cuánto tiempo» es la llegada del protón que completa esa suma, con los hostiles en orden de distancia. Los refuerzos en vuelo no se descuentan: 12.4 no los cuenta. → [12.4](./NOVA_Algoritmo_Enemigo.md#124-detección-de-amenaza-y-defensa).
+179. **Susto y amenaza no coinciden, y es a propósito.** Dos protones de 6 contra un nodo de 10 lo amenazan (12.4 suma) pero no lo asustan (14.2 pregunta protón a protón). Se respetan las dos specs tal como están; si se quisiera que el susto también sumara, se cambia 14.2 primero.
+180. **El temblor provisional mueve los hijos, no el nodo.** Es 1 px a los lados, sin salto ni ojos, y no toca el collider. La capa 5 de 14.7 y `ART-ST-SCARE` los pone `T6-01`; esto es primitiva de la regla 4 de T.2.
 
 **Al implementar `T2-07` (2026-10-10).**
 

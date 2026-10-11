@@ -78,6 +78,8 @@ EstaAsustado(nodo):
 
 Un nodo puede pasar de `Asustado` a `Normal` sin ser capturado. Es deliberado: enseña al jugador que el refuerzo funcionó.
 
+**En código** (`T2-08`): la condición es `ThreatCalculator.IsScared` y la bandera la pone `NodeScare`, que corre a 0 en el tick fijo. Por eso el susto empieza y termina **un tick (20 ms) después** del hecho que lo provoca ([T.5](./NOVA_Tracking.md#t5-registro), desviación 177). Varios protones que solo **juntos** capturarían no asustan: 14.2 pregunta protón a protón, mientras que la amenaza del algoritmo ([12.4](./NOVA_Algoritmo_Enemigo.md#124-detección-de-amenaza-y-defensa)) sí suma (desviación 179).
+
 **La sacudida va en píxeles enteros**, como todo movimiento por transform de un nodo ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Animación*): un temblor de 1.5 px produce el mismo hervor que el squash que esa regla prohíbe.
 
 **El susto se dibuja en dos sitios, y conviene no duplicarlos.** Los **ojos** son un asset, `ART-ST-SCARE` ([A.3.3](./NOVA_Assets_Diseno.md#a33-art-st-scare--asustado)); el **temblor y el salto** son la capa 5 de [14.7](#147-prioridad-visual), sacudida de transform, y los hace Unity moviendo el nodo entero. Hornear la sacudida en la hoja sería pagarla dos veces y dejaría el hitbox temblando.

@@ -10,6 +10,9 @@ namespace Nova.Presentation
     // Energía encima en Jersey 10. Desde T1-12 el Asteroide es un círculo más pequeño, para que
     // el encendido se vea sin leer números. Primitiva de la regla 4 de T.2: no es arte, es desechable
     // y la sustituye NodeVisual en T6-01. Solo lee eventos de NodeController, nunca escribe en él.
+    //
+    // T2-08: asustado (14.2), el círculo y el número tiemblan 1 px a los lados. Se mueven los hijos
+    // y no el nodo, para que el collider no tiemble. Los ojos de ART-ST-SCARE llegan con T6-01.
     [DefaultExecutionOrder(100)] // Presentation, 15.10
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NodeController))]
@@ -22,6 +25,10 @@ namespace Nova.Presentation
         static readonly Color32 LabelColor = new Color32(0x0B, 0x0E, 0x1A, 0xFF); // fondo profundo
 
         const int PixelsPerUnit = 64; // T0-04
+
+        // Temblor provisional del susto, en píxeles enteros (NOVA_Arte_Tecnica.md, *Animación*).
+        const int ShakePixels = 1;
+        const float ShakeStepsPerSecond = 15f;
 
         // Jersey 10: rejilla de 75 unidades en un em de 1400, 18.67 px por em (NOVA_Arte_Tecnica.md).
         const float NativeEmPixels = 1400f / 75f;
@@ -66,6 +73,14 @@ namespace Nova.Presentation
             Unsubscribe();
         }
 
+        // Presentación en Update (15.10): solo lee la bandera y mueve los hijos.
+        void Update()
+        {
+            if (body == null || label == null || !IsScared)
+                return;
+            ApplyOffset(ShakeOffset(Mathf.FloorToInt(Time.time * ShakeStepsPerSecond)));
+        }
+
         public void Refresh()
         {
             EnsureBuilt();
@@ -82,6 +97,24 @@ namespace Nova.Presentation
             body.color = Node.HasState(NodeStateFlags.Converting) ? Dimmed(color) : color;
             body.sprite = CircleSprite(Node.Type == NodeType.Asteroid ? asteroidDiameterPixels : diameterPixels);
             label.text = Node.Energy.ToString();
+
+            if (!IsScared)
+                ApplyOffset(Vector3.zero);
+        }
+
+        // Paso del temblor: un píxel a la derecha en los pares y uno a la izquierda en los impares.
+        internal static Vector3 ShakeOffset(int step)
+        {
+            int direction = (step & 1) == 0 ? 1 : -1;
+            return new Vector3(direction * ShakePixels / (float)PixelsPerUnit, 0f, 0f);
+        }
+
+        bool IsScared => Node.IsInitialized && Node.HasState(NodeStateFlags.Scared);
+
+        void ApplyOffset(Vector3 offset)
+        {
+            body.transform.localPosition = offset;
+            label.transform.localPosition = offset;
         }
 
         internal static Color32 ColorOf(Faction faction)
