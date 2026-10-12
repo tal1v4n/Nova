@@ -21,7 +21,7 @@
 
 ## 14.1 Estados del nodo
 
-`NodeState`. Excluyente salvo donde se indica en 14.6.
+En código son dos piezas ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #43, cerrado el 2026-10-10). `NodeState` es el **estado de base**, excluyente, y se deduce del tipo y la facción: `Dormido`, `SinEncender` o `Normal`. `NodeStateFlags` son las **banderas** de los que se suman a él: `Asustado`, `Congelado`, `Infectado`, `Reconvirtiendo` y `Capturado`. Pueden coexistir según 14.6, y `NodeStateMachine` rechaza la única pareja prohibida, `Infectado` con `Reconvirtiendo`. En la tabla, «`Normal`» es lo que 14.1 entiende por Normal: base `Normal` y ninguna bandera.
 
 | Estado | Se aplica a | Disparador exacto | Señal visual | Duración | Termina cuando |
 |---|---|---|---|---|---|
@@ -93,7 +93,7 @@ Y el asset **no es un par de ojos, es un ojo**: se instancia dos veces con el de
 | Sprite | Circular con estela, color de la facción emisora ([6.1](./NOVA_GameDesign_Spec.md#61-el-protón)) |
 | Número de Carga | Siempre visible en el centro, actualizado en tiempo real |
 | Escala | **Tres sprites discretos**, no escala continua. La fórmula anterior `0.6 + (carga/100)*0.6` queda anulada: con `Filter Mode: Point` una escala no entera rompe el pixel-perfect. Umbrales en [A.4.2](./NOVA_Assets_Diseno.md#a42-protón-y-haces-de-poder--143). |
-| Al ser alcanzado por un Magnetar | Destello, sacudida, el número baja de 2 en 2 |
+| Al ser alcanzado por un Magnetar | Le llega el **arco de plasma** del Magnetar (14.9); destello, sacudida, el número baja de 2 en 2 |
 | Al ser destruido | Implosión corta, no deja nada |
 | Al impactar | Ver 14.5: absorción, daño o captura |
 
@@ -111,11 +111,15 @@ El protón **no cambia de color** aunque su nodo origen cambie de bando durante 
 | Congelado · haz de Cero Absoluto | `#B8F0FF` |
 | Infectado · haz de Decaimiento | `#7CF23F` |
 | Haz de Agujero de Gusano | `#9B5CF6` |
+| Línea de envío | La del Jugador, `#3FD7F5` |
+| Arco del Magnetar | La del bando del Magnetar: Jugador, Enemigo o Neutral |
 | Power-up Rayo Cósmico | `#FFD23F` |
 | Power-up Nube de Hidrógeno | `#FF8FD0` |
 | Fondo profundo | `#0B0E1A` |
 
 > **El haz de poder se colorea por poder, no por facción** ([7.2.2](./NOVA_GameDesign_Spec.md#722-el-haz)). Reutiliza el color del estado que provoca —hielo para Cero Absoluto, verde para Decaimiento— y el morado `gusano`, que el contrato reserva en exclusiva al Agujero de Gusano precisamente para que ese poder no se confunda con nada. Quién lanzó el haz se lee por el extremo del que sale, que es un Púlsar con color de facción; qué va a pasar, por el color del trazo. Con alcance global esa lectura anticipada importa más que antes: el haz puede nacer al otro lado del tablero, lejos de donde el jugador está mirando.
+
+> **El plasma va en color de facción, no en el violeta de un globo real.** El morado puro es de `gusano` y [NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md) (*Paleta*) lo reserva al Agujero de Gusano para que no se confunda con nada. Una línea de envío violeta anunciaría un poder que no va a caer. El color de facción además dice lo que importa: de quién es la línea o el arco.
 
 > La paleta completa —22 rampas de 7 tonos— vive en `tools/nova_paleta.py`. Las reglas que la gobiernan están en [NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), sección Paleta. Cada color de esta tabla aparece **literal** en el índice 3 de su rampa: aquí se decide el significado, allí el volumen.
 
@@ -135,7 +139,7 @@ Efectos que se reproducen y terminan. No bloquean nada.
 | `FX-SEND` | Lanzamiento | El nodo origen | `ProtonLauncher` descuenta Energía | 0.2 s |
 | `FX-ABS` | Absorción aliada | El nodo destino | `ImpactResult.Absorbed` | 0.3 s |
 | `FX-DMG` | Daño sin captura | El nodo destino | `ImpactResult.Damaged` | 0.3 s |
-| `FX-SHOT` | Disparo del Magnetar | Del Magnetar al protón | Cada tick de cadencia | Instantáneo |
+| `FX-SHOT` | Disparo del Magnetar | **Arco de plasma** del Magnetar al protón (14.9), más destello sobre el protón | Cada tick de cadencia | Efecto de juego instantáneo; se ve **2 frames (0.17 s)** |
 | `FX-KILL` | Protón destruido | El protón | `charge <= 0` | 0.25 s |
 | `FX-THAW` | Deshielo | El nodo congelado | Energía llega a 0 o auto-deshielo 30 s | 0.5 s |
 | `FX-CURE` | Cura de Decaimiento | El nodo infectado | Recibe Energía de cualquier facción | 0.4 s |
@@ -152,7 +156,7 @@ Efectos que se reproducen y terminan. No bloquean nada.
 
 **`FX-BEAM` se solapa con `FX-CAST`, no va detrás.** Los dos arrancan en el mismo frame: el fogonazo dura 0.4 s en el Púlsar y el haz 0.25 s entre los dos nodos, así que el efecto cae mientras el Púlsar todavía está retrocediendo. Encadenarlos sumaría 0.65 s entre el clic y la consecuencia, y con alcance global un poder tiene que sentirse inmediato ([18](./NOVA_GameDesign_Spec.md#18-decisiones-tomadas-por-defecto) #15).
 
-**Y es el único `FX-*` cuyo asset no vive en [A.5](./NOVA_Assets_Diseno.md#a5-vfx-puntuales--145).** Un VFX puntual es una hoja de frames que se reproduce **sobre un nodo**, dentro de su celda de 96. El haz no cabe en esa definición: une dos puntos arbitrarios del tablero y puede medir 1 u o 17 u, así que se dibuja estirando un asset de mundo, como el radio del Magnetar o la línea de arrastre. Sus tres archivos están en [A.4.2](./NOVA_Assets_Diseno.md#a42-protón-y-haces-de-poder--143), no en A.5. Es la misma excepción que ya tenían `FX-CAP`, `FX-DROP` y `FX-BUFF`, que salen de A.3 y A.4.4.
+**Y su asset no vive en [A.5](./NOVA_Assets_Diseno.md#a5-vfx-puntuales--145).** Un VFX puntual es una hoja de frames que se reproduce **sobre un nodo**, dentro de su celda de 96. El haz no cabe en esa definición: une dos puntos arbitrarios del tablero y puede medir 1 u o 17 u, así que se dibuja estirando un asset de mundo, como la línea de envío. Sus tres archivos están en [A.4.2](./NOVA_Assets_Diseno.md#a42-protón-y-haces-de-poder--143), no en A.5. **Al arco de `FX-SHOT` le pasa lo mismo**: es un trazo estirable entre el Magnetar y el protón y vive en [A.4.1](./NOVA_Assets_Diseno.md#a41-radio-de-alcance-del-magnetar). Lo único que queda en A.5 es su destello sobre el protón, `ART-FX-SHOT`. Es la misma excepción que ya tenían `FX-CAP`, `FX-DROP` y `FX-BUFF`, que salen de A.3 y A.4.4.
 
 **Si el haz se disipa, no hay `FX-PWR-*`.** Cuando el objetivo deja de ser válido durante esos 0.25 s ([7.2.2](./NOVA_GameDesign_Spec.md#722-el-haz)), `FX-BEAM` se reproduce entero y **no le sigue ningún impacto**: el haz llega, no pasa nada y la Energía se perdió. Esa ausencia es el feedback, y es deliberada.
 
@@ -184,6 +188,7 @@ Efectos que se reproducen y terminan. No bloquean nada.
 Cuando varios estados coexisten, este es el orden de capas de abajo a arriba:
 
 ```
+0. Trazos de mundo           línea de envío, arco del Magnetar (14.9)
 1. Sprite base del nodo (tipo + nivel + facción)
 2. Tinte de estado           Congelado > Reconvirtiendo > Normal
 3. Aura de estado            Infectado
@@ -194,6 +199,8 @@ Cuando varios estados coexisten, este es el orden de capas de abajo a arriba:
 ```
 
 El número de Energía **nunca se oculta**, en ningún estado. Es la información que el jugador lee más veces por partida.
+
+**La capa 0 va por debajo de los nodos y por encima del fondo y de los anillos de radio.** La línea de envío y el arco del Magnetar salen del **centro** de un nodo, así que dibujados encima le cruzarían la cara. Por debajo, el sprite tapa el tramo inicial y el filamento parece nacer del borde del cuerpo, como sale de la esfera en un globo de plasma. El protón va por encima del arco que le llega: la punta del arco se ve **tocándolo**, no tachándolo.
 
 **Los glifos de estado de la capa 4 no se dibujan sobre el cuerpo, sino fuera de él.** El `zzz` de `Dormido`, la brasa de `SinEncender` y el galón de `FX-BUFF` son símbolos, no tintes: van en el hueco que deja el nodo dentro de su celda y **no pisan un solo píxel del sprite** ([A.3.1](./NOVA_Assets_Diseno.md#a31-art-st-sleep--dormido), [A.3.2](./NOVA_Assets_Diseno.md#a32-art-st-ign-y-art-st-ready--sinencender)). Por eso no necesitan trama —la capa 4 no tiene que dejar ver nada de debajo— y por eso la capa 6 los tapa sin conflicto: no comparten sitio. **Los dos ocupan exactamente el mismo hueco**, así que al capturar una roca neutral el símbolo se releva sin saltar de posición.
 
@@ -214,3 +221,41 @@ Por la misma razón, **los ojos se dibujan los últimos** dentro del sprite del 
 ## 14.8 Dependencias de arte
 
 Ninguna animación de este documento puede implementarse antes que su asset. Los IDs `FX-*` de 14.5 y los estados de 14.1 están mapeados uno a uno en [NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md); el estado de cada uno se consulta allí antes de abrir una tarea de la fase 6 en [NOVA_Tracking.md](./NOVA_Tracking.md).
+
+---
+
+## 14.9 Filamento de plasma
+
+Añadido el **2026-10-10**. Dos elementos del tablero comparten el mismo lenguaje visual, el de la energía dentro de un **globo de plasma**: un filamento vivo que sale de un electrodo y busca un punto de contacto. No es un estado ni un `FX-*` sobre un nodo. Es un trazo que une dos puntos del tablero.
+
+| | Línea de envío | Arco del Magnetar |
+|---|---|---|
+| **Qué la dispara** | Arrastre derecho desde un nodo propio que puede enviar, o selección activa ([13.1](./NOVA_GameDesign_Spec.md#131-ratón)) | Cada disparo de la torreta ([6.3](./NOVA_GameDesign_Spec.md#63-efecto-del-magnetar-sobre-protones), `FX-SHOT`) |
+| **Une** | Centro del nodo origen → **cursor** | Centro del Magnetar → **protón** al que dispara |
+| **Sobre quién** | Solo el Jugador. El Enemigo no tiene cursor | Magnetares de **los tres bandos**, incluido el neutral |
+| **Color** | Rampa del Jugador | Rampa del bando del Magnetar |
+| **Duración** | Lo que dure el gesto. **Bucle de 16 frames**, porque no tiene duración fija ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Animación*) | **2 frames (0.17 s)**, sin bucle: aparece, se retuerce y se apaga |
+| **Cómo termina** | Al soltar el botón, al cancelar la selección o al entrar en modo apuntado. Corte seco, sin fundido | Al acabar sus 2 frames |
+| **Efecto de juego** | Ninguno | Ninguno: el −2 de Carga ya se aplicó en el tick |
+
+### Cómo se ve
+
+- **Un filamento principal que serpentea** alrededor de la recta entre los dos extremos. Nunca es una recta: una línea quieta se lee como interfaz, y la retorcida se lee como energía. Está **anclado en los dos extremos**: nace fino en el origen, se retuerce en el tramo y se cierra en un **punto de contacto** en la punta, donde está la luz más intensa, como el dedo sobre el cristal.
+- **Ramitas** cortas que brotan del filamento y se apagan en uno o dos frames, sin repetir sitio en frames seguidos. Le dan el chisporroteo del globo sin engordar el trazo.
+- **Fluye hacia la punta.** La fase de la ondulación avanza del origen al destino, así que la línea dice también **en qué sentido** va a ir la Energía, y el arco, hacia dónde va el disparo.
+- **Núcleo de 1 px** en la mitad clara de la rampa, envuelto en un resplandor **por trama Bayer**. Sin alfa parcial y sin bloom: [1.2](./NOVA_GameDesign_Spec.md#12-alcance-cerrado) prohíbe el post-procesado, y el brillo sale del dibujo, no de un efecto de cámara.
+- **Sin contorno**, por la misma razón que `veta_luz`: en un trazo de 1 px el contorno no separa, tacha.
+- **El ciclo cierra por construcción.** La ondulación es una suma de armónicos con la fase en `t`, de 0 a 2π repartido entre los 16 frames, así que el bucle no salta al reiniciarse ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Animación*).
+
+### Reglas de la línea de envío
+
+- **Sigue al cursor en cada frame**, en `Update`, porque es presentación (15.10). La longitud cambia continuamente y por eso el asset se compone por piezas —su tramo se repite en mosaico, no se estira— y no se dibuja por longitud ([A.4.6](./NOVA_Assets_Diseno.md#a46-filamento-de-plasma--149)).
+- **Varias líneas a la vez** cuando hay selección múltiple, una por nodo seleccionado. Cada una arranca el bucle en un frame distinto, desfasado por su orden en la selección: con un lazo de cuatro nodos, cuatro filamentos ondulando al unísono parecen uno solo copiado cuatro veces.
+- **Se ve aunque no se envíe nada**: el gesto se enseña siempre, y si al soltar no hay envío (vacío, el propio origen o Energía insuficiente según [5.2](./NOVA_GameDesign_Spec.md#52-envío)) la línea simplemente desaparece.
+
+### Reglas del arco del Magnetar
+
+- **La punta sigue al protón** durante sus 2 frames. A 2.5 u/s un protón recorre 0.42 u en 0.17 s, y un arco clavado en el punto del disparo se quedaría hablando con el vacío.
+- **Si el disparo derriba el protón**, la punta se queda en su última posición y el arco completa sus 2 frames encima del `FX-KILL`. Es lo que dice **quién** lo derribó.
+- **Un Magnetar nunca muestra dos arcos a la vez.** A cadencia N5 (4.27 disp/s, 0.23 s entre disparos) no llegan a solaparse. Con el Rayo Cósmico (+50 %, [9.2](./NOVA_GameDesign_Spec.md#92-tipos)) son 6.4 disp/s y 0.16 s, menos que los 0.17 s del arco: en ese caso **el arco nuevo corta al anterior**. Dos Magnetares que disparan al mismo protón sí muestran dos arcos, porque son dos disparos.
+- **El Magnetar congelado no muestra arco**, porque no dispara ([7.3](./NOVA_GameDesign_Spec.md#73-cero-absoluto)).

@@ -39,6 +39,15 @@ namespace Nova.Input
             return node.TryUpgrade(Faction);
         }
 
+        public ActionCheck Convert(NodeController node, NodeType targetType)
+        {
+            if (node == null)
+                throw new ArgumentNullException(nameof(node));
+            if (!node.TryGetComponent(out NodeConverter converter))
+                throw new InvalidOperationException($"{node.name} no tiene NodeConverter.");
+            return converter.TryConvert(Faction, targetType);
+        }
+
         // Con varios orígenes seleccionados, cada uno lanza su propio protón con su propio cálculo
         // (5.2). Los que no pueden enviar se ignoran en silencio (17, caso 22). Devuelve cuántos salieron.
         public int SendFromEach(IReadOnlyList<NodeController> sources, NodeController target, bool fullSend)

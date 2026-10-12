@@ -55,6 +55,16 @@ namespace Nova.Tests
             Assert.AreEqual(0, node.GetLevel(1).UpgradeCost, "El coste del nivel 1 vive en BalanceConfig.IgnitionCost.");
         }
 
+        // 16.4: el coste depende del tipo de origen. El Asteroide no se reconvierte (8.1).
+        [TestCase("Asteroid", 0)]
+        [TestCase("Star", 20)]
+        [TestCase("Pulsar", 20)]
+        [TestCase("Magnetar", 30)]
+        public void ConversionCostsMatchSpec(string asset, int cost)
+        {
+            Assert.AreEqual(cost, Node(asset).ConversionCost);
+        }
+
         // 4.2.
         [Test]
         public void StarGenerationIntervalsMatchSpec()

@@ -173,12 +173,20 @@ namespace Nova.Input
             }
 
             // Panel de clic derecho (13.3): un clic dentro es suyo y no llega a lo que haya
-            // debajo; sobre el botón, mejora. Las reglas deciden si se puede: con el botón
-            // deshabilitado o ausente, el clic no hace nada.
+            // debajo; sobre el botón, mejora, y sobre un destino, reconvierte (T2-07). Las reglas
+            // deciden si se puede: con el botón deshabilitado o ausente, el clic no hace nada.
             if (!dragging && Panel.Contains(pressWorld))
             {
                 if (Panel.IsOnButton(pressWorld))
+                {
                     Issuer.Upgrade(Panel.Node);
+                    return;
+                }
+                // Sin NodeConverter el panel no dibuja los destinos, y su sitio no es un botón.
+                int conversion = Panel.ConversionOptionAt(pressWorld);
+                NodeType[] destinations = InfoPanelState.ConversionTargets(Panel.Node.Type);
+                if (conversion >= 0 && conversion < destinations.Length && Panel.Node.TryGetComponent(out NodeConverter _))
+                    Issuer.Convert(Panel.Node, destinations[conversion]);
                 return;
             }
 

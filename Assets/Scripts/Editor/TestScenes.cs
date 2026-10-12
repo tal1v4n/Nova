@@ -23,9 +23,10 @@ namespace Nova.Editor
     // como Estrella y tomar un nodo enemigo. Fase 2 (T2-04): los mismos más un Magnetar enemigo en
     // medio del camino, para ver la defensa, y desde T2-06 un Magnetar neutral apartado.
     //
-    // Las dos llevan el menú radial de encendido (T2-02) y el panel de clic derecho (T2-03). El
-    // menú ofrece los tipos que ya existen: Estrella y, desde T2-04, Magnetar; el Púlsar llega con
-    // T3-02 y hasta entonces sale deshabilitado. Al cerrar esa tarea se añade a IgnitionTargets.
+    // Las dos llevan el menú radial de encendido (T2-02) y el panel de clic derecho (T2-03), con la
+    // reconversión desde T2-07. Encendido y reconversión ofrecen los tipos que ya existen: Estrella
+    // y, desde T2-04, Magnetar; el Púlsar llega con T3-02 y hasta entonces sale deshabilitado. Al
+    // cerrar esa tarea se añade a IgnitionTargets.
     public static class TestScenes
     {
         const string ScenesFolder = "Assets/Scenes/Tests";
@@ -157,6 +158,7 @@ namespace Nova.Editor
             go.AddComponent<NodeController>();
             go.AddComponent<PlacedNode>().Configure(definition, faction, energy);
             go.AddComponent<NodeIgnition>().Configure(balance, ignitionTargets);
+            go.AddComponent<NodeConverter>().Configure(balance, ignitionTargets); // T2-07: mismos tipos que el encendido
             go.AddComponent<StarGenerator>(); // desviación 143: en todo nodo que pueda ser Estrella
             go.AddComponent<MagnetarTurret>().Configure(balance, protons); // y en todo el que pueda ser Magnetar
 

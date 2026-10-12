@@ -14,11 +14,15 @@ namespace Nova.Data
         [Tooltip("Energía máxima (5.4). Depende del tipo, no del nivel.")]
         [SerializeField, Min(0)] int energyCap;
 
+        [Tooltip("Energía que cuesta reconvertir un nodo de este tipo a otro (16.4). Depende del origen, no del destino. 0 en el Asteroide, que no se reconvierte (8.1).")]
+        [SerializeField, Min(0)] int conversionCost;
+
         [Tooltip("levels[0] es el nivel 1. Vacío en el Asteroide, que siempre es nivel 0 (4.1).")]
         [SerializeField] NodeLevelData[] levels = Array.Empty<NodeLevelData>();
 
         public NodeType Type => type;
         public int EnergyCap => energyCap;
+        public int ConversionCost => conversionCost;
 
         // Nivel máximo del tipo: 5 la Estrella y el Magnetar, 3 el Púlsar, 0 el Asteroide.
         public int MaxLevel => levels.Length;

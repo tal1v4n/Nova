@@ -95,6 +95,8 @@ Estos términos son los que deben usarse en el código, sin sinónimos. Cualquie
 | **Mejora** | Subir un nivel dentro del mismo tipo. | `Upgrade` |
 | **Poder** | Habilidad del Púlsar. Cero Absoluto, Decaimiento o Agujero de Gusano. | `Power` |
 | **Haz** | Trazo recto del Púlsar a su objetivo por el que se entrega un Poder. Dura 0.25 s, no viaja y no es interceptable. Sustituye al antiguo proyectil de poder. | `PowerBeam` |
+| **Línea de envío** | Filamento de plasma en color de facción que sale de un nodo propio y **sigue al cursor** mientras el Jugador apunta un envío: durante el arrastre derecho y con una selección activa ([13.1](#131-ratón)). Solo presentación: no tiene efecto de juego y desaparece al soltar. No es el protón ni lo sustituye. | `SendLine` |
+| **Arco del Magnetar** | Filamento de plasma del Magnetar al protón al que dispara. Es la presentación del disparo de [6.3](#63-efecto-del-magnetar-sobre-protones): el daño se aplica en el tick, el arco solo lo dibuja ([14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma)). | `MagnetarShotArc` |
 | **Nodo encendido** | Nodo de nivel ≥ 1: Estrella, Púlsar o Magnetar, de la facción que sea. Un Asteroide nunca lo está. Junto con «no propio», es la condición que define a qué puede apuntar un Poder ([7.2.1](#721-objetivo-válido)). | `IsIgnited` |
 | **Cadencia** | Disparos por segundo del Magnetar. | `FireRate` |
 | **Velocidad de ataque** | Término visible en la UI. Se traduce distinto según tipo (ver 13.4). | `AttackSpeed` |
@@ -236,6 +238,8 @@ OnMagnetarShot(proton):
 ```
 
 Varios Magnetares que cubran el mismo tramo de trayectoria disparan de forma independiente y acumulativa.
+
+El disparo se ve como un **arco de plasma** del Magnetar al protón ([14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma)). El arco es solo presentación: el −2 de Carga se aplica en el tick del disparo, no cuando el arco llega, y el arco nunca retrasa ni alarga el efecto.
 
 ### 6.4 Casos de captura por tipo
 
@@ -563,13 +567,29 @@ El clic izquierdo significa una cosa u otra **según haya o no una selección ac
 
 | Entrada | Acción |
 |---|---|
-| **Arrastre** desde nodo propio que puede enviar hasta destino | Envío al 50% **desde ese único origen**, sea cual sea la selección activa. Se envía **al soltar** sobre el destino, **sin pasar por el buffer** de doble clic. Soltar en vacío o sobre el propio origen no hace nada |
-| **Arrastre en vacío** (lazo) | Selección múltiple de nodos propios **que puedan enviar**. Los Asteroides quedan fuera: no son orígenes legales ([5.2](#52-envío)). El lazo **sustituye** a la selección activa, no se suma a ella |
+| **Arrastre derecho** desde nodo propio que puede enviar hasta destino | Envío al 50% **desde ese único origen**, sea cual sea la selección activa. En cuanto el cursor supera el umbral de arrastre aparece la **línea de envío**, que lo sigue hasta soltar. Se envía **al soltar** sobre el destino, **sin pasar por el buffer** de doble clic. Soltar en vacío o sobre el propio origen no envía nada y la línea desaparece |
+| **Arrastre izquierdo** (lazo), empiece donde empiece | Selección múltiple de nodos propios **que puedan enviar**. Los Asteroides quedan fuera: no son orígenes legales ([5.2](#52-envío)). El lazo **sustituye** a la selección activa, no se suma a ella. Empezarlo sobre un nodo ya no envía nada: el envío por arrastre es del botón derecho |
 | **Clic derecho** sobre cualquier nodo | Abre el panel de información y mejoras ([13.3](#133-panel-de-clic-derecho)) |
 | **Clic derecho** en vacío | Cancela la selección y cierra el panel |
 | **Esc** | Menú de pausa |
 
-**Clic o arrastre.** Una pulsación pasa a ser arrastre cuando el cursor se aleja más de **4 px de la referencia de 960 × 540** —8 px físicos a 1080p— del punto donde se pulsó ([16.1](#161-globales)). Por debajo es un clic.
+**Clic o arrastre.** Una pulsación pasa a ser arrastre cuando el cursor se aleja más de **4 px de la referencia de 960 × 540** —8 px físicos a 1080p— del punto donde se pulsó ([16.1](#161-globales)). Por debajo es un clic. La regla es la misma para los dos botones.
+
+**El clic derecho actúa al soltar, no al pulsar.** Hasta que el botón se suelta no se sabe si es un clic —panel o cancelar la selección— o un arrastre que envía. Si hubo arrastre, el panel no se abre y la selección no se cancela, se suelte donde se suelte. Un arrastre derecho que empieza sobre un nodo que no puede enviar —ajeno o Asteroide— o en vacío no dibuja línea y no hace nada al soltar. Las dos excepciones de siempre actúan al pulsar y se tragan la pulsación: el modo apuntado, que se cancela, y el menú de encendido, que se cierra ([13.7](#137-menú-radial-de-encendido)). Ninguna de las dos empieza un arrastre.
+
+**La línea de envío.** Es el feedback de «desde dónde va a salir esto», y se dibuja en dos situaciones:
+
+| Situación | Líneas | Terminan en |
+|---|---|---|
+| **Arrastre derecho** desde un nodo propio que puede enviar | Una, desde ese origen | El cursor |
+| **Selección activa**, sin arrastre en curso | Una **desde cada nodo seleccionado** | El cursor |
+
+- Va del centro del origen al cursor y **sigue al ratón en cada frame**; no salta al centro del nodo que hay debajo. El nodo destino se reconoce por estar bajo la punta.
+- Se dibuja **aunque no se llegue a enviar nada**: al arrastrar hacia el vacío, o desde un origen con menos Energía de la que pide [5.2](#52-envío). El envío sigue sus reglas al soltar; la línea solo enseña el gesto.
+- Durante un arrastre derecho **se ocultan las líneas de la selección**, porque ese envío sale de un único origen. Vuelven al soltar.
+- Con una selección viva hay líneas **siempre**, también mientras se arrastra el lazo, y desaparecen al cancelarla con clic derecho en vacío. Un nodo que sale de la selección pierde su línea en el mismo frame.
+- **No se dibuja** en modo apuntado ([13.5](#135-rueda-de-poderes-del-púlsar)), donde manda la retícula, ni con el menú de encendido abierto.
+- Su aspecto, un filamento de plasma en color de facción, está en [14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma). **El Enemigo nunca la tiene**: el algoritmo no usa cursor, y la línea es feedback de entrada, no información de juego ([3.1](#31-regla-de-paridad) habla de acciones legales, no de lo que ve cada uno).
 
 **Un nodo que deja de ser propio sale de la selección solo**, en el mismo tick en que cambia de facción. Si la selección queda vacía, se vuelve al modo *sin selección*.
 
@@ -603,7 +623,7 @@ OnClickDestino(destino):
         bufferActivo = false
 ```
 
-El arrastre no pasa por aquí: envía al soltar ([13.1](#131-ratón)).
+El arrastre derecho no pasa por aquí: envía al soltar ([13.1](#131-ratón)).
 
 ### 13.3 Panel de clic derecho
 
@@ -620,11 +640,11 @@ El botón de mejora se muestra **deshabilitado y con el coste en rojo** cuando n
 
 Cómo se comporta ([18](#18-decisiones-tomadas-por-defecto) #30, desde `T2-03`):
 
-- Se abre **a la derecha del nodo**, o a la izquierda si a la derecha no cabe, sin tapar su círculo. Lo abre el clic derecho sobre **cualquier** nodo, propio o no: de uno ajeno se ve la información, sin botones.
+- Se abre **a la derecha del nodo**, o a la izquierda si a la derecha no cabe, sin tapar su círculo. Lo abre el clic derecho sobre **cualquier** nodo, propio o no: de uno ajeno se ve la información, sin botones. Se abre **al soltar** y solo si no hubo arrastre; un arrastre derecho envía y no abre nada ([13.1](#131-ratón)).
 - `NIVEL MÁXIMO` sale en cualquier nodo que esté al máximo, sea de quien sea: es información.
 - Sigue abierto mientras se juega y se repinta al cambiar la Energía, el nivel, el tipo o el dueño del nodo; si lo capturan, pierde el botón. Lo cierran el clic derecho en vacío y `Esc`; el clic derecho sobre otro nodo lo lleva a ese nodo.
 - Un clic izquierdo **dentro** del panel es suyo y no llega a lo que haya debajo; el botón mejora sin tocar la selección y sin enviar nada. Fuera del panel, el clic izquierdo sigue su curso normal.
-- Los puntos 5 y 6 llegan con sus tareas: la reconversión con `T2-07` y la rueda con `T3-03`.
+- La reconversión (punto 5) llegó con `T2-07`: una fila «Reconvertir» con dos botones, uno por destino, con su coste, solo en nodos propios. Mientras dura, los botones dejan sitio a «Reconvirtiendo a …» ([18](#18-decisiones-tomadas-por-defecto) #33). La rueda (punto 6) llega con `T3-07`.
 
 ### 13.4 Traducción de "velocidad de ataque"
 
@@ -679,7 +699,7 @@ Tres opciones, siempre las mismas y siempre las tres, en el orden de [16.2](#162
 
 - Con `energy < 10` el menú **se abre igual**, con las tres opciones deshabilitadas y el coste en rojo. Es el mismo criterio que el botón de mejora de [13.3](#133-panel-de-clic-derecho): el jugador necesita saber cuánto le falta, y ocultarlo no se lo dice.
 - Clic derecho o clic en vacío: cierra el menú sin encender.
-- Con el menú abierto, cualquier otro clic izquierdo —sobre un nodo— o un arrastre **lo cierra sin encender y sigue su curso**: un clic sobre una Estrella propia la selecciona, y un lazo selecciona. El clic derecho y `Esc` **solo** lo cierran: no abren el panel ni pausan ([18](#18-decisiones-tomadas-por-defecto) #28).
+- Con el menú abierto, cualquier otro clic izquierdo —sobre un nodo— o un arrastre izquierdo **lo cierra sin encender y sigue su curso**: un clic sobre una Estrella propia la selecciona, y un lazo selecciona. El botón derecho y `Esc` **solo** lo cierran: no abren el panel, no pausan y **no empiezan un arrastre derecho**, así que no dibujan línea de envío ([18](#18-decisiones-tomadas-por-defecto) #28).
 - Una opción deshabilitada no hace nada al pulsarla y **deja el menú abierto**, para que se siga viendo cuánto falta.
 - Un tipo que la partida todavía no tiene sale **deshabilitado, en gris y sin coste** ([18](#18-decisiones-tomadas-por-defecto) #29). Durante el desarrollo es el Magnetar hasta `T2-04` y el Púlsar hasta `T3-02`.
 - El panel de clic derecho de un Asteroide sigue siendo informativo: `DORMIDO` y el coste de encendido ([13.4](#134-traducción-de-velocidad-de-ataque)).
@@ -760,7 +780,7 @@ Assets/
 |---|---|
 | `Faction.cs` | Enum de facciones |
 | `NodeType.cs` | Enum de tipos |
-| `NodeState.cs` | Enum de estados |
+| `NodeState.cs` | Dos enums ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #43): `NodeState`, el estado de base excluyente (`Sleeping`, `Unignited`, `Normal`), y `NodeStateFlags`, las banderas de los estados que se suman a él (`Scared`, `Frozen`, `Infected`, `Converting`, `Captured`). Las parejas que [14.6](./NOVA_Estados_Animaciones.md#146-matriz-de-compatibilidad) prohíbe las rechaza `NodeStateMachine` |
 | `PowerType.cs` | Enum de poderes |
 | `ImpactResult.cs` | Enum: Absorbed, Damaged, Captured, ThawProgress, ThawedAndCaptured. Es lo que pasa cuando un protón **llega**; el derribado por un Magnetar no llega y lo avisa el propio protón (`Proton.OnShotDown`, [T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #40) |
 | `EnergyMath.cs` | Multiplicadores, redondeos, cálculo de coste efectivo de captura |
@@ -773,7 +793,7 @@ Assets/
 
 | Script | Contenido |
 |---|---|
-| `NodeDefinition.cs` | Tipo, tope, nº de niveles, array de `NodeLevelData`, prefab, sprites por facción |
+| `NodeDefinition.cs` | Tipo, tope, **coste de reconversión** ([16.4](#164-reconversión): depende del tipo de origen), nº de niveles, array de `NodeLevelData`, prefab, sprites por facción |
 | `NodeLevelData.cs` | `[Serializable] struct`: coste de mejora, intervalo de generación, radio, cadencia |
 | `PowerDefinition.cs` | Tipo, coste, tiempo de carga, duración del haz, nivel requerido, VFX. **Sin campo de alcance:** el alcance es global y por tanto no es un parámetro de balance ([7.2](#72-tabla-de-poderes)). |
 | `BalanceConfig.cs` | Velocidad del protón, daño por disparo del Magnetar, multiplicador del Magnetar, buffer de doble clic, duración de reconversión, auto-deshielo, tasa de decaimiento, **coste de encendido, Materia Inerte, umbral de susto y devolución al cancelar una carga** (los cuatro, de 16.1) |
@@ -824,7 +844,9 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 
 | Script | Responsabilidad única |
 |---|---|
-| `InputRouter.cs` | Traduce ratón a intenciones. Buffer de doble clic. **No conoce reglas.** |
+| `InputRouter.cs` | Traduce ratón a intenciones: clic y lazo con el izquierdo, clic y arrastre de envío con el derecho, que se resuelve al soltar. Buffer de doble clic. **No conoce reglas.** |
+| `SendLineState.cs` | Estado de las líneas de envío: de qué orígenes salen y dónde está el cursor. Lo escribe `InputRouter` a partir del arrastre derecho y de la selección; vive en `Nova.Input` por lo mismo que `IgnitionMenuState` |
+| `SendLine.cs` | Dibuja las líneas de envío ([13.1](#131-ratón), [14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma)). Solo lee `SendLineState` |
 | `SelectionManager.cs` | Conjunto de nodos seleccionados, lazo, feedback de selección |
 | `PlayerCommandIssuer.cs` | Implementa `INodeCommandIssuer` para el Jugador |
 | `EnemyController.cs` | Ciclo de decisión de [12.1](./NOVA_Algoritmo_Enemigo.md#121-ciclo-de-decisión) |
@@ -847,6 +869,7 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 | `NodeVisual.cs` | Sprite correcto según tipo, nivel y facción |
 | `NodeAnimator.cs` | Animaciones de estado de [14.1](./NOVA_Estados_Animaciones.md#141-estados-del-nodo) |
 | `ProtonVisual.cs` | Número de Carga y escala |
+| `MagnetarShotArc.cs` | Arco de plasma de cada disparo del Magnetar ([14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma)). Escucha `MagnetarTurret.OnShot` |
 | `VFXPool.cs` | Pool de efectos |
 | `AudioDirector.cs` | Reacción sonora a eventos |
 | `CameraShake.cs` | Sacudida en capturas grandes |
@@ -902,7 +925,7 @@ Estos valores deben vivir en `BalanceConfig.asset` y en las `NodeDefinition`. No
 | Daño del Magnetar por disparo | 2 de Carga |
 | Multiplicador de resistencia del Magnetar | 0.5 |
 | Buffer de doble clic | 0.25 s |
-| Umbral de arrastre | 4 px de la referencia 960 × 540 (8 px a 1080p) |
+| Umbral de arrastre | 4 px de la referencia 960 × 540 (8 px a 1080p), el mismo para los dos botones |
 | Duración de la reconversión | 3.0 s |
 | Auto-deshielo | 30 s |
 | Tasa de Decaimiento | 2 E/s |
@@ -947,6 +970,8 @@ Estos valores deben vivir en `BalanceConfig.asset` y en las `NodeDefinition`. No
 | Estrella | 20 |
 | Púlsar | 20 |
 | Magnetar | 30 |
+
+Vive en `NodeDefinition` y no en `BalanceConfig`, porque es una propiedad del tipo de origen, como el Tope (`T2-07`).
 
 ---
 
@@ -1024,13 +1049,15 @@ Reglas que no estaban en el diseño original y que se añadieron para cerrar hue
 | 22 | La lógica de juego corre en **`FixedUpdate` a 50 Hz**; la presentación, en `Update` | [12.7](./NOVA_Algoritmo_Enemigo.md#127-contrato-de-implementación) exige «misma entrada más misma semilla, misma partida, siempre», y ningún documento fijaba el paso de tiempo: con `deltaTime` variable la partida dependía de los FPS. Se eligió el tick fijo de Unity frente a un tick propio con acumulador porque no añade ningún sistema. Detalle en [15.10](#1510-orden-de-ejecución). Cerrado el 2026-09-28 antes de `T1-08` |
 | 23 | **Picking:** el clic sobre un nodo se resuelve con `Physics2D.OverlapPoint` en la capa **`Nodes`**, contra el `CircleCollider2D` *trigger* de `NodeCollider2D` con el radio de la huella (0.3–0.6 u). **El lazo no usa física:** pide a `NodeRegistry` los nodos propios que pueden enviar y toma los que tienen el centro dentro del rectángulo arrastrado, Asteroides fuera ([13.1](#131-ratón)). `Nodes` es la única capa nueva: protones y haces no llevan collider, porque no colisionan ([6.1](#61-el-protón)) y el Magnetar los encuentra por `ProtonRegistry` | 15.5 declaraba el collider pero no cómo se resolvía el clic ni el lazo. Se mantiene lo ya escrito —trigger sin Rigidbody— frente a la alternativa sin física, que obligaba a corregir 15.5. Cerrado el 2026-09-28 antes de `T1-11` ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #37) |
 | 24 | Un segundo clic en **otro** destino dentro del buffer **envía ya el 50% pendiente** y abre un buffer nuevo; solo es doble clic sobre el mismo nodo | 13.2 no decía qué pasaba. Descartar el primer envío castigaría al jugador que reparte rápido entre dos destinos. Cerrado el 2026-09-29 antes de `T1-11` |
-| 25 | **Umbral de arrastre de 4 px** de la referencia (8 px a 1080p); el arrastre envía al soltar, **sin buffer** | 13.1 no separaba clic de arrastre. Un arrastre no puede ser doble clic, así que esperar 0.25 s solo añadiría latencia. El valor va en `BalanceConfig`. Cerrado el 2026-09-29 antes de `T1-11` |
+| 25 | **Umbral de arrastre de 4 px** de la referencia (8 px a 1080p); el arrastre envía al soltar, **sin buffer** | 13.1 no separaba clic de arrastre. Un arrastre no puede ser doble clic, así que esperar 0.25 s solo añadiría latencia. El valor va en `BalanceConfig`. Cerrado el 2026-09-29 antes de `T1-11`. **Desde el 2026-10-10 el arrastre que envía es el del botón derecho** (#32); umbral y envío sin buffer no cambian |
 | 26 | El lazo **sustituye** a la selección; el clic izquierdo en vacío **no hace nada** | Mantiene que la selección solo la cancela el clic derecho en vacío (13.1) y que un lazo siempre da el mismo resultado, haya lo que haya seleccionado. Cerrado el 2026-09-29 antes de `T1-11` |
 | 27 | Un nodo que deja de ser propio **sale solo de la selección**; un doble clic sobre un nodo seleccionado **lo deselecciona y no envía** | Sin lo primero, la selección guardaría nodos del rival como orígenes. Sin lo segundo, deseleccionar con doble clic lanzaría un 50% sin querer contra el nodo recién soltado. Cerrado el 2026-09-29 antes de `T1-11` |
-| 28 | Con el menú de encendido abierto, un clic izquierdo fuera de las opciones o un arrastre **lo cierra y sigue su curso**; el clic derecho y `Esc` **solo** lo cierran | 13.7 decía qué cerraba el menú, pero no qué más hacía ese clic. Que siga su curso evita un clic perdido al querer seleccionar otra cosa; el clic derecho y `Esc` se consumen porque abrir el panel o pausar al cerrar un menú sorprende. Decidido en `T2-02` |
+| 28 | Con el menú de encendido abierto, un clic izquierdo fuera de las opciones o un arrastre izquierdo **lo cierra y sigue su curso**; el botón derecho y `Esc` **solo** lo cierran, y el derecho no empieza un arrastre de envío (#32) | 13.7 decía qué cerraba el menú, pero no qué más hacía ese clic. Que siga su curso evita un clic perdido al querer seleccionar otra cosa; el clic derecho y `Esc` se consumen porque abrir el panel o pausar al cerrar un menú sorprende. Decidido en `T2-02` |
 | 29 | Las opciones del menú de encendido de un tipo que la partida no tiene salen **deshabilitadas, en gris y sin coste**, distintas de las que solo esperan Energía | 13.7 da siempre las tres opciones. En la fase 2 el Magnetar no existe hasta `T2-04` ni el Púlsar hasta `T3-02`, y encenderlos ya daría nodos a medias. Se resuelve con datos: cada `NodeIgnition` ofrece los tipos cuya `NodeDefinition` tiene, y el bloqueo `ActionBlock.Unavailable` va por delante de la Energía. Es también la vía de T.7 #46 si hace falta un bloqueo por nivel. Decidido con el usuario en `T2-02` |
 | 30 | El panel de clic derecho se abre **junto al nodo**, también en nodos ajenos (sin botones); **se queda abierto** hasta el clic derecho en vacío o `Esc`, y un clic izquierdo dentro es suyo | 13.3 decía qué contiene, no dónde ni cuándo se cierra. Abierto mientras se juega, porque mejorar varias veces seguidas es lo normal; que se trague el clic evita mandar un protón al nodo que hay debajo del botón. Decidido en `T2-03` |
 | 31 | Torreta del Magnetar: con empate en distancia **y** en Carga dispara al protón **lanzado antes**; un protón a distancia **igual** al radio está dentro; el arma **espera cargada** en reposo y dispara en cuanto entra un objetivo, sin acumular disparos, y disparando sin pausa conserva su cadencia exacta | 4.4 solo daba el primer desempate y no decía nada del borde ni de qué hace el arma sin objetivo. El tercer desempate es el mismo que el de los impactos (15.10); el borde incluido es el que se dibuja (A.4.1); y un arma que acumulase disparos en reposo vaciaría de golpe un protón al entrar. Decidido en `T2-04` |
+| 32 | El envío por arrastre pasa al **botón derecho**, con una **línea de envío** que sigue al cursor; el clic derecho actúa **al soltar**; el arrastre izquierdo es **siempre lazo** | Pedido por el usuario el 2026-10-10: la línea tiene que verse desde que el ratón se aleja del nodo, también si al final no se envía nada. El panel no puede abrirse al pulsar, porque en ese momento todavía no se sabe si es clic o arrastre. El arrastre izquierdo deja de enviar para no tener dos gestos para lo mismo, y así el lazo puede empezar encima de un nodo. Revisable: devolverle el envío al izquierdo no toca nada más que `InputRouter` |
+| 33 | Reconversión en el panel: **dos botones** en el orden de [16.2](#162-costes-de-nivel), con el destino y el coste. Un tipo que la partida no tiene sale **gris y sin coste**, como en el menú de encendido (#29). Mientras dura, los botones dejan sitio a «Reconvirtiendo a …». Un botón bloqueado por algo que **no es la Energía** —reconvirtiendo, congelado— sale deshabilitado **sin el coste en rojo** | 13.3 decía qué contiene el punto 5, no cómo se ve. El rojo de 13.3 significa «te falta Energía»: pintarlo en un Mejorar bloqueado por la reconversión le diría al jugador que junte Energía, y no le serviría de nada. Decidido en `T2-07` |
 
 ---
 

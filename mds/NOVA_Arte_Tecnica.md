@@ -448,7 +448,7 @@ dos medidas por separado y avisan si algún nivel toca el borde de la celda.
 
 ### Familias exentas de la celda
 
-Tres familias de asset no caben en 96×96 y tienen resolución propia. No
+Cuatro familias de asset no caben en 96×96 y tienen resolución propia. No
 violan la regla de no mezclar escalas porque **no comparten familia** con
 los nodos:
 
@@ -457,6 +457,7 @@ los nodos:
 | `art/bg/*` | **960×540** | Ver *Fondos*. Son 15 × 8.4375 u a PPU 64: el tablero entero ([T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada), cerrada el 2026-09-28). Eran 2048×1152 cuando el tablero medía 32 × 18 u, y llegaron a pedirse a 1280×720 durante unas horas, con el tablero de 20 u. |
 | `art/world/world_radius_*` | Hasta 384×384 | El radio del Magnetar mide 1.5–2.5 u, y 2.5 u a PPU 64 son 160 px **de radio**: 320 px de lado ([A.4.1](./NOVA_Assets_Diseno.md#a41-radio-de-alcance-del-magnetar)). **Un archivo por nivel**, porque escalar uno solo daría factores no enteros. |
 | `art/world/world_proton_*` | 48×48 | Ver abajo. |
+| Trazos estirables: `world_beam_*`, `world_link_sheet`, `world_radius_shot_*` | **16 px de alto**, largo variable | Unen dos puntos arbitrarios del tablero, de 1 u a 17.2 u, así que se dibujan por piezas (nacimiento, tramo y punta) y no por longitud. El haz estira su tramo; el filamento de plasma lo **repite en mosaico**, porque una onda estirada pierde la rejilla ([NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md), A.4.2 y A.4.6). |
 
 **El protón no escala de forma continua.** [14.3](./NOVA_Estados_Animaciones.md#143-protón)
 pedía escala `0.6`–`1.4`, pero con `Filter Mode: Point` una escala no entera

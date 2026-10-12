@@ -14,6 +14,7 @@ namespace Nova.Systems
         IsAsteroid,     // 5.2: cualquier nodo con Energía puede enviar, excepto el Asteroide
         SameNode,       // Origen y destino son el mismo nodo
         NothingToSend,  // 5.2: el 50 % de 1 redondea a 0 y el envío no se ejecuta (17, caso 22)
+        Converting,     // 8.1: durante la reconversión el nodo no envía
     }
 
     // Servicio de lanzamiento (15.6): valida, descuenta la Energía del origen y pide un protón
@@ -42,6 +43,8 @@ namespace Nova.Systems
                 return LaunchBlock.IsAsteroid;
             if (source == target)
                 return LaunchBlock.SameNode;
+            if (source.HasState(NodeStateFlags.Converting))
+                return LaunchBlock.Converting;
 
             charge = EnergyMath.SendAmount(source.Energy, fullSend);
             return charge > 0 ? LaunchBlock.None : LaunchBlock.NothingToSend;

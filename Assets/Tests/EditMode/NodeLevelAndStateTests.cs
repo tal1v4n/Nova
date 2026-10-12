@@ -243,6 +243,89 @@ namespace Nova.Tests
             Assert.AreEqual(NodeState.Normal, node.State);
         }
 
+        // --- Banderas de estado (T.7 #43, T2-07) ---
+
+        [Test]
+        public void FlagsStartEmptyAndAddToTheBaseState()
+        {
+            node.Initialize(Definition("Star"), Faction.Player, 10);
+            Assert.AreEqual(NodeStateFlags.None, node.StateFlags);
+
+            Assert.IsTrue(node.SetStateFlag(NodeStateFlags.Scared, true));
+            Assert.IsTrue(node.SetStateFlag(NodeStateFlags.Frozen, true));
+
+            Assert.AreEqual(NodeState.Normal, node.State, "La base no cambia con las banderas.");
+            Assert.IsTrue(node.HasState(NodeStateFlags.Scared));
+            Assert.IsTrue(node.HasState(NodeStateFlags.Frozen));
+            Assert.IsFalse(node.HasState(NodeStateFlags.Infected));
+            Assert.IsTrue(node.Snapshot().IsFrozen, "Las reglas de Core leen las banderas.");
+        }
+
+        [Test]
+        public void FlagEventsFireOnlyOnRealChanges()
+        {
+            node.Initialize(Definition("Star"), Faction.Player, 10);
+            var seen = new List<(NodeStateFlags, NodeStateFlags)>();
+            node.OnStateFlagsChanged += (a, b) => seen.Add((a, b));
+
+            node.SetStateFlag(NodeStateFlags.Converting, true);
+            node.SetStateFlag(NodeStateFlags.Converting, true);
+            node.SetStateFlag(NodeStateFlags.Converting, false);
+            node.SetStateFlag(NodeStateFlags.Converting, false);
+
+            CollectionAssert.AreEqual(new[]
+            {
+                (NodeStateFlags.None, NodeStateFlags.Converting),
+                (NodeStateFlags.Converting, NodeStateFlags.None),
+            }, seen);
+        }
+
+        // 14.6: Infectado y Reconvirtiendo es la única pareja prohibida, en los dos sentidos.
+        [Test]
+        public void InfectedAndConvertingCannotCoexist()
+        {
+            node.Initialize(Definition("Star"), Faction.Player, 10);
+
+            Assert.IsTrue(node.SetStateFlag(NodeStateFlags.Converting, true));
+            Assert.IsFalse(node.SetStateFlag(NodeStateFlags.Infected, true));
+            Assert.AreEqual(NodeStateFlags.Converting, node.StateFlags);
+
+            node.SetStateFlag(NodeStateFlags.Converting, false);
+            Assert.IsTrue(node.SetStateFlag(NodeStateFlags.Infected, true));
+            Assert.IsFalse(node.SetStateFlag(NodeStateFlags.Converting, true));
+        }
+
+        // 14.6: las otras cinco parejas de la matriz sí conviven.
+        [TestCase(NodeStateFlags.Scared, NodeStateFlags.Frozen)]
+        [TestCase(NodeStateFlags.Scared, NodeStateFlags.Infected)]
+        [TestCase(NodeStateFlags.Scared, NodeStateFlags.Converting)]
+        [TestCase(NodeStateFlags.Frozen, NodeStateFlags.Infected)]
+        [TestCase(NodeStateFlags.Frozen, NodeStateFlags.Converting)]
+        public void CompatiblePairsFrom14_6(NodeStateFlags first, NodeStateFlags second)
+        {
+            Assert.IsTrue(NodeStateMachine.CanCoexist(first, second));
+            Assert.IsTrue(NodeStateMachine.CanCoexist(second, first));
+        }
+
+        [Test]
+        public void OneFlagPerCall()
+        {
+            node.Initialize(Definition("Star"), Faction.Player, 10);
+            Assert.Throws<System.ArgumentException>(() => node.SetStateFlag(NodeStateFlags.Scared | NodeStateFlags.Frozen, true));
+            Assert.Throws<System.ArgumentException>(() => node.SetStateFlag(NodeStateFlags.None, true));
+        }
+
+        [Test]
+        public void InitializeClearsTheFlags()
+        {
+            node.Initialize(Definition("Star"), Faction.Player, 10);
+            node.SetStateFlag(NodeStateFlags.Frozen, true);
+
+            node.Initialize(Definition("Star"), Faction.Player, 10);
+
+            Assert.AreEqual(NodeStateFlags.None, node.StateFlags);
+        }
+
         // Encender (T1-11b) cambia el tipo y reevalúa: SinEncender → Normal.
         [Test]
         public void EvaluateAfterIgnitionGoesNormal()

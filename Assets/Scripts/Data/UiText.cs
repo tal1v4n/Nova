@@ -43,6 +43,15 @@ namespace Nova.Data
 
         [SerializeField] string maxLevel = "NIVEL MÁXIMO";
 
+        [Tooltip("Rótulo de la fila de reconversión (13.3 punto 5).")]
+        [SerializeField] string convertHeader = "Reconvertir";
+
+        [Tooltip("{0} tipo de destino, {1} coste.")]
+        [SerializeField] string convertFormat = "{0} · {1}";
+
+        [Tooltip("{0} tipo de destino. Sustituye a los dos botones mientras dura la reconversión.")]
+        [SerializeField] string convertingFormat = "Reconvirtiendo a {0}";
+
         public string TypeName(NodeType type)
         {
             switch (type)
@@ -64,6 +73,10 @@ namespace Nova.Data
         // El coste llega ya escrito: el panel lo pinta en rojo cuando no se alcanza (13.3).
         public string Upgrade(string cost) => Format(upgradeFormat, cost);
         public string MaxLevel => maxLevel;
+        public string ConvertHeader => convertHeader;
+        // Como en Upgrade, el coste llega ya escrito para poder pintarlo en rojo.
+        public string Convert(NodeType target, string cost) => Format(convertFormat, TypeName(target), cost);
+        public string Converting(NodeType target) => Format(convertingFormat, TypeName(target));
 
         static string Format(string format, params object[] args) => string.Format(CultureInfo.InvariantCulture, format, args);
     }

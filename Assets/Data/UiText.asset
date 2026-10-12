@@ -24,3 +24,6 @@ MonoBehaviour:
   ignitionCostFormat: "Encender: {0}"
   upgradeFormat: "Mejorar \u00B7 {0}"
   maxLevel: "NIVEL M\u00C1XIMO"
+  convertHeader: Reconvertir
+  convertFormat: "{0} \u00B7 {1}"
+  convertingFormat: "Reconvirtiendo a {0}"

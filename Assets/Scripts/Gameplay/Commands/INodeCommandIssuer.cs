@@ -22,5 +22,9 @@ namespace Nova.Gameplay
 
         // Sube un nivel un nodo propio encendido, pagando con su Energía (16.2). T2-03.
         ActionCheck Upgrade(NodeController node);
+
+        // Inicia la reconversión de un nodo propio encendido a targetType: paga al iniciar y
+        // cambia de tipo a los 3 s (8.1). T2-07.
+        ActionCheck Convert(NodeController node, NodeType targetType);
     }
 }

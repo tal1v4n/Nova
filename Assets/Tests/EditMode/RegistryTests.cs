@@ -309,6 +309,7 @@ namespace Nova.Tests
         [TestCase(typeof(NodeLevelComponent), 0)]
         [TestCase(typeof(NodeStateMachine), 0)]
         [TestCase(typeof(StarGenerator), 0)]
+        [TestCase(typeof(NodeConverter), 0)]
         [TestCase(typeof(Proton), 10)]
         [TestCase(typeof(ProvisionalNodeView), 100)]
         public void ExecutionOrderFollows15_10(Type type, int expected)

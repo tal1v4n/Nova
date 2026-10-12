@@ -27,7 +27,10 @@ namespace Nova.Gameplay
         public int Level => LevelComponent.Level;
         public NodeLevelData CurrentLevelData => LevelComponent.CurrentLevelData;
         public NodeState State => StateMachine.State;
+        public NodeStateFlags StateFlags => StateMachine.Flags;
         public bool IsInitialized => Identity.Definition != null;
+
+        public bool HasState(NodeStateFlags flag) => StateMachine.Has(flag);
 
         // Reenvío de los eventos de los componentes: quien escucha al nodo no necesita conocerlos.
         public event Action<Faction, Faction> OnFactionChanged
@@ -52,6 +55,12 @@ namespace Nova.Gameplay
         {
             add => StateMachine.OnStateChanged += value;
             remove => StateMachine.OnStateChanged -= value;
+        }
+
+        public event Action<NodeStateFlags, NodeStateFlags> OnStateFlagsChanged
+        {
+            add => StateMachine.OnFlagsChanged += value;
+            remove => StateMachine.OnFlagsChanged -= value;
         }
 
         public event Action<NodeType, NodeType> OnTypeChanged
@@ -88,11 +97,22 @@ namespace Nova.Gameplay
             }
         }
 
-        // El nodo tal como lo leen las reglas de Core. Congelado, infectado, reconversión y
-        // carga de poder llegan con las tareas que los provocan.
+        // El nodo tal como lo leen las reglas de Core. Los estados salen de las banderas de
+        // NodeStateMachine; la carga de poder llega con PulsarCaster (T3-02).
         public NodeSnapshot Snapshot()
         {
-            return new NodeSnapshot(Faction, Type, Energy, EnergyCap, level: Level);
+            return new NodeSnapshot(Faction, Type, Energy, EnergyCap,
+                isFrozen: HasState(NodeStateFlags.Frozen),
+                isInfected: HasState(NodeStateFlags.Infected),
+                level: Level,
+                isConverting: HasState(NodeStateFlags.Converting));
+        }
+
+        // Pone o quita una bandera de estado (14.1). La llaman los componentes que provocan cada
+        // estado, que son los que conocen sus reglas. Devuelve false si 14.6 no la admite.
+        public bool SetStateFlag(NodeStateFlags flag, bool on)
+        {
+            return StateMachine.SetFlag(flag, on);
         }
 
         // Suma Energía con el excedente descartado (5.3). La usan la generación de la Estrella

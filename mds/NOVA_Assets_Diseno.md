@@ -798,15 +798,17 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 | `ART-WLD-RAD-IDLE` | Anillo de radio en reposo | Círculo tenue, radio exacto en unidades de mundo. **Cinco archivos**, uno por nivel | `art/world/world_radius_idle_lvl{1..5}.png` | ⬜ | `![](art/world/world_radius_idle_lvl5.png)` |
 | `ART-WLD-RAD-HOVER` | Anillo al pasar el ratón o seleccionar | Más brillante, con marca de nivel. **Cinco archivos** | `art/world/world_radius_hover_lvl{1..5}.png` | ⬜ | `![](art/world/world_radius_hover_lvl5.png)` |
 | `ART-WLD-RAD-NEUTRAL` | Variante neutral | Gris, para el Magnetar neutral que bloquea a ambos. **Cinco archivos** | `art/world/world_radius_neutral_lvl{1..5}.png` | ⬜ | `![](art/world/world_radius_neutral_lvl5.png)` |
-| `ART-WLD-RAD-SHOT` | Haz de disparo | Del centro al protón, instantáneo. **Un archivo**: es un trazo estirable, no depende del radio | `art/world/world_radius_shot.png` | ⬜ | `![](art/world/world_radius_shot.png)` |
+| `ART-WLD-RAD-SHOT` | Arco de plasma del disparo | Filamento de plasma del centro al protón, **2 frames** ([14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma)). Trazo estirable de tres piezas ([A.4.6](#a46-filamento-de-plasma--149)), no depende del radio. **Tres archivos**, uno por bando: el Magnetar neutral también dispara | `art/world/world_radius_shot_{player,enemy,neutral}_sheet.png` | ⬜ | `![](art/world/world_radius_shot_player_sheet.png)` |
 
-**Son 16 archivos, no 4, y el motivo no es estético.** Un solo anillo escalado a los cinco radios exigiría factores de ×0.6, ×0.7, ×0.8, ×0.9 y ×1. **Ninguno es entero**, y con `Filter Mode: Point` una escala no entera rompe el pixel-perfect: es exactamente por lo que el protón pasó a tres sprites discretos ([A.4.2](#a42-protón-y-haces-de-poder--143)) y el argumento con el que [T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada) descarta arreglar la escala del tablero desde Unity. Un radio, un archivo. El coste real es de inventario, no de trabajo: el generador es un bucle sobre cinco radios.
+> **El disparo pasa de trazo recto a arco de plasma el 2026-10-10**, y de un archivo a tres. El trazo recto era uno solo porque nada en él dependía del bando. El arco va en el color del Magnetar que dispara, y una variante de color es otra rampa sobre la misma geometría ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Paleta*), no un tinte en Unity. A.4.1 pasa de 16 archivos a **18**.
+
+**Son 18 archivos, no 4, y el motivo no es estético.** Un solo anillo escalado a los cinco radios exigiría factores de ×0.6, ×0.7, ×0.8, ×0.9 y ×1. **Ninguno es entero**, y con `Filter Mode: Point` una escala no entera rompe el pixel-perfect: es exactamente por lo que el protón pasó a tres sprites discretos ([A.4.2](#a42-protón-y-haces-de-poder--143)) y el argumento con el que [T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada) descarta arreglar la escala del tablero desde Unity. Un radio, un archivo. El coste real es de inventario, no de trabajo: el generador es un bucle sobre cinco radios.
 
 > **Este anillo no se ve afectado por el alcance global del Púlsar.** El que desapareció es `ART-WLD-RANGE`, el círculo de alcance del *poder* (A.4.3). El radio del Magnetar mide dónde caen sus disparos y sigue siendo información defensiva crítica: un protón que pasa a 0.1 u no recibe disparos, y eso no ha cambiado. Lo que sí cambió es que el Magnetar neutral **puede cambiar de dueño a mitad de partida** por un Agujero de Gusano ([7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido)), así que su anillo tiene que seguir siendo legible **en las tres rampas**, no solo en la neutral.
 
 **Decisión cerrada (A.8 #1):** el radio es **siempre visible en los Magnetares neutrales y enemigos** —es información defensiva crítica para trazar una ruta— y **a demanda en los propios**, al seleccionar o pasar el ratón. Mostrar siempre los propios satura la pantalla sin aportar nada: el jugador ya sabe dónde están sus defensas.
 
-**Resolución:** hasta **384×384 px**. Es una de las tres familias exentas de la celda de 96 ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Resolución*).
+**Resolución:** hasta **384×384 px**. Es una de las cuatro familias exentas de la celda de 96 ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Resolución*).
 
 > **Decía 384×384 y no daba.** El cálculo original —«3.6 u a PPU 64 son 230 px de radio»— es correcto, pero **230 px es el radio**: el círculo mide **461 px** de lado. Con 384 no caben ni el nivel 4 (410 px) ni el nivel 5 (461 px), que son justo los dos que más importa ver. 512 es la potencia de dos que lo cubre y deja 25 px de margen para el trazo.
 
@@ -852,7 +854,9 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 | `ART-WLD-SEL` | Anillo de selección | Sobre nodo propio seleccionado | `art/world/world_select_ring.png` | ⬜ | `![](art/world/world_select_ring.png)` |
 | `ART-WLD-LASSO` | Lazo de selección múltiple | Rectángulo punteado | `art/world/world_lasso.png` | ⬜ | `![](art/world/world_lasso.png)` |
 | `ART-WLD-AIM` | Cursor de apuntado de poder | **Sin anillo de alcance.** Retícula que se posa sobre el objetivo bajo el cursor y solo sobre objetivos válidos ([7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido)) | `art/world/world_aim_cursor.png` | ⬜ | `![](art/world/world_aim_cursor.png)` |
-| `ART-WLD-LINK` | Línea de arrastre origen→destino | Feedback del arrastre | `art/world/world_drag_line.png` | ⬜ | `![](art/world/world_drag_line.png)` |
+| `ART-WLD-LINK` | Línea de envío origen→cursor | Filamento de plasma en la rampa del Jugador que sigue al cursor durante el arrastre derecho y desde cada nodo de una selección activa ([13.1](./NOVA_GameDesign_Spec.md#131-ratón), [14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma)). Trazo estirable de tres piezas ([A.4.6](#a46-filamento-de-plasma--149)), **bucle de 16 frames**. Un solo archivo: solo el Jugador tiene cursor | `art/world/world_link_sheet.png` | ⬜ | `![](art/world/world_link_sheet.png)` |
+
+**`ART-WLD-LINK` deja de ser una línea de arrastre y pasa a ser un filamento de plasma** (2026-10-10). Ya no se ve solo durante el arrastre: también sale de cada nodo de una selección activa, así que es el elemento de mundo que el jugador **más tiempo tiene en pantalla** después de los nodos, y por eso se anima. Sigue siendo **un** asset. Cambia el nombre de archivo, porque ahora es una hoja, y el conteo de A.4.3 no se mueve.
 
 **`ART-WLD-RANGE` queda eliminado del inventario.** Era el círculo de alcance del poder y ya no hay alcance que dibujar: el Púlsar llega a todo el tablero ([7.2](./NOVA_GameDesign_Spec.md#72-tabla-de-poderes)). A.4.3 pasa de 5 assets a 4 y el total del inventario de 95 a 94.
 
@@ -882,7 +886,7 @@ Son los **únicos items del juego**. No hay más y no debe haber más: la [secci
 
 **Diseño cerrado.** Generador: `tools/gen_fondos_v1.py` sobre `tools/nova_fondo.py` → `art/bg/`.
 
-**960 × 540 px = 15 × 8.4375 u a PPU 64**: el área jugable entera, sin scroll. Es una de las tres familias exentas de la celda de 96 ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Resolución*).
+**960 × 540 px = 15 × 8.4375 u a PPU 64**: el área jugable entera, sin scroll. Es una de las cuatro familias exentas de la celda de 96 ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Resolución*).
 
 > **Los tres fondos vuelven a ⬜ el 2026-09-28.** Estaban ✅ a 2048 × 1152, que era el tablero de 32 × 18 u; al cerrarse [T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada) el lienzo pasa a **960 × 540** (primero se pidió 1280 × 720 y se corrigió el mismo día) y **hay que regenerarlos**. El diseño **no cambia** —las tres ideas, las tres reglas y la viñeta invertida se conservan— y tampoco cambia el generador: es `ANCHO, ALTO` en `tools/nova_fondo.py` y volver a lanzar `gen_fondos_v1.py`. Lo que sí hay que reajustar son las constantes que están **en píxeles**: `sigma`, la comba de la corriente de S2 y el tamaño de la grava, que a 0.469× del lienzo anterior dejarían de medir lo que medían en unidades de mundo. Y hay que volver a pasar `informe()`: el presupuesto de contraste se mide por ventana de 96 × 96 px, y esa ventana es ahora una fracción mayor de la imagen.
 
@@ -922,6 +926,27 @@ Ocho a diez colores por imagen de 2.4 millones de píxeles: son de paleta, no fo
 ![](../art/_preview/fondos/s2.png)
 ![](../art/_preview/fondos/s3.png)
 
+### A.4.6 Filamento de plasma — [14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma)
+
+**Sin diseñar.** No es un grupo de inventario con IDs propios. Es el **lenguaje compartido** de dos assets que viven en otros grupos, y se escribe aquí una sola vez para que no diverjan:
+
+| Asset | Grupo | Bandos | Frames |
+|---|---|---|---|
+| `ART-WLD-LINK` | A.4.3 | Jugador | 16, bucle |
+| `ART-WLD-RAD-SHOT` | A.4.1 | Jugador, Enemigo, Neutral | 2, sin bucle |
+
+**La referencia es un globo de plasma**: un filamento que sale del electrodo, se retuerce y se cierra sobre un punto de contacto, con ramitas que chisporrotean. Lo que se toma del globo es el **gesto**, no el color: el violeta es de `gusano` y aquí va la rampa de facción ([14.4](./NOVA_Estados_Animaciones.md#144-paleta-funcional)).
+
+**Se construye como el haz de poder** ([A.4.2](#a42-protón-y-haces-de-poder--143)), porque tiene su mismo problema: une dos puntos a distancia arbitraria, con la diferencia de que la línea de envío **cambia de longitud en cada frame** al seguir al ratón.
+
+- **Tres piezas:** nacimiento (en el nodo), tramo intermedio y punta (cursor o protón). La punta lleva el **punto de contacto**, que es lo más brillante del trazo.
+- **El tramo se repite, no se escala.** A diferencia del haz, un filamento que serpentea no admite estiramiento en su eje largo: la onda se alargaría y el resplandor tramado dejaría de caer en la rejilla. El tramo es una **tesela de longitud fija que se repite en mosaico** (`Draw Mode: Tiled`), y el último tramo se recorta. Para que las costuras no se vean, la ondulación de cada frame es **periódica en la longitud de la tesela**: sale y entra a la misma altura.
+- **Alto fijo de 16 px**, con el filamento dentro de una franja de ±4 px alrededor del eje y el resto para el resplandor y las ramitas. Es el mismo alto que el haz, así que los tres trazos del tablero miden lo mismo de grueso.
+- **Rotación libre por `transform`**, como el haz. La ondulación es simétrica *en promedio* respecto al eje largo, para que ningún ángulo revele un lado más cargado.
+- **Hoja horizontal por pieza**: `nacimiento | tramo | punta` en filas, un frame por columna.
+
+**Lo que falta en el pipeline:** ninguna primitiva de `tools/nova_core.py` dibuja un trazo periódico de longitud variable, ni con ramitas. `veta_luz` es el material más cercano —una línea en `glow` sin contorno— pero recta. Hace falta una primitiva nueva, y la comparten estos cuatro archivos y los tres haces de A.4.2 ([NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #30 y #50).
+
 ---
 
 ## A.5 VFX puntuales — [14.5](./NOVA_Estados_Animaciones.md#145-animaciones-puntuales-sin-estado)
@@ -930,6 +955,8 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 
 **Cuatro `FX-*` de 14.5 no tienen asset aquí, y cada uno por su motivo:** `FX-CAP` reutiliza `ART-ST-CAP` (A.3.7), `FX-DROP` y `FX-BUFF` salen de A.4.4 y A.3.8, y **`FX-BEAM` sale de A.4.2** porque un haz no cabe en una celda de 96: une dos puntos arbitrarios del tablero y se dibuja estirando, no reproduciendo. `FX-SHAKE` tampoco tiene asset: es cámara, no dibujo.
 
+**`ART-FX-SHOT` ya no es el disparo, es lo que le pasa al protón.** Desde el 2026-10-10 el trazo del Magnetar al protón es el arco de plasma `ART-WLD-RAD-SHOT` (A.4.1). Aquí queda solo el **destello sobre el protón alcanzado** que pide [14.3](./NOVA_Estados_Animaciones.md#143-protón). Se reproduce en la punta del arco en el mismo frame, y por eso su luz tiene que casar con el punto de contacto del arco, que es la pieza más brillante del filamento.
+
 | ID de asset | Evento (14.5) | Archivo | Duración | Frames | Estado |
 |---|---|---|---|---|---|
 | `ART-FX-IGN` | Encendido | `art/fx/fx_ignition_sheet.png` | 0.6 s | 8 | ⬜ |
@@ -937,7 +964,7 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-FX-SEND` | Lanzamiento | `art/fx/fx_send_sheet.png` | 0.2 s | 3 | ⬜ |
 | `ART-FX-ABS` | Absorción aliada | `art/fx/fx_absorb_sheet.png` | 0.3 s | 4 | ⬜ |
 | `ART-FX-DMG` | Daño sin captura | `art/fx/fx_damage_sheet.png` | 0.3 s | 4 | ⬜ |
-| `ART-FX-SHOT` | Disparo del Magnetar | `art/fx/fx_shot_sheet.png` | instantáneo | 2 | ⬜ |
+| `ART-FX-SHOT` | Disparo del Magnetar: destello sobre el protón | `art/fx/fx_shot_sheet.png` | 0.17 s, como el arco | 2 | ⬜ |
 | `ART-FX-KILL` | Protón destruido | `art/fx/fx_protonkill_sheet.png` | 0.25 s | 3 | ⬜ |
 | `ART-FX-THAW` | Deshielo | `art/fx/fx_thaw_sheet.png` | 0.5 s | 6 | ⬜ |
 | `ART-FX-CURE` | Cura de Decaimiento | `art/fx/fx_cure_sheet.png` | 0.4 s | 5 | ⬜ |
@@ -974,18 +1001,18 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 |---|---|---|---|
 | A.2 Nodos | 34 | **34** ✅ | — (ya no bloquea `T6-01`) |
 | A.3 Estados | **9** | **9** ✅ | — (ya no bloquea `T6-02` ni `T6-03`) |
-| A.4.1 Radio del Magnetar | **16** | 0 | Legibilidad del Magnetar (fase 2 visual) |
+| A.4.1 Radio del Magnetar | **18** | 0 | Legibilidad del Magnetar (fase 2 visual) |
 | A.4.2 Protón y haces de poder | 9 | 0 | `ProtonVisual`, `PowerBeam`, fase 6 |
 | A.4.3 Selección y apuntado | **4** | 0 | Pulido de input (fase 6) |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | 3 | **0** | Nada de código. **Regeneración pendiente** a 960×540 por [T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada) |
 | A.5 VFX | 15 | 0 | `VFXPool`, fase 6 |
 | A.6 UI | 13 | 0 | Pulido de UI (fase 6) |
-| **Total** | **106** | **46** | — |
+| **Total** | **108** | **46** | — |
 
 **Y los ✅ bajan de 49 a 46 el 2026-09-28**, sin que nadie retire un asset: los tres fondos pasan a ⬜ porque el tablero encogió a 15 × 8.4375 u y su lienzo con él ([T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada)). **El total sigue en 106**; lo que cambia es el estado, no el inventario. Es la primera vez que una decisión de diseño **desmarca** arte ya terminado, y salió barato por donde el propio T.8 predijo: el fondo es una constante en un generador, no una pieza dibujada a mano.
 
-El total subió de 90 a 94 porque el Protón pasa de 2 archivos a 6 (A.4.2), y de 94 a 95 porque `SinEncender` necesita **dos** assets y no uno: `ART-ST-IGN` y `ART-ST-READY` tienen distinto número de frames y no caben en una fila (A.3.2). **Y baja de 95 a 94** al quitarse `ART-WLD-RANGE`: con alcance global no hay círculo de alcance que dibujar (A.4.3). **Y sube de 94 a 106** al descubrirse que el anillo del Magnetar necesita **un archivo por nivel** y no uno para los cinco: escalar uno solo daría factores no enteros (A.4.1). Los tres proyectiles de poder no alteran el conteo —pasan a ser tres haces— pero dejan de ser el mismo asset (A.4.2).
+El total subió de 90 a 94 porque el Protón pasa de 2 archivos a 6 (A.4.2), y de 94 a 95 porque `SinEncender` necesita **dos** assets y no uno: `ART-ST-IGN` y `ART-ST-READY` tienen distinto número de frames y no caben en una fila (A.3.2). **Y baja de 95 a 94** al quitarse `ART-WLD-RANGE`: con alcance global no hay círculo de alcance que dibujar (A.4.3). **Y sube de 94 a 106** al descubrirse que el anillo del Magnetar necesita **un archivo por nivel** y no uno para los cinco: escalar uno solo daría factores no enteros (A.4.1). Los tres proyectiles de poder no alteran el conteo —pasan a ser tres haces— pero dejan de ser el mismo asset (A.4.2). **Y sube de 106 a 108 el 2026-10-10**: el disparo del Magnetar pasa a ser un arco de plasma en el color de quien dispara, y `ART-WLD-RAD-SHOT` pasa de uno a tres archivos (A.4.1). `ART-WLD-LINK` también se convierte en filamento de plasma, pero sigue siendo un archivo (A.4.3, A.4.6).
 
 **A.2 está cerrado: los cuatro nodos, 34 de 34.** Estrella `ART-NOD-STR-01…05` (10), Púlsar `ART-NOD-PUL-01…03` (6), Magnetar `ART-NOD-MAG-01…05` (15, tres facciones) y Asteroide `ART-NOD-AST-00N/P/E` (3). **`T6-01` deja de estar bloqueada por arte** ([NOVA_Tracking.md](./NOVA_Tracking.md), T.4): su dependencia `ART-NOD-*` está completa, y a partir de aquí solo la retiene su dependencia de código.
 
@@ -1057,6 +1084,7 @@ Ninguna decisión de art design queda abierta. Se conservan aquí con su motivo,
 | Escala del protón | Tres sprites discretos de 48 px, no escala continua | A.4.2 |
 | Geometría del haz de poder | **Tres piezas y estiramiento**, no un sprite por longitud: nacimiento, tramo repetible y punta, con rotación por `transform` | A.4.2 |
 | Color del haz de poder | **Por poder, no por facción.** Reutiliza `hielo`, `decaimiento` y `gusano`; la autoría se lee por el Púlsar del que sale | A.4.2, [14.4](./NOVA_Estados_Animaciones.md#144-paleta-funcional) |
+| Línea de envío y disparo del Magnetar | **Filamento de plasma**, como en un globo de plasma: serpentea, chisporrotea y fluye hacia la punta. Color de facción, nunca el violeta de `gusano`. Tesela repetida, no estirada | A.4.6, [14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma) |
 | Círculo de alcance del poder | **No existe.** La separación válido/no válido se resuelve atenuando en código | A.4.3 |
 | Assets fuera de la celda de 96 | Radio del Magnetar, fondos y protón son familias con resolución propia | Contrato, sección Resolución |
 | Señal de nivel del Púlsar | **Frentes de onda contables** sobre un eje inclinado, no púas radiales. Se descartó una v1 entera por parecerse a la Estrella | A.2.3 |

@@ -76,7 +76,10 @@ namespace Nova.Presentation
             if (!visible)
                 return;
 
-            body.color = ColorOf(Node.Faction);
+            // T2-07: reconvirtiéndose, el círculo baja a la mitad de brillo. Sigue siendo del color
+            // de su dueño, porque durante los 3 s el nodo es suyo (8.1, «sin tipo, no sin bando»).
+            Color32 color = ColorOf(Node.Faction);
+            body.color = Node.HasState(NodeStateFlags.Converting) ? Dimmed(color) : color;
             body.sprite = CircleSprite(Node.Type == NodeType.Asteroid ? asteroidDiameterPixels : diameterPixels);
             label.text = Node.Energy.ToString();
         }
@@ -91,6 +94,11 @@ namespace Nova.Presentation
             }
         }
 
+        internal static Color32 Dimmed(Color32 color)
+        {
+            return new Color32((byte)(color.r / 2), (byte)(color.g / 2), (byte)(color.b / 2), color.a);
+        }
+
         internal static float FontSizeFor(int scale)
         {
             return NativeEmPixels * scale / PixelsPerUnit / WorldTextScale;
@@ -103,6 +111,7 @@ namespace Nova.Presentation
             Node.OnFactionChanged += HandleFactionChanged;
             Node.OnEnergyChanged += HandleEnergyChanged;
             Node.OnTypeChanged += HandleTypeChanged;
+            Node.OnStateFlagsChanged += HandleFlagsChanged;
             subscribed = true;
         }
 
@@ -113,12 +122,14 @@ namespace Nova.Presentation
             Node.OnFactionChanged -= HandleFactionChanged;
             Node.OnEnergyChanged -= HandleEnergyChanged;
             Node.OnTypeChanged -= HandleTypeChanged;
+            Node.OnStateFlagsChanged -= HandleFlagsChanged;
             subscribed = false;
         }
 
         void HandleFactionChanged(Faction previous, Faction current) => Refresh();
         void HandleEnergyChanged(int previous, int current) => Refresh();
         void HandleTypeChanged(NodeType previous, NodeType current) => Refresh();
+        void HandleFlagsChanged(NodeStateFlags previous, NodeStateFlags current) => Refresh();
 
         // Se resuelve a demanda y no en Awake, que no se ejecuta en los tests de EditMode.
         NodeController Node => node != null ? node : node = GetComponent<NodeController>();

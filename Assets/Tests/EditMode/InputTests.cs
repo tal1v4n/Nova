@@ -656,6 +656,65 @@ namespace Nova.Tests
             Assert.IsTrue(selection.IsSelected(other));
         }
 
+        // --- Reconversión desde el panel (13.3 punto 5, T2-07) ---
+
+        Vector2 ConversionButton(int index) => panel.Center + InfoPanelState.ConversionOffsets[index];
+
+        NodeController Convertible(string type, Faction faction, int energy)
+        {
+            NodeController node = Node(type, faction, energy);
+            node.gameObject.AddComponent<NodeConverter>().Configure(Balance, new[] { Definition("Star"), Definition("Magnetar") });
+            return node;
+        }
+
+        [Test]
+        public void ConversionButtonStartsTheConversion()
+        {
+            NodeController star = Convertible("Star", Faction.Player, 30);
+            router.ClickRight(star);
+
+            ClickAt(ConversionButton(1)); // Estrella: Púlsar, Magnetar
+
+            Assert.IsTrue(star.HasState(NodeStateFlags.Converting));
+            Assert.AreEqual(NodeType.Magnetar, star.GetComponent<NodeConverter>().TargetType);
+            Assert.AreEqual(10, star.Energy, "16.4: desde Estrella cuesta 20.");
+            Assert.IsTrue(panel.IsOpen);
+        }
+
+        [Test]
+        public void UnavailableDestinationDoesNothing()
+        {
+            NodeController star = Convertible("Star", Faction.Player, 30);
+            router.ClickRight(star);
+
+            ClickAt(ConversionButton(0)); // Púlsar, que la fase 2 no tiene
+
+            Assert.IsFalse(star.HasState(NodeStateFlags.Converting));
+            Assert.AreEqual(30, star.Energy);
+        }
+
+        [Test]
+        public void ConversionButtonOnAForeignNodeDoesNothing()
+        {
+            NodeController enemy = Convertible("Star", Faction.Enemy, 50);
+            router.ClickRight(enemy);
+
+            ClickAt(ConversionButton(1));
+
+            Assert.IsFalse(enemy.HasState(NodeStateFlags.Converting));
+            Assert.AreEqual(50, enemy.Energy);
+        }
+
+        [Test]
+        public void ConversionAreaWithoutConverterDoesNothing()
+        {
+            NodeController star = Node("Star", Faction.Player, 30);
+            router.ClickRight(star);
+
+            Assert.DoesNotThrow(() => ClickAt(ConversionButton(1)));
+            Assert.AreEqual(30, star.Energy);
+        }
+
         [Test]
         public void ClicksOutsideThePanelKeepWorking()
         {

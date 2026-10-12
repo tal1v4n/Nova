@@ -79,7 +79,8 @@ namespace Nova.Core
         }
 
         // Reconversión (8.1): entre Estrella, Púlsar y Magnetar, nunca al mismo tipo.
-        // conversionCost depende del tipo de origen (16.4) y se paga al iniciar.
+        // conversionCost depende del tipo de origen (16.4) y se paga al iniciar. Lo aplica
+        // NodeConverter (T2-07).
         public static ActionCheck CheckConversion(NodeSnapshot node, Faction actor, NodeType targetType, int conversionCost)
         {
             RequireNonNegative(conversionCost, nameof(conversionCost));

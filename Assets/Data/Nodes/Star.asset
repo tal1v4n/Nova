@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Nova.Data::Nova.Data.NodeDefinition
   type: 1
   energyCap: 50
+  conversionCost: 20
   levels:
   - upgradeCost: 0
     generationInterval: 2

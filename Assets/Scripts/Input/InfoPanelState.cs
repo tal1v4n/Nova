@@ -1,4 +1,5 @@
 using System;
+using Nova.Core;
 using Nova.Gameplay;
 using UnityEngine;
 
@@ -13,17 +14,44 @@ namespace Nova.Input
     [DisallowMultipleComponent]
     public sealed class InfoPanelState : MonoBehaviour
     {
-        // 208 x 112 px de la referencia: cuatro líneas de Jersey 10 a tamaño nativo, que avanza
-        // ~7 px por carácter; «Cadencia: 4.3 disparos/s» ocupa ~170 px.
+        // 208 x 160 px de la referencia: seis filas de 24 px bajo un margen de 8. Jersey 10 a
+        // tamaño nativo avanza ~7 px por carácter; «Cadencia: 4.3 disparos/s» ocupa ~170 px.
+        // Filas: tipo y nivel, Energía, velocidad de ataque, mejora, «Reconvertir» y los dos
+        // destinos, en el orden de 13.3 (T2-07 añade las dos últimas).
         public const float Width = 3.25f;
-        public const float Height = 1.75f;
+        public const float Height = 2.5f;
 
         // El panel se abre a un lado del nodo, sin tapar su círculo de 64 px.
         public const float NodeClearance = 0.75f;
 
-        // Botón de mejora: la última línea del panel, 192 x 26 px.
+        // Centro de la fila n (0 arriba), medido desde el centro del panel: 8 px de margen más
+        // media fila de 24.
+        public static float RowY(int row) => Height / 2f - (8f + 12f + 24f * row) / 64f;
+
+        // Botón de mejora: la cuarta fila, 192 x 26 px.
         public static readonly Vector2 ButtonSize = new Vector2(3f, 0.40625f);
-        public static readonly Vector2 ButtonOffset = new Vector2(0f, -Height / 2f + 0.3125f);
+        public static readonly Vector2 ButtonOffset = new Vector2(0f, RowY(3));
+
+        // Reconversión (13.3 punto 5): dos botones de 94 x 26 px en la sexta fila, separados 4 px.
+        // Son dos y no tres: nunca a Asteroide ni al propio tipo (8.1).
+        public static readonly Vector2 ConversionButtonSize = new Vector2(1.46875f, 0.40625f);
+        public static readonly Vector2[] ConversionOffsets =
+        {
+            new Vector2(-0.765625f, RowY(5)),
+            new Vector2(0.765625f, RowY(5)),
+        };
+
+        // Los dos destinos de un tipo encendido, en el orden de 16.2: Estrella, Púlsar, Magnetar.
+        public static NodeType[] ConversionTargets(NodeType from)
+        {
+            switch (from)
+            {
+                case NodeType.Star: return new[] { NodeType.Pulsar, NodeType.Magnetar };
+                case NodeType.Pulsar: return new[] { NodeType.Star, NodeType.Magnetar };
+                case NodeType.Magnetar: return new[] { NodeType.Star, NodeType.Pulsar };
+                default: return Array.Empty<NodeType>();
+            }
+        }
 
         NodeController node;
 
@@ -49,6 +77,19 @@ namespace Nova.Input
         public bool IsOnButton(Vector2 world)
         {
             return IsOpen && Inside(world, Center + ButtonOffset, ButtonSize);
+        }
+
+        // Índice del botón de reconversión bajo world (0 o 1), o -1.
+        public int ConversionOptionAt(Vector2 world)
+        {
+            if (!IsOpen)
+                return -1;
+            for (int i = 0; i < ConversionOffsets.Length; i++)
+            {
+                if (Inside(world, Center + ConversionOffsets[i], ConversionButtonSize))
+                    return i;
+            }
+            return -1;
         }
 
         public void Open(NodeController target, Vector2 center)

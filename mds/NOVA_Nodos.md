@@ -101,6 +101,8 @@ Defensa de área. Derriba protones en tránsito.
 
 **Cadencia:** sin objetivo, el arma espera cargada y dispara en cuanto entra uno; no acumula disparos en reposo. Disparando sin pausa, conserva la cadencia exacta de la tabla.
 
+**Cómo se ve el disparo:** como un **arco de plasma**, igual que el filamento que salta de la esfera de un globo de plasma hacia un dedo. Sale del Magnetar, se engancha al protón y lo sigue durante sus 2 frames, en el color del bando del Magnetar (gris si es neutral). Es solo presentación: el −2 de Carga ya se aplicó en el tick del disparo. Detalle en [14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma) y asset en [A.4.1](./NOVA_Assets_Diseno.md#a41-radio-de-alcance-del-magnetar).
+
 **A quién dispara, según su bando:**
 
 | Magnetar es de... | Dispara a protones de... |
