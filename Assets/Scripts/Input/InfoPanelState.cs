@@ -14,12 +14,14 @@ namespace Nova.Input
     [DisallowMultipleComponent]
     public sealed class InfoPanelState : MonoBehaviour
     {
-        // 208 x 160 px de la referencia: seis filas de 24 px bajo un margen de 8. Jersey 10 a
+        // 208 x 232 px de la referencia: nueve filas de 24 px entre dos márgenes de 8. Jersey 10 a
         // tamaño nativo avanza ~7 px por carácter; «Cadencia: 4.3 disparos/s» ocupa ~170 px.
         // Filas: tipo y nivel, Energía, velocidad de ataque, mejora, «Reconvertir» y los dos
-        // destinos, en el orden de 13.3 (T2-07 añade las dos últimas).
+        // destinos, en el orden de 13.3 (T2-07 añade esas dos), y la rueda de poderes del punto 6
+        // (T3-07): su rótulo, las tres ranuras y «Cancelar». El alto es el mismo para todos los
+        // nodos: en los que no son un Púlsar propio, las tres últimas filas quedan vacías.
         public const float Width = 3.25f;
-        public const float Height = 2.5f;
+        public const float Height = 3.625f;
 
         // El panel se abre a un lado del nodo, sin tapar su círculo de 64 px.
         public const float NodeClearance = 0.75f;
@@ -40,6 +42,20 @@ namespace Nova.Input
             new Vector2(-0.765625f, RowY(5)),
             new Vector2(0.765625f, RowY(5)),
         };
+
+        // Rueda de poderes (13.5): tres ranuras de 60 x 26 px en la octava fila, separadas 6 px, en
+        // el orden fijo 1 Cero Absoluto · 2 Decaimiento · 3 Agujero de Gusano.
+        public static readonly PowerType[] WheelPowers = { PowerType.AbsoluteZero, PowerType.Decay, PowerType.Wormhole };
+        public static readonly Vector2 WheelSlotSize = new Vector2(0.9375f, 0.40625f);
+        public static readonly Vector2[] WheelSlotOffsets =
+        {
+            new Vector2(-1.03125f, RowY(7)),
+            new Vector2(0f, RowY(7)),
+            new Vector2(1.03125f, RowY(7)),
+        };
+
+        // «Cancelar +N» (7.1, 18 #19): la novena fila, del tamaño del botón de mejora.
+        public static readonly Vector2 CancelOffset = new Vector2(0f, RowY(8));
 
         // Los dos destinos de un tipo encendido, en el orden de 16.2: Estrella, Púlsar, Magnetar.
         public static NodeType[] ConversionTargets(NodeType from)
@@ -90,6 +106,31 @@ namespace Nova.Input
                     return i;
             }
             return -1;
+        }
+
+        // Índice de la ranura de la rueda bajo world (0 a 2), o -1.
+        public int WheelSlotAt(Vector2 world)
+        {
+            if (!IsOpen)
+                return -1;
+            for (int i = 0; i < WheelSlotOffsets.Length; i++)
+            {
+                if (Inside(world, Center + WheelSlotOffsets[i], WheelSlotSize))
+                    return i;
+            }
+            return -1;
+        }
+
+        public bool IsOnCancel(Vector2 world)
+        {
+            return IsOpen && Inside(world, Center + CancelOffset, ButtonSize);
+        }
+
+        // 13.3 punto 6: la rueda solo sale en un Púlsar propio que pueda cargar.
+        public static bool ShowsWheel(NodeController node, Faction viewer)
+        {
+            return node != null && node.IsInitialized && node.Type == NodeType.Pulsar
+                && node.Faction == viewer && node.TryGetComponent(out PulsarCaster _);
         }
 
         public void Open(NodeController target, Vector2 center)

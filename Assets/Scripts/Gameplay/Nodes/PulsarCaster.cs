@@ -97,6 +97,13 @@ namespace Nova.Gameplay
 
         public bool Offers(PowerType type) => FindDefinition(type) != null;
 
+        // El PowerDefinition de un poder que este Púlsar ofrece, o null. Lo lee la rueda (T3-07)
+        // para el coste y el nivel requerido de cada ranura.
+        public PowerDefinition DefinitionOf(PowerType type) => FindDefinition(type);
+
+        // Lo que devolvería cancelar ahora (7.1). 0 sin carga.
+        public int RefundIfCancelled => power != null ? PowerRules.CancelRefund(invested, Balance.ChargeCancelRefund) : 0;
+
         public ActionCheck TryCharge(Faction actor, PowerType type)
         {
             ActionCheck check = CheckCharge(actor, type);

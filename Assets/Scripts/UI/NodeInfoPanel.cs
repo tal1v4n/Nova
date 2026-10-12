@@ -13,8 +13,9 @@ namespace Nova.UI
     // dibuja: el estado es de InfoPanelState, el clic lo resuelve InputRouter y los botones se
     // validan con NodeController.CheckUpgrade y NodeConverter.Check, sin efectos.
     //
-    // El punto 6 de 13.3 —la rueda de poderes— llega con T3-07. Fondo, botones y texto son
-    // primitivas de la regla 4 de T.2; la skin final es de T6-09.
+    // El punto 6 de 13.3 —la rueda de poderes— lo dibuja PulsarPowerWheel (T3-07) en las tres últimas
+    // filas, sobre el mismo fondo. Fondo, botones y texto son primitivas de la regla 4 de T.2; la
+    // skin final es de T6-09.
     [DefaultExecutionOrder(50)] // UI, 15.10
     [DisallowMultipleComponent]
     public sealed class NodeInfoPanel : MonoBehaviour

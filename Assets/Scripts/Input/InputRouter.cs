@@ -53,6 +53,9 @@ namespace Nova.Input
         [Tooltip("Opcional: sin él no hay línea de envío (T2-09).")]
         [SerializeField] SendLineState sendLine;
 
+        [Tooltip("Opcional: sin él la rueda carga y cancela pero no apunta (T3-07).")]
+        [SerializeField] PowerAimState aim;
+
         readonly Queue<PointerEvent> pending = new Queue<PointerEvent>();
         int nodesMask = -1;
 
@@ -203,6 +206,9 @@ namespace Nova.Input
             // Panel de clic derecho (13.3): un clic dentro es suyo y no llega a lo que haya
             // debajo; sobre el botón, mejora, y sobre un destino, reconvierte (T2-07). Las reglas
             // deciden si se puede: con el botón deshabilitado o ausente, el clic no hace nada.
+            //
+            // El panel sigue respondiendo en modo apuntado: es el mando del Púlsar que apunta, y
+            // desde él se cancela el poder (desviación 211).
             if (!dragging && Panel.Contains(pressWorld))
             {
                 if (Panel.IsOnButton(pressWorld))
@@ -210,11 +216,35 @@ namespace Nova.Input
                     Issuer.Upgrade(Panel.Node);
                     return;
                 }
+                // Rueda de poderes (13.5, T3-07): solo en un Púlsar propio.
+                if (InfoPanelState.ShowsWheel(Panel.Node, Issuer.Faction))
+                {
+                    int slot = Panel.WheelSlotAt(pressWorld);
+                    if (slot >= 0)
+                    {
+                        ChooseWheelSlot(Panel.Node, InfoPanelState.WheelPowers[slot]);
+                        return;
+                    }
+                    if (Panel.IsOnCancel(pressWorld))
+                    {
+                        Issuer.CancelCharge(Panel.Node);
+                        return;
+                    }
+                }
                 // Sin NodeConverter el panel no dibuja los destinos, y su sitio no es un botón.
                 int conversion = Panel.ConversionOptionAt(pressWorld);
                 NodeType[] destinations = InfoPanelState.ConversionTargets(Panel.Node.Type);
                 if (conversion >= 0 && conversion < destinations.Length && Panel.Node.TryGetComponent(out NodeConverter _))
                     Issuer.Convert(Panel.Node, destinations[conversion]);
+                return;
+            }
+
+            // Modo apuntado (13.1, 13.5): suspende la tabla de 13.1. Un clic sobre un objetivo válido
+            // lanza; sobre cualquier otra cosa, o un arrastre, no hace nada y se sigue apuntando.
+            if (IsAiming)
+            {
+                if (!dragging && aim.IsValidTarget(pressNode))
+                    Issuer.LaunchPower(aim.Pulsar, pressNode);
                 return;
             }
 
@@ -231,6 +261,14 @@ namespace Nova.Input
 
         public void PressRight(Vector2 world, NodeController node)
         {
+            // 13.5: en modo apuntado, el clic derecho cancela el apuntado sin perder la carga, al
+            // pulsar y tragándose la pulsación: no abre panel ni empieza un arrastre (13.1).
+            if (IsAiming)
+            {
+                aim.End();
+                return;
+            }
+
             // 13.7: con el menú de encendido abierto, el clic derecho lo cierra al pulsar y se
             // traga la pulsación: no empieza un arrastre ni abre el panel al soltar.
             if (Menu.IsOpen)
@@ -291,6 +329,13 @@ namespace Nova.Input
 
         public void PressEscape()
         {
+            // En modo apuntado, Esc cancela el apuntado como el clic derecho.
+            if (IsAiming)
+            {
+                aim.End();
+                return;
+            }
+
             // Con el menú abierto, Esc lo cierra en vez de pausar.
             if (Menu.IsOpen)
             {
@@ -319,7 +364,7 @@ namespace Nova.Input
 
         // Para la escena de prueba y los tests: el cableado normal es por el Inspector.
         public void Configure(BalanceConfig config, SelectionManager selectionManager, PlayerCommandIssuer commandIssuer,
-            IgnitionMenuState menu, InfoPanelState panel, Camera cam = null, SendLineState line = null)
+            IgnitionMenuState menu, InfoPanelState panel, Camera cam = null, SendLineState line = null, PowerAimState powerAim = null)
         {
             balance = config;
             selection = selectionManager;
@@ -328,6 +373,23 @@ namespace Nova.Input
             infoPanel = panel;
             worldCamera = cam;
             sendLine = line;
+            aim = powerAim;
+        }
+
+        bool IsAiming => aim != null && aim.IsAiming;
+
+        // 13.5: la ranura del poder ya cargado brilla y su clic entra en modo apuntado (desviación
+        // 209); cualquier otra ranura empieza a cargar, y las reglas dicen si se puede.
+        void ChooseWheelSlot(NodeController pulsar, PowerType power)
+        {
+            if (pulsar.TryGetComponent(out PulsarCaster caster) && caster.State == PowerChargeState.Ready
+                && caster.Power != null && caster.Power.Type == power)
+            {
+                if (aim != null)
+                    aim.Begin(pulsar, Issuer.Faction);
+                return;
+            }
+            Issuer.ChargePower(pulsar, power);
         }
 
         bool BeyondThreshold(Vector2 world, Vector2 pressedAt)

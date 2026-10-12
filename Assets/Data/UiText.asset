@@ -28,3 +28,14 @@ MonoBehaviour:
   convertHeader: Reconvertir
   convertFormat: "{0} \u00B7 {1}"
   convertingFormat: "Reconvirtiendo a {0}"
+  absoluteZero: Cero Absoluto
+  decay: Decaimiento
+  wormhole: Agujero de Gusano
+  powersHeader: Poderes
+  chargingFormat: "{0} · {1}%"
+  pausedFormat: "{0} · pausado"
+  readyFormat: '{0} listo'
+  aimingFormat: '{0}: elige objetivo'
+  slotFormat: "{0} · {1}"
+  slotLockedFormat: 'Nv {0}'
+  cancelFormat: "Cancelar · +{0}"

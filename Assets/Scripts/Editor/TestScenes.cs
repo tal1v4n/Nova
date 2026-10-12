@@ -26,6 +26,9 @@ namespace Nova.Editor
     // Las dos llevan el menú radial de encendido (T2-02) y el panel de clic derecho (T2-03), con la
     // reconversión desde T2-07. Encendido y reconversión ofrecen los tres tipos desde T3-02, que
     // trae el Púlsar con su carga de poderes.
+    //
+    // Fase 3 (T3-07): un Púlsar propio de nivel 3 frente a un objetivo de cada tipo, con la rueda de
+    // poderes en el panel y el modo apuntado.
     public static class TestScenes
     {
         const string ScenesFolder = "Assets/Scenes/Tests";
@@ -49,25 +52,41 @@ namespace Nova.Editor
         // Los tres nodos de la fase 1, sobre el tablero de 15 x 8.4375 u (T.8). El Asteroide queda
         // a 2.12 u de la Estrella del Jugador, dentro de la regla de 2.25 u de 11.3. El Enemigo no
         // actúa hasta la fase 4, pero su Estrella genera.
-        static readonly (string name, string type, Faction faction, int energy, Vector2 position)[] Phase1Nodes =
+        static readonly (string name, string type, Faction faction, int energy, int level, Vector2 position)[] Phase1Nodes =
         {
-            ("Player Star", "Star", Faction.Player, 30, new Vector2(-5f, 0f)),
-            ("Neutral Asteroid", "Asteroid", Faction.Neutral, 10, new Vector2(-3.5f, 1.5f)),
-            ("Enemy Star", "Star", Faction.Enemy, 10, new Vector2(5f, 0f)),
+            ("Player Star", "Star", Faction.Player, 30, 0, new Vector2(-5f, 0f)),
+            ("Neutral Asteroid", "Asteroid", Faction.Neutral, 10, 0, new Vector2(-3.5f, 1.5f)),
+            ("Enemy Star", "Star", Faction.Enemy, 10, 0, new Vector2(5f, 0f)),
         };
 
         // Fase 2: un Magnetar enemigo de nivel 1 en el centro, sobre la recta entre las dos
         // Estrellas. Un protón que la recorra cruza su radio de 1.5 u entero (3 u, 1.2 s) y pierde
         // de media 3 de Carga (4.4).
-        static readonly (string name, string type, Faction faction, int energy, Vector2 position)[] Phase2Nodes =
+        static readonly (string name, string type, Faction faction, int energy, int level, Vector2 position)[] Phase2Nodes =
         {
-            ("Player Star", "Star", Faction.Player, 30, new Vector2(-5f, 0f)),
-            ("Neutral Asteroid", "Asteroid", Faction.Neutral, 10, new Vector2(-3.5f, 1.5f)),
-            ("Enemy Magnetar", "Magnetar", Faction.Enemy, 10, new Vector2(0f, 0f)),
-            ("Enemy Star", "Star", Faction.Enemy, 10, new Vector2(5f, 0f)),
+            ("Player Star", "Star", Faction.Player, 30, 0, new Vector2(-5f, 0f)),
+            ("Neutral Asteroid", "Asteroid", Faction.Neutral, 10, 0, new Vector2(-3.5f, 1.5f)),
+            ("Enemy Magnetar", "Magnetar", Faction.Enemy, 10, 0, new Vector2(0f, 0f)),
+            ("Enemy Star", "Star", Faction.Enemy, 10, 0, new Vector2(5f, 0f)),
             // T2-06: neutral, abajo y fuera de los dos caminos de la Estrella del Jugador. El
             // protón que va hacia él pasa a 2.57 u del Magnetar enemigo: solo le dispara el neutral.
-            ("Neutral Magnetar", "Magnetar", Faction.Neutral, 20, new Vector2(0f, -3f)),
+            ("Neutral Magnetar", "Magnetar", Faction.Neutral, 20, 0, new Vector2(0f, -3f)),
+        };
+
+        // Fase 3 (T3-07): los tres poderes en Play. Un Púlsar del Jugador de nivel 3 y lleno, que
+        // desbloquea las tres ranuras y paga el Agujero de Gusano (60) sin esperar, con una Estrella
+        // detrás para reforzarlo. Enfrente, un objetivo de cada tipo: Estrella, Púlsar y Magnetar del
+        // Enemigo, y el Magnetar neutral; el Asteroide está para ver que nunca es objetivo (7.2.1).
+        // Nivel 0 = el de partida del tipo (PlacedNode).
+        static readonly (string name, string type, Faction faction, int energy, int level, Vector2 position)[] Phase3Nodes =
+        {
+            ("Player Pulsar", "Pulsar", Faction.Player, 100, 3, new Vector2(-5f, 0f)),
+            ("Player Star", "Star", Faction.Player, 30, 0, new Vector2(-5f, -2.5f)),
+            ("Neutral Asteroid", "Asteroid", Faction.Neutral, 10, 0, new Vector2(-3.5f, 1.5f)),
+            ("Enemy Magnetar", "Magnetar", Faction.Enemy, 40, 0, new Vector2(1.5f, 0f)),
+            ("Enemy Star", "Star", Faction.Enemy, 30, 0, new Vector2(5f, -1.5f)),
+            ("Enemy Pulsar", "Pulsar", Faction.Enemy, 60, 2, new Vector2(5f, 2f)),
+            ("Neutral Magnetar", "Magnetar", Faction.Neutral, 60, 0, new Vector2(0f, -3f)),
         };
 
         [MenuItem("Nova/Fase 1/Generar escena de prueba")]
@@ -76,7 +95,10 @@ namespace Nova.Editor
         [MenuItem("Nova/Fase 2/Generar escena de prueba")]
         public static void GeneratePhase2() => Generate("Fase2", Phase2Nodes);
 
-        static void Generate(string sceneName, (string name, string type, Faction faction, int energy, Vector2 position)[] nodes)
+        [MenuItem("Nova/Fase 3/Generar escena de prueba")]
+        public static void GeneratePhase3() => Generate("Fase3", Phase3Nodes);
+
+        static void Generate(string sceneName, (string name, string type, Faction faction, int energy, int level, Vector2 position)[] nodes)
         {
             string scenePath = $"{ScenesFolder}/{sceneName}.unity";
 
@@ -107,7 +129,7 @@ namespace Nova.Editor
             NodeDefinition[] ignitionTargets = System.Array.ConvertAll(IgnitionTargets, Definition);
             PowerDefinition[] powers = System.Array.ConvertAll(Powers, Power);
             foreach (var spec in nodes)
-                CreateNode(spec.name, Definition(spec.type), spec.faction, spec.energy, spec.position, balance, font, ignitionTargets, powers, protons, beams);
+                CreateNode(spec.name, Definition(spec.type), spec.faction, spec.energy, spec.level, spec.position, balance, font, ignitionTargets, powers, protons, beams);
 
             Directory.CreateDirectory(ScenesFolder);
             EditorSceneManager.SaveScene(scene, scenePath);
@@ -143,30 +165,33 @@ namespace Nova.Editor
             issuer.Configure(launcher);
             var menu = go.AddComponent<IgnitionMenuState>();
             var panel = go.AddComponent<InfoPanelState>();
+            var aim = go.AddComponent<PowerAimState>(); // T3-07
             var sendLine = go.AddComponent<SendLineState>(); // T2-09
-            sendLine.Configure(selection, menu);
+            sendLine.Configure(selection, menu, aim);
             var router = go.AddComponent<InputRouter>();
-            router.Configure(balance, selection, issuer, menu, panel, camera, sendLine);
+            router.Configure(balance, selection, issuer, menu, panel, camera, sendLine, aim);
 
             go.AddComponent<ProvisionalSelectionView>().Configure(selection);
             go.AddComponent<ProvisionalSendLineView>().Configure(sendLine);
             go.AddComponent<ProvisionalProtonView>().Configure(protons, font);
             go.AddComponent<ProvisionalBeamView>().Configure(beams);
+            go.AddComponent<ProvisionalAimView>().Configure(aim, registry); // T3-07
             go.AddComponent<IgnitionMenu>().Configure(menu, font, text);
             go.AddComponent<NodeInfoPanel>().Configure(panel, font, text);
+            go.AddComponent<PulsarPowerWheel>().Configure(panel, aim, font, text); // T3-07
 
             EditorUtility.SetDirty(go);
             return registry;
         }
 
-        static void CreateNode(string name, NodeDefinition definition, Faction faction, int energy, Vector2 position,
+        static void CreateNode(string name, NodeDefinition definition, Faction faction, int energy, int level, Vector2 position,
             BalanceConfig balance, TMP_FontAsset font, NodeDefinition[] ignitionTargets, PowerDefinition[] powers, ProtonRegistry protons, PowerBeamSystem beams)
         {
             var go = new GameObject(name) { layer = LayerMask.NameToLayer(NodesLayer) };
             go.transform.position = position;
 
             go.AddComponent<NodeController>();
-            go.AddComponent<PlacedNode>().Configure(definition, faction, energy);
+            go.AddComponent<PlacedNode>().Configure(definition, faction, energy, level);
             go.AddComponent<NodeIgnition>().Configure(balance, ignitionTargets);
             go.AddComponent<NodeConverter>().Configure(balance, ignitionTargets); // T2-07: mismos tipos que el encendido
             go.AddComponent<StarGenerator>(); // desviación 143: en todo nodo que pueda ser Estrella

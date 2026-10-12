@@ -645,7 +645,7 @@ Cómo se comporta ([18](#18-decisiones-tomadas-por-defecto) #30, desde `T2-03`):
 - `NIVEL MÁXIMO` sale en cualquier nodo que esté al máximo, sea de quien sea: es información.
 - Sigue abierto mientras se juega y se repinta al cambiar la Energía, el nivel, el tipo o el dueño del nodo; si lo capturan, pierde el botón. Lo cierran el clic derecho en vacío y `Esc`; el clic derecho sobre otro nodo lo lleva a ese nodo.
 - Un clic izquierdo **dentro** del panel es suyo y no llega a lo que haya debajo; el botón mejora sin tocar la selección y sin enviar nada. Fuera del panel, el clic izquierdo sigue su curso normal.
-- La reconversión (punto 5) llegó con `T2-07`: una fila «Reconvertir» con dos botones, uno por destino, con su coste, solo en nodos propios. Mientras dura, los botones dejan sitio a «Reconvirtiendo a …» ([18](#18-decisiones-tomadas-por-defecto) #33). La rueda (punto 6) llega con `T3-07`.
+- La reconversión (punto 5) llegó con `T2-07`: una fila «Reconvertir» con dos botones, uno por destino, con su coste, solo en nodos propios. Mientras dura, los botones dejan sitio a «Reconvirtiendo a …» ([18](#18-decisiones-tomadas-por-defecto) #33). La rueda (punto 6) llegó con `T3-07`: un rótulo con el estado de la carga, las tres ranuras y «Cancelar +N» en las tres últimas filas, solo en un Púlsar propio ([18](#18-decisiones-tomadas-por-defecto) #34 y #35).
 
 ### 13.4 Traducción de "velocidad de ataque"
 
@@ -667,10 +667,11 @@ La rueda vive en el **panel de clic derecho** del Púlsar ([13.3](#133-panel-de-
 > **No la abre el clic izquierdo**, aunque una versión anterior de esta sección lo dijera. El clic izquierdo sobre un Púlsar propio ya significa seleccionarlo o enviarle Energía ([13.1](#131-ratón)), y el Púlsar **sí puede ser origen de un envío** ([4.3](./NOVA_Nodos.md#43-púlsar)): quitarle esa entrada para colgarle la rueda dejaría al único nodo con 100 de tope sin forma de repartirlos con un clic. El Asteroide es el caso contrario y por eso sí tiene acción propia en el clic izquierdo ([13.7](#137-menú-radial-de-encendido)).
 
 - Clic en una ranura: inicia la carga. Aparece una barra bajo el nodo.
-- Con un poder cargado, la ranura brilla y el cursor pasa a modo apuntado.
+- Con un poder cargado, la ranura brilla. **Un clic en ella** pasa el cursor a modo apuntado; la carga completa no lo hace sola ([18](#18-decisiones-tomadas-por-defecto) #34).
+- Mientras hay una carga en curso o un poder listo, bajo las ranuras sale **«Cancelar +N»**, con la Energía que devuelve ([7.1](#71-regla-de-carga), [18](#18-decisiones-tomadas-por-defecto) #35).
 - En modo apuntado se resaltan **todos los nodos encendidos que no son propios**, sin importar la distancia: los del Enemigo y el Magnetar neutral. Se atenúa lo demás, que son los nodos propios y los Asteroides de cualquier bando ([7.2.1](#721-objetivo-válido)).
 - **No se dibuja ningún círculo de alcance**, porque no hay alcance que dibujar.
-- Clic en un objetivo válido: lanza. Clic derecho: cancela el apuntado sin perder la carga.
+- Clic en un objetivo válido: lanza. Clic en cualquier otra cosa: nada, y se sigue apuntando. Clic derecho o Esc: cancela el apuntado sin perder la carga. El panel del Púlsar sigue respondiendo mientras se apunta.
 
 ### 13.6 HUD permanente
 
@@ -861,7 +862,8 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 | `NodeHUD.cs` | Número de Energía sobre el nodo |
 | `InfoPanelState.cs` | Estado del panel de clic derecho: abierto o no, de qué nodo, dónde y la geometría del botón. Lo abre y lo cierra `InputRouter`; vive en `Nova.Input` por lo mismo que `IgnitionMenuState` |
 | `NodeInfoPanel.cs` | Dibuja el panel de clic derecho. Solo lee `InfoPanelState` y valida el botón con `NodeController.CheckUpgrade` |
-| `PulsarPowerWheel.cs` | Rueda de poderes |
+| `PulsarPowerWheel.cs` | Dibuja la rueda de poderes en las tres últimas filas del panel. Solo lee `InfoPanelState`, `PowerAimState` y `PulsarCaster`, y valida cada ranura con `PulsarCaster.CheckCharge` (`T3-07`) |
+| `PowerAimState.cs` | Estado del modo apuntado: qué Púlsar apunta y para qué bando, y qué es objetivo válido ([7.2.1](#721-objetivo-válido)). Lo abre y lo cierra `InputRouter`; vive en `Nova.Input` por lo mismo que `IgnitionMenuState` (`T3-07`) |
 | `IgnitionMenuState.cs` | Estado del menú radial de encendido: abierto o no, sobre qué Asteroide, dónde y la geometría de sus opciones. Lo abre y lo cierra `InputRouter`; vive en `Nova.Input` porque el router resuelve el clic contra él |
 | `IgnitionMenu.cs` | Dibuja el menú radial de encendido. Solo lee `IgnitionMenuState` y valida cada opción con `NodeIgnition.Check` |
 | `PowerBarUI.cs` | Barra inferior. Lee de `NodeRegistry`, no acumula estado. |
@@ -1063,6 +1065,8 @@ Reglas que no estaban en el diseño original y que se añadieron para cerrar hue
 | 31 | Torreta del Magnetar: con empate en distancia **y** en Carga dispara al protón **lanzado antes**; un protón a distancia **igual** al radio está dentro; el arma **espera cargada** en reposo y dispara en cuanto entra un objetivo, sin acumular disparos, y disparando sin pausa conserva su cadencia exacta | 4.4 solo daba el primer desempate y no decía nada del borde ni de qué hace el arma sin objetivo. El tercer desempate es el mismo que el de los impactos (15.10); el borde incluido es el que se dibuja (A.4.1); y un arma que acumulase disparos en reposo vaciaría de golpe un protón al entrar. Decidido en `T2-04` |
 | 32 | El envío por arrastre pasa al **botón derecho**, con una **línea de envío** que sigue al cursor; el clic derecho actúa **al soltar**; el arrastre izquierdo es **siempre lazo** | Pedido por el usuario el 2026-10-10: la línea tiene que verse desde que el ratón se aleja del nodo, también si al final no se envía nada. El panel no puede abrirse al pulsar, porque en ese momento todavía no se sabe si es clic o arrastre. El arrastre izquierdo deja de enviar para no tener dos gestos para lo mismo, y así el lazo puede empezar encima de un nodo. Revisable: devolverle el envío al izquierdo no toca nada más que `InputRouter` |
 | 33 | Reconversión en el panel: **dos botones** en el orden de [16.2](#162-costes-de-nivel), con el destino y el coste. Un tipo que la partida no tiene sale **gris y sin coste**, como en el menú de encendido (#29). Mientras dura, los botones dejan sitio a «Reconvirtiendo a …». Un botón bloqueado por algo que **no es la Energía** —reconvirtiendo, congelado— sale deshabilitado **sin el coste en rojo** | 13.3 decía qué contiene el punto 5, no cómo se ve. El rojo de 13.3 significa «te falta Energía»: pintarlo en un Mejorar bloqueado por la reconversión le diría al jugador que junte Energía, y no le serviría de nada. Decidido en `T2-07` |
+| 34 | **Se apunta con clic en la ranura brillante**, nunca solo al completarse la carga. Al llegar al 100 % la ranura brilla y nada más; un clic en ella, desde el panel del Púlsar, entra en modo apuntado, y es también como se vuelve a apuntar tras cancelar con clic derecho. Esc cancela el apuntado como el clic derecho, y el panel sigue respondiendo mientras se apunta | Una carga tarda 8–16 s y en ese tiempo el jugador está haciendo otra cosa: un cursor que cambia de modo solo le robaría el siguiente clic. Con dos Púlsares listos, además, habría que decidir cuál manda. Decidido con el usuario en `T3-07` |
+| 35 | **«Cancelar +N»** es un botón de la rueda, bajo las ranuras, visible mientras hay una carga en curso o un poder listo, con la Energía que devuelve (7.1). La ranura brillante queda solo para apuntar | 7.1 permite cancelar, también con el poder ya cargado (#19), pero ninguna sección decía con qué control. Con el botón ningún clic tiene dos significados. Decidido con el usuario en `T3-07` |
 
 ---
 

@@ -10,7 +10,7 @@ namespace Nova.Input
     //
     // InputRouter escribe el cursor cada frame y abre o cierra el arrastre derecho dentro del tick;
     // la vista solo lee Origins y Cursor. De qué nodos sale se calcula aquí, en una sola regla:
-    //   - con el menú de encendido abierto, de ninguno (y en modo apuntado, desde T3);
+    //   - con el menú de encendido abierto o en modo apuntado (T3-07), de ninguno;
     //   - con un arrastre derecho en curso, solo de su origen;
     //   - si no, de cada nodo seleccionado, en el orden de la selección.
     [DisallowMultipleComponent]
@@ -20,6 +20,9 @@ namespace Nova.Input
 
         [Tooltip("Opcional: con el menú de encendido abierto no hay línea.")]
         [SerializeField] IgnitionMenuState ignitionMenu;
+
+        [Tooltip("Opcional: en modo apuntado no hay línea (13.1).")]
+        [SerializeField] PowerAimState aim;
 
         readonly List<NodeController> origins = new List<NodeController>();
         NodeController dragOrigin;
@@ -38,6 +41,8 @@ namespace Nova.Input
             {
                 origins.Clear();
                 if (ignitionMenu != null && ignitionMenu.IsOpen)
+                    return origins;
+                if (aim != null && aim.IsAiming)
                     return origins;
 
                 if (dragOrigin != null)
@@ -70,10 +75,11 @@ namespace Nova.Input
         }
 
         // Para la escena de prueba y los tests: el cableado normal es por el Inspector.
-        public void Configure(SelectionManager selectionManager, IgnitionMenuState menu = null)
+        public void Configure(SelectionManager selectionManager, IgnitionMenuState menu = null, PowerAimState powerAim = null)
         {
             selection = selectionManager;
             ignitionMenu = menu;
+            aim = powerAim;
         }
 
         // Hoy solo el Jugador tiene cursor (14.9).

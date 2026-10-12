@@ -55,6 +55,35 @@ namespace Nova.Data
         [Tooltip("{0} tipo de destino. Sustituye a los dos botones mientras dura la reconversión.")]
         [SerializeField] string convertingFormat = "Reconvirtiendo a {0}";
 
+        [Header("Poderes y rueda del Púlsar (7.2, 13.5)")]
+        [SerializeField] string absoluteZero = "Cero Absoluto";
+        [SerializeField] string decay = "Decaimiento";
+        [SerializeField] string wormhole = "Agujero de Gusano";
+
+        [Tooltip("Rótulo de la rueda en reposo.")]
+        [SerializeField] string powersHeader = "Poderes";
+
+        [Tooltip("{0} poder, {1} porcentaje cargado.")]
+        [SerializeField] string chargingFormat = "{0} · {1}%";
+
+        [Tooltip("{0} poder. Carga parada sin Energía o congelada (7.1).")]
+        [SerializeField] string pausedFormat = "{0} · pausado";
+
+        [Tooltip("{0} poder cargado al 100 %: su ranura brilla.")]
+        [SerializeField] string readyFormat = "{0} listo";
+
+        [Tooltip("{0} poder. En modo apuntado.")]
+        [SerializeField] string aimingFormat = "{0}: elige objetivo";
+
+        [Tooltip("{0} número de ranura (1 a 3), {1} coste.")]
+        [SerializeField] string slotFormat = "{0} · {1}";
+
+        [Tooltip("{0} nivel requerido. Ranura con candado (13.5).")]
+        [SerializeField] string slotLockedFormat = "Nv {0}";
+
+        [Tooltip("{0} Energía que devuelve (7.1).")]
+        [SerializeField] string cancelFormat = "Cancelar · +{0}";
+
         public string TypeName(NodeType type)
         {
             switch (type)
@@ -81,6 +110,27 @@ namespace Nova.Data
         // Como en Upgrade, el coste llega ya escrito para poder pintarlo en rojo.
         public string Convert(NodeType target, string cost) => Format(convertFormat, TypeName(target), cost);
         public string Converting(NodeType target) => Format(convertingFormat, TypeName(target));
+
+        public string PowerName(PowerType power)
+        {
+            switch (power)
+            {
+                case PowerType.AbsoluteZero: return absoluteZero;
+                case PowerType.Decay: return decay;
+                case PowerType.Wormhole: return wormhole;
+                default: throw new ArgumentOutOfRangeException(nameof(power), power, null);
+            }
+        }
+
+        public string PowersHeader => powersHeader;
+        public string Charging(PowerType power, int percent) => Format(chargingFormat, PowerName(power), percent);
+        public string Paused(PowerType power) => Format(pausedFormat, PowerName(power));
+        public string Ready(PowerType power) => Format(readyFormat, PowerName(power));
+        public string Aiming(PowerType power) => Format(aimingFormat, PowerName(power));
+        // Sin rojo: empezar a cargar no exige Energía (desviación 191).
+        public string Slot(int number, int cost) => Format(slotFormat, number, cost);
+        public string SlotLocked(int requiredLevel) => Format(slotLockedFormat, requiredLevel);
+        public string Cancel(int refund) => Format(cancelFormat, refund);
 
         static string Format(string format, params object[] args) => string.Format(CultureInfo.InvariantCulture, format, args);
     }
