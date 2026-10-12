@@ -168,5 +168,24 @@ namespace Nova.Tests
             node.SetStateFlag(NodeStateFlags.Frozen, false);
             Assert.AreEqual((Color)ProvisionalNodeView.Dimmed(ProvisionalNodeView.ColorOf(Faction.Enemy)), view.Body.color);
         }
+
+        // T3-05: infectado, un halo verde #7CF23F detrás del círculo, 4 px más ancho por lado.
+        [Test]
+        public void InfectedShowsAGreenAuraBehindTheCircle()
+        {
+            node.Initialize(Definition("Star"), Faction.Enemy, 10);
+            view.Subscribe();
+            view.Refresh();
+            Assert.IsFalse(view.Aura.enabled);
+
+            node.SetStateFlag(NodeStateFlags.Infected, true);
+            Assert.IsTrue(view.Aura.enabled);
+            Assert.AreEqual((Color)new Color32(0x7C, 0xF2, 0x3F, 0xFF), view.Aura.color);
+            Assert.Less(view.Aura.sortingOrder, view.Body.sortingOrder);
+            Assert.AreEqual(view.Body.sprite.rect.width + 8f, view.Aura.sprite.rect.width);
+
+            node.SetStateFlag(NodeStateFlags.Infected, false);
+            Assert.IsFalse(view.Aura.enabled);
+        }
     }
 }

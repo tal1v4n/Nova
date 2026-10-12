@@ -181,6 +181,7 @@ Efectos que se reproducen y terminan. No bloquean nada.
 
 - `Congelado` + `Infectado`: posible. El nodo pierde Energía por Decaimiento mientras está congelado, lo que **acelera su propio deshielo**. Es intencional.
 - `Congelado` + `Reconvirtiendo`: posible. Cero Absoluto **sí** alcanza a un nodo que se reconvierte —[7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido) solo excluye Asteroides y nodos propios— y el temporizador de 3 s **se pausa**, igual que la carga de un Púlsar ([17](./NOVA_GameDesign_Spec.md#17-casos-borde-y-reglas-de-resolución), caso 8). Lo que sigue prohibido es **iniciar** una reconversión sobre un nodo congelado o infectado ([8.1](./NOVA_GameDesign_Spec.md#81-reglas)): iniciar y continuar son cosas distintas.
+- `Infectado` + `Reconvirtiendo`: imposible, también cuando el Decaimiento llega con la reconversión ya en marcha. Ahí **cede la reconversión**: se cancela como en una captura, el coste se pierde y el nodo queda infectado con su tipo de antes ([7.4](./NOVA_GameDesign_Spec.md#74-decaimiento), cerrado el 2026-10-11).
 - `Asustado` es compatible con todo: siempre debe poder avisar.
 
 ---

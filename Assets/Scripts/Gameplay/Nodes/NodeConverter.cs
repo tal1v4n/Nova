@@ -14,7 +14,7 @@ namespace Nova.Gameplay
     //   lleva la bandera Reconvirtiendo: no genera, no dispara, no envía y no mejora.
     // - Congelado pausa el reloj y descongelar lo reanuda (8.1, 17 caso 8).
     // - Si lo capturan, la reconversión se cancela, el nodo queda como estaba y el coste se
-    //   pierde (18 #21).
+    //   pierde (18 #21). Un Decaimiento la cancela igual (desviación 203).
     // - Al terminar: nivel 1 del tipo nuevo, con la Energía de ese momento recortada al Tope
     //   nuevo. Lo hace NodeController.ChangeType, que es la misma mitad mecánica del encendido.
     //
@@ -130,6 +130,14 @@ namespace Nova.Gameplay
         // 8.1: capturado durante la reconversión, se cancela y el nodo queda como estaba. El tipo
         // no llegó a cambiar, así que no hay nada que deshacer; el coste ya pagado se pierde.
         void HandleFactionChanged(Faction previous, Faction current)
+        {
+            Interrupt();
+        }
+
+        // Cancela la reconversión en curso sin devolver el coste: el nodo queda como estaba. Lo
+        // provocan la captura y, desde T3-05, un Decaimiento, porque 14.6 no deja convivir
+        // Infectado con Reconvirtiendo (desviación 203). Sin reconversión en curso no hace nada.
+        public void Interrupt()
         {
             if (!IsConverting)
                 return;

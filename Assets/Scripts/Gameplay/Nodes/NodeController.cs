@@ -19,6 +19,8 @@ namespace Nova.Gameplay
         NodeStateMachine stateMachine;
         PulsarCaster caster;
         NodeFreeze freezer;
+        NodeDecay decay;
+        NodeConverter converter;
         bool listening;
 
         public NodeType Type => Identity.Type;
@@ -132,19 +134,25 @@ namespace Nova.Gameplay
         }
 
         // Aplica lo que ImpactResolver calculó para un protón que llega (6.2). Al capturar,
-        // el nodo conserva tipo y nivel: solo cambian facción y Energía. La cura llega con T3-05.
+        // el nodo conserva tipo y nivel: solo cambian facción y Energía.
         //
         // Congelado (7.3, T3-04): el deshielo quita la bandera antes de cambiar de bando, como en
         // el pseudocódigo, así que quien escucha la captura ve ya un nodo normal del dueño nuevo.
         // Un impacto que no lo descongela reinicia el reloj del auto-deshielo. lastToucher no se
         // guarda: el bando que gana en el deshielo es el del protón que lo provoca, que es por
         // definición el último emisor.
+        //
+        // Infectado (7.4, T3-05): cualquier impacto lo cura, y la cura va también antes del cambio
+        // de bando: el que captura un nodo infectado se lo lleva sano.
         public void ApplyImpact(ImpactOutcome outcome)
         {
             if (outcome.Unfreezes)
                 Thaw();
             else if (HasState(NodeStateFlags.Frozen) && Freezer != null)
                 Freezer.NotifyImpact();
+
+            if (outcome.CuresInfection)
+                Cure();
 
             if (outcome.FactionChanged)
                 Ownership.ChangeFaction(outcome.NewFaction);
@@ -172,6 +180,31 @@ namespace Nova.Gameplay
                 Freezer.Thaw();
             else
                 StateMachine.SetFlag(NodeStateFlags.Frozen, false);
+        }
+
+        // Efecto de Decaimiento (7.4, T3-05). Lo llama PowerBeamSystem al terminar el haz, con el
+        // objetivo ya revalidado. Si el nodo se estaba reconvirtiendo, la reconversión se cancela
+        // primero: 14.6 no deja convivir Infectado con Reconvirtiendo (desviación 203).
+        public void Infect()
+        {
+            if (Decay == null)
+                throw new InvalidOperationException($"{name}: Decaimiento sobre un nodo sin NodeDecay.");
+            if (HasState(NodeStateFlags.Converting))
+            {
+                if (Converter == null)
+                    throw new InvalidOperationException($"{name}: Reconvirtiendo sin NodeConverter.");
+                Converter.Interrupt();
+            }
+            Decay.Infect();
+        }
+
+        // Como Thaw: sin NodeDecay, la bandera la ha puesto un test a mano y la cura la quita igual.
+        void Cure()
+        {
+            if (Decay != null)
+                Decay.Cure();
+            else
+                StateMachine.SetFlag(NodeStateFlags.Infected, false);
         }
 
         // Cambia el nodo a otro tipo y nivel conservando facción y Energía, recortada al Tope
@@ -237,5 +270,11 @@ namespace Nova.Gameplay
 
         // Opcional en los tests; en partida lo lleva todo nodo (T3-04).
         NodeFreeze Freezer => freezer != null ? freezer : freezer = GetComponent<NodeFreeze>();
+
+        // Opcional en los tests; en partida lo lleva todo nodo (T3-05).
+        NodeDecay Decay => decay != null ? decay : decay = GetComponent<NodeDecay>();
+
+        // Opcional: solo para cancelar una reconversión al infectar (T3-05).
+        NodeConverter Converter => converter != null ? converter : converter = GetComponent<NodeConverter>();
     }
 }

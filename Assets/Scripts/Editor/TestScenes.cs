@@ -174,6 +174,7 @@ namespace Nova.Editor
             go.AddComponent<PulsarCaster>().Configure(balance, powers, beams); // T3-02: y en todo el que pueda ser Púlsar
             go.AddComponent<NodeScare>().Configure(balance, protons); // T2-08: todo nodo se asusta (14.2)
             go.AddComponent<NodeFreeze>().Configure(balance); // T3-04: todo nodo encendido se puede congelar (7.3)
+            go.AddComponent<NodeDecay>().Configure(balance); // T3-05: y se puede infectar (7.4)
 
             var trigger = go.AddComponent<CircleCollider2D>();
             trigger.isTrigger = true;

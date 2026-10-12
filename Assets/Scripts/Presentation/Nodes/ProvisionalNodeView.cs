@@ -23,6 +23,7 @@ namespace Nova.Presentation
         static readonly Color32 EnemyColor = new Color32(0xF2, 0x45, 0x6B, 0xFF);
         static readonly Color32 NeutralColor = new Color32(0x8A, 0x93, 0xA6, 0xFF);
         static readonly Color32 FrozenColor = new Color32(0xB8, 0xF0, 0xFF, 0xFF); // Congelado
+        static readonly Color32 InfectedColor = new Color32(0x7C, 0xF2, 0x3F, 0xFF); // Infectado
         static readonly Color32 LabelColor = new Color32(0x0B, 0x0E, 0x1A, 0xFF); // fondo profundo
 
         const int PixelsPerUnit = 64; // T0-04
@@ -30,6 +31,9 @@ namespace Nova.Presentation
         // Temblor provisional del susto, en píxeles enteros (NOVA_Arte_Tecnica.md, *Animación*).
         const int ShakePixels = 1;
         const float ShakeStepsPerSecond = 15f;
+
+        // Halo provisional de Infectado: 4 px más por cada lado que el círculo.
+        const int AuraMarginPixels = 4;
 
         // Jersey 10: rejilla de 75 unidades en un em de 1400, 18.67 px por em (NOVA_Arte_Tecnica.md).
         const float NativeEmPixels = 1400f / 75f;
@@ -51,11 +55,13 @@ namespace Nova.Presentation
 
         NodeController node;
         SpriteRenderer body;
+        SpriteRenderer aura;
         TextMeshPro label;
         bool subscribed;
 
         internal SpriteRenderer Body { get { EnsureBuilt(); return body; } }
         internal TextMeshPro Label { get { EnsureBuilt(); return label; } }
+        internal SpriteRenderer Aura { get { EnsureBuilt(); return aura; } }
 
         void OnEnable()
         {
@@ -89,6 +95,7 @@ namespace Nova.Presentation
             bool visible = Node.IsInitialized;
             body.enabled = visible;
             label.enabled = visible;
+            aura.enabled = visible && Node.HasState(NodeStateFlags.Infected);
             if (!visible)
                 return;
 
@@ -101,7 +108,11 @@ namespace Nova.Presentation
                 body.color = Iced(color);
             else
                 body.color = Node.HasState(NodeStateFlags.Converting) ? Dimmed(color) : color;
-            body.sprite = CircleSprite(Node.Type == NodeType.Asteroid ? asteroidDiameterPixels : diameterPixels);
+            int diameter = Node.Type == NodeType.Asteroid ? asteroidDiameterPixels : diameterPixels;
+            body.sprite = CircleSprite(diameter);
+            // T3-05: infectado, un halo verde por detrás del círculo (la capa 3 de 14.7, por debajo del
+            // tinte). Convive con el hielo, que tiñe el círculo y no el halo.
+            aura.sprite = CircleSprite(diameter + 2 * AuraMarginPixels);
             label.text = Node.Energy.ToString();
 
             if (!IsScared)
@@ -120,6 +131,7 @@ namespace Nova.Presentation
         void ApplyOffset(Vector3 offset)
         {
             body.transform.localPosition = offset;
+            aura.transform.localPosition = offset;
             label.transform.localPosition = offset;
         }
 
@@ -180,8 +192,16 @@ namespace Nova.Presentation
 
         void EnsureBuilt()
         {
-            if (body != null && label != null)
+            if (body != null && label != null && aura != null)
                 return;
+
+            var auraObject = new GameObject("ProvisionalAura");
+            auraObject.transform.SetParent(transform, false);
+            aura = auraObject.AddComponent<SpriteRenderer>();
+            aura.sprite = CircleSprite(diameterPixels + 2 * AuraMarginPixels);
+            aura.color = InfectedColor;
+            aura.sortingOrder = -1;
+            aura.enabled = false;
 
             var bodyObject = new GameObject("ProvisionalBody");
             bodyObject.transform.SetParent(transform, false);
