@@ -1,6 +1,7 @@
 using System.IO;
 using Nova.Core;
 using Nova.Data;
+using Nova.Enemy;
 using Nova.Gameplay;
 using Nova.Input;
 using Nova.Presentation;
@@ -29,6 +30,8 @@ namespace Nova.Editor
     //
     // Fase 3 (T3-07): un Púlsar propio de nivel 3 frente a un objetivo de cada tipo, con la rueda de
     // poderes en el panel y el modo apuntado.
+    //
+    // Fase 4 (T4-04): partida simétrica contra EnemyController con el perfil del mapa 3.
     public static class TestScenes
     {
         const string ScenesFolder = "Assets/Scenes/Tests";
@@ -36,6 +39,8 @@ namespace Nova.Editor
         const string NodesFolder = "Assets/Data/Nodes";
         const string FontPath = "Assets/Art/Fonts/Jersey10 Raster56.asset";
         const string TextPath = "Assets/Data/UiText.asset";
+        const string ProfilesFolder = "Assets/Data/EnemyProfiles";
+        const string ScoringPath = "Assets/Data/EnemyScoring.asset";
 
         const string NodesLayer = InputRouter.NodesLayer; // 18 #23
 
@@ -89,6 +94,20 @@ namespace Nova.Editor
             ("Neutral Magnetar", "Magnetar", Faction.Neutral, 60, 0, new Vector2(0f, -3f)),
         };
 
+        // Fase 4 (T4-04): una partida simétrica contra el algoritmo con el perfil del mapa 3, para el
+        // criterio de la fase (el algoritmo del mapa 3 vence a un jugador descuidado). Una Estrella por
+        // bando, cuatro Asteroides neutrales a repartir y un Magnetar neutral abajo, apartado del centro.
+        static readonly (string name, string type, Faction faction, int energy, int level, Vector2 position)[] Phase4Nodes =
+        {
+            ("Player Star", "Star", Faction.Player, 20, 0, new Vector2(-5.5f, 0f)),
+            ("Enemy Star", "Star", Faction.Enemy, 20, 0, new Vector2(5.5f, 0f)),
+            ("Neutral Asteroid NW", "Asteroid", Faction.Neutral, 10, 0, new Vector2(-3f, 2f)),
+            ("Neutral Asteroid SW", "Asteroid", Faction.Neutral, 10, 0, new Vector2(-3f, -2f)),
+            ("Neutral Asteroid NE", "Asteroid", Faction.Neutral, 10, 0, new Vector2(3f, 2f)),
+            ("Neutral Asteroid SE", "Asteroid", Faction.Neutral, 10, 0, new Vector2(3f, -2f)),
+            ("Neutral Magnetar", "Magnetar", Faction.Neutral, 40, 0, new Vector2(0f, -3f)),
+        };
+
         [MenuItem("Nova/Fase 1/Generar escena de prueba")]
         public static void GeneratePhase1() => Generate("Fase1", Phase1Nodes);
 
@@ -98,7 +117,11 @@ namespace Nova.Editor
         [MenuItem("Nova/Fase 3/Generar escena de prueba")]
         public static void GeneratePhase3() => Generate("Fase3", Phase3Nodes);
 
-        static void Generate(string sceneName, (string name, string type, Faction faction, int energy, int level, Vector2 position)[] nodes)
+        [MenuItem("Nova/Fase 4/Generar escena de prueba")]
+        public static void GeneratePhase4() => Generate("Fase4", Phase4Nodes, "Map3");
+
+        static void Generate(string sceneName, (string name, string type, Faction faction, int energy, int level, Vector2 position)[] nodes,
+            string enemyProfile = null)
         {
             string scenePath = $"{ScenesFolder}/{sceneName}.unity";
 
@@ -131,11 +154,32 @@ namespace Nova.Editor
             foreach (var spec in nodes)
                 CreateNode(spec.name, Definition(spec.type), spec.faction, spec.energy, spec.level, spec.position, balance, font, ignitionTargets, powers, protons, beams);
 
+            if (enemyProfile != null)
+                CreateEnemy(enemyProfile, registry, balance, powers);
+
             Directory.CreateDirectory(ScenesFolder);
             EditorSceneManager.SaveScene(scene, scenePath);
             AssetDatabase.Refresh();
 
             Debug.Log($"[Nova] Escena de prueba generada en {scenePath}. Dale a Play.");
+        }
+
+        // T4-04: el Enemigo con el perfil de un mapa. Usa el mismo ProtonLauncher que el Jugador (3.1).
+        static void CreateEnemy(string profileName, NodeRegistry registry, BalanceConfig balance, PowerDefinition[] powers)
+        {
+            var profile = AssetDatabase.LoadAssetAtPath<EnemyProfile>($"{ProfilesFolder}/{profileName}.asset");
+            var scoring = AssetDatabase.LoadAssetAtPath<EnemyScoring>(ScoringPath);
+            if (profile == null || scoring == null)
+            {
+                Debug.LogError($"[Nova] Faltan {ProfilesFolder}/{profileName}.asset o {ScoringPath}.");
+                return;
+            }
+
+            var go = new GameObject("Enemy");
+            var issuer = go.AddComponent<EnemyCommandIssuer>();
+            issuer.Configure(registry.GetComponent<ProtonLauncher>());
+            go.AddComponent<EnemyController>().Configure(profile, scoring, balance, issuer, powers, registry);
+            EditorUtility.SetDirty(go);
         }
 
         static Camera CreateCamera()

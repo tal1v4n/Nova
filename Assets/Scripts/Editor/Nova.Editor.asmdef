@@ -5,6 +5,7 @@
         "Nova.Core",
         "Nova.Data",
         "Nova.Gameplay",
+        "Nova.Enemy",
         "Nova.Input",
         "Nova.Presentation",
         "Nova.UI",

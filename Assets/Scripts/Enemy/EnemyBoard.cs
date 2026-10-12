@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Nova.Core;
 using Nova.Data;
+using Nova.Gameplay;
 using UnityEngine;
 
 namespace Nova.Enemy
@@ -54,6 +55,31 @@ namespace Nova.Enemy
         public NodeType Type => State.Type;
         public int Energy => State.Energy;
         public bool IsLit => State.Type != NodeType.Asteroid;
+
+        // Lo que el algoritmo ve de un nodo de la partida (T4-04). El power-up llega con T5-04.
+        public static BoardNode From(int index, NodeController node)
+        {
+            if (node == null)
+                throw new ArgumentNullException(nameof(node));
+
+            NodeDefinition definition = node.Definition;
+            bool lit = node.Type != NodeType.Asteroid;
+            float radius = node.Type == NodeType.Magnetar ? node.CurrentLevelData.Radius : 0f;
+            int upgradeCost = lit && node.Level < definition.MaxLevel ? definition.UpgradeCostTo(node.Level + 1) : -1;
+
+            PowerType? charging = null;
+            PowerType? ready = null;
+            if (node.TryGetComponent(out PulsarCaster caster) && caster.Power != null)
+            {
+                if (caster.State == PowerChargeState.Ready)
+                    ready = caster.Power.Type;
+                else
+                    charging = caster.Power.Type;
+            }
+
+            return new BoardNode(index, node.Snapshot(), node.transform.position, radius, upgradeCost,
+                definition.ConversionCost, charging, ready);
+        }
     }
 
     // El tablero de un ciclo de decisión (12.1, paso 1): todos los nodos en el orden de NodeRegistry,
@@ -84,6 +110,25 @@ namespace Nova.Enemy
 
         // Los tres PowerDefinition, para coste y nivel requerido (16.3).
         public IReadOnlyList<PowerDefinition> Powers { get; }
+
+        // El tablero de la partida tal como está ahora (12.1, paso 1): un BoardNode por nodo
+        // inicializado, con el índice de su posición en nodes, que es el que usa Execute.
+        public static EnemyBoard Capture(Faction self, IReadOnlyList<NodeController> nodes, BalanceConfig balance,
+                                         IReadOnlyList<PowerDefinition> powers)
+        {
+            if (nodes == null)
+                throw new ArgumentNullException(nameof(nodes));
+            if (balance == null)
+                throw new ArgumentNullException(nameof(balance));
+
+            var board = new List<BoardNode>(nodes.Count);
+            for (int i = 0; i < nodes.Count; i++)
+            {
+                if (nodes[i] != null && nodes[i].IsInitialized)
+                    board.Add(BoardNode.From(i, nodes[i]));
+            }
+            return new EnemyBoard(self, board, balance.MagnetarResistance, balance.IgnitionCost, powers);
+        }
 
         public PowerDefinition Power(PowerType type)
         {
