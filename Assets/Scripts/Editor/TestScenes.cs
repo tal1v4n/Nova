@@ -173,6 +173,7 @@ namespace Nova.Editor
             go.AddComponent<MagnetarTurret>().Configure(balance, protons); // y en todo el que pueda ser Magnetar
             go.AddComponent<PulsarCaster>().Configure(balance, powers, beams); // T3-02: y en todo el que pueda ser Púlsar
             go.AddComponent<NodeScare>().Configure(balance, protons); // T2-08: todo nodo se asusta (14.2)
+            go.AddComponent<NodeFreeze>().Configure(balance); // T3-04: todo nodo encendido se puede congelar (7.3)
 
             var trigger = go.AddComponent<CircleCollider2D>();
             trigger.isTrigger = true;

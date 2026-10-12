@@ -15,8 +15,7 @@ namespace Nova.Systems
     //   invertido se pierde (17 caso 27; OnDissipated).
     //
     // La facción es la del lanzamiento: si el Púlsar cambió de bando durante el haz, el efecto
-    // sigue siendo de quien lo lanzó (17 caso 28). Los efectos de cada poder llegan con T3-04,
-    // T3-05 y T3-06 y se aplican en Land.
+    // sigue siendo de quien lo lanzó (17 caso 28). El efecto de cada poder se aplica en Land.
     //
     // Varios haces que terminan en el mismo tick se resuelven por orden de lanzamiento; con empate
     // exacto, primero el del Púlsar con más Energía al lanzar, y después el que se lanzó antes.
@@ -124,9 +123,16 @@ namespace Nova.Systems
                 OnDissipated?.Invoke(beam);
         }
 
-        // El efecto de cada poder llega con su tarea (T3-04, T3-05, T3-06).
+        // El efecto cae antes del aviso: quien escucha OnLanded ve ya el objetivo afectado. Cero
+        // Absoluto desde T3-04; Decaimiento y Agujero de Gusano llegan con T3-05 y T3-06.
         void Land(PowerBeam beam)
         {
+            switch (beam.Type)
+            {
+                case PowerType.AbsoluteZero:
+                    beam.Target.Freeze(); // 7.3
+                    break;
+            }
             OnLanded?.Invoke(beam);
         }
 

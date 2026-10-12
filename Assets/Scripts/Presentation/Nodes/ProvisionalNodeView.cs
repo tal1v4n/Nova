@@ -22,6 +22,7 @@ namespace Nova.Presentation
         static readonly Color32 PlayerColor = new Color32(0x3F, 0xD7, 0xF5, 0xFF);
         static readonly Color32 EnemyColor = new Color32(0xF2, 0x45, 0x6B, 0xFF);
         static readonly Color32 NeutralColor = new Color32(0x8A, 0x93, 0xA6, 0xFF);
+        static readonly Color32 FrozenColor = new Color32(0xB8, 0xF0, 0xFF, 0xFF); // Congelado
         static readonly Color32 LabelColor = new Color32(0x0B, 0x0E, 0x1A, 0xFF); // fondo profundo
 
         const int PixelsPerUnit = 64; // T0-04
@@ -93,8 +94,13 @@ namespace Nova.Presentation
 
             // T2-07: reconvirtiéndose, el círculo baja a la mitad de brillo. Sigue siendo del color
             // de su dueño, porque durante los 3 s el nodo es suyo (8.1, «sin tipo, no sin bando»).
+            // T3-04: congelado, el círculo va a medio camino del hielo, y el dueño se sigue leyendo.
+            // Congelado gana a Reconvirtiendo, como en el orden de tintes de 14.7.
             Color32 color = ColorOf(Node.Faction);
-            body.color = Node.HasState(NodeStateFlags.Converting) ? Dimmed(color) : color;
+            if (Node.HasState(NodeStateFlags.Frozen))
+                body.color = Iced(color);
+            else
+                body.color = Node.HasState(NodeStateFlags.Converting) ? Dimmed(color) : color;
             body.sprite = CircleSprite(Node.Type == NodeType.Asteroid ? asteroidDiameterPixels : diameterPixels);
             label.text = Node.Energy.ToString();
 
@@ -130,6 +136,11 @@ namespace Nova.Presentation
         internal static Color32 Dimmed(Color32 color)
         {
             return new Color32((byte)(color.r / 2), (byte)(color.g / 2), (byte)(color.b / 2), color.a);
+        }
+
+        internal static Color32 Iced(Color32 color)
+        {
+            return Color32.Lerp(color, FrozenColor, 0.5f);
         }
 
         internal static float FontSizeFor(int scale)

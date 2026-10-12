@@ -18,6 +18,7 @@ namespace Nova.Gameplay
         NodeLevelComponent levelComponent;
         NodeStateMachine stateMachine;
         PulsarCaster caster;
+        NodeFreeze freezer;
         bool listening;
 
         public NodeType Type => Identity.Type;
@@ -131,10 +132,20 @@ namespace Nova.Gameplay
         }
 
         // Aplica lo que ImpactResolver calculó para un protón que llega (6.2). Al capturar,
-        // el nodo conserva tipo y nivel: solo cambian facción y Energía. Deshielo, cura y
-        // lastToucher llegan con los estados que los usan (T3-04, T3-05).
+        // el nodo conserva tipo y nivel: solo cambian facción y Energía. La cura llega con T3-05.
+        //
+        // Congelado (7.3, T3-04): el deshielo quita la bandera antes de cambiar de bando, como en
+        // el pseudocódigo, así que quien escucha la captura ve ya un nodo normal del dueño nuevo.
+        // Un impacto que no lo descongela reinicia el reloj del auto-deshielo. lastToucher no se
+        // guarda: el bando que gana en el deshielo es el del protón que lo provoca, que es por
+        // definición el último emisor.
         public void ApplyImpact(ImpactOutcome outcome)
         {
+            if (outcome.Unfreezes)
+                Thaw();
+            else if (HasState(NodeStateFlags.Frozen) && Freezer != null)
+                Freezer.NotifyImpact();
+
             if (outcome.FactionChanged)
                 Ownership.ChangeFaction(outcome.NewFaction);
 
@@ -143,6 +154,24 @@ namespace Nova.Gameplay
                 EnergyComponent.Add(delta);
             else if (delta < 0)
                 EnergyComponent.Subtract(-delta);
+        }
+
+        // Efecto de Cero Absoluto (7.3, T3-04). Lo llama PowerBeamSystem al terminar el haz, con el
+        // objetivo ya revalidado. Exige NodeFreeze, que lleva el reloj del auto-deshielo.
+        public void Freeze()
+        {
+            if (Freezer == null)
+                throw new InvalidOperationException($"{name}: Cero Absoluto sobre un nodo sin NodeFreeze.");
+            Freezer.Freeze();
+        }
+
+        // Sin NodeFreeze la bandera solo la puede haber puesto un test a mano; el deshielo la quita igual.
+        void Thaw()
+        {
+            if (Freezer != null)
+                Freezer.Thaw();
+            else
+                StateMachine.SetFlag(NodeStateFlags.Frozen, false);
         }
 
         // Cambia el nodo a otro tipo y nivel conservando facción y Energía, recortada al Tope
@@ -205,5 +234,8 @@ namespace Nova.Gameplay
 
         // Opcional: solo lo llevan los nodos que pueden ser Púlsar (T3-02).
         PulsarCaster Caster => caster != null ? caster : caster = GetComponent<PulsarCaster>();
+
+        // Opcional en los tests; en partida lo lleva todo nodo (T3-04).
+        NodeFreeze Freezer => freezer != null ? freezer : freezer = GetComponent<NodeFreeze>();
     }
 }

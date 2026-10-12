@@ -150,5 +150,23 @@ namespace Nova.Tests
             Assert.AreEqual(2 * 1400f / 75f / 64f / 0.1f, view.Label.fontSize, 1e-4f);
             Assert.AreEqual(AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontAssetPath), view.Label.font);
         }
+
+        // T3-04: congelado, a medio camino del hielo #B8F0FF; gana a Reconvirtiendo (14.7) y vuelve al descongelar.
+        [Test]
+        public void FrozenTintsTheCircleTowardsIce()
+        {
+            node.Initialize(Definition("Star"), Faction.Enemy, 10);
+            view.Subscribe();
+            view.Refresh();
+
+            node.SetStateFlag(NodeStateFlags.Converting, true);
+            node.SetStateFlag(NodeStateFlags.Frozen, true);
+            Color32 iced = ProvisionalNodeView.Iced(ProvisionalNodeView.ColorOf(Faction.Enemy));
+            Assert.AreEqual((Color)iced, view.Body.color);
+            Assert.AreEqual(213, iced.r, 1, "Mitad entre 0xF2 y 0xB8.");
+
+            node.SetStateFlag(NodeStateFlags.Frozen, false);
+            Assert.AreEqual((Color)ProvisionalNodeView.Dimmed(ProvisionalNodeView.ColorOf(Faction.Enemy)), view.Body.color);
+        }
     }
 }

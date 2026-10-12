@@ -61,6 +61,7 @@ namespace Nova.Tests
             spawned.Add(go);
             go.transform.position = position;
             var node = go.AddComponent<NodeController>();
+            go.AddComponent<NodeFreeze>().Configure(Balance); // T3-04: los haces de Cero Absoluto congelan al caer
             node.Initialize(Definition(type), faction, energy, level >= 0 ? level : (type == "Asteroid" ? 0 : 1));
             return node;
         }

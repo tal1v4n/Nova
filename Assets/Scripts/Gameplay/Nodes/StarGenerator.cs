@@ -41,8 +41,8 @@ namespace Nova.Gameplay
             }
 
             // Lleno: el temporizador se detiene y conserva su progreso (4.2, «no acumula»).
-            // Reconvirtiendo tampoco genera (8.1), y Congelado lo parará cuando exista (T3-04, 15.5).
-            if (Node.Energy >= Node.EnergyCap || Node.HasState(NodeStateFlags.Converting))
+            // Reconvirtiendo (8.1) y Congelado (7.3) tampoco generan, y también conservan el progreso.
+            if (Node.Energy >= Node.EnergyCap || Node.HasState(NodeStateFlags.Converting) || Node.HasState(NodeStateFlags.Frozen))
                 return;
 
             long interval = ToMicros(Node.CurrentLevelData.GenerationInterval);

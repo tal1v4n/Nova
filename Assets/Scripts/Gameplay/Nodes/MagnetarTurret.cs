@@ -21,7 +21,7 @@ namespace Nova.Gameplay
     //
     // Como StarGenerator, va en todo nodo que pueda llegar a ser Magnetar y solo actúa cuando lo
     // es (desviación 143). El Magnetar neutral dispara a los dos bandos (3.2, T2-06); reconvirtiendo
-    // no dispara (8.1, T2-07), y congelado dejará de disparar con T3-04.
+    // no dispara (8.1, T2-07), y congelado tampoco (7.3, T3-04).
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NodeController))]
     public sealed class MagnetarTurret : MonoBehaviour
@@ -135,8 +135,10 @@ namespace Nova.Gameplay
             target.TakeShot(Balance.MagnetarShotDamage);
         }
 
-        // Reconvirtiendo no dispara (8.1): el arma se queda cargada, sin acumular disparos.
-        bool CanFire => Node.IsInitialized && Node.Type == NodeType.Magnetar && !Node.HasState(NodeStateFlags.Converting);
+        // Reconvirtiendo (8.1) o congelado (7.3) no dispara: el arma se queda cargada, sin acumular
+        // disparos. Vale también para el Magnetar neutral, que congelado calla a los dos bandos (17 caso 31).
+        bool CanFire => Node.IsInitialized && Node.Type == NodeType.Magnetar
+            && !Node.HasState(NodeStateFlags.Converting) && !Node.HasState(NodeStateFlags.Frozen);
 
         ProtonRegistry Registry => protons != null ? protons : ProtonRegistry.Instance;
 

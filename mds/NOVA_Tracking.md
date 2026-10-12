@@ -86,13 +86,13 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ hecha · 🔴 bloqueada.
 | 0 | Proyecto | 6 | 6 | ✅ | El proyecto abre en Unity, `Nova.Core` compila sin referenciar `UnityEngine` y un test vacío corre en EditMode |
 | 1 | Núcleo jugable | 14 | 14 | ✅ | Capturar un Asteroide, encenderlo como Estrella y tomar un nodo enemigo |
 | 2 | Tipos y defensa | 8 | 8 | ✅ | Los cuatro tipos funcionan y el nivel 3 es jugable |
-| 3 | Poderes | 8 | 4 | 🟨 | Los tres poderes funcionan y pasan los casos 8–14 y 27–35 de la sección 17 |
+| 3 | Poderes | 8 | 5 | 🟨 | Los tres poderes funcionan y pasan los casos 8–14 y 27–35 de la sección 17 |
 | 4 | Algoritmo del Enemigo | 6 | 0 | ⬜ | El algoritmo del mapa 3 vence a un jugador descuidado |
 | 5 | Flujo y contenido | 7 | 0 | ⬜ | Los 9 niveles son completables de principio a fin |
 | 6 | Presentación | 11 | 0 | 🔴 | 46 de 108 assets listos. **`T6-01`, `T6-02` y `T6-03` ya no están bloqueadas por arte**; las otras ocho sí ([A.7](./NOVA_Assets_Diseno.md#a7-resumen-de-progreso)) |
-| | **Total** | **60** | **32** | | |
+| | **Total** | **60** | **33** | | |
 
-**Siguiente tarea:** `T3-04`, Cero Absoluto: congelación, deshielo invertido y auto-deshielo de 30 s ([7.3](./NOVA_GameDesign_Spec.md#73-cero-absoluto)). La fase 2 se cerró con su criterio aplazado (desviación 185).
+**Siguiente tarea:** `T3-05`, Decaimiento: −2 E/s, permanencia en 0, cura y no acumulable ([7.4](./NOVA_GameDesign_Spec.md#74-decaimiento)). La fase 2 se cerró con su criterio aplazado (desviación 185).
 
 ---
 
@@ -155,7 +155,7 @@ Creada el **2026-09-28**. `T.4` empezaba en `T1-01` dando por hecho un proyecto 
 | T3-02 | `PulsarCaster`: carga acoplada a la Energía, pausa, cancelación con devolución del 50 % | [7.1](./NOVA_GameDesign_Spec.md#71-regla-de-carga) | T3-01 | No | ✅ |
 | T3-03 | `PowerBeam`: haz de 0.25 s, **alcance global**, no interceptable, revalidación del objetivo al terminar | [7.2.2](./NOVA_GameDesign_Spec.md#722-el-haz) | T3-02 | No | ✅ |
 | T3-03b | Filtro de objetivo válido: **nodo encendido no propio**. Incluye el Magnetar neutral; excluye todo Asteroide | [7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido) | T3-03 | No | ✅ |
-| T3-04 | Cero Absoluto: congelación, deshielo invertido, auto-deshielo de 30 s | [7.3](./NOVA_GameDesign_Spec.md#73-cero-absoluto) | T3-03 | No | ⬜ |
+| T3-04 | Cero Absoluto: congelación, deshielo invertido, auto-deshielo de 30 s | [7.3](./NOVA_GameDesign_Spec.md#73-cero-absoluto) | T3-03 | No | ✅ |
 | T3-05 | Decaimiento: −2 E/s, permanencia en 0, cura, no acumulable | [7.4](./NOVA_GameDesign_Spec.md#74-decaimiento) | T3-03 | No | ⬜ |
 | T3-06 | Agujero de Gusano: captura íntegra, ignora ×2, robo de carga en sus 3 ventanas | [7.5](./NOVA_GameDesign_Spec.md#75-agujero-de-gusano) | T3-03 | No | ⬜ |
 | T3-07 | `PulsarPowerWheel` + barra de carga visible también en el Púlsar enemigo | [13.5](./NOVA_GameDesign_Spec.md#135-rueda-de-poderes-del-púlsar) | T3-06 | No | ⬜ |
@@ -217,6 +217,7 @@ Una línea por tarea completada. La más reciente arriba.
 
 | Fecha | Tarea | Resultado | Notas / desviaciones de la spec |
 |---|---|---|---|
+| 2026-10-11 | **T3-04** | **`NodeFreeze`** en `Gameplay/Nodes/`: pone y quita `Frozen` y lleva el reloj del auto-deshielo en microsegundos; se descongela solo tras 30 s seguidos sin impactos (`BalanceConfig.AutoThawTime`), con su facción y su Energía. Cada impacto reinicia el reloj, de la facción que sea, y también otro Cero Absoluto. `NodeController.Freeze` lo llama `PowerBeamSystem.Land` con el haz de Cero Absoluto, y `ApplyImpact` aplica por fin `Unfreezes`: descongela antes de cambiar de bando y, si el impacto no descongela, reinicia el reloj. Congelado, la Estrella no genera y conserva el progreso, el Magnetar no dispara a nadie —el neutral tampoco (17 caso 31)— y `ProtonLauncher` devuelve el bloqueo nuevo `LaunchBlock.Frozen`. Mejorar, iniciar una reconversión y cargar, lanzar o cancelar un poder ya estaban bloqueados por `NodeSnapshot.IsFrozen`, y la reconversión y la carga en curso ya se pausaban (17 casos 8 y 9). `ImpactResolver` ya tenía `ResolveImpact_Frozen` desde `T1-03`. `ProvisionalNodeView` lleva el círculo a medio camino del hielo `#B8F0FF`, por encima del oscurecido de Reconvirtiendo (14.7). `TestScenes` añade `NodeFreeze` a cada nodo. Tests: `AbsoluteZeroTests` (nuevo), el tinte en `ProvisionalNodeViewTests` y `NodeFreeze` en los nodos de `PowerBeamTests` | Suite completa en verde en el Test Runner de Unity. Sin prueba en Play hasta `T3-07`: sin entrada para cargar poderes no hay forma de congelar nada desde el juego. Desviaciones 198–202 abajo |
 | 2026-10-11 | **T3-03** y **T3-03b** | `PowerRules.IsValidTarget` (7.2.1: nodo encendido que no es del lanzador; vale el Magnetar neutral, ningún Asteroide) y `CheckLaunch` (dueño, Púlsar, poder al 100 %, no congelado, objetivo válido). Dos bloqueos nuevos: `NotReady` e `InvalidTarget`. `PulsarCaster.TryLaunch`: el Púlsar queda vacío en el acto y nace un haz. **`PowerBeam`** y **`PowerBeamSystem`** en `Systems/Powers/`: el haz guarda extremos, poder y facción del lanzador; el sistema corre a +10, cuenta los 0.25 s en microsegundos, revalida el objetivo al terminar y emite `OnLanded` u `OnDissipated`; los que terminan en el mismo tick se ordenan por tick de lanzamiento, Energía del Púlsar al lanzar y orden de lanzamiento (17 caso 29). Los efectos llegan con `T3-04` a `T3-06`. `INodeCommandIssuer.LaunchPower`. `ProvisionalBeamView`: trazo de 3 px en el color del poder mientras dura el haz. `TestScenes` añade el sistema y la vista. Tests: `PowerBeamTests` (nuevo) | Suite completa en verde en el Test Runner de Unity, con `T3-02` incluida. Sin prueba en Play hasta `T3-07`. Desviaciones 194–197 abajo |
 | 2026-10-11 | **T3-02** | **`PowerRules`** en `Core/Rules/`: `CheckCharge` (dueño, Púlsar, nivel, Congelado, Reconvirtiendo, un poder a la vez; la Energía no se exige), `CheckCancel`, `InvestedAt`, `ProgressFor` y `CancelRefund`. Tres bloqueos nuevos en `ActionBlock`: `NotPulsar`, `LevelTooLow`, `NoPowerCharge`. **`PulsarCaster`** en `Gameplay/Nodes/`: estados `Idle`, `Charging` y `Ready`; cobra cada punto cuando le toca en el tick fijo, se pausa con la Energía a 0 o congelado, se mantiene cargado indefinidamente, cancela devolviendo `floor(invertido × 0.5)` hasta el Tope, pierde la carga a medias al ser capturado y conserva el poder listo para el nuevo dueño. `NodeController.Snapshot` lee `HasPowerCharge`, así que la reconversión queda bloqueada cargando y con el poder listo. `INodeCommandIssuer.ChargePower` y `CancelCharge`. **T.7 #49 cerrado**: el panel enseña `Carga: X.XX E/s` del poder en carga (`UiText.chargeFormat`). `ProvisionalPulsarView`: barra de 48 × 4 px bajo el Púlsar, en el color del poder y a media opacidad en pausa. `TestScenes` ofrece ya el Púlsar al encender y reconvertir, y pone `PulsarCaster` y la barra en cada nodo. Tests: `PulsarCasterTests` (nuevo) y la línea del panel en `UpgradeTests` | Suite completa en verde en el Test Runner de Unity (confirmada junto con `T3-03`). Sin prueba en Play: no hay entrada para cargar hasta la rueda de `T3-07`, por decisión del usuario. Desviaciones 189–193 abajo |
 | 2026-10-11 | **T3-01** | `PowerDefinition` en `Nova.Data`: tipo, nivel requerido, coste, tiempo de carga, duración del haz y color del haz, más `DrainRate` calculado. Tres assets escritos a mano en `Assets/Data/Powers/` (`AbsoluteZero`, `Decay`, `Wormhole`) con los valores de 7.2 y 16.3 y el color de 14.4. Tests en `BalanceDataTests`: uno por poder, valores, drenaje y color | Suite completa en verde en el Test Runner de Unity. Desviaciones 186–188 abajo |
@@ -276,6 +277,14 @@ Una línea por tarea completada. La más reciente arriba.
 | — | — | Proyecto de código sin iniciar | — |
 
 > **Cómo leer esta lista.** Una línea por desviación: **qué cambió** y **dónde vive ahora**. El razonamiento completo está en el documento que se cita, que es el que manda; aquí solo está el rastro de cuándo y por qué se movió. Los números no se reutilizan nunca, ni siquiera cuando una desviación queda revertida.
+
+**Al implementar `T3-04` (2026-10-11).**
+
+198. **Congelado tiene su propio componente, `NodeFreeze`.** 15.5 le daba a `NodeStateMachine` «sus timers», pero desde `T2-07` cada estado lo lleva el componente que lo provoca (`NodeConverter`, `NodeScare`) y la máquina solo guarda banderas. El auto-deshielo necesita `BalanceConfig`, que la máquina no tiene. Va en todo nodo, como `NodeScare`. → [15.5](./NOVA_GameDesign_Spec.md#155-gameplay--componentes-de-nodo).
+199. **Un segundo Cero Absoluto sobre un nodo congelado reinicia el reloj.** 7.3 no lo dice, pero 14.1 llama «impacto de Cero Absoluto» a lo que congela, y 7.3 dice que cada impacto reinicia el contador. Ni acumula ni hace nada más.
+200. **El deshielo quita la bandera antes de cambiar de bando**, en el orden del pseudocódigo de 7.3 (`Unfreeze` y después `ChangeFaction`): quien escucha la captura (`NodeConverter`, `PulsarCaster`, mañana el algoritmo) ve ya un nodo normal del dueño nuevo. Si lo descongela su propia facción, sigue siendo suyo y se queda a 0: `ChangeFaction` a la misma facción no cambia nada.
+201. **`lastToucher` no se guarda en el nodo.** El bando que gana en el deshielo es el del protón que lo provoca, que es por definición el último que impactó. `ImpactOutcome.LastToucher` sigue saliendo de `ImpactResolver` por si lo quiere la presentación, pero ninguna regla lo lee.
+202. **Congelado conserva el progreso de la Estrella y deja el arma del Magnetar cargada**, como Reconvirtiendo (8.1). «No genera» y «no dispara» (7.3) no decían si el temporizador se pierde. Al descongelar, la Estrella sigue desde donde estaba y el Magnetar dispara en cuanto tiene un objetivo.
 
 **Al implementar `T3-03` (2026-10-11).**
 

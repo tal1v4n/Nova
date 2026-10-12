@@ -15,6 +15,7 @@ namespace Nova.Systems
         SameNode,       // Origen y destino son el mismo nodo
         NothingToSend,  // 5.2: el 50 % de 1 redondea a 0 y el envío no se ejecuta (17, caso 22)
         Converting,     // 8.1: durante la reconversión el nodo no envía
+        Frozen,         // 7.3: congelado, el nodo no puede enviar Energía
     }
 
     // Servicio de lanzamiento (15.6): valida, descuenta la Energía del origen y pide un protón
@@ -45,6 +46,8 @@ namespace Nova.Systems
                 return LaunchBlock.SameNode;
             if (source.HasState(NodeStateFlags.Converting))
                 return LaunchBlock.Converting;
+            if (source.HasState(NodeStateFlags.Frozen))
+                return LaunchBlock.Frozen;
 
             charge = EnergyMath.SendAmount(source.Energy, fullSend);
             return charge > 0 ? LaunchBlock.None : LaunchBlock.NothingToSend;
