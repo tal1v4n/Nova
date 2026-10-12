@@ -144,7 +144,7 @@ namespace Nova.Tests
             NodeController star = Node("Star", Faction.Enemy, 10);
             var seen = new List<string>();
             Freezer(star).OnFrozen += () => seen.Add("frozen");
-            Freezer(star).OnThawed += byImpact => seen.Add(byImpact ? "thawed by impact" : "thawed alone");
+            Freezer(star).OnThawed += reason => seen.Add(reason == ThawReason.Impact ? "thawed by impact" : reason == ThawReason.Silence ? "thawed alone" : "wormhole");
 
             star.Freeze();
             Hit(star, Faction.Player, 10);

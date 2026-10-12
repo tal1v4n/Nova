@@ -198,6 +198,30 @@ namespace Nova.Gameplay
             Decay.Infect();
         }
 
+        // Efecto de Agujero de Gusano (7.5, T3-06). Lo llama PowerBeamSystem al terminar el haz, con el
+        // objetivo ya revalidado. Cambia de bando conservando Energía, tipo y nivel, sin pasar por
+        // ImpactResolver: no hay Carga, así que la resistencia ×2 no entra. Quita Congelado e Infectado
+        // antes del cambio de bando, como el deshielo y la cura (desviaciones 200 y 206).
+        //
+        // El robo de carga sale solo del cambio de bando: PulsarCaster pierde la carga a medias y
+        // conserva el poder listo, y un haz ya lanzado sigue siendo de quien lo lanzó (PowerBeam).
+        // Una reconversión en curso se cancela como en cualquier captura (NodeConverter).
+        public void Steal(Faction thief)
+        {
+            if (thief == Faction.Neutral)
+                throw new ArgumentException("Un Agujero de Gusano siempre lo lanza un bando.", nameof(thief));
+
+            if (HasState(NodeStateFlags.Frozen))
+            {
+                if (Freezer != null)
+                    Freezer.ClearByWormhole();
+                else
+                    StateMachine.SetFlag(NodeStateFlags.Frozen, false);
+            }
+            Cure();
+            Ownership.ChangeFaction(thief);
+        }
+
         // Como Thaw: sin NodeDecay, la bandera la ha puesto un test a mano y la cura la quita igual.
         void Cure()
         {

@@ -124,7 +124,7 @@ namespace Nova.Systems
         }
 
         // El efecto cae antes del aviso: quien escucha OnLanded ve ya el objetivo afectado. Cero
-        // Absoluto desde T3-04 y Decaimiento desde T3-05; Agujero de Gusano llega con T3-06.
+        // Absoluto (T3-04), Decaimiento (T3-05) y Agujero de Gusano (T3-06).
         void Land(PowerBeam beam)
         {
             switch (beam.Type)
@@ -134,6 +134,9 @@ namespace Nova.Systems
                     break;
                 case PowerType.Decay:
                     beam.Target.Infect(); // 7.4
+                    break;
+                case PowerType.Wormhole:
+                    beam.Target.Steal(beam.Launcher); // 7.5, a favor de quien lo lanzó (17 caso 28)
                     break;
             }
             OnLanded?.Invoke(beam);

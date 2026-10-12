@@ -86,13 +86,13 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ hecha · 🔴 bloqueada.
 | 0 | Proyecto | 6 | 6 | ✅ | El proyecto abre en Unity, `Nova.Core` compila sin referenciar `UnityEngine` y un test vacío corre en EditMode |
 | 1 | Núcleo jugable | 14 | 14 | ✅ | Capturar un Asteroide, encenderlo como Estrella y tomar un nodo enemigo |
 | 2 | Tipos y defensa | 8 | 8 | ✅ | Los cuatro tipos funcionan y el nivel 3 es jugable |
-| 3 | Poderes | 8 | 6 | 🟨 | Los tres poderes funcionan y pasan los casos 8–14 y 27–35 de la sección 17 |
+| 3 | Poderes | 8 | 7 | 🟨 | Los tres poderes funcionan y pasan los casos 8–14 y 27–35 de la sección 17 |
 | 4 | Algoritmo del Enemigo | 6 | 0 | ⬜ | El algoritmo del mapa 3 vence a un jugador descuidado |
 | 5 | Flujo y contenido | 7 | 0 | ⬜ | Los 9 niveles son completables de principio a fin |
 | 6 | Presentación | 11 | 0 | 🔴 | 46 de 108 assets listos. **`T6-01`, `T6-02` y `T6-03` ya no están bloqueadas por arte**; las otras ocho sí ([A.7](./NOVA_Assets_Diseno.md#a7-resumen-de-progreso)) |
-| | **Total** | **60** | **34** | | |
+| | **Total** | **60** | **35** | | |
 
-**Siguiente tarea:** `T3-06`, Agujero de Gusano: captura íntegra, ignora la resistencia ×2 y roba la carga en sus tres ventanas ([7.5](./NOVA_GameDesign_Spec.md#75-agujero-de-gusano)). La fase 2 se cerró con su criterio aplazado (desviación 185).
+**Siguiente tarea:** `T3-07`, `PulsarPowerWheel` y la barra de carga visible también en el Púlsar enemigo ([13.5](./NOVA_GameDesign_Spec.md#135-rueda-de-poderes-del-púlsar)). Es la que hace jugables los tres poderes. La fase 2 se cerró con su criterio aplazado (desviación 185).
 
 ---
 
@@ -157,7 +157,7 @@ Creada el **2026-09-28**. `T.4` empezaba en `T1-01` dando por hecho un proyecto 
 | T3-03b | Filtro de objetivo válido: **nodo encendido no propio**. Incluye el Magnetar neutral; excluye todo Asteroide | [7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido) | T3-03 | No | ✅ |
 | T3-04 | Cero Absoluto: congelación, deshielo invertido, auto-deshielo de 30 s | [7.3](./NOVA_GameDesign_Spec.md#73-cero-absoluto) | T3-03 | No | ✅ |
 | T3-05 | Decaimiento: −2 E/s, permanencia en 0, cura, no acumulable | [7.4](./NOVA_GameDesign_Spec.md#74-decaimiento) | T3-03 | No | ✅ |
-| T3-06 | Agujero de Gusano: captura íntegra, ignora ×2, robo de carga en sus 3 ventanas | [7.5](./NOVA_GameDesign_Spec.md#75-agujero-de-gusano) | T3-03 | No | ⬜ |
+| T3-06 | Agujero de Gusano: captura íntegra, ignora ×2, robo de carga en sus 3 ventanas | [7.5](./NOVA_GameDesign_Spec.md#75-agujero-de-gusano) | T3-03 | No | ✅ |
 | T3-07 | `PulsarPowerWheel` + barra de carga visible también en el Púlsar enemigo | [13.5](./NOVA_GameDesign_Spec.md#135-rueda-de-poderes-del-púlsar) | T3-06 | No | ⬜ |
 
 ### Fase 4 — Algoritmo del Enemigo
@@ -217,6 +217,7 @@ Una línea por tarea completada. La más reciente arriba.
 
 | Fecha | Tarea | Resultado | Notas / desviaciones de la spec |
 |---|---|---|---|
+| 2026-10-11 | **T3-06** | `NodeController.Steal`: el haz de Agujero de Gusano (`PowerBeamSystem.Land`) cambia de bando el objetivo a favor de quien lo lanzó, conservando Energía, tipo y nivel y sin pasar por `ImpactResolver`, así que la resistencia ×2 no entra (caso 30). Antes del cambio de bando quita Congelado (`NodeFreeze.ClearByWormhole`) e Infectado (caso 14). El robo de carga no necesita código nuevo: `PulsarCaster` ya perdía la carga a medias y conservaba el poder listo al cambiar de bando (caso 10), y el haz ya lanzado ya era de quien lo lanzó (caso 28). Una reconversión en curso se cancela como en cualquier captura. `NodeFreeze.OnThawed` pasa de `bool` a `ThawReason` (`Impact`, `Silence`, `Wormhole`). Tests: `WormholeTests` (nuevo) y el aviso de deshielo en `AbsoluteZeroTests` | Suite completa en verde en el Test Runner de Unity. Sin prueba en Play hasta `T3-07`. Desviaciones 207–208 abajo |
 | 2026-10-11 | **T3-05** | **`NodeDecay`** en `Gameplay/Nodes/`: pone y quita `Infected` y resta un punto cada `1 / BalanceConfig.DecayRate` s (0.5 s) hasta 0, en microsegundos; a 0 sigue infectado y del mismo dueño (17 caso 11). Otro Decaimiento reinicia el reloj sin duplicar la tasa (caso 13). Sigue corriendo congelado, sin descongelar ni reiniciar el auto-deshielo (7.3). `NodeController.Infect` lo llama `PowerBeamSystem.Land` con el haz de Decaimiento y, si el nodo se reconvertía, primero cancela la reconversión con `NodeConverter.Interrupt` (nuevo, el mismo camino que la captura). `ApplyImpact` aplica por fin `CuresInfection`: cualquier impacto cura, antes del cambio de bando (casos 12 y 32). Infectado, el nodo genera, dispara, envía, mejora y carga con normalidad; solo no inicia una reconversión, que ya estaba bloqueado. `ProvisionalNodeView` dibuja un halo verde `#7CF23F` de 4 px por detrás del círculo, compatible con el tinte de hielo. `TestScenes` añade `NodeDecay` a cada nodo. Tests: `DecayTests` (nuevo) y el halo en `ProvisionalNodeViewTests` | Suite completa en verde en el Test Runner de Unity. Sin prueba en Play hasta `T3-07`. Desviaciones 203–206 abajo |
 | 2026-10-11 | **T3-04** | **`NodeFreeze`** en `Gameplay/Nodes/`: pone y quita `Frozen` y lleva el reloj del auto-deshielo en microsegundos; se descongela solo tras 30 s seguidos sin impactos (`BalanceConfig.AutoThawTime`), con su facción y su Energía. Cada impacto reinicia el reloj, de la facción que sea, y también otro Cero Absoluto. `NodeController.Freeze` lo llama `PowerBeamSystem.Land` con el haz de Cero Absoluto, y `ApplyImpact` aplica por fin `Unfreezes`: descongela antes de cambiar de bando y, si el impacto no descongela, reinicia el reloj. Congelado, la Estrella no genera y conserva el progreso, el Magnetar no dispara a nadie —el neutral tampoco (17 caso 31)— y `ProtonLauncher` devuelve el bloqueo nuevo `LaunchBlock.Frozen`. Mejorar, iniciar una reconversión y cargar, lanzar o cancelar un poder ya estaban bloqueados por `NodeSnapshot.IsFrozen`, y la reconversión y la carga en curso ya se pausaban (17 casos 8 y 9). `ImpactResolver` ya tenía `ResolveImpact_Frozen` desde `T1-03`. `ProvisionalNodeView` lleva el círculo a medio camino del hielo `#B8F0FF`, por encima del oscurecido de Reconvirtiendo (14.7). `TestScenes` añade `NodeFreeze` a cada nodo. Tests: `AbsoluteZeroTests` (nuevo), el tinte en `ProvisionalNodeViewTests` y `NodeFreeze` en los nodos de `PowerBeamTests` | Suite completa en verde en el Test Runner de Unity. Sin prueba en Play hasta `T3-07`: sin entrada para cargar poderes no hay forma de congelar nada desde el juego. Desviaciones 198–202 abajo |
 | 2026-10-11 | **T3-03** y **T3-03b** | `PowerRules.IsValidTarget` (7.2.1: nodo encendido que no es del lanzador; vale el Magnetar neutral, ningún Asteroide) y `CheckLaunch` (dueño, Púlsar, poder al 100 %, no congelado, objetivo válido). Dos bloqueos nuevos: `NotReady` e `InvalidTarget`. `PulsarCaster.TryLaunch`: el Púlsar queda vacío en el acto y nace un haz. **`PowerBeam`** y **`PowerBeamSystem`** en `Systems/Powers/`: el haz guarda extremos, poder y facción del lanzador; el sistema corre a +10, cuenta los 0.25 s en microsegundos, revalida el objetivo al terminar y emite `OnLanded` u `OnDissipated`; los que terminan en el mismo tick se ordenan por tick de lanzamiento, Energía del Púlsar al lanzar y orden de lanzamiento (17 caso 29). Los efectos llegan con `T3-04` a `T3-06`. `INodeCommandIssuer.LaunchPower`. `ProvisionalBeamView`: trazo de 3 px en el color del poder mientras dura el haz. `TestScenes` añade el sistema y la vista. Tests: `PowerBeamTests` (nuevo) | Suite completa en verde en el Test Runner de Unity, con `T3-02` incluida. Sin prueba en Play hasta `T3-07`. Desviaciones 194–197 abajo |
@@ -278,6 +279,11 @@ Una línea por tarea completada. La más reciente arriba.
 | — | — | Proyecto de código sin iniciar | — |
 
 > **Cómo leer esta lista.** Una línea por desviación: **qué cambió** y **dónde vive ahora**. El razonamiento completo está en el documento que se cita, que es el que manda; aquí solo está el rastro de cuándo y por qué se movió. Los números no se reutilizan nunca, ni siquiera cuando una desviación queda revertida.
+
+**Al implementar `T3-06` (2026-10-11).**
+
+207. **El Agujero de Gusano no es un impacto y no pasa por `ImpactResolver`.** No hay Carga que multiplicar, así que la resistencia ×2 no entra por construcción (7.5), y no hay deshielo: un nodo congelado se lo lleva el Gusano con toda su Energía (caso 14), no a 0. Congelado e Infectado se quitan antes del cambio de bando, como el deshielo y la cura (desviaciones 200 y 206).
+208. **Dos Gusanos cruzados el mismo tick intercambian los Púlsares.** El caso 29 aplicado al pie de la letra: el segundo haz «opera sobre el resultado del primero», y su objetivo sigue sin ser del lanzador, así que también cae. Solo se disipa si el primero le dio el objetivo a su propio lanzador (caso 27), como dos Gusanos del mismo bando sobre el mismo nodo.
 
 **Al implementar `T3-05` (2026-10-11).**
 
