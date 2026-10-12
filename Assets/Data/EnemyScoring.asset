@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64f794749efe4badabe8068eca90e7cb, type: 3}
+  m_Name: EnemyScoring
+  m_EditorClassIdentifier: Nova.Data::Nova.Data.EnemyScoring
+  starValue: 100
+  pulsarValue: 80
+  magnetarValue: 70
+  asteroidValue: 40
+  powerUpBonus: 60
+  routeRiskPerMagnetar: 6
+  drainPenalty: 30
+  drainThreshold: 0.3
+  absoluteZeroAffinity:
+    star: 20
+    pulsar: 40
+    magnetar: 30
+  decayAffinity:
+    star: 40
+    pulsar: 10
+    magnetar: 20
+  wormholeAffinity:
+    star: 30
+    pulsar: 20
+    magnetar: 50
+  stealBonus: 60
+  relativeEnergyWeight: 40
+  neutralAdjustment: 25
+  redundancyPenalty: 100
+  ignitionBase: 50
+  starNeed: 40
+  pulsarNeed: 30
+  magnetarNeed: 30
+  starUpgradeBase: 60
+  pulsarUpgradeBase: 50
+  magnetarUpgradeBase: 40
+  upgradeCostFactor: 0.5
+  chargeValueFactor: 0.5
+  chargeCostFactor: 0.5
+  conversionBase: 80

@@ -803,6 +803,7 @@ Assets/
 | `NodeSpawnData.cs` | `[Serializable] struct`: posición, tipo, nivel, facción, energía inicial |
 | `PowerUpDefinition.cs` | Tipo, magnitud, duración, icono, estadística afectada |
 | `EnemyProfile.cs` | Los 8 parámetros de la tabla [12.5](./NOVA_Algoritmo_Enemigo.md#125-perfiles-por-mapa) |
+| `EnemyScoring.cs` | Los pesos de las funciones de puntuación del Enemigo ([12.3](./NOVA_Algoritmo_Enemigo.md#123-función-de-puntuación-atacar), 12.3.1 y 12.3.2): `ValorTipo`, bonus, penalizaciones, afinidades, necesidades de encendido y bases de mejora. Uno solo, igual para los tres mapas; lo que cambia por mapa está en `EnemyProfile` (`T4-02`) |
 | `UiText.cs` | **Todos los textos de la UI**, en español: nombres de tipo, formatos del panel, `DORMIDO`, `NIVEL MÁXIMO`… Una instancia, `Assets/Data/UiText.asset`. El juego es solo en español, pero ningún texto se escribe en un script o un prefab ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #39) |
 
 ### 15.5 Gameplay — componentes de nodo

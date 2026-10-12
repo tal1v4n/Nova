@@ -7,7 +7,7 @@
 >
 > **Aquí no hay ningún modelo de inteligencia artificial.** El Enemigo lo controla un algoritmo determinista: una función de puntuación, un umbral y un ruido con semilla inyectable. No aprende, no se entrena, no infiere y no cambia entre partidas; con la misma entrada y la misma semilla produce siempre la misma salida, y eso está exigido en [12.7](#127-contrato-de-implementación). En este proyecto «IA» designa únicamente al **asistente** con el que se escribe el código ([T.1](./NOVA_Tracking.md#t1-prompt-de-continuación)), nunca al oponente.
 >
-> **Scripts que lo implementan** (ver [15.7](./NOVA_GameDesign_Spec.md#157-input-enemigo-y-ui)): `EnemyController.cs`, `EnemyEvaluator.cs`, `EnemyThreatResponder.cs`, `EnemyCommandIssuer.cs`, `EnemyProfile.cs`.
+> **Scripts que lo implementan** (ver [15.7](./NOVA_GameDesign_Spec.md#157-input-enemigo-y-ui)): `EnemyController.cs`, `EnemyEvaluator.cs`, `EnemyThreatResponder.cs`, `EnemyCommandIssuer.cs`, `EnemyProfile.cs` y `EnemyScoring.cs`, que guarda los pesos de las fórmulas de 12.3 (todo número de balance va en un ScriptableObject).
 
 ---
 
