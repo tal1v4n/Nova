@@ -10,7 +10,8 @@ namespace Nova.Enemy
 {
     // Ciclo de decisión del Enemigo (12.1, 12.7, 15.7, T4-04). Cada IntervaloDeDecision del perfil:
     //   1. Foto del tablero (EnemyBoard.Capture sobre NodeRegistry).
-    //   2. La defensa ante una amenaza crítica llega con EnemyThreatResponder (T4-05).
+    //   2. Si un nodo propio está amenazado, la defensa de EnemyThreatResponder (12.4, T4-05), y el
+    //      ciclo termina ahí. Sin respuesta posible, sigue al paso 3.
     //   3–6. Candidatas de EnemyEvaluator, ruido con semilla, y la mejor si supera el umbral; si no,
     //        nada (acumular).
     //
@@ -37,6 +38,9 @@ namespace Nova.Enemy
         [Tooltip("Opcional: sin él se usa NodeRegistry.Instance.")]
         [SerializeField] NodeRegistry nodes;
 
+        [Tooltip("Opcional: sin él se usa ProtonRegistry.Instance. Sin ninguno, no ve amenazas (T4-05).")]
+        [SerializeField] ProtonRegistry protons;
+
         [Tooltip("Semilla del ruido de decisión (12.7).")]
         [SerializeField] int seed;
 
@@ -50,6 +54,7 @@ namespace Nova.Enemy
         // aceptaron. Para los tests y la depuración.
         public EnemyAction? LastAction { get; private set; }
         public bool LastExecuted { get; private set; }
+        public bool LastWasDefense { get; private set; }
         public int Cycles { get; private set; }
 
         // (acción elegida o null, ejecutada) al final de cada ciclo.
@@ -86,10 +91,16 @@ namespace Nova.Enemy
 
             snapshot.Clear();
             snapshot.AddRange(registry.All);
-            EnemyBoard board = EnemyBoard.Capture(Issuer.Faction, snapshot, Balance, powers);
+            EnemyBoard board = EnemyBoard.Capture(Issuer.Faction, snapshot, Balance, powers, Protons);
 
-            List<EnemyAction> candidates = EnemyEvaluator.Candidates(board, profile, Scoring);
-            EnemyAction? chosen = EnemyEvaluator.Pick(candidates, profile, Random);
+            // 12.1 paso 2: la defensa va antes que las candidatas y no pasa por el umbral ni el ruido.
+            EnemyAction? chosen = EnemyThreatResponder.Respond(board, profile);
+            LastWasDefense = chosen.HasValue;
+            if (!chosen.HasValue)
+            {
+                List<EnemyAction> candidates = EnemyEvaluator.Candidates(board, profile, Scoring);
+                chosen = EnemyEvaluator.Pick(candidates, profile, Random);
+            }
             bool executed = chosen.HasValue && Issuer.Execute(chosen.Value, snapshot);
 
             Cycles++;
@@ -110,8 +121,9 @@ namespace Nova.Enemy
         // Para la escena de prueba y los tests: el cableado normal es por el Inspector.
         public void Configure(EnemyProfile enemyProfile, EnemyScoring enemyScoring, BalanceConfig config,
                               EnemyCommandIssuer commandIssuer, IEnumerable<PowerDefinition> powerDefinitions,
-                              NodeRegistry registry = null, int noiseSeed = 0)
+                              NodeRegistry registry = null, int noiseSeed = 0, ProtonRegistry protonRegistry = null)
         {
+            protons = protonRegistry;
             profile = enemyProfile;
             scoring = enemyScoring;
             balance = config;
@@ -125,6 +137,7 @@ namespace Nova.Enemy
 
         System.Random Random => random ?? (random = new System.Random(seed));
         NodeRegistry Registry => nodes != null ? nodes : NodeRegistry.Instance;
+        ProtonRegistry Protons => protons != null ? protons : ProtonRegistry.Instance;
         EnemyScoring Scoring => scoring != null ? scoring : throw new InvalidOperationException("EnemyController necesita EnemyScoring.");
         BalanceConfig Balance => balance != null ? balance : throw new InvalidOperationException("EnemyController necesita BalanceConfig.");
         EnemyCommandIssuer Issuer => issuer != null ? issuer : throw new InvalidOperationException("EnemyController necesita EnemyCommandIssuer.");

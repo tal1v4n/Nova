@@ -68,6 +68,7 @@ namespace Nova.Systems
             source.SubtractEnergy(charge);
             proton = pool.Get();
             proton.Launch(source.transform.position, target, source.Faction, charge, balance);
+            proton.Source = source;
             if (registry != null)
                 registry.Register(proton);
             return LaunchBlock.None;

@@ -87,12 +87,12 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ hecha · 🔴 bloqueada.
 | 1 | Núcleo jugable | 14 | 14 | ✅ | Capturar un Asteroide, encenderlo como Estrella y tomar un nodo enemigo |
 | 2 | Tipos y defensa | 8 | 8 | ✅ | Los cuatro tipos funcionan y el nivel 3 es jugable |
 | 3 | Poderes | 8 | 8 | ✅ | Los tres poderes funcionan y pasan los casos 8–14 y 27–35 de la sección 17 |
-| 4 | Algoritmo del Enemigo | 6 | 4 | 🟨 | El algoritmo del mapa 3 vence a un jugador descuidado |
+| 4 | Algoritmo del Enemigo | 6 | 5 | 🟨 | El algoritmo del mapa 3 vence a un jugador descuidado |
 | 5 | Flujo y contenido | 7 | 0 | ⬜ | Los 9 niveles son completables de principio a fin |
 | 6 | Presentación | 11 | 0 | 🔴 | 46 de 108 assets listos. **`T6-01`, `T6-02` y `T6-03` ya no están bloqueadas por arte**; las otras ocho sí ([A.7](./NOVA_Assets_Diseno.md#a7-resumen-de-progreso)) |
-| | **Total** | **60** | **40** | | |
+| | **Total** | **60** | **41** | | |
 
-**Siguiente tarea:** `T4-05`, `EnemyThreatResponder`: refuerzo, congelación y evacuación ([12.4](./NOVA_Algoritmo_Enemigo.md#124-detección-de-amenaza-y-defensa)). La fase 3 se cerró el 2026-10-11 con su criterio cumplido; la fase 2, con el suyo aplazado (desviación 185).
+**Siguiente tarea:** `T4-06`, verificación de las prohibiciones de 12.6 ([12.6](./NOVA_Algoritmo_Enemigo.md#126-prohibiciones)). Después, el criterio de salida de la fase 4 en Play con *Nova → Fase 4 → Generar escena de prueba*. La fase 3 se cerró el 2026-10-11 con su criterio cumplido; la fase 2, con el suyo aplazado (desviación 185).
 
 ---
 
@@ -168,7 +168,7 @@ Creada el **2026-09-28**. `T.4` empezaba en `T1-01` dando por hecho un proyecto 
 | T4-02 | `EnemyEvaluator` + los tests de 12.7 que le tocan (todos menos el 5, que es de `T4-05`), con `ScorePoder` y las funciones de 12.3.2 | [12.3](./NOVA_Algoritmo_Enemigo.md#123-función-de-puntuación-atacar), [12.3.1](./NOVA_Algoritmo_Enemigo.md#1231-función-de-puntuación-lanzar-poder), [12.7](./NOVA_Algoritmo_Enemigo.md#127-contrato-de-implementación) | T4-01 | No | ✅ |
 | T4-03 | `EnemyCommandIssuer` sobre `INodeCommandIssuer` | [12.7](./NOVA_Algoritmo_Enemigo.md#127-contrato-de-implementación), [15.1](./NOVA_GameDesign_Spec.md#151-principios) | T4-01 | No | ✅ |
 | T4-04 | `EnemyController`: ciclo de decisión, una acción por ciclo, ruido con semilla | [12.1](./NOVA_Algoritmo_Enemigo.md#121-ciclo-de-decisión), [12.2](./NOVA_Algoritmo_Enemigo.md#122-acciones-candidatas) | T4-02, T4-03 | No | ✅ |
-| T4-05 | `EnemyThreatResponder`: refuerzo, congelación y evacuación | [12.4](./NOVA_Algoritmo_Enemigo.md#124-detección-de-amenaza-y-defensa) | T4-04 | No | ⬜ |
+| T4-05 | `EnemyThreatResponder`: refuerzo, congelación y evacuación | [12.4](./NOVA_Algoritmo_Enemigo.md#124-detección-de-amenaza-y-defensa) | T4-04 | No | ✅ |
 | T4-06 | Verificación de las prohibiciones de 12.6 | [12.6](./NOVA_Algoritmo_Enemigo.md#126-prohibiciones) | T4-05 | No | ⬜ |
 
 ### Fase 5 — Flujo y contenido
@@ -217,6 +217,7 @@ Una línea por tarea completada. La más reciente arriba.
 
 | Fecha | Tarea | Resultado | Notas / desviaciones de la spec |
 |---|---|---|---|
+| 2026-10-11 | **T4-05** | **`EnemyThreatResponder`** en `Nova.Enemy`, estático: `Threats` (los nodos propios amenazados según `ThreatCalculator.Assess`, del que antes captura al que más tarda) y `Respond`, una sola acción en el orden de 12.4: refuerzo del 50 % desde el donante que llega antes con lo suficiente, Cero Absoluto ya cargado sobre el origen del golpe más fuerte, o evacuación al nodo propio no amenazado más cercano con *Usa evacuación*. `EnemyController` la consulta en el paso 2 del ciclo, antes de puntuar y sin umbral ni ruido, y expone `LastWasDefense`. El tablero gana `BoardProton` (cada protón en vuelo hacia un nodo, con el índice de su origen), `BoardNode.Incoming`, `EnemyBoard.ProtonSpeed` y `Find`, y `Capture` los lee de `ProtonRegistry`. **`Proton.Source`**: el nodo del que salió, lo pone `ProtonLauncher`. Acción nueva `EnemyActionKind.Evacuate`, que `Execute` envía al 100 %. `TestScenes` da a la escena de la fase 4 el `ProtonRegistry`. Tests: `EnemyThreatResponderTests` (nuevo), con el test 5 de 12.7 y uno del ciclo con protones reales | Suite completa en verde en el Test Runner de Unity. Desviaciones 225–228 abajo |
 | 2026-10-11 | **T4-04** | **`EnemyController`** en `Nova.Enemy`, a -40: cada `DecisionInterval` del perfil, en microsegundos y en el tick fijo, hace la foto del tablero (`EnemyBoard.Capture` sobre una copia de `NodeRegistry.All`), pide las candidatas a `EnemyEvaluator`, elige con `Pick` y su `System.Random` con semilla, y ejecuta como mucho una por `EnemyCommandIssuer.Execute`. Expone `LastAction`, `LastExecuted`, `Cycles`, `OnDecided` y `Reseed`. `BoardNode.From` y `EnemyBoard.Capture` leen de cada `NodeController` el radio, los costes de mejora y reconversión y la carga del Púlsar. `TestScenes` estrena **Nova → Fase 4 → Generar escena de prueba**: una partida simétrica contra el Enemigo con el perfil del mapa 3; `Nova.Editor` referencia `Nova.Enemy`. Tests: `EnemyControllerTests` (nuevo) | Suite completa en verde en el Test Runner de Unity. Desviaciones 222–224 abajo |
 | 2026-10-11 | **T4-03** | **`NodeCommandIssuer`** en `Gameplay/Commands/`: la implementación de `INodeCommandIssuer` sale de `PlayerCommandIssuer` a una clase base abstracta, y cada bando solo pone su facción. `PlayerCommandIssuer` conserva `SendFromEach` y el campo `launcher` serializado, así que las escenas no cambian. **`EnemyCommandIssuer`** en `Nova.Enemy`: el bando Enemigo más `Execute`, que traduce una `EnemyAction` (índices de `NodeRegistry`) al comando que le toca y devuelve si las reglas la aceptaron. Tests: `EnemyCommandIssuerTests` (nuevo), con la paridad comprobada por reflexión: los métodos de la interfaz los declara la base, y cada bando no declara más que su comodidad | Suite completa en verde en el Test Runner de Unity. Desviaciones 220–221 abajo |
 | 2026-10-11 | **T4-02** | En `Nova.Enemy`: **`EnemyBoard`** y **`BoardNode`**, el tablero de un ciclo tal como lo lee el algoritmo (estado de Core, posición, radio del Magnetar, costes y carga del Púlsar); **`EnemyAction`** y `EnemyActionKind`, la candidata puntuada, con las acciones en el orden de 12.2; **`EnemyEvaluator`**, estático y sin estado: `Score` de 12.3 con `PlanSend` (50 %, 100 % con margen o desgaste con `Alcance`), `RiesgoDeRuta` por segmento contra radio y `PenalizacionVaciado` con «lo expone»; `ScorePoder` de 12.3.1; encender, mejorar, cargar poder y reconvertir de 12.3.2; `Candidates`, que las genera validando con `ConversionRules` y `PowerRules`, y `Pick`, que pone el ruido de 12.3.3 con un `System.Random` de fuera, desempata y exige superar el umbral. **`EnemyScoring`** en `Nova.Data` con todos los pesos y su asset escrito a mano en `Assets/Data/`. Tests: `EnemyEvaluatorTests` (nuevo), con los tests 1–4 y 6–15 de 12.7 | Suite completa en verde en el Test Runner de Unity. Desviaciones 215–219 abajo |
@@ -285,6 +286,13 @@ Una línea por tarea completada. La más reciente arriba.
 | — | — | Proyecto de código sin iniciar | — |
 
 > **Cómo leer esta lista.** Una línea por desviación: **qué cambió** y **dónde vive ahora**. El razonamiento completo está en el documento que se cita, que es el que manda; aquí solo está el rastro de cuándo y por qué se movió. Los números no se reutilizan nunca, ni siquiera cuando una desviación queda revertida.
+
+**Al implementar `T4-05` (2026-10-11).**
+
+225. **Un nodo congelado y amenazado no se refuerza.** La Energía propia también drena a un nodo congelado (7.3): el refuerzo lo acercaría a cambiar de bando. 12.4 no lo preveía. Pasa directo a congelar al atacante; evacuar tampoco puede, porque congelado no envía.
+226. **La defensa no pasa por el umbral ni por el ruido, y si no hay respuesta posible el ciclo sigue con las candidatas.** 12.1 dice «si hay una amenaza crítica, responder; si no, generar candidatas»: con una amenaza a la que no se puede responder, quedarse quieto dejaría al Enemigo paralizado hasta que caiga el nodo. Con varias amenazas se atiende la que antes captura; si a esa no se le puede responder, la siguiente.
+227. **«El nodo origen del ataque» es el del protón hostil más fuerte de la amenaza**, con su Carga ya multiplicada; con empate, el que llega antes. Para saberlo, `Proton` gana `Source`, que pone `ProtonLauncher`. Si el origen ya no es objetivo válido (7.2.1) —por ejemplo, porque el Enemigo lo capturó—, no se congela.
+228. **La evacuación sí pasa por `Execute`**, con una acción propia, `Evacuate`, en vez de un `Send` suelto como anticipaba la desviación 221: así la defensa sale por el mismo camino que el resto de las acciones. El donante de un refuerzo puede ser cualquier nodo propio que envíe, también un Púlsar o uno amenazado, y el refugio de una evacuación cualquier nodo propio no amenazado: 12.4 no excluye a ninguno.
 
 **Al implementar `T4-04` (2026-10-11).**
 

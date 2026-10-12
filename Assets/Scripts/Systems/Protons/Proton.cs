@@ -31,6 +31,10 @@ namespace Nova.Systems
         bool inFlight;
 
         public NodeController Target => target;
+
+        // Nodo del que salió, si lo lanzó ProtonLauncher. Lo lee la defensa del Enemigo para congelar
+        // el origen del ataque (12.4, T4-05). Puede haber cambiado de bando desde el lanzamiento.
+        public NodeController Source { get; internal set; }
         // Facción del emisor en el lanzamiento; no cambia aunque el origen cambie de bando (6.1).
         public Faction Faction => faction;
         public int Charge => charge;
@@ -68,6 +72,7 @@ namespace Nova.Systems
                 throw new InvalidOperationException("BalanceConfig.ProtonSpeed debe ser positiva.");
 
             origin = from;
+            Source = null;
             transform.position = new Vector3(from.x, from.y, transform.position.z);
             target = destination;
             double distance = Vector2.Distance(from, destination.transform.position);
@@ -157,6 +162,7 @@ namespace Nova.Systems
             OnFinished?.Invoke(this);
             target = null;
             balance = null;
+            Source = null;
 
             if (Pool != null)
                 Pool.Release(this);

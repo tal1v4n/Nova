@@ -12,6 +12,7 @@ namespace Nova.Enemy
         ChargePower = 4,
         LaunchPower = 5,
         Convert = 6,
+        Evacuate = 7,    // Solo como respuesta de 12.4 (T4-05): todo al nodo propio no amenazado más cercano
     }
 
     // Una candidata puntuada (12.3, 12.3.1, 12.3.2). Actor y Target son índices de NodeRegistry

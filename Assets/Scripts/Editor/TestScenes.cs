@@ -155,7 +155,7 @@ namespace Nova.Editor
                 CreateNode(spec.name, Definition(spec.type), spec.faction, spec.energy, spec.level, spec.position, balance, font, ignitionTargets, powers, protons, beams);
 
             if (enemyProfile != null)
-                CreateEnemy(enemyProfile, registry, balance, powers);
+                CreateEnemy(enemyProfile, registry, protons, balance, powers);
 
             Directory.CreateDirectory(ScenesFolder);
             EditorSceneManager.SaveScene(scene, scenePath);
@@ -165,7 +165,7 @@ namespace Nova.Editor
         }
 
         // T4-04: el Enemigo con el perfil de un mapa. Usa el mismo ProtonLauncher que el Jugador (3.1).
-        static void CreateEnemy(string profileName, NodeRegistry registry, BalanceConfig balance, PowerDefinition[] powers)
+        static void CreateEnemy(string profileName, NodeRegistry registry, ProtonRegistry protons, BalanceConfig balance, PowerDefinition[] powers)
         {
             var profile = AssetDatabase.LoadAssetAtPath<EnemyProfile>($"{ProfilesFolder}/{profileName}.asset");
             var scoring = AssetDatabase.LoadAssetAtPath<EnemyScoring>(ScoringPath);
@@ -178,7 +178,7 @@ namespace Nova.Editor
             var go = new GameObject("Enemy");
             var issuer = go.AddComponent<EnemyCommandIssuer>();
             issuer.Configure(registry.GetComponent<ProtonLauncher>());
-            go.AddComponent<EnemyController>().Configure(profile, scoring, balance, issuer, powers, registry);
+            go.AddComponent<EnemyController>().Configure(profile, scoring, balance, issuer, powers, registry, 0, protons); // T4-05: ve las amenazas
             EditorUtility.SetDirty(go);
         }
 
