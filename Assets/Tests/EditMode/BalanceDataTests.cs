@@ -162,5 +162,68 @@ namespace Nova.Tests
             UnityEngine.Color32 color = Power(asset).BeamColor;
             Assert.AreEqual(new UnityEngine.Color32((byte)r, (byte)g, (byte)b, 0xFF), color);
         }
+
+        // --- Perfiles del Enemigo (12.5, T4-01) ---
+
+        const string ProfilesFolder = "Assets/Data/EnemyProfiles";
+
+        static EnemyProfile Profile(string name) =>
+            AssetDatabase.LoadAssetAtPath<EnemyProfile>($"{ProfilesFolder}/{name}.asset");
+
+        [Test]
+        public void ThereIsOneProfilePerMap()
+        {
+            var names = AssetDatabase.FindAssets("t:EnemyProfile")
+                .Select(guid => System.IO.Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(guid)))
+                .OrderBy(n => n)
+                .ToArray();
+
+            CollectionAssert.AreEqual(new[] { "Map1", "Map2", "Map3" }, names);
+        }
+
+        // La tabla de 12.5, columna a columna. «Nunca» envía al 100 % es margen 0.
+        [TestCase("Map1", 3.0f, 40f, 0.7f, false, false, false, 0f, 0.25f)]
+        [TestCase("Map2", 2.0f, 25f, 1.0f, true, false, true, 1.5f, 0.15f)]
+        [TestCase("Map3", 1.2f, 10f, 1.3f, true, true, true, 1.2f, 0.05f)]
+        public void ProfileMatchesSpec(string asset, float interval, float threshold, float aggression,
+                                       bool evacuation, bool conversion, bool powerUps, float margin, float noise)
+        {
+            EnemyProfile profile = Profile(asset);
+            Assert.IsNotNull(profile, $"Falta {ProfilesFolder}/{asset}.asset");
+            Assert.AreEqual(interval, profile.DecisionInterval, 1e-5f);
+            Assert.AreEqual(threshold, profile.ActionThreshold, 1e-5f);
+            Assert.AreEqual(aggression, profile.AggressionMultiplier, 1e-5f);
+            Assert.AreEqual(evacuation, profile.UsesEvacuation);
+            Assert.AreEqual(conversion, profile.UsesConversion);
+            Assert.AreEqual(powerUps, profile.PrioritizesPowerUps);
+            Assert.AreEqual(margin, profile.FullSendMargin, 1e-5f);
+            Assert.AreEqual(margin > 0f, profile.AllowsFullSend);
+            Assert.AreEqual(noise, profile.DecisionNoise, 1e-5f);
+        }
+
+        // 12.5: el mapa 1 es el más torpe y el 3 el más afilado, en cada eje a la vez.
+        [Test]
+        public void ProfilesSharpenFromMapOneToThree()
+        {
+            EnemyProfile one = Profile("Map1"), two = Profile("Map2"), three = Profile("Map3");
+            Assert.Greater(one.DecisionInterval, two.DecisionInterval);
+            Assert.Greater(two.DecisionInterval, three.DecisionInterval);
+            Assert.Greater(one.ActionThreshold, two.ActionThreshold);
+            Assert.Greater(two.ActionThreshold, three.ActionThreshold);
+            Assert.Less(one.AggressionMultiplier, two.AggressionMultiplier);
+            Assert.Less(two.AggressionMultiplier, three.AggressionMultiplier);
+            Assert.Greater(one.DecisionNoise, two.DecisionNoise);
+            Assert.Greater(two.DecisionNoise, three.DecisionNoise);
+        }
+
+        // 12.1 corre en el tick fijo de 50 Hz (15.10): el intervalo es un número entero de ticks.
+        [TestCase("Map1")]
+        [TestCase("Map2")]
+        [TestCase("Map3")]
+        public void DecisionIntervalIsAWholeNumberOfTicks(string asset)
+        {
+            float ticks = Profile(asset).DecisionInterval / 0.02f;
+            Assert.AreEqual(UnityEngine.Mathf.Round(ticks), ticks, 1e-3f);
+        }
     }
 }

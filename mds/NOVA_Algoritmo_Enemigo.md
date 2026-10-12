@@ -36,7 +36,7 @@ El algoritmo **nunca actúa más de una vez por ciclo**. Esto lo hace legible y 
 | Atacar nodo | Existe un nodo no propio y el origen tiene Energía suficiente para el envío |
 | Encender Asteroide | Posee un Asteroide con ≥ 10 de Energía |
 | Mejorar nodo | Un nodo propio tiene Energía ≥ coste de mejora |
-| Reforzar nodo | Un nodo propio está bajo amenaza y otro tiene excedente |
+| Reforzar nodo | **Solo como respuesta de [12.4](#124-detección-de-amenaza-y-defensa)**, que va antes de puntuar: no compite en la lista ni tiene puntuación propia |
 | Cargar poder | Posee un Púlsar sin poder cargado |
 | Lanzar poder | Posee un Púlsar con poder cargado y existe **al menos un nodo encendido que no sea suyo** —del Jugador, o el Magnetar neutral— ([7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido)) |
 | Reconvertir | Se queda sin Estrellas y tiene un nodo con Energía suficiente |
@@ -47,15 +47,31 @@ El algoritmo **nunca actúa más de una vez por ciclo**. Esto lo hace legible y 
 
 ```
 Score(origen, destino) =
-      ValorTipo(destino)              # Estrella 100, Púlsar 80, Magnetar 70, Asteroide 40
-    + BonusPowerUp(destino)           # +60 si el Asteroide está marcado con power-up
-    - CosteEfectivo(origen, destino)  # energía necesaria, incluida resistencia x2
-    - RiesgoDeRuta(origen, destino)   # 6 por cada Magnetar hostil que cubre la trayectoria
-    - PenalizacionVaciado(origen)     # 30 si dejar el origen por debajo del 30% lo expone
+    (
+          ValorTipo(destino) * Alcance       # Estrella 100, Púlsar 80, Magnetar 70, Asteroide 40
+        + BonusPowerUp(destino)              # +60 si el Asteroide está marcado con power-up
+        - CosteEfectivo(origen, destino)     # energía necesaria, incluida resistencia x2
+        - RiesgoDeRuta(origen, destino)      # 6 por cada Magnetar hostil que cubre la trayectoria
+        - PenalizacionVaciado(origen)        # 30 si dejar el origen por debajo del 30% lo expone
+    )
     * MultiplicadorAgresividad
 ```
 
+**El multiplicador afecta a la suma entera**, como en 12.3.1. Una versión anterior lo escribía sin paréntesis y, por precedencia, solo multiplicaba `PenalizacionVaciado` (T.7 #48, cerrado el 2026-10-11).
+
 Se descartan de entrada las acciones cuyo `CosteEfectivo` supere la Energía disponible del origen al 100%.
+
+**Cuánto se envía y `Alcance`.** El ataque envía el 50 % salvo que haga falta más ([5.2](./NOVA_GameDesign_Spec.md#52-envío)):
+
+1. Si `floor(Energía del origen × 0.5) ≥ CosteEfectivo`, envía el **50 %** y `Alcance = 1`.
+2. Si no, y el perfil lo permite (*Envía al 100 %*, [12.5](#125-perfiles-por-mapa)), envía el **100 %** cuando `Energía del origen ≥ CosteEfectivo × Margen`, y `Alcance = 1`. El margen cubre los disparos de los Magnetares por el camino: con 1.2 el mapa 3 se arriesga más que el mapa 2 con 1.5.
+3. Si no, envía el **50 % como ataque de desgaste**, que no captura: `Alcance = Carga enviada / CosteEfectivo`, de 0 a 1.
+
+**Los demás términos:**
+
+- **`PenalizacionVaciado`** se aplica cuando el origen queda por debajo del 30 % de su Tope **y** algún nodo del Jugador podría capturarlo tal como queda con un solo envío del 50 %. Eso es lo que significa «lo expone»: si nadie puede castigarlo, vaciarlo no cuesta nada.
+- **`BonusPowerUp`** vale 0 si el perfil no tiene *Prioriza power-ups*.
+- **`RiesgoDeRuta`**: un Magnetar «cubre la trayectoria» si el segmento origen→destino corta su radio. Es **hostil** si no es del Enemigo, y eso incluye al Magnetar neutral, que dispara a los dos bandos ([3.2](./NOVA_GameDesign_Spec.md#32-nota-sobre-el-magnetar-neutral)).
 
 ### 12.3.1 Función de puntuación (lanzar poder)
 
@@ -92,14 +108,66 @@ ScorePoder(poder, objetivo) =
 
 **Umbral.** `ScorePoder` compite en la misma lista que las demás candidatas de 12.2 y se somete al mismo `UmbralDeAccion` y al mismo ruido de 12.5. Un Enemigo con poder cargado y sin buenos objetivos **espera**, que es exactamente lo que haría un jugador.
 
+### 12.3.2 Funciones de puntuación (encender, mejorar, cargar poder y reconvertir)
+
+Las demás acciones de 12.2 puntúan en la misma escala para poder competir contra `UmbralDeAccion` (T.7 #48, cerrado el 2026-10-11). Reforzar no tiene función: solo existe como respuesta de 12.4.
+
+**Encender.** Una candidata por cada tipo que el Asteroide puede ser:
+
+```
+ScoreEncender(asteroide, tipo) = 50 + Necesidad(tipo)
+
+Necesidad(Estrella) = 40 / (1 + EstrellasPropias)    # 40 sin ninguna, 20 con una, 13 con dos
+Necesidad(Púlsar)   = 30 si no tiene ningún Púlsar, si no 0
+Necesidad(Magnetar) = 30 si el Asteroide es el nodo propio más cercano a algún nodo del Jugador, si no 0
+```
+
+Un Asteroide propio sin encender es capital muerto ([4.1](./NOVA_Nodos.md#41-asteroide-nivel-0)): encender supera siempre el umbral y la necesidad decide el tipo. Qué tipos ofrece cada mapa es T.7 #46.
+
+**Mejorar.**
+
+```
+ScoreMejorar(nodo) = BaseMejora(tipo) - coste / 2 - PenalizacionVaciado(nodo tras pagar)
+
+BaseMejora: Estrella 60, Púlsar 50, Magnetar 40
+```
+
+Una Estrella de nivel 1 a 2 puntúa 50 y de 4 a 5, 35; un Magnetar de 1 a 2, 30. `PenalizacionVaciado` es la de 12.3, con la Energía que le queda al nodo después de pagar.
+
+**Cargar poder.** Una candidata por cada poder que el nivel del Púlsar desbloquea:
+
+```
+ScoreCarga(pulsar, poder) =
+      max(ScorePoder(poder, objetivo)) / 2    # sobre los candidatos de 12.3.1; 0 si no hay ninguno
+    - coste / 2
+    - max(0, coste - Energía del Púlsar)       # una carga que se quedaría parada (7.1)
+```
+
+Cargar vale la mitad de lo que valdría lanzar ese poder ahora, menos su precio. Sin ningún objetivo legal la candidata no se genera.
+
+**Reconvertir.** Solo sin Estrellas propias y con *Usa reconversión* en el perfil:
+
+```
+ScoreReconvertir(nodo) = 80 - coste    # el destino es siempre Estrella
+```
+
+El origen es el nodo propio con más Energía que puede pagarla y no tiene un poder en carga ni cargado ([8.1](./NOVA_GameDesign_Spec.md#81-reglas)). Puntúa 60 o 50: es supervivencia y supera siempre el umbral.
+
+**El multiplicador de agresividad** solo afecta a atacar, lanzar poder y cargar poder, que hereda `ScorePoder`. Encender, mejorar y reconvertir son economía.
+
+### 12.3.3 Ruido y empates
+
+- **Ruido.** Cada candidata se multiplica por `1 + U(-r, +r)`, con `r` el *Ruido de decisión* del perfil, **antes** de compararla con el umbral. `U` sale del `System.Random` con semilla de [12.7](#127-contrato-de-implementación).
+- **Empates.** Dos candidatas con la misma puntuación final se ordenan por el orden de acciones de la tabla de 12.2, después por el orden de `NodeRegistry` del nodo que actúa y después por el del objetivo. Sin esta regla el determinismo de 12.7 dependería del orden en que se generan las candidatas.
+
 ### 12.4 Detección de amenaza y defensa
 
 Un nodo propio está **amenazado** si la suma de Carga de los protones hostiles dirigidos a él, aplicando su multiplicador, es mayor o igual que su Energía actual.
 
 Respuesta, en este orden de prioridad:
-1. Si un nodo propio tiene Energía suficiente y está a distancia, **reforzar** (enviar el 50%).
+1. Si un nodo propio tiene Energía suficiente y está a distancia, **reforzar** (enviar el 50%). *A distancia*: su protón llega antes que el primer impacto que capturaría el nodo amenazado, comparando su tiempo de vuelo con el de `ThreatCalculator`. *Suficiente*: `floor(Energía del donante × 0.5) ≥ Carga hostil efectiva − Energía del amenazado + 1`. Entre varios donantes, el que llega antes y, con empate, el que tiene más Energía.
 2. Si tiene un Púlsar con Cero Absoluto cargado, **congelar el nodo origen del ataque**. Ya no hay condición de alcance: el origen siempre es alcanzable, esté donde esté. Y siempre es objetivo legal, porque [5.2](./NOVA_GameDesign_Spec.md#52-envío) prohíbe que un Asteroide envíe, así que todo atacante es un nodo encendido.
-3. Si el refuerzo no llega a tiempo, **evacuar**: enviar toda la Energía del nodo amenazado a otro nodo propio, cediendo un nodo vacío en lugar de un nodo lleno.
+3. Si el refuerzo no llega a tiempo, **evacuar**: enviar toda la Energía del nodo amenazado a otro nodo propio, cediendo un nodo vacío en lugar de un nodo lleno. El destino es el nodo propio no amenazado más cercano. Solo con *Usa evacuación* en el perfil.
 
 La evacuación es lo que separa a un Enemigo que se defiende de uno que regala nodos llenos. Debe implementarse.
 
@@ -118,7 +186,9 @@ La evacuación es lo que separa a un Enemigo que se defiende de uno que regala n
 | Envía al 100% | Nunca | Si el margen es > 1.5× | Si el margen es > 1.2× |
 | Ruido de decisión | ±25% | ±15% | ±5% |
 
-El **ruido de decisión** altera aleatoriamente la puntuación final. Es el mecanismo principal para que el mapa 1 se sienta torpe sin necesidad de un algoritmo distinto.
+El **ruido de decisión** altera aleatoriamente la puntuación final ([12.3.3](#1233-ruido-y-empates)). Es el mecanismo principal para que el mapa 1 se sienta torpe sin necesidad de un algoritmo distinto.
+
+*Envía al 100 %* guarda el **margen** de [12.3](#123-función-de-puntuación-atacar): el 100 % solo sale si la Energía del origen es al menos `CosteEfectivo × margen`. «Nunca» es no tener margen. *Prioriza power-ups* activa `BonusPowerUp`; sin él vale 0.
 
 ### 12.6 Prohibiciones
 
@@ -151,3 +221,9 @@ El algoritmo no puede: ver protones antes de que se lancen, conocer los poderes 
 7. `ScorePoder` elige el mismo objetivo con el Púlsar pegado a él que con el Púlsar en la esquina opuesta del tablero: la distancia no entra en la fórmula.
 8. Con Cero Absoluto cargado y dos objetivos idénticos, uno ya Congelado y otro no, elige el que no lo está (`Redundancia`).
 9. Un Magnetar neutral lleno entra en la lista de candidatos de `ScorePoder`; un Asteroide neutral con 10 de Materia Inerte, no.
+10. `Score` aplica `MultiplicadorAgresividad` a la suma entera: con 0.7 y con 1.3, la misma candidata puntúa 0.7 y 1.3 veces lo que puntúa con 1.0.
+11. Un ataque cuyo 50 % no alcanza el `CosteEfectivo` envía el 100 % con el margen del perfil, y el 50 % de desgaste con `Alcance < 1` sin él.
+12. `PenalizacionVaciado` no se aplica si ningún nodo del Jugador podría capturar el origen tal como queda.
+13. `RiesgoDeRuta` cuenta el Magnetar neutral y no cuenta los Magnetares del Enemigo.
+14. Sin Estrellas, `ScoreEncender` elige Estrella; con dos Estrellas y sin Púlsar, Púlsar.
+15. Con el mismo ruido y dos candidatas empatadas, gana siempre la misma, por el orden de 12.3.3.
