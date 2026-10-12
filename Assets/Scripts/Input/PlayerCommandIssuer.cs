@@ -7,73 +7,16 @@ using UnityEngine;
 
 namespace Nova.Input
 {
-    // INodeCommandIssuer del Jugador (15.7). No decide nada: pasa cada comando al mismo servicio
-    // que usará el Enemigo, en nombre de la facción Jugador (3.1).
+    // INodeCommandIssuer del Jugador (15.7). No decide nada: los comandos son los de NodeCommandIssuer,
+    // los mismos que usa el Enemigo, en nombre de la facción Jugador (3.1, T4-03).
     [DisallowMultipleComponent]
-    public sealed class PlayerCommandIssuer : MonoBehaviour, INodeCommandIssuer
+    public sealed class PlayerCommandIssuer : NodeCommandIssuer
     {
-        [SerializeField] ProtonLauncher launcher;
-
-        public Faction Faction => Faction.Player;
-
-        public LaunchBlock Send(NodeController source, NodeController target, bool fullSend)
-        {
-            if (launcher == null)
-                throw new InvalidOperationException("PlayerCommandIssuer necesita un ProtonLauncher.");
-            return launcher.TryLaunch(source, target, Faction, fullSend, out _);
-        }
-
-        public ActionCheck Ignite(NodeController node, NodeType targetType)
-        {
-            if (node == null)
-                throw new ArgumentNullException(nameof(node));
-            if (!node.TryGetComponent(out NodeIgnition ignition))
-                throw new InvalidOperationException($"{node.name} no tiene NodeIgnition.");
-            return ignition.TryIgnite(Faction, targetType);
-        }
-
-        public ActionCheck Upgrade(NodeController node)
-        {
-            if (node == null)
-                throw new ArgumentNullException(nameof(node));
-            return node.TryUpgrade(Faction);
-        }
-
-        public ActionCheck Convert(NodeController node, NodeType targetType)
-        {
-            if (node == null)
-                throw new ArgumentNullException(nameof(node));
-            if (!node.TryGetComponent(out NodeConverter converter))
-                throw new InvalidOperationException($"{node.name} no tiene NodeConverter.");
-            return converter.TryConvert(Faction, targetType);
-        }
-
-        public ActionCheck ChargePower(NodeController node, PowerType power)
-        {
-            return Caster(node).TryCharge(Faction, power);
-        }
-
-        public ActionCheck CancelCharge(NodeController node)
-        {
-            return Caster(node).TryCancel(Faction);
-        }
-
-        public ActionCheck LaunchPower(NodeController node, NodeController target)
-        {
-            return Caster(node).TryLaunch(Faction, target);
-        }
-
-        static PulsarCaster Caster(NodeController node)
-        {
-            if (node == null)
-                throw new ArgumentNullException(nameof(node));
-            if (!node.TryGetComponent(out PulsarCaster caster))
-                throw new InvalidOperationException($"{node.name} no tiene PulsarCaster.");
-            return caster;
-        }
+        public override Faction Faction => Faction.Player;
 
         // Con varios orígenes seleccionados, cada uno lanza su propio protón con su propio cálculo
         // (5.2). Los que no pueden enviar se ignoran en silencio (17, caso 22). Devuelve cuántos salieron.
+        // Es una comodidad de la selección múltiple, no un comando: son varios Send.
         public int SendFromEach(IReadOnlyList<NodeController> sources, NodeController target, bool fullSend)
         {
             if (sources == null)
@@ -88,12 +31,6 @@ namespace Nova.Input
                     launched++;
             }
             return launched;
-        }
-
-        // Para la escena de prueba y los tests: el cableado normal es por el Inspector.
-        public void Configure(ProtonLauncher protonLauncher)
-        {
-            launcher = protonLauncher;
         }
     }
 }

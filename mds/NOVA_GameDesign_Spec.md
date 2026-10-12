@@ -827,6 +827,7 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 | `NodeFreeze.cs` | En todo nodo. Pone y quita la bandera `Frozen` y lleva el reloj del auto-deshielo: 30 s sin impactos, reiniciado por cada impacto ([7.3](#73-cero-absoluto), `T3-04`). El deshielo por impacto lo calcula `ImpactResolver` y lo aplica `NodeController` |
 | `NodeDecay.cs` | En todo nodo. Pone y quita la bandera `Infected` y resta la Energía del Decaimiento, un punto cada `1 / DecayRate` s hasta 0 ([7.4](#74-decaimiento), `T3-05`). La cura por impacto la calcula `ImpactResolver` y la aplica `NodeController` |
 | `INodeCommandIssuer.cs` | Canal único de comandos de Jugador y Enemigo (3.1, 15.1 #5), en `Gameplay/Commands/`. Expone la facción y un método por acción de [12.2](./NOVA_Algoritmo_Enemigo.md#122-acciones-candidatas), y **crece con la tarea que implementa cada acción**: `Send` desde `T1-11` |
+| `NodeCommandIssuer.cs` | Implementación común de `INodeCommandIssuer`, en `Gameplay/Commands/`. `PlayerCommandIssuer` y `EnemyCommandIssuer` derivan de ella y solo cambian la facción: la paridad de 3.1 es la misma línea de código (`T4-03`) |
 | `NodeCollider2D` | Trigger circular, solo para input y detección. Sin Rigidbody. Es un `CircleCollider2D` *trigger* en la capa de física **`Nodes`**, con el radio de la huella sólida del nodo (0.3–0.6 u, [NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Huella del nodo*). El clic se resuelve con `Physics2D.OverlapPoint` sobre esa capa ([18](#18-decisiones-tomadas-por-defecto) #23). |
 
 ### 15.6 Systems — escena
@@ -855,11 +856,11 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 | `SendLineState.cs` | Estado de las líneas de envío: de qué orígenes salen y dónde está el cursor. Lo escribe `InputRouter` a partir del arrastre derecho y de la selección; vive en `Nova.Input` por lo mismo que `IgnitionMenuState` |
 | `SendLine.cs` | Dibuja las líneas de envío ([13.1](#131-ratón), [14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma)). Solo lee `SendLineState` |
 | `SelectionManager.cs` | Conjunto de nodos seleccionados, lazo, feedback de selección |
-| `PlayerCommandIssuer.cs` | Implementa `INodeCommandIssuer` para el Jugador |
+| `PlayerCommandIssuer.cs` | `NodeCommandIssuer` del Jugador, más `SendFromEach` para la selección múltiple |
 | `EnemyController.cs` | Ciclo de decisión de [12.1](./NOVA_Algoritmo_Enemigo.md#121-ciclo-de-decisión) |
 | `EnemyEvaluator.cs` | Función de puntuación de [12.3](./NOVA_Algoritmo_Enemigo.md#123-función-de-puntuación-atacar). Pura, testeable. |
 | `EnemyThreatResponder.cs` | Refuerzo, congelación y evacuación de [12.4](./NOVA_Algoritmo_Enemigo.md#124-detección-de-amenaza-y-defensa) |
-| `EnemyCommandIssuer.cs` | Implementa `INodeCommandIssuer` para el Enemigo |
+| `EnemyCommandIssuer.cs` | `NodeCommandIssuer` del Enemigo, más `Execute`, que traduce una candidata de `EnemyEvaluator` al comando que le toca (`T4-03`) |
 | `NodeHUD.cs` | Número de Energía sobre el nodo |
 | `InfoPanelState.cs` | Estado del panel de clic derecho: abierto o no, de qué nodo, dónde y la geometría del botón. Lo abre y lo cierra `InputRouter`; vive en `Nova.Input` por lo mismo que `IgnitionMenuState` |
 | `NodeInfoPanel.cs` | Dibuja el panel de clic derecho. Solo lee `InfoPanelState` y valida el botón con `NodeController.CheckUpgrade` |

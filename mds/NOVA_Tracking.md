@@ -87,12 +87,12 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ hecha · 🔴 bloqueada.
 | 1 | Núcleo jugable | 14 | 14 | ✅ | Capturar un Asteroide, encenderlo como Estrella y tomar un nodo enemigo |
 | 2 | Tipos y defensa | 8 | 8 | ✅ | Los cuatro tipos funcionan y el nivel 3 es jugable |
 | 3 | Poderes | 8 | 8 | ✅ | Los tres poderes funcionan y pasan los casos 8–14 y 27–35 de la sección 17 |
-| 4 | Algoritmo del Enemigo | 6 | 2 | 🟨 | El algoritmo del mapa 3 vence a un jugador descuidado |
+| 4 | Algoritmo del Enemigo | 6 | 3 | 🟨 | El algoritmo del mapa 3 vence a un jugador descuidado |
 | 5 | Flujo y contenido | 7 | 0 | ⬜ | Los 9 niveles son completables de principio a fin |
 | 6 | Presentación | 11 | 0 | 🔴 | 46 de 108 assets listos. **`T6-01`, `T6-02` y `T6-03` ya no están bloqueadas por arte**; las otras ocho sí ([A.7](./NOVA_Assets_Diseno.md#a7-resumen-de-progreso)) |
-| | **Total** | **60** | **38** | | |
+| | **Total** | **60** | **39** | | |
 
-**Siguiente tarea:** `T4-03`, `EnemyCommandIssuer` sobre `INodeCommandIssuer` ([12.7](./NOVA_Algoritmo_Enemigo.md#127-contrato-de-implementación), [15.1](./NOVA_GameDesign_Spec.md#151-principios)). La fase 3 se cerró el 2026-10-11 con su criterio cumplido; la fase 2, con el suyo aplazado (desviación 185).
+**Siguiente tarea:** `T4-04`, `EnemyController`: ciclo de decisión, una acción por ciclo y ruido con semilla ([12.1](./NOVA_Algoritmo_Enemigo.md#121-ciclo-de-decisión), [12.2](./NOVA_Algoritmo_Enemigo.md#122-acciones-candidatas)). La fase 3 se cerró el 2026-10-11 con su criterio cumplido; la fase 2, con el suyo aplazado (desviación 185).
 
 ---
 
@@ -166,7 +166,7 @@ Creada el **2026-09-28**. `T.4` empezaba en `T1-01` dando por hecho un proyecto 
 |---|---|---|---|---|---|
 | T4-01 | `EnemyProfile` + los tres assets de perfil | [12.5](./NOVA_Algoritmo_Enemigo.md#125-perfiles-por-mapa) | T3-07 | No | ✅ |
 | T4-02 | `EnemyEvaluator` + los tests de 12.7 que le tocan (todos menos el 5, que es de `T4-05`), con `ScorePoder` y las funciones de 12.3.2 | [12.3](./NOVA_Algoritmo_Enemigo.md#123-función-de-puntuación-atacar), [12.3.1](./NOVA_Algoritmo_Enemigo.md#1231-función-de-puntuación-lanzar-poder), [12.7](./NOVA_Algoritmo_Enemigo.md#127-contrato-de-implementación) | T4-01 | No | ✅ |
-| T4-03 | `EnemyCommandIssuer` sobre `INodeCommandIssuer` | [12.7](./NOVA_Algoritmo_Enemigo.md#127-contrato-de-implementación), [15.1](./NOVA_GameDesign_Spec.md#151-principios) | T4-01 | No | ⬜ |
+| T4-03 | `EnemyCommandIssuer` sobre `INodeCommandIssuer` | [12.7](./NOVA_Algoritmo_Enemigo.md#127-contrato-de-implementación), [15.1](./NOVA_GameDesign_Spec.md#151-principios) | T4-01 | No | ✅ |
 | T4-04 | `EnemyController`: ciclo de decisión, una acción por ciclo, ruido con semilla | [12.1](./NOVA_Algoritmo_Enemigo.md#121-ciclo-de-decisión), [12.2](./NOVA_Algoritmo_Enemigo.md#122-acciones-candidatas) | T4-02, T4-03 | No | ⬜ |
 | T4-05 | `EnemyThreatResponder`: refuerzo, congelación y evacuación | [12.4](./NOVA_Algoritmo_Enemigo.md#124-detección-de-amenaza-y-defensa) | T4-04 | No | ⬜ |
 | T4-06 | Verificación de las prohibiciones de 12.6 | [12.6](./NOVA_Algoritmo_Enemigo.md#126-prohibiciones) | T4-05 | No | ⬜ |
@@ -217,6 +217,7 @@ Una línea por tarea completada. La más reciente arriba.
 
 | Fecha | Tarea | Resultado | Notas / desviaciones de la spec |
 |---|---|---|---|
+| 2026-10-11 | **T4-03** | **`NodeCommandIssuer`** en `Gameplay/Commands/`: la implementación de `INodeCommandIssuer` sale de `PlayerCommandIssuer` a una clase base abstracta, y cada bando solo pone su facción. `PlayerCommandIssuer` conserva `SendFromEach` y el campo `launcher` serializado, así que las escenas no cambian. **`EnemyCommandIssuer`** en `Nova.Enemy`: el bando Enemigo más `Execute`, que traduce una `EnemyAction` (índices de `NodeRegistry`) al comando que le toca y devuelve si las reglas la aceptaron. Tests: `EnemyCommandIssuerTests` (nuevo), con la paridad comprobada por reflexión: los métodos de la interfaz los declara la base, y cada bando no declara más que su comodidad | Suite completa en verde en el Test Runner de Unity. Desviaciones 220–221 abajo |
 | 2026-10-11 | **T4-02** | En `Nova.Enemy`: **`EnemyBoard`** y **`BoardNode`**, el tablero de un ciclo tal como lo lee el algoritmo (estado de Core, posición, radio del Magnetar, costes y carga del Púlsar); **`EnemyAction`** y `EnemyActionKind`, la candidata puntuada, con las acciones en el orden de 12.2; **`EnemyEvaluator`**, estático y sin estado: `Score` de 12.3 con `PlanSend` (50 %, 100 % con margen o desgaste con `Alcance`), `RiesgoDeRuta` por segmento contra radio y `PenalizacionVaciado` con «lo expone»; `ScorePoder` de 12.3.1; encender, mejorar, cargar poder y reconvertir de 12.3.2; `Candidates`, que las genera validando con `ConversionRules` y `PowerRules`, y `Pick`, que pone el ruido de 12.3.3 con un `System.Random` de fuera, desempata y exige superar el umbral. **`EnemyScoring`** en `Nova.Data` con todos los pesos y su asset escrito a mano en `Assets/Data/`. Tests: `EnemyEvaluatorTests` (nuevo), con los tests 1–4 y 6–15 de 12.7 | Suite completa en verde en el Test Runner de Unity. Desviaciones 215–219 abajo |
 | 2026-10-11 | **T4-01** | **`EnemyProfile`** en `Nova.Data`: los ocho parámetros de 12.5 (intervalo de decisión, umbral, agresividad, evacuación, reconversión, power-ups, margen del 100 % y ruido), más `AllowsFullSend`. Tres assets escritos a mano en `Assets/Data/EnemyProfiles/` (`Map1`, `Map2`, `Map3`) con los valores de la tabla. Tests en `BalanceDataTests`: un perfil por mapa, los valores columna a columna, que se afilan del mapa 1 al 3 y que cada intervalo es un número entero de ticks | Suite completa en verde en el Test Runner de Unity. Desviaciones 213–214 abajo |
 | 2026-10-11 | Spec: **T.7 #48 cerrado** | `NOVA_Algoritmo_Enemigo.md`, con la propuesta aceptada por el usuario: 12.2 deja reforzar solo como respuesta de 12.4; 12.3 gana el paréntesis, el `Alcance` del ataque de desgaste, el margen del 100 % y las definiciones de «lo expone», `BonusPowerUp` y Magnetar hostil; **12.3.2** nueva, con encender, mejorar, cargar poder y reconvertir; **12.3.3** nueva, con ruido y empates; 12.4 define «a distancia», «suficiente» y el destino de la evacuación; 12.5 explica el margen y *Prioriza power-ups*; 12.7 pasa de 9 a 15 tests | Desbloquea `T4-02`. La fila de `T4-02` en T.4 deja de contar «9 tests» |
@@ -283,6 +284,11 @@ Una línea por tarea completada. La más reciente arriba.
 | — | — | Proyecto de código sin iniciar | — |
 
 > **Cómo leer esta lista.** Una línea por desviación: **qué cambió** y **dónde vive ahora**. El razonamiento completo está en el documento que se cita, que es el que manda; aquí solo está el rastro de cuándo y por qué se movió. Los números no se reutilizan nunca, ni siquiera cuando una desviación queda revertida.
+
+**Al implementar `T4-03` (2026-10-11).**
+
+220. **Los dos emisores comparten una clase base, `NodeCommandIssuer`.** 3.1 pide que el Enemigo no pueda hacer nada que el Jugador no tenga; con el código copiado, esa promesa dependía de mantener dos archivos iguales. → [15.5](./NOVA_GameDesign_Spec.md#155-gameplay--componentes-de-nodo), [15.7](./NOVA_GameDesign_Spec.md#157-input-enemigo-y-ui).
+221. **`EnemyCommandIssuer.Execute` devuelve si la acción salió, y no la reintenta.** Entre que se puntúa y se ejecuta no pasa ni un tick, pero si las reglas la rechazan —el tablero cambió—, el ciclo la pierde, como pierde el Jugador un clic sobre un botón deshabilitado. El refuerzo sale siempre al 50 % (12.4); la evacuación es un `Send` al 100 % y no pasa por `Execute`.
 
 **Al implementar `T4-02` (2026-10-11).**
 
