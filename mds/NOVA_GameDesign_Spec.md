@@ -466,7 +466,9 @@ El intervalo se cuenta desde que el power-up anterior es recogido o expira, no d
 
 Se cumple cuando **el Enemigo no posee ningún nodo**.
 
-**Cascada de conquista:** al cumplirse, todos los Asteroides neutrales restantes pasan automáticamente al Jugador en una animación de 3 s, de más cercano a más lejano. Esto satisface la regla de que ningún nodo puede quedar Neutral al final de la partida, sin obligar al jugador a limpiar manualmente el mapa cuando el resultado ya está decidido.
+**Cascada de conquista:** al cumplirse, **todos los nodos neutrales restantes** —Asteroides y Magnetares— pasan automáticamente al Jugador en una animación de 3 s, de más cercano a más lejano a sus nodos. Cada uno **conserva su tipo, su nivel y su Energía**, como en un Agujero de Gusano ([7.5](#75-agujero-de-gusano)). Esto satisface la regla de que ningún nodo puede quedar Neutral al final de la partida, sin obligar al jugador a limpiar manualmente el mapa cuando el resultado ya está decidido.
+
+> **Hasta el 2026-10-12 la cascada solo convertía Asteroides** y un Magnetar neutral sin tomar quedaba Neutral en la pantalla de victoria, contra lo que dicen 1.1 y este mismo párrafo ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #44). Exigir que el Jugador lo tome antes de ganar alargaría el final con un muro que ya no decide nada.
 
 Los protones del Enemigo en vuelo cuando pierde su último nodo **se desvanecen** sin impactar.
 
@@ -475,9 +477,25 @@ Los protones del Enemigo en vuelo cuando pierde su último nodo **se desvanecen*
 Cualquiera de estas dos:
 
 1. **Aniquilación:** el Jugador no posee ningún nodo.
-2. **Estancamiento:** el Jugador no posee ninguna Estrella **y** la suma de Energía de todos sus nodos es **menor que 10**, es decir, no puede encender ni reconvertir nada. Se comprueba solo si tampoco tiene protones en vuelo ni poderes cargados.
+2. **Estancamiento:** el Jugador no posee ninguna Estrella **y** no tiene ninguna forma de volver a tener una con la Energía que le queda.
 
-El estancamiento evita partidas zombi en las que el jugador está vivo pero es matemáticamente incapaz de volver a crecer.
+El estancamiento evita partidas zombi en las que el jugador está vivo pero es matemáticamente incapaz de volver a crecer: sin Estrella nadie genera Energía (4.2), así que la que tiene es toda la que tendrá. **Solo es derrota cuando es seguro.** Por eso las cuentas son optimistas: `S` es la suma de la Energía de todos sus nodos encendidos, como si pudiera juntarla entera en un solo envío y ningún Magnetar la tocara por el camino.
+
+Con `S` así, el Jugador **todavía puede** volver a tener una Estrella, y no hay estancamiento, si se cumple **cualquiera** de estas:
+
+| Vía | Condición |
+|---|---|
+| Encender un Asteroide propio | Energía del Asteroide + `S` ≥ coste de encendido (16.1) |
+| Capturar un Asteroide y encenderlo | `S` ≥ `CosteDeCaptura` del Asteroide no propio más barato + coste de encendido |
+| Capturar una Estrella | `S` ≥ `CosteDeCaptura` de la Estrella no propia más barata |
+| Reconvertir | Un nodo propio encendido tiene Energía ≥ su coste de reconversión (16.4), en un nivel que permite reconvertir (11.1) |
+| Robar una Estrella | Tiene un Púlsar de nivel 3, el nivel permite el Agujero de Gusano (11.1), `S` ≥ su coste (16.3) y existe una Estrella del Enemigo |
+
+`CosteDeCaptura` es el de 6.2, con la resistencia del Magnetar si el objetivo lo es: un Asteroide neutral con 10 de Materia Inerte cuesta 10, y encenderlo después 10 más.
+
+**No se comprueba** mientras el Jugador tenga protones propios en vuelo, un poder **cargando o cargado**, o un nodo reconvirtiéndose: cualquiera de los tres puede cambiar la cuenta antes de resolverse.
+
+> **Hasta el 2026-10-12 decía «la suma de Energía de todos sus nodos es menor que 10, es decir, no puede encender ni reconvertir nada»**, y las dos mitades no decían lo mismo: reconvertir cuesta 20 o 30, y con 15 en un Magnetar, sin Estrella ni Asteroide propio, el Jugador no podía hacer nada y no perdía. Tampoco decía si una carga en curso contaba como poder cargado: cuenta ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #45).
 
 ### 10.3 Fin de nivel
 
@@ -500,9 +518,21 @@ El jugador puede reiniciar el nivel en cualquier momento desde el menú de pausa
 | 2 | El Cinturón | 4–6 | Púlsar, Cero Absoluto, Decaimiento, Magnetar neutral |
 | 3 | Espacio Profundo | 7–9 | Agujero de Gusano, reconversión, algoritmo agresivo |
 
+**Lo que un mapa introduce no existe antes de él, para ninguno de los dos bandos.** Cada `LevelDefinition` ([15.4](#154-data--scriptableobjects)) lleva las mecánicas que su nivel permite, y son las mismas para el Jugador y para el Enemigo (3.1):
+
+| Mapa | Encender | Poderes | Reconversión |
+|---|---|---|---|
+| 1 | Estrella, Magnetar | — | No |
+| 2 | Estrella, Púlsar, Magnetar | Cero Absoluto, Decaimiento | No |
+| 3 | Estrella, Púlsar, Magnetar | Los tres | Sí |
+
+Las mejoras existen desde el mapa 1. Una opción bloqueada por el nivel sale **en gris y sin coste**, como un tipo que la partida no tiene ([18](#18-decisiones-tomadas-por-defecto) #29, #33 y #36). El bloqueo es de **lo que se puede hacer**, no de lo que hay en el tablero: un nodo que ya existe al empezar, o que se captura, funciona entero. El Enemigo arranca con un Púlsar en el mapa 2 y es un Púlsar normal; si el Jugador se lo quita, puede cargar con él los poderes del mapa y ninguno más. La tabla coincide con *Usa reconversión* de [12.5](./NOVA_Algoritmo_Enemigo.md#125-perfiles-por-mapa).
+
+> **Hasta el 2026-10-12, «introducidas» solo describía lo que traía el Enemigo**: el menú de encendido ofrecía siempre las tres opciones, y en el nivel 1 el Jugador podía encender un Púlsar y subirlo a nivel 3 ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #46).
+
 ### 11.2 Diseño de niveles
 
-**`N` es una columna derivada, no un presupuesto.** Es la suma de las cuatro siguientes —nodos del Jugador, nodos del Enemigo, `Ast` y neutrales especiales— y los Magnetares neutrales **cuentan**, porque son nodos. Al llegar a `T5-02` será literalmente `spawns.Count` de cada `LevelDefinition` ([15.4](#154-data--scriptableobjects)), así que si alguna vez no cuadra, lo que está mal es `N`. `Ast` = asteroides neutrales al inicio. Los nodos iniciales de cada bando se indican como tipo(nivel).
+**`N` es una columna derivada, no un presupuesto.** Es la suma de las cuatro siguientes —nodos del Jugador, nodos del Enemigo, `Ast` y neutrales especiales— y los Magnetares neutrales **cuentan**, porque son nodos. Al llegar a `T5-02` será literalmente `spawns.Count` de cada `LevelDefinition` ([15.4](#154-data--scriptableobjects)), así que si alguna vez no cuadra, lo que está mal es `N`. `Ast` = asteroides neutrales al inicio. Los nodos iniciales de cada bando se indican como tipo(nivel). Las posiciones y la Energía inicial de cada nodo están en el [Apéndice — Diseño de los 9 niveles](#apéndice--diseño-de-los-9-niveles).
 
 | Nivel | N | Jugador inicia con | Enemigo inicia con | Ast | Neutrales especiales | Duración objetivo |
 |---|---|---|---|---|---|---|
@@ -703,7 +733,7 @@ Tres opciones, siempre las mismas y siempre las tres, en el orden de [16.2](#162
 - Clic derecho o clic en vacío: cierra el menú sin encender.
 - Con el menú abierto, cualquier otro clic izquierdo —sobre un nodo— o un arrastre izquierdo **lo cierra sin encender y sigue su curso**: un clic sobre una Estrella propia la selecciona, y un lazo selecciona. El botón derecho y `Esc` **solo** lo cierran: no abren el panel, no pausan y **no empiezan un arrastre derecho**, así que no dibujan línea de envío ([18](#18-decisiones-tomadas-por-defecto) #28).
 - Una opción deshabilitada no hace nada al pulsarla y **deja el menú abierto**, para que se siga viendo cuánto falta.
-- Un tipo que la partida todavía no tiene sale **deshabilitado, en gris y sin coste** ([18](#18-decisiones-tomadas-por-defecto) #29). Durante el desarrollo es el Magnetar hasta `T2-04` y el Púlsar hasta `T3-02`.
+- Un tipo que la partida todavía no tiene sale **deshabilitado, en gris y sin coste** ([18](#18-decisiones-tomadas-por-defecto) #29). Durante el desarrollo es el Magnetar hasta `T2-04` y el Púlsar hasta `T3-02`. En el juego, un tipo que el nivel no permite sale igual: el Púlsar en el mapa 1 ([11.1](#111-estructura), [18](#18-decisiones-tomadas-por-defecto) #36).
 - El panel de clic derecho de un Asteroide sigue siendo informativo: `DORMIDO` y el coste de encendido ([13.4](#134-traducción-de-velocidad-de-ataque)).
 
 El estado `SinEncender` ya avisa de cuál de las dos lecturas toca sin abrir nada: la brasa está quieta por debajo de 10 y crepita al llegar ([14.1](./NOVA_Estados_Animaciones.md#141-estados-del-nodo)).
@@ -799,7 +829,7 @@ Assets/
 | `NodeLevelData.cs` | `[Serializable] struct`: coste de mejora, intervalo de generación, radio, cadencia |
 | `PowerDefinition.cs` | Tipo, coste, tiempo de carga, duración del haz, nivel requerido, color del haz ([14.4](./NOVA_Estados_Animaciones.md#144-paleta-funcional)) y, con la fase 6, VFX. El drenaje se calcula como coste / tiempo de carga (`T3-01`). **Sin campo de alcance:** el alcance es global y por tanto no es un parámetro de balance ([7.2](#72-tabla-de-poderes)). |
 | `BalanceConfig.cs` | Velocidad del protón, daño por disparo del Magnetar, multiplicador del Magnetar, buffer de doble clic, duración de reconversión, auto-deshielo, tasa de decaimiento, **coste de encendido, Materia Inerte, umbral de susto y devolución al cancelar una carga** (los cuatro, de 16.1) |
-| `LevelDefinition.cs` | Lista de `NodeSpawnData`, referencia a `EnemyProfile`, config de drops, duración objetivo |
+| `LevelDefinition.cs` | Lista de `NodeSpawnData`, referencia a `EnemyProfile`, config de drops, duración objetivo y **las mecánicas que el nivel permite** ([11.1](#111-estructura)): tipos que se pueden encender, poderes que se pueden cargar y si se puede reconvertir |
 | `NodeSpawnData.cs` | `[Serializable] struct`: posición, tipo, nivel, facción, energía inicial |
 | `PowerUpDefinition.cs` | Tipo, magnitud, duración, icono, estadística afectada |
 | `EnemyProfile.cs` | Los 8 parámetros de la tabla [12.5](./NOVA_Algoritmo_Enemigo.md#125-perfiles-por-mapa) |
@@ -1007,8 +1037,8 @@ Cada fila es un test de aceptación.
 | 15 | Un power-up cae y nadie enciende el Asteroide | Expira a los 30 s. Arranca el siguiente temporizador. |
 | 16 | Un power-up debe caer pero no hay Asteroides neutrales | El drop se salta. El temporizador se reinicia. No cuenta contra el máximo por nivel. |
 | 17 | Dos Nubes de Hidrógeno consecutivas en el mismo bando | La segunda reinicia la duración a 20 s. No acumula magnitud. |
-| 18 | El jugador se queda sin Estrellas pero con 80 de Energía en un Magnetar | Puede reconvertirlo por 30. No hay derrota por estancamiento. |
-| 19 | El jugador se queda sin Estrellas y con 6 de Energía total | Derrota por estancamiento, siempre que no tenga protones en vuelo ni poderes cargados. |
+| 18 | El jugador se queda sin Estrellas pero con 80 de Energía en un Magnetar | En el mapa 3 puede reconvertirlo por 30; en los mapas 1 y 2, que no permiten reconvertir (11.1), puede capturar un Asteroide por 10 y encenderlo por 10 más. No hay derrota por estancamiento. |
+| 19 | El jugador se queda sin Estrellas y con 6 de Energía total, sin Asteroide propio | Derrota por estancamiento (10.2), siempre que no tenga protones en vuelo, ni un poder cargando o cargado, ni un nodo reconvirtiéndose, y que no quede una Estrella rival que se pueda capturar con 6. |
 | 20 | Un Magnetar neutral dispara al último protón antes de la victoria | Se resuelve normalmente. La victoria se comprueba después. |
 | 21 | El Enemigo pierde su último nodo con protones en vuelo | Los protones se desvanecen. Comienza la cascada de conquista. |
 | 22 | Selección múltiple con nodos a 1 de Energía | Los que no llegan al mínimo de envío se ignoran silenciosamente. Los demás envían. |
@@ -1035,12 +1065,12 @@ Reglas que no estaban en el diseño original y que se añadieron para cerrar hue
 | # | Regla añadida | Motivo |
 |---|---|---|
 | 1 | Auto-deshielo a los 30 s | Evita nodos congelados permanentemente que bloqueen la victoria |
-| 2 | Cascada de conquista al ganar | Cumple "ningún nodo queda Neutral" sin obligar a limpiar el mapa manualmente |
+| 2 | Cascada de conquista al ganar, también de los Magnetares neutrales (desde el 2026-10-12) | Cumple "ningún nodo queda Neutral" sin obligar a limpiar el mapa manualmente |
 | 3 | Buffer de 0.25 s en el doble clic | Sin él, el doble clic enviaría 75% en lugar de 100% |
 | 4 | Los power-ups afectan a toda la facción | Aplicado solo al nodo encendido, el power-up sería inútil la mayoría de las veces |
 | 5 | Daño del Magnetar = 2 por disparo | Ajusta la curva para que el nivel 1 sea testimonial y el nivel 5 decisivo |
 | 6 | Un Magnetar aliado recibe Energía 1:1 | La resistencia ×2 penalizaría reforzar tu propia defensa |
-| 7 | Derrota por estancamiento | Evita partidas matemáticamente perdidas que no terminan |
+| 7 | Derrota por estancamiento, por capacidad y no por un umbral (desde el 2026-10-12) | Evita partidas matemáticamente perdidas que no terminan |
 | 8 | Devolución del 50% al cancelar una carga | Permite rectificar sin castigo total |
 | 9 | ~~Un Magnetar a 0 requiere Carga ≥ 2~~ → **un Magnetar a 0 cae con Carga 1** | **Nunca fue una decisión: era un error de cálculo.** Se leyó `floor(1 * 0.5) = 0` como «no pasa nada», pero la guarda de [6.2](#62-resolución-de-impacto) compara `effective < target.energy` y `0 < 0` es falsa, así que el pseudocódigo normativo **ya lo capturaba**. Corregido en [17](#17-casos-borde-y-reglas-de-resolución), caso 7. El multiplicador 0.5 y su redondeo hacia abajo **no se tocan** |
 | 10 | Ruido de decisión | Hace torpe al Enemigo del mapa 1 sin escribir un algoritmo distinto |
@@ -1069,6 +1099,8 @@ Reglas que no estaban en el diseño original y que se añadieron para cerrar hue
 | 33 | Reconversión en el panel: **dos botones** en el orden de [16.2](#162-costes-de-nivel), con el destino y el coste. Un tipo que la partida no tiene sale **gris y sin coste**, como en el menú de encendido (#29). Mientras dura, los botones dejan sitio a «Reconvirtiendo a …». Un botón bloqueado por algo que **no es la Energía** —reconvirtiendo, congelado— sale deshabilitado **sin el coste en rojo** | 13.3 decía qué contiene el punto 5, no cómo se ve. El rojo de 13.3 significa «te falta Energía»: pintarlo en un Mejorar bloqueado por la reconversión le diría al jugador que junte Energía, y no le serviría de nada. Decidido en `T2-07` |
 | 34 | **Se apunta con clic en la ranura brillante**, nunca solo al completarse la carga. Al llegar al 100 % la ranura brilla y nada más; un clic en ella, desde el panel del Púlsar, entra en modo apuntado, y es también como se vuelve a apuntar tras cancelar con clic derecho. Esc cancela el apuntado como el clic derecho, y el panel sigue respondiendo mientras se apunta | Una carga tarda 8–16 s y en ese tiempo el jugador está haciendo otra cosa: un cursor que cambia de modo solo le robaría el siguiente clic. Con dos Púlsares listos, además, habría que decidir cuál manda. Decidido con el usuario en `T3-07` |
 | 35 | **«Cancelar +N»** es un botón de la rueda, bajo las ranuras, visible mientras hay una carga en curso o un poder listo, con la Energía que devuelve (7.1). La ranura brillante queda solo para apuntar | 7.1 permite cancelar, también con el poder ya cargado (#19), pero ninguna sección decía con qué control. Con el botón ningún clic tiene dos significados. Decidido con el usuario en `T3-07` |
+| 36 | **Las mecánicas se bloquean por mapa** ([11.1](#111-estructura)), para los dos bandos y con la misma presentación que #29 y #33: tipo de encendido, ranura de poder o botón de reconversión **en gris y sin coste**. El bloqueo es de acciones, no de nodos | 11.1 decía que cada mapa «introduce» mecánicas y 13.7 ofrecía siempre las tres opciones. Se resuelve con datos en `LevelDefinition`, por la misma vía que `ActionBlock.Unavailable`. Decidido con el usuario el 2026-10-12 (T.7 #46) |
+| 37 | **Energía inicial** ([Apéndice](#apéndice--diseño-de-los-9-niveles)): un Asteroide empieza con 10, sea de quien sea; un nodo encendido del Jugador o del Enemigo, con **la mitad de su Tope**; un Magnetar neutral, **lleno** | 11.2 daba tipo y nivel y `NodeSpawnData` pide la Energía. La mitad deja a cada bando capturar su primer Asteroide en el primer envío y no regala mejoras, y la ventaja del Enemigo sigue saliendo de cuántos nodos tiene y de qué nivel. El Magnetar neutral lleno es el muro que 11.3 describe. Decidido con el usuario el 2026-10-12 (T.7 #47) |
 
 ---
 
@@ -1094,6 +1126,162 @@ Ninguna fase se cierra sin cumplir su criterio, y el orden de fases es obligator
 
 ---
 
+## Apéndice — Diseño de los 9 niveles
+
+Las posiciones y la Energía inicial de cada `NodeSpawnData` ([15.4](#154-data--scriptableobjects)) de los 9 niveles de [11.2](#112-diseño-de-niveles). `T5-02` las copia tal cual a los assets de nivel. Propuesta del 2026-10-12, **pendiente de prueba de juego** (T.7 #2 y #47).
+
+**Reglas que cumplen las nueve**, comprobadas con un script, no a ojo:
+
+- **Ejes:** el origen es el centro del tablero de 15 × 8.4375 u ([16.1](#161-globales)), con `x` a la derecha e `y` hacia arriba. Todos los nodos caen en |x| ≤ 6.75 e |y| ≤ 3.25. Así queda margen para la huella del nodo (≤ 1.2 u) y para la barra de arriba y la de abajo ([13.6](#136-hud-permanente)).
+- **Separación:** al menos 1.5 u entre centros, una celda de arte ([A.8](./NOVA_Assets_Diseno.md#a8-decisiones-de-diseño-cerradas) #4).
+- **Cuentas:** cada nivel tiene exactamente los nodos de su fila de 11.2, y su número es `N`.
+- **11.3:** en cada nivel hay un Asteroide neutral a ≤ 2.25 u de un nodo inicial del Jugador. Está más cerca de él que de cualquier nodo del Enemigo y fuera del radio de todo Magnetar que no sea del Jugador.
+- **Lados:** el Jugador empieza a la izquierda y el Enemigo a la derecha. Los Asteroides se reparten entre los dos lados y el centro.
+- **Muros:** los Magnetares neutrales ocupan el centro, donde su radio corta las rutas directas entre los dos bandos. En los niveles 7 y 8, un Asteroide del lado del Enemigo queda bajo el radio de un Magnetar suyo.
+
+**Energía inicial** ([18](#18-decisiones-tomadas-por-defecto) #37): un Asteroide empieza con 10. Un nodo encendido de cualquier bando, con la mitad de su Tope: 25 una Estrella, 50 un Púlsar o un Magnetar. Un Magnetar neutral, lleno: 100.
+
+#### Nivel 1
+
+| Bando | Nodo | Posición (u) | Energía |
+|---|---|---|---|
+| Jugador | Estrella(1) | (−5, 0) | 25 |
+| Enemigo | Estrella(1) | (5, 0) | 25 |
+| Neutral | Asteroide | (−3.25, 1) | 10 |
+| Neutral | Asteroide | (3.25, −1) | 10 |
+| Neutral | Asteroide | (0, 2) | 10 |
+
+#### Nivel 2
+
+| Bando | Nodo | Posición (u) | Energía |
+|---|---|---|---|
+| Jugador | Estrella(1) | (−5.5, 0) | 25 |
+| Enemigo | Estrella(2) | (5.5, 0) | 25 |
+| Neutral | Asteroide | (−3.5, 0.75) | 10 |
+| Neutral | Asteroide | (3.5, −0.75) | 10 |
+| Neutral | Asteroide | (−1.5, −2.25) | 10 |
+| Neutral | Asteroide | (1.5, 2.25) | 10 |
+| Neutral | Asteroide | (0, 0) | 10 |
+
+#### Nivel 3
+
+| Bando | Nodo | Posición (u) | Energía |
+|---|---|---|---|
+| Jugador | Estrella(1) | (−5.5, −0.5) | 25 |
+| Jugador | Asteroide | (−5, 1.5) | 10 |
+| Enemigo | Estrella(2) | (5.5, 0.5) | 25 |
+| Enemigo | Magnetar(1) | (3.75, −1.5) | 50 |
+| Neutral | Asteroide | (−3.5, −1.25) | 10 |
+| Neutral | Asteroide | (0, 2.5) | 10 |
+| Neutral | Asteroide | (0, −2.5) | 10 |
+| Neutral | Asteroide | (2.75, 1.75) | 10 |
+
+#### Nivel 4
+
+| Bando | Nodo | Posición (u) | Energía |
+|---|---|---|---|
+| Jugador | Estrella(1) | (−5.75, 0) | 25 |
+| Enemigo | Estrella(2) | (5.5, 1.25) | 25 |
+| Enemigo | Púlsar(1) | (5.5, −1.5) | 50 |
+| Neutral | Asteroide | (−4, 1.25) | 10 |
+| Neutral | Asteroide | (−3.75, −1.75) | 10 |
+| Neutral | Asteroide | (−1.25, 0.25) | 10 |
+| Neutral | Asteroide | (1.25, 2.5) | 10 |
+| Neutral | Asteroide | (1.5, −2.25) | 10 |
+| Neutral | Asteroide | (3.5, 0) | 10 |
+
+#### Nivel 5
+
+| Bando | Nodo | Posición (u) | Energía |
+|---|---|---|---|
+| Jugador | Estrella(1) | (−6, 0.75) | 25 |
+| Jugador | Magnetar(1) | (−4.5, −1.5) | 50 |
+| Enemigo | Estrella(2) | (5.75, 1) | 25 |
+| Enemigo | Púlsar(1) | (5.5, −1.75) | 50 |
+| Neutral | Magnetar(2) | (0, 0) | 100 |
+| Neutral | Asteroide | (−4.25, 1.75) | 10 |
+| Neutral | Asteroide | (−2.5, −2.75) | 10 |
+| Neutral | Asteroide | (−1.75, 2.75) | 10 |
+| Neutral | Asteroide | (2.25, 2.75) | 10 |
+| Neutral | Asteroide | (2.5, −2.75) | 10 |
+| Neutral | Asteroide | (3.75, −0.25) | 10 |
+
+#### Nivel 6
+
+| Bando | Nodo | Posición (u) | Energía |
+|---|---|---|---|
+| Jugador | Estrella(2) | (−6, 0) | 25 |
+| Enemigo | Estrella(3) | (5.75, 0) | 25 |
+| Enemigo | Púlsar(2) | (5, 2.5) | 50 |
+| Enemigo | Magnetar(2) | (4, −1.75) | 50 |
+| Neutral | Magnetar(3) | (0.5, −0.5) | 100 |
+| Neutral | Asteroide | (−4, 0.75) | 10 |
+| Neutral | Asteroide | (−3.5, −2.25) | 10 |
+| Neutral | Asteroide | (−2.75, 2.5) | 10 |
+| Neutral | Asteroide | (−0.75, 2.75) | 10 |
+| Neutral | Asteroide | (2.5, 2) | 10 |
+| Neutral | Asteroide | (2.5, −3) | 10 |
+
+#### Nivel 7
+
+| Bando | Nodo | Posición (u) | Energía |
+|---|---|---|---|
+| Jugador | Estrella(1) | (−6, 1.75) | 25 |
+| Jugador | Estrella(1) | (−5.5, −2) | 25 |
+| Enemigo | Estrella(3) | (6, 0) | 25 |
+| Enemigo | Púlsar(3) | (5, 2.5) | 50 |
+| Enemigo | Magnetar(3) | (4, −1.5) | 50 |
+| Neutral | Magnetar(3) | (0, 0) | 100 |
+| Neutral | Asteroide | (−4.25, 2.75) | 10 |
+| Neutral | Asteroide | (−3.75, −2.75) | 10 |
+| Neutral | Asteroide | (−3.5, 0.25) | 10 |
+| Neutral | Asteroide | (−1, 3) | 10 |
+| Neutral | Asteroide | (−1, −3) | 10 |
+| Neutral | Asteroide | (2.5, 3) | 10 |
+| Neutral | Asteroide | (2.75, −3) | 10 |
+
+#### Nivel 8
+
+| Bando | Nodo | Posición (u) | Energía |
+|---|---|---|---|
+| Jugador | Estrella(2) | (−6.25, 0) | 25 |
+| Enemigo | Estrella(3) | (6, 1.75) | 25 |
+| Enemigo | Estrella(3) | (6, −1.75) | 25 |
+| Enemigo | Púlsar(3) | (4.5, 0) | 50 |
+| Enemigo | Magnetar(3) | (3.5, 2.75) | 50 |
+| Neutral | Magnetar(3) | (−0.5, 1.75) | 100 |
+| Neutral | Magnetar(3) | (0.5, −1.75) | 100 |
+| Neutral | Asteroide | (−4.25, 0.75) | 10 |
+| Neutral | Asteroide | (−4, −2) | 10 |
+| Neutral | Asteroide | (−2.75, 3) | 10 |
+| Neutral | Asteroide | (−2.5, −0.25) | 10 |
+| Neutral | Asteroide | (2, 0.25) | 10 |
+| Neutral | Asteroide | (1.75, 3) | 10 |
+| Neutral | Asteroide | (2.5, −3) | 10 |
+
+#### Nivel 9
+
+| Bando | Nodo | Posición (u) | Energía |
+|---|---|---|---|
+| Jugador | Estrella(2) | (−6.25, 1) | 25 |
+| Jugador | Magnetar(1) | (−5, −1.75) | 50 |
+| Enemigo | Estrella(4) | (6.25, 1.75) | 25 |
+| Enemigo | Estrella(4) | (6.25, −1.75) | 25 |
+| Enemigo | Púlsar(3) | (4.75, 3) | 50 |
+| Enemigo | Púlsar(3) | (4.75, −3) | 50 |
+| Enemigo | Magnetar(4) | (4.5, 0) | 50 |
+| Neutral | Magnetar(4) | (0, 2) | 100 |
+| Neutral | Magnetar(4) | (0, −2) | 100 |
+| Neutral | Asteroide | (−4.5, 2) | 10 |
+| Neutral | Asteroide | (−3.25, −2.75) | 10 |
+| Neutral | Asteroide | (−3.5, 0.25) | 10 |
+| Neutral | Asteroide | (−2.5, 3) | 10 |
+| Neutral | Asteroide | (2, 0.25) | 10 |
+| Neutral | Asteroide | (2.25, 3) | 10 |
+| Neutral | Asteroide | (2.5, −3) | 10 |
+
+---
+
 ## Apéndice — Pendientes para el documento 2
 
 > El inventario de qué arte falta, con IDs y nombres de archivo, vive ahora en [NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md). El documento 2 solo debe aportar el *cómo* (pipeline y estilo), no el *qué*.
@@ -1108,4 +1296,4 @@ Ninguna fase se cierra sin cumplir su criterio, y el orden de fases es obligator
 | Tipografía | ✅ Una pixel font libre en TextMeshPro |
 | Atlas y pivotes | ⬜ Pivote decidido (Bottom / Center); el empaquetado en atlas, no |
 | Estilo de la UI | ⬜ Solo está la paleta; falta el lenguaje de paneles y botones |
-| Diseño de los 9 niveles con coordenadas exactas | ⬜ Sin empezar. **Desbloqueado el 2026-09-28**: la escala del tablero ya está cerrada en 15 × 8.4375 u ([T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada)) |
+| Diseño de los 9 niveles con coordenadas exactas | ✅ [Apéndice — Diseño de los 9 niveles](#apéndice--diseño-de-los-9-niveles), 2026-10-12. No es arte: vive aquí porque la escala del tablero lo bloqueaba ([T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada)) |
