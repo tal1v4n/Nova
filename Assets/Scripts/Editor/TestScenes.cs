@@ -32,6 +32,9 @@ namespace Nova.Editor
     // poderes en el panel y el modo apuntado.
     //
     // Fase 4 (T4-04): partida simétrica contra EnemyController con el perfil del mapa 3.
+    //
+    // Fase 5 (T5-01): la misma partida, pero cargada por LevelLoader desde un LevelDefinition con las
+    // mecánicas del mapa 2, más la plantilla de nodo que LevelLoader instancia.
     public static class TestScenes
     {
         const string ScenesFolder = "Assets/Scenes/Tests";
@@ -120,6 +123,119 @@ namespace Nova.Editor
         [MenuItem("Nova/Fase 4/Generar escena de prueba")]
         public static void GeneratePhase4() => Generate("Fase4", Phase4Nodes, "Map3");
 
+        // T5-01: la plantilla de nodo de LevelLoader. Es el nodo de las escenas de prueba sin PlacedNode:
+        // LevelLoader lo inicializa y le da las mecánicas del nivel.
+        const string PrefabsFolder = "Assets/Prefabs";
+        const string NodePrefabPath = PrefabsFolder + "/Node.prefab";
+
+        [MenuItem("Nova/Generar plantilla de nodo")]
+        public static void GenerateNodePrefab()
+        {
+            if (WriteNodePrefab() != null)
+                Debug.Log($"[Nova] Plantilla de nodo generada en {NodePrefabPath}.");
+        }
+
+        static NodeController WriteNodePrefab()
+        {
+            var balance = AssetDatabase.LoadAssetAtPath<BalanceConfig>(BalancePath);
+            var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontPath);
+            if (balance == null || font == null)
+            {
+                Debug.LogError($"[Nova] Faltan {BalancePath} o {FontPath}.");
+                return null;
+            }
+            if (LayerMask.NameToLayer(NodesLayer) < 0)
+            {
+                Debug.LogError($"[Nova] No existe la capa «{NodesLayer}»; recarga el editor para que ProjectLayers la cree.");
+                return null;
+            }
+
+            GameObject go = BuildNode("Node", Vector2.zero, balance, font,
+                System.Array.ConvertAll(IgnitionTargets, Definition), System.Array.ConvertAll(Powers, Power));
+            Directory.CreateDirectory(PrefabsFolder);
+            GameObject prefab = PrefabUtility.SaveAsPrefabAsset(go, NodePrefabPath);
+            Object.DestroyImmediate(go);
+            return prefab != null ? prefab.GetComponent<NodeController>() : null;
+        }
+
+        // Fase 5 (T5-01): la partida de la fase 4 cargada por LevelLoader desde un LevelDefinition, con
+        // las mecánicas del mapa 2 (11.1): se enciende el Púlsar, se cargan Cero Absoluto y
+        // Decaimiento, y ni el Agujero de Gusano ni la reconversión. El Púlsar del Jugador, de nivel 3
+        // y lleno, enseña la ranura del Gusano en gris; el del Enemigo carga los dos poderes del mapa.
+        // El nivel es de prueba y vive junto a la escena, no en Assets/Data/Levels/, que es de los
+        // nueve de T5-02.
+        const string Phase5LevelPath = ScenesFolder + "/Fase5Level.asset";
+
+        static readonly (string type, Faction faction, int energy, int level, Vector2 position)[] Phase5Nodes =
+        {
+            ("Star", Faction.Player, 25, 0, new Vector2(-5.5f, 0f)),
+            ("Pulsar", Faction.Player, 100, 3, new Vector2(-5.5f, 2.5f)),
+            ("Star", Faction.Enemy, 25, 0, new Vector2(5.5f, 0f)),
+            ("Pulsar", Faction.Enemy, 50, 0, new Vector2(5.5f, -2.5f)),
+            ("Asteroid", Faction.Neutral, 10, 0, new Vector2(-3f, 2f)),
+            ("Asteroid", Faction.Neutral, 10, 0, new Vector2(-3f, -2f)),
+            ("Asteroid", Faction.Neutral, 10, 0, new Vector2(3f, 2f)),
+            ("Asteroid", Faction.Neutral, 10, 0, new Vector2(3f, -2f)),
+            ("Magnetar", Faction.Neutral, 100, 2, new Vector2(0f, 0f)),
+        };
+
+        [MenuItem("Nova/Fase 5/Generar escena de prueba")]
+        public static void GeneratePhase5()
+        {
+            string scenePath = $"{ScenesFolder}/Fase5.unity";
+
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                return;
+
+            var balance = AssetDatabase.LoadAssetAtPath<BalanceConfig>(BalancePath);
+            var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontPath);
+            var text = AssetDatabase.LoadAssetAtPath<UiText>(TextPath);
+            var profile = AssetDatabase.LoadAssetAtPath<EnemyProfile>($"{ProfilesFolder}/Map2.asset");
+            if (balance == null || font == null || text == null || profile == null)
+            {
+                Debug.LogError($"[Nova] Faltan {BalancePath}, {FontPath}, {TextPath} o {ProfilesFolder}/Map2.asset.");
+                return;
+            }
+
+            NodeController template = WriteNodePrefab();
+            if (template == null)
+                return;
+
+            Directory.CreateDirectory(ScenesFolder);
+            var level = AssetDatabase.LoadAssetAtPath<LevelDefinition>(Phase5LevelPath);
+            if (level == null)
+            {
+                level = ScriptableObject.CreateInstance<LevelDefinition>();
+                AssetDatabase.CreateAsset(level, Phase5LevelPath);
+            }
+            var spawns = new System.Collections.Generic.List<NodeSpawnData>();
+            foreach (var spec in Phase5Nodes)
+                spawns.Add(new NodeSpawnData(spec.position, (NodeType)System.Enum.Parse(typeof(NodeType), spec.type), spec.faction, spec.energy, spec.level));
+            level.Configure(4, profile, 150f, spawns,
+                new[] { NodeType.Star, NodeType.Pulsar, NodeType.Magnetar },
+                new[] { PowerType.AbsoluteZero, PowerType.Decay }, false);
+            EditorUtility.SetDirty(level);
+            AssetDatabase.SaveAssets();
+
+            Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+
+            Camera camera = CreateCamera();
+            NodeRegistry registry = CreateSystems(balance, font, text, camera, out ProtonRegistry protons, out PowerBeamSystem beams);
+
+            PowerDefinition[] powers = System.Array.ConvertAll(Powers, Power);
+            var loaderObject = new GameObject("Level");
+            loaderObject.AddComponent<LevelLoader>().Configure(balance, template,
+                System.Array.ConvertAll(new[] { "Asteroid", "Star", "Pulsar", "Magnetar" }, Definition), powers, registry, level);
+            EditorUtility.SetDirty(loaderObject);
+
+            CreateEnemy(level.EnemyProfile, registry, protons, balance, powers);
+
+            EditorSceneManager.SaveScene(scene, scenePath);
+            AssetDatabase.Refresh();
+
+            Debug.Log($"[Nova] Escena de prueba generada en {scenePath}, con el nivel {Phase5LevelPath}. Dale a Play.");
+        }
+
         static void Generate(string sceneName, (string name, string type, Faction faction, int energy, int level, Vector2 position)[] nodes,
             string enemyProfile = null)
         {
@@ -168,10 +284,20 @@ namespace Nova.Editor
         static void CreateEnemy(string profileName, NodeRegistry registry, ProtonRegistry protons, BalanceConfig balance, PowerDefinition[] powers)
         {
             var profile = AssetDatabase.LoadAssetAtPath<EnemyProfile>($"{ProfilesFolder}/{profileName}.asset");
+            if (profile == null)
+            {
+                Debug.LogError($"[Nova] Falta {ProfilesFolder}/{profileName}.asset.");
+                return;
+            }
+            CreateEnemy(profile, registry, protons, balance, powers);
+        }
+
+        static void CreateEnemy(EnemyProfile profile, NodeRegistry registry, ProtonRegistry protons, BalanceConfig balance, PowerDefinition[] powers)
+        {
             var scoring = AssetDatabase.LoadAssetAtPath<EnemyScoring>(ScoringPath);
             if (profile == null || scoring == null)
             {
-                Debug.LogError($"[Nova] Faltan {ProfilesFolder}/{profileName}.asset o {ScoringPath}.");
+                Debug.LogError($"[Nova] Falta el perfil del Enemigo o {ScoringPath}.");
                 return;
             }
 
@@ -231,11 +357,20 @@ namespace Nova.Editor
         static void CreateNode(string name, NodeDefinition definition, Faction faction, int energy, int level, Vector2 position,
             BalanceConfig balance, TMP_FontAsset font, NodeDefinition[] ignitionTargets, PowerDefinition[] powers, ProtonRegistry protons, PowerBeamSystem beams)
         {
+            GameObject go = BuildNode(name, position, balance, font, ignitionTargets, powers, protons, beams);
+            go.AddComponent<PlacedNode>().Configure(definition, faction, energy, level);
+            EditorUtility.SetDirty(go);
+        }
+
+        // Un nodo con todos sus componentes y sin inicializar: lo que comparten las escenas de prueba
+        // y la plantilla de LevelLoader (T5-01). Sin registros, sus componentes usan los Instance.
+        static GameObject BuildNode(string name, Vector2 position, BalanceConfig balance, TMP_FontAsset font,
+            NodeDefinition[] ignitionTargets, PowerDefinition[] powers, ProtonRegistry protons = null, PowerBeamSystem beams = null)
+        {
             var go = new GameObject(name) { layer = LayerMask.NameToLayer(NodesLayer) };
             go.transform.position = position;
 
             go.AddComponent<NodeController>();
-            go.AddComponent<PlacedNode>().Configure(definition, faction, energy, level);
             go.AddComponent<NodeIgnition>().Configure(balance, ignitionTargets);
             go.AddComponent<NodeConverter>().Configure(balance, ignitionTargets); // T2-07: mismos tipos que el encendido
             go.AddComponent<StarGenerator>(); // desviación 143: en todo nodo que pueda ser Estrella
@@ -255,8 +390,7 @@ namespace Nova.Editor
             serialized.ApplyModifiedPropertiesWithoutUndo();
             go.AddComponent<ProvisionalMagnetarView>();
             go.AddComponent<ProvisionalPulsarView>();
-
-            EditorUtility.SetDirty(go);
+            return go;
         }
 
         static PowerDefinition Power(string name)

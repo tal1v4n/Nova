@@ -324,7 +324,8 @@ namespace Nova.Enemy
                 return;
             foreach (NodeType type in IgnitionTypes)
             {
-                if (!ConversionRules.CheckIgnition(node.State, board.Self, type, board.IgnitionCost).IsAllowed)
+                // 11.1: lo que el nivel no permite, el nodo no lo ofrece (T5-01).
+                if (!node.OffersIgnition(type) || !ConversionRules.CheckIgnition(node.State, board.Self, type, board.IgnitionCost).IsAllowed)
                     continue;
                 result.Add(new EnemyAction(EnemyActionKind.Ignite, node.Index, -1,
                     ScoreIgnition(board, node, type, scoring), nodeType: type));
@@ -362,7 +363,7 @@ namespace Nova.Enemy
 
             foreach (PowerDefinition power in board.Powers)
             {
-                if (power == null || !PowerRules.CheckCharge(node.State, board.Self, power.RequiredLevel, power.Cost).IsAllowed)
+                if (power == null || !node.OffersPower(power.Type) || !PowerRules.CheckCharge(node.State, board.Self, power.RequiredLevel, power.Cost).IsAllowed)
                     continue;
                 float? score = ScoreCharge(board, node, power, profile, scoring);
                 if (score.HasValue)
@@ -380,7 +381,8 @@ namespace Nova.Enemy
             BoardNode origin = null;
             foreach (BoardNode node in board.Nodes)
             {
-                if (!ConversionRules.CheckConversion(node.State, board.Self, NodeType.Star, node.ConversionCost).IsAllowed)
+                if (!node.OffersConversion(NodeType.Star)
+                    || !ConversionRules.CheckConversion(node.State, board.Self, NodeType.Star, node.ConversionCost).IsAllowed)
                     continue;
                 if (origin == null || node.Energy > origin.Energy)
                     origin = node;

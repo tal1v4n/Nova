@@ -228,7 +228,7 @@ namespace Nova.Tests
         static readonly HashSet<string> AllowedCalls = new HashSet<string>
         {
             // Lecturas
-            "Snapshot", "HasState", "GetIncoming",
+            "Snapshot", "HasState", "GetIncoming", "Offers",
             // Los comandos de INodeCommandIssuer
             "Send", "Ignite", "Upgrade", "Convert", "ChargePower", "CancelCharge", "LaunchPower",
         };

@@ -88,11 +88,11 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ hecha · 🔴 bloqueada.
 | 2 | Tipos y defensa | 8 | 8 | ✅ | Los cuatro tipos funcionan y el nivel 3 es jugable |
 | 3 | Poderes | 8 | 8 | ✅ | Los tres poderes funcionan y pasan los casos 8–14 y 27–35 de la sección 17 |
 | 4 | Algoritmo del Enemigo | 6 | 6 | ✅ | El algoritmo del mapa 3 vence a un jugador descuidado |
-| 5 | Flujo y contenido | 7 | 0 | ⬜ | Los 9 niveles son completables de principio a fin |
+| 5 | Flujo y contenido | 7 | 1 | 🟨 | Los 9 niveles son completables de principio a fin |
 | 6 | Presentación | 11 | 0 | 🔴 | 46 de 108 assets listos. **`T6-01`, `T6-02` y `T6-03` ya no están bloqueadas por arte**; las otras ocho sí ([A.7](./NOVA_Assets_Diseno.md#a7-resumen-de-progreso)) |
-| | **Total** | **60** | **42** | | |
+| | **Total** | **60** | **43** | | |
 
-**Siguiente tarea:** `T5-01`, `LevelDefinition`, `NodeSpawnData` y `LevelLoader` ([15.4](./NOVA_GameDesign_Spec.md#154-data--scriptableobjects)). T.7 #2 y #44–#47 se cerraron el 2026-10-12: `T5-01` lleva además las mecánicas por nivel de 11.1, y el Enemigo tiene que verlas en su tablero. Sigue abierto #38, que bloquea `T5-05` y `T5-06`. La fase 4 se cerró el 2026-10-12 con su criterio cumplido en Play; la fase 3, el 2026-10-11, también con el suyo; la fase 2, con el suyo aplazado (desviación 185).
+**Siguiente tarea:** `T5-02`, los 9 assets de nivel con la tabla de 11.2 y el [apéndice de niveles](./NOVA_GameDesign_Spec.md#apéndice--diseño-de-los-9-niveles). Sigue abierto #38, que bloquea `T5-05` y `T5-06`. La fase 4 se cerró el 2026-10-12 con su criterio cumplido en Play; la fase 3, el 2026-10-11, también con el suyo; la fase 2, con el suyo aplazado (desviación 185).
 
 ---
 
@@ -175,7 +175,7 @@ Creada el **2026-09-28**. `T.4` empezaba en `T1-01` dando por hecho un proyecto 
 
 | ID | Tarea | Ref | Depende de | Arte | Estado |
 |---|---|---|---|---|---|
-| T5-01 | `LevelDefinition`, `NodeSpawnData` y `LevelLoader` | [15.4](./NOVA_GameDesign_Spec.md#154-data--scriptableobjects) | T4-06 | No | ⬜ |
+| T5-01 | `LevelDefinition`, `NodeSpawnData` y `LevelLoader` | [15.4](./NOVA_GameDesign_Spec.md#154-data--scriptableobjects) | T4-06 | No | ✅ |
 | T5-02 | Los 9 assets de nivel con la tabla de 11.2 | [11.2](./NOVA_GameDesign_Spec.md#112-diseño-de-niveles) | T5-01 | No | ⬜ |
 | T5-03 | `WinConditionChecker`: victoria, aniquilación, estancamiento, cascada de conquista | [10](./NOVA_GameDesign_Spec.md#10-condiciones-de-victoria-y-derrota) | T5-01 | No | ⬜ |
 | T5-04 | `PowerUpSpawner` + `FactionBuffs` con el calendario de 9.3 | [9](./NOVA_GameDesign_Spec.md#9-power-ups-del-cielo) | T5-01 | No | ⬜ |
@@ -217,6 +217,7 @@ Una línea por tarea completada. La más reciente arriba.
 
 | Fecha | Tarea | Resultado | Notas / desviaciones de la spec |
 |---|---|---|---|
+| 2026-10-12 | **T5-01** | **`NodeSpawnData`** y **`LevelDefinition`** en `Nova.Data`: número de nivel del 1 al 9 (el mapa sale de él), `EnemyProfile`, duración objetivo, nodos de partida y las mecánicas de 11.1 (tipos de encendido, poderes y reconversión), con `AllowsIgnition` y `AllowsPower`. **`LevelLoader`** en `Systems/Levels/`, a −90: instancia la plantilla de nodo por cada `NodeSpawnData`, en orden y bajo sí mismo, configura `NodeIgnition`, `NodeConverter` y `PulsarCaster` con lo que el nivel permite, inicializa y registra; comprueba el nivel entero antes de crear nada (Energía sobre el Tope, nivel inexistente, tipo o poder sin definición) y descarga el anterior al cargar otro. **El Enemigo ve el bloqueo:** `BoardNode` gana `OffersIgnition`, `OffersConversion` y `OffersPower`, que `From` lee de los componentes, y `EnemyEvaluator` no genera candidatas que el nodo no ofrece; un tablero hecho a mano lo ofrece todo. `TestScenes` extrae `BuildNode` y estrena **Nova → Generar plantilla de nodo** (`Assets/Prefabs/Node.prefab`) y **Nova → Fase 5 → Generar escena de prueba**, con un nivel de prueba del mapa 2 (`Assets/Scenes/Tests/Fase5Level.asset`). Tests: `LevelLoaderTests` (nuevo, 14 tests, 20 casos); `EnemyProhibitionsTests` admite `Offers` como lectura | Suite completa en verde en el Test Runner de Unity. Probada en Play por el usuario con la escena de la fase 5: Gusano y reconversión en gris, el resto disponible. Desviaciones 232–233 abajo |
 | 2026-10-12 | Spec: **T.7 #2, #44, #45, #46 y #47 cerrados** | Decididos con el usuario antes de `T5-01`. **#44:** la cascada de 10.1 convierte todos los nodos neutrales, también los Magnetares, con tipo, nivel y Energía. **#45:** el estancamiento de 10.2 pasa a ser **por capacidad**, con cinco vías para volver a tener una Estrella y cuentas optimistas. Una carga en curso cuenta como poder, y no se comprueba con un nodo reconvirtiéndose; los casos 18 y 19 de 17 se reescriben. **#46:** bloqueo por mapa en 11.1, igual para los dos bandos, en `LevelDefinition` (15.4), con la presentación de 18 #29 (18 #36 nuevo, frase nueva en 13.7). **#47 y #2:** apéndice nuevo del maestro, *Diseño de los 9 niveles*, con la posición y la Energía de los 94 nodos (18 #37 nuevo). `FX-CASCADE` de 14.5 cubre ya los Magnetares | Las coordenadas son una propuesta comprobada con un script, no probada en juego. Desviaciones 230–231 abajo |
 | 2026-10-12 | **Cierre de la fase 4** | Criterio de salida jugado a mano en Play con *Nova → Fase 4 → Generar escena de prueba*: el algoritmo con el perfil del mapa 3 venció a un jugador descuidado y le quitó todos los nodos | Sin `WinConditionChecker` (`T5-03`) no hay pantalla de victoria: «vence» se comprobó viendo al Jugador sin nodos. **La fase 4 queda cerrada** |
 | 2026-10-12 | **T4-06** | Verificación de las cuatro prohibiciones de 12.6. **El código ya las cumplía y no se toca**: solo se añaden tests. `EnemyProhibitionsTests` (nuevo, 10 tests, 16 casos): **protones**, el tablero no ve el protón del Jugador hasta que `ProtonLauncher` lo lanza, y en ese momento la defensa responde; **poderes**, `BoardNode` ve el poder del Púlsar rival desde que empieza la carga hasta que se lanza o se cancela, y no guarda de un poder más que lo que enseña la barra; **Energía**, con los tres perfiles, 40 ciclos sin que suba la suma de la Energía de los nodos, la invertida en cargas y la de los protones en vuelo, y un test que lee el IL de `Nova.Enemy` y falla si llama a algo de `Nova.Gameplay` o `Nova.Systems` que no sea una lectura o un comando de `NodeCommandIssuer`; **tiempos**, un Púlsar que carga no lanza ni empieza otra carga, un Cero Absoluto a medias no congela al atacante, un nodo que se reconvierte no actúa, ni refuerza ni evacúa, y 30 ciclos sin que pase el tiempo no terminan ninguna carga ni reconversión en nodos reales | Suite completa en verde en el Test Runner de Unity. Desviación 229 abajo |
@@ -289,6 +290,11 @@ Una línea por tarea completada. La más reciente arriba.
 | — | — | Proyecto de código sin iniciar | — |
 
 > **Cómo leer esta lista.** Una línea por desviación: **qué cambió** y **dónde vive ahora**. El razonamiento completo está en el documento que se cita, que es el que manda; aquí solo está el rastro de cuándo y por qué se movió. Los números no se reutilizan nunca, ni siquiera cuando una desviación queda revertida.
+
+**Al implementar `T5-01` (2026-10-12).**
+
+232. **`PlacedNode` no desaparece.** La desviación 145 anticipaba que `LevelLoader` lo sustituiría, pero las escenas de prueba de las fases 1 a 4 ajustan cada nodo en el Inspector, sin un asset de nivel, y siguen usándolo. Los niveles del juego los carga solo `LevelLoader`.
+233. **El bloqueo por nivel vive en los componentes del nodo, no en una consulta aparte.** `LevelLoader` deja en `NodeIgnition`, `NodeConverter` y `PulsarCaster` solo las definiciones que el nivel permite, y todo lo demás —UI, comandos y Enemigo— lo lee de ellos: es la vía de 18 #29, y ningún consumidor tiene que conocer `LevelDefinition`. El nivel de prueba de la fase 5 vive junto a su escena y no en `Assets/Data/Levels/`, que es de los nueve de `T5-02`. La config de drops de 15.4 llega con `T5-04`.
 
 **Al cerrar T.7 #2 y #44–#47 (2026-10-12).**
 

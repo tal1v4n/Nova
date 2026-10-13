@@ -7,7 +7,9 @@ using UnityEngine;
 namespace Nova.Systems
 {
     // T1-12: inicializa y registra un nodo colocado a mano en una escena de prueba. Es el mínimo
-    // que hace falta para jugar sin LevelLoader, que en T5-01 lo sustituye leyendo NodeSpawnData.
+    // que hace falta para jugar sin LevelLoader. Desde T5-01 los niveles los carga LevelLoader desde
+    // NodeSpawnData, y PlacedNode se queda en las escenas de prueba de las fases 1 a 4, donde cada
+    // nodo se ajusta en el Inspector sin pasar por un asset de nivel.
     //
     // Va a -90: después de los registros (-100), que fijan su Instance en Awake, y antes que
     // cualquier otro script que lea el nodo.

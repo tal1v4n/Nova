@@ -32,8 +32,12 @@ namespace Nova.Enemy
         public BoardNode(int index, NodeSnapshot state, Vector2 position, float magnetarRadius = 0f,
                          int upgradeCost = -1, int conversionCost = 0,
                          PowerType? chargingPower = null, PowerType? readyPower = null, bool powerUpMarked = false,
-                         IReadOnlyList<BoardProton> incoming = null)
+                         IReadOnlyList<BoardProton> incoming = null, IReadOnlyCollection<NodeType> ignitions = null,
+                         IReadOnlyCollection<NodeType> conversions = null, IReadOnlyCollection<PowerType> chargeable = null)
         {
+            this.ignitions = ignitions;
+            this.conversions = conversions;
+            this.chargeable = chargeable;
             Index = index;
             Incoming = incoming ?? Array.Empty<BoardProton>();
             State = state;
@@ -70,6 +74,26 @@ namespace Nova.Enemy
         // Protones en vuelo hacia este nodo, de cualquier bando (12.4, T4-05).
         public IReadOnlyList<BoardProton> Incoming { get; }
 
+        // Lo que el nodo ofrece según las mecánicas del nivel (11.1, 18 #36, T5-01): a qué tipos se puede
+        // encender o reconvertir y qué poderes puede cargar. null = todo, como un tablero hecho a mano.
+        readonly IReadOnlyCollection<NodeType> ignitions;
+        readonly IReadOnlyCollection<NodeType> conversions;
+        readonly IReadOnlyCollection<PowerType> chargeable;
+
+        public bool OffersIgnition(NodeType type) => ignitions == null || Contains(ignitions, type);
+        public bool OffersConversion(NodeType type) => conversions == null || Contains(conversions, type);
+        public bool OffersPower(PowerType type) => chargeable == null || Contains(chargeable, type);
+
+        static bool Contains<T>(IReadOnlyCollection<T> items, T item)
+        {
+            foreach (T candidate in items)
+            {
+                if (EqualityComparer<T>.Default.Equals(candidate, item))
+                    return true;
+            }
+            return false;
+        }
+
         // Lo que pide ThreatCalculator: los mismos protones sin el origen.
         public List<IncomingProton> IncomingProtons()
         {
@@ -85,7 +109,8 @@ namespace Nova.Enemy
         public bool IsLit => State.Type != NodeType.Asteroid;
 
         // Lo que el algoritmo ve de un nodo de la partida (T4-04). El power-up llega con T5-04; los
-        // protones que le llegan los pone EnemyBoard.Capture (T4-05).
+        // protones que le llegan los pone EnemyBoard.Capture (T4-05), y lo que ofrece cada componente
+        // según el nivel, los mismos componentes (T5-01).
         public static BoardNode From(int index, NodeController node, IReadOnlyList<BoardProton> incoming = null)
         {
             if (node == null)
@@ -107,7 +132,25 @@ namespace Nova.Enemy
             }
 
             return new BoardNode(index, node.Snapshot(), node.transform.position, radius, upgradeCost,
-                definition.ConversionCost, charging, ready, false, incoming);
+                definition.ConversionCost, charging, ready, false, incoming,
+                Offered(LitTypes, t => node.TryGetComponent(out NodeIgnition ignition) && ignition.Offers(t)),
+                Offered(LitTypes, t => node.TryGetComponent(out NodeConverter converter) && converter.Offers(t)),
+                Offered(AllPowers, t => node.TryGetComponent(out PulsarCaster pulsar) && pulsar.Offers(t)));
+        }
+
+        static readonly NodeType[] LitTypes = { NodeType.Star, NodeType.Pulsar, NodeType.Magnetar };
+        static readonly PowerType[] AllPowers = { PowerType.AbsoluteZero, PowerType.Decay, PowerType.Wormhole };
+
+        // Lo que ofrecen los componentes del nodo: lo que LevelLoader les dejó (T5-01).
+        static List<T> Offered<T>(T[] all, Func<T, bool> offers)
+        {
+            var result = new List<T>(all.Length);
+            foreach (T item in all)
+            {
+                if (offers(item))
+                    result.Add(item);
+            }
+            return result;
         }
     }
 
