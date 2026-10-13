@@ -1,0 +1,101 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2094ed054835594c9893ba033495fb1, type: 3}
+  m_Name: Level9
+  m_EditorClassIdentifier: Nova.Data::Nova.Data.LevelDefinition
+  number: 9
+  enemyProfile: {fileID: 11400000, guid: 4b57f7037bf74f96b399ac8bb1ee4485, type: 2}
+  targetDuration: 240
+  spawns:
+  - position: {x: -6.25, y: 1}
+    type: 1
+    level: 2
+    faction: 1
+    initialEnergy: 25
+  - position: {x: -5, y: -1.75}
+    type: 3
+    level: 1
+    faction: 1
+    initialEnergy: 50
+  - position: {x: 6.25, y: 1.75}
+    type: 1
+    level: 4
+    faction: 2
+    initialEnergy: 25
+  - position: {x: 6.25, y: -1.75}
+    type: 1
+    level: 4
+    faction: 2
+    initialEnergy: 25
+  - position: {x: 4.75, y: 3}
+    type: 2
+    level: 3
+    faction: 2
+    initialEnergy: 50
+  - position: {x: 4.75, y: -3}
+    type: 2
+    level: 3
+    faction: 2
+    initialEnergy: 50
+  - position: {x: 4.5, y: 0}
+    type: 3
+    level: 4
+    faction: 2
+    initialEnergy: 50
+  - position: {x: 0, y: 2}
+    type: 3
+    level: 4
+    faction: 0
+    initialEnergy: 100
+  - position: {x: 0, y: -2}
+    type: 3
+    level: 4
+    faction: 0
+    initialEnergy: 100
+  - position: {x: -4.5, y: 2}
+    type: 0
+    level: 0
+    faction: 0
+    initialEnergy: 10
+  - position: {x: -3.25, y: -2.75}
+    type: 0
+    level: 0
+    faction: 0
+    initialEnergy: 10
+  - position: {x: -3.5, y: 0.25}
+    type: 0
+    level: 0
+    faction: 0
+    initialEnergy: 10
+  - position: {x: -2.5, y: 3}
+    type: 0
+    level: 0
+    faction: 0
+    initialEnergy: 10
+  - position: {x: 2, y: 0.25}
+    type: 0
+    level: 0
+    faction: 0
+    initialEnergy: 10
+  - position: {x: 2.25, y: 3}
+    type: 0
+    level: 0
+    faction: 0
+    initialEnergy: 10
+  - position: {x: 2.5, y: -3}
+    type: 0
+    level: 0
+    faction: 0
+    initialEnergy: 10
+  ignitionTypes: 010000000200000003000000i
+  powers: 000000000100000002000000i
+  allowsConversion: 1

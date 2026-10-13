@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2094ed054835594c9893ba033495fb1, type: 3}
+  m_Name: Level1
+  m_EditorClassIdentifier: Nova.Data::Nova.Data.LevelDefinition
+  number: 1
+  enemyProfile: {fileID: 11400000, guid: ded9a8069a444a1eb7e67c558e1a7ce9, type: 2}
+  targetDuration: 90
+  spawns:
+  - position: {x: -5, y: 0}
+    type: 1
+    level: 1
+    faction: 1
+    initialEnergy: 25
+  - position: {x: 5, y: 0}
+    type: 1
+    level: 1
+    faction: 2
+    initialEnergy: 25
+  - position: {x: -3.25, y: 1}
+    type: 0
+    level: 0
+    faction: 0
+    initialEnergy: 10
+  - position: {x: 3.25, y: -1}
+    type: 0
+    level: 0
+    faction: 0
+    initialEnergy: 10
+  - position: {x: 0, y: 2}
+    type: 0
+    level: 0
+    faction: 0
+    initialEnergy: 10
+  ignitionTypes: 0100000003000000i
+  powers: 
+  allowsConversion: 0

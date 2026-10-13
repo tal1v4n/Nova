@@ -88,11 +88,11 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ hecha · 🔴 bloqueada.
 | 2 | Tipos y defensa | 8 | 8 | ✅ | Los cuatro tipos funcionan y el nivel 3 es jugable |
 | 3 | Poderes | 8 | 8 | ✅ | Los tres poderes funcionan y pasan los casos 8–14 y 27–35 de la sección 17 |
 | 4 | Algoritmo del Enemigo | 6 | 6 | ✅ | El algoritmo del mapa 3 vence a un jugador descuidado |
-| 5 | Flujo y contenido | 7 | 1 | 🟨 | Los 9 niveles son completables de principio a fin |
+| 5 | Flujo y contenido | 7 | 2 | 🟨 | Los 9 niveles son completables de principio a fin |
 | 6 | Presentación | 11 | 0 | 🔴 | 46 de 108 assets listos. **`T6-01`, `T6-02` y `T6-03` ya no están bloqueadas por arte**; las otras ocho sí ([A.7](./NOVA_Assets_Diseno.md#a7-resumen-de-progreso)) |
-| | **Total** | **60** | **43** | | |
+| | **Total** | **60** | **44** | | |
 
-**Siguiente tarea:** `T5-02`, los 9 assets de nivel con la tabla de 11.2 y el [apéndice de niveles](./NOVA_GameDesign_Spec.md#apéndice--diseño-de-los-9-niveles). Sigue abierto #38, que bloquea `T5-05` y `T5-06`. La fase 4 se cerró el 2026-10-12 con su criterio cumplido en Play; la fase 3, el 2026-10-11, también con el suyo; la fase 2, con el suyo aplazado (desviación 185).
+**Siguiente tarea:** `T5-03`, `WinConditionChecker`: victoria, aniquilación, estancamiento por capacidad y cascada de conquista ([10](./NOVA_GameDesign_Spec.md#10-condiciones-de-victoria-y-derrota)). Sigue abierto #38, que bloquea `T5-05` y `T5-06`. La fase 4 se cerró el 2026-10-12 con su criterio cumplido en Play; la fase 3, el 2026-10-11, también con el suyo; la fase 2, con el suyo aplazado (desviación 185).
 
 ---
 
@@ -176,7 +176,7 @@ Creada el **2026-09-28**. `T.4` empezaba en `T1-01` dando por hecho un proyecto 
 | ID | Tarea | Ref | Depende de | Arte | Estado |
 |---|---|---|---|---|---|
 | T5-01 | `LevelDefinition`, `NodeSpawnData` y `LevelLoader` | [15.4](./NOVA_GameDesign_Spec.md#154-data--scriptableobjects) | T4-06 | No | ✅ |
-| T5-02 | Los 9 assets de nivel con la tabla de 11.2 | [11.2](./NOVA_GameDesign_Spec.md#112-diseño-de-niveles) | T5-01 | No | ⬜ |
+| T5-02 | Los 9 assets de nivel con la tabla de 11.2 | [11.2](./NOVA_GameDesign_Spec.md#112-diseño-de-niveles) | T5-01 | No | ✅ |
 | T5-03 | `WinConditionChecker`: victoria, aniquilación, estancamiento, cascada de conquista | [10](./NOVA_GameDesign_Spec.md#10-condiciones-de-victoria-y-derrota) | T5-01 | No | ⬜ |
 | T5-04 | `PowerUpSpawner` + `FactionBuffs` con el calendario de 9.3 | [9](./NOVA_GameDesign_Spec.md#9-power-ups-del-cielo) | T5-01 | No | ⬜ |
 | T5-05 | `GameManager`, pausa, reinicio de nivel, `EndLevelScreen` | [10.3](./NOVA_GameDesign_Spec.md#103-fin-de-nivel) | T5-03 | No | ⬜ |
@@ -217,6 +217,7 @@ Una línea por tarea completada. La más reciente arriba.
 
 | Fecha | Tarea | Resultado | Notas / desviaciones de la spec |
 |---|---|---|---|
+| 2026-10-12 | **T5-02** | Los nueve `LevelDefinition` en `Assets/Data/Levels/` (`Level1`…`Level9`), escritos por el generador **Nova → Fase 5 → Generar los 9 niveles** (`Editor/LevelAssets.cs`, idempotente). La tabla de nodos sale por script de los datos validados al cerrar T.7 #2, no copiada a mano; cada nivel lleva además su `EnemyProfile` (`Map1`–`Map3`), la duración de 11.2 y las mecánicas de 11.1. Tests: `LevelAssetsTests` (nuevo, 7 tests, 55 casos), que comparan los assets con el maestro y no con la tabla del generador: composición de 11.2, mecánicas y perfil del mapa, Energía de 18 #37, tablero y separación del apéndice, Asteroide de 11.3 y carga sin errores con `LevelLoader` | Suite completa en verde en el Test Runner de Unity. **Regenerar sobrescribe los nueve assets:** un cambio de diseño se hace en la tabla de `LevelAssets` y en el apéndice a la vez. Desviación 234 abajo |
 | 2026-10-12 | **T5-01** | **`NodeSpawnData`** y **`LevelDefinition`** en `Nova.Data`: número de nivel del 1 al 9 (el mapa sale de él), `EnemyProfile`, duración objetivo, nodos de partida y las mecánicas de 11.1 (tipos de encendido, poderes y reconversión), con `AllowsIgnition` y `AllowsPower`. **`LevelLoader`** en `Systems/Levels/`, a −90: instancia la plantilla de nodo por cada `NodeSpawnData`, en orden y bajo sí mismo, configura `NodeIgnition`, `NodeConverter` y `PulsarCaster` con lo que el nivel permite, inicializa y registra; comprueba el nivel entero antes de crear nada (Energía sobre el Tope, nivel inexistente, tipo o poder sin definición) y descarga el anterior al cargar otro. **El Enemigo ve el bloqueo:** `BoardNode` gana `OffersIgnition`, `OffersConversion` y `OffersPower`, que `From` lee de los componentes, y `EnemyEvaluator` no genera candidatas que el nodo no ofrece; un tablero hecho a mano lo ofrece todo. `TestScenes` extrae `BuildNode` y estrena **Nova → Generar plantilla de nodo** (`Assets/Prefabs/Node.prefab`) y **Nova → Fase 5 → Generar escena de prueba**, con un nivel de prueba del mapa 2 (`Assets/Scenes/Tests/Fase5Level.asset`). Tests: `LevelLoaderTests` (nuevo, 14 tests, 20 casos); `EnemyProhibitionsTests` admite `Offers` como lectura | Suite completa en verde en el Test Runner de Unity. Probada en Play por el usuario con la escena de la fase 5: Gusano y reconversión en gris, el resto disponible. Desviaciones 232–233 abajo |
 | 2026-10-12 | Spec: **T.7 #2, #44, #45, #46 y #47 cerrados** | Decididos con el usuario antes de `T5-01`. **#44:** la cascada de 10.1 convierte todos los nodos neutrales, también los Magnetares, con tipo, nivel y Energía. **#45:** el estancamiento de 10.2 pasa a ser **por capacidad**, con cinco vías para volver a tener una Estrella y cuentas optimistas. Una carga en curso cuenta como poder, y no se comprueba con un nodo reconvirtiéndose; los casos 18 y 19 de 17 se reescriben. **#46:** bloqueo por mapa en 11.1, igual para los dos bandos, en `LevelDefinition` (15.4), con la presentación de 18 #29 (18 #36 nuevo, frase nueva en 13.7). **#47 y #2:** apéndice nuevo del maestro, *Diseño de los 9 niveles*, con la posición y la Energía de los 94 nodos (18 #37 nuevo). `FX-CASCADE` de 14.5 cubre ya los Magnetares | Las coordenadas son una propuesta comprobada con un script, no probada en juego. Desviaciones 230–231 abajo |
 | 2026-10-12 | **Cierre de la fase 4** | Criterio de salida jugado a mano en Play con *Nova → Fase 4 → Generar escena de prueba*: el algoritmo con el perfil del mapa 3 venció a un jugador descuidado y le quitó todos los nodos | Sin `WinConditionChecker` (`T5-03`) no hay pantalla de victoria: «vence» se comprobó viendo al Jugador sin nodos. **La fase 4 queda cerrada** |
@@ -290,6 +291,10 @@ Una línea por tarea completada. La más reciente arriba.
 | — | — | Proyecto de código sin iniciar | — |
 
 > **Cómo leer esta lista.** Una línea por desviación: **qué cambió** y **dónde vive ahora**. El razonamiento completo está en el documento que se cita, que es el que manda; aquí solo está el rastro de cuándo y por qué se movió. Los números no se reutilizan nunca, ni siquiera cuando una desviación queda revertida.
+
+**Al implementar `T5-02` (2026-10-12).**
+
+234. **Los nueve niveles los escribe un generador de editor, no el Inspector.** 94 nodos a mano en nueve assets eran 94 ocasiones de desviarse del apéndice; el generador los escribe todos desde una tabla y los tests los comparan con el maestro. El primer intento de la suite falló entera porque el menú no se había ejecutado: cada test dice ahora qué falta en vez de fallar con un null.
 
 **Al implementar `T5-01` (2026-10-12).**
 
