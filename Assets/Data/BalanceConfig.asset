@@ -24,3 +24,4 @@ MonoBehaviour:
   decayRate: 2
   scareThreshold: 1.5
   chargeCancelRefund: 0.5
+  cascadeDuration: 3

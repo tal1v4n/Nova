@@ -978,6 +978,7 @@ Estos valores deben vivir en `BalanceConfig.asset` y en las `NodeDefinition`. No
 | Coste de encendido | 10 |
 | Materia Inerte del Asteroide | 10 |
 | Devolución al cancelar carga | 50% |
+| Duración de la cascada de conquista | 3.0 s ([10.1](#101-victoria-del-jugador)) |
 
 ### 16.2 Costes de nivel
 

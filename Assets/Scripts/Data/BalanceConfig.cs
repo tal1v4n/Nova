@@ -50,6 +50,10 @@ namespace Nova.Data
         [Tooltip("Fracción de la Energía invertida que se devuelve al cancelar una carga (7.1).")]
         [SerializeField, Range(0f, 1f)] float chargeCancelRefund;
 
+        [Header("Fin de nivel")]
+        [Tooltip("Segundos de la cascada de conquista al ganar (10.1).")]
+        [SerializeField, Min(0f)] float cascadeDuration;
+
         public float ProtonSpeed => protonSpeed;
         public float DoubleClickBuffer => doubleClickBuffer;
         public int DragThreshold => dragThreshold;
@@ -62,5 +66,6 @@ namespace Nova.Data
         public float DecayRate => decayRate;
         public float ScareThreshold => scareThreshold;
         public float ChargeCancelRefund => chargeCancelRefund;
+        public float CascadeDuration => cascadeDuration;
     }
 }

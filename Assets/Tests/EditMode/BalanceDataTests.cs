@@ -102,6 +102,7 @@ namespace Nova.Tests
             Assert.AreEqual(2f, balance.DecayRate);
             Assert.AreEqual(1.5f, balance.ScareThreshold);
             Assert.AreEqual(0.5f, balance.ChargeCancelRefund);
+            Assert.AreEqual(3.0f, balance.CascadeDuration);
         }
 
         // Una sola instancia de BalanceConfig: dos harían ambiguo cuál manda.

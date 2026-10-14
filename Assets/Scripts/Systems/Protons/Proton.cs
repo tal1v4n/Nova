@@ -50,6 +50,10 @@ namespace Nova.Systems
         // justo antes de OnFinished, con el protón todavía en su sitio.
         public event Action<Proton> OnShotDown;
 
+        // Desvanecido al ganar el Jugador (17, caso 21): no llega ni impacta. Se emite justo antes de
+        // OnFinished, con el protón todavía en su sitio.
+        public event Action<Proton> OnVanished;
+
         // Microsegundos dentro del tick en que llegó: el criterio de orden de 15.10.
         public long ArrivalOffsetMicros { get; private set; }
 
@@ -154,6 +158,17 @@ namespace Nova.Systems
             OnShotDown?.Invoke(this);
             Finish();
             return true;
+        }
+
+        // El Enemigo pierde su último nodo con este protón en vuelo (17, caso 21): desaparece sin
+        // impactar. Lo llama WinConditionChecker al cumplirse la victoria (T5-03).
+        public void Vanish()
+        {
+            if (!inFlight)
+                throw new InvalidOperationException("El protón no está en vuelo.");
+
+            OnVanished?.Invoke(this);
+            Finish();
         }
 
         void Finish()

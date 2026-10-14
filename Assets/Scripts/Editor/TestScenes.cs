@@ -221,6 +221,7 @@ namespace Nova.Editor
 
             Camera camera = CreateCamera();
             NodeRegistry registry = CreateSystems(balance, font, text, camera, out ProtonRegistry protons, out PowerBeamSystem beams);
+            registry.gameObject.AddComponent<WinConditionChecker>().Configure(balance, registry, protons); // T5-03
 
             PowerDefinition[] powers = System.Array.ConvertAll(Powers, Power);
             var loaderObject = new GameObject("Level");
