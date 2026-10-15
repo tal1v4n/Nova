@@ -30,6 +30,8 @@ namespace Nova.Gameplay
     //
     // Como StarGenerator y MagnetarTurret, va en todo nodo que pueda llegar a ser Púlsar y solo
     // actúa cuando lo es (desviación 143). El reloj corre en el tick fijo (15.10) en microsegundos.
+    // Con el Rayo Cósmico de su facción (9.2, T5-04) corre ×1.5, y el drenaje con él: las dos
+    // curvas de 16.3 están acopladas.
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NodeController))]
     public sealed class PulsarCaster : MonoBehaviour
@@ -193,7 +195,8 @@ namespace Nova.Gameplay
             }
 
             long chargeMicros = ToMicros(power.ChargeTime);
-            long next = Math.Min(progressMicros + ToMicros(deltaTime), chargeMicros);
+            long elapsed = ToMicros(deltaTime * Node.BuffMultiplier(PowerUpStat.AttackSpeed));
+            long next = Math.Min(progressMicros + elapsed, chargeMicros);
             int due = PowerRules.InvestedAt(power.Cost, next, chargeMicros);
             int pay = Math.Min(due - invested, Node.Energy);
 

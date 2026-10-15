@@ -828,10 +828,11 @@ Assets/
 | `NodeDefinition.cs` | Tipo, tope, **coste de reconversión** ([16.4](#164-reconversión): depende del tipo de origen), nº de niveles, array de `NodeLevelData`, prefab, sprites por facción |
 | `NodeLevelData.cs` | `[Serializable] struct`: coste de mejora, intervalo de generación, radio, cadencia |
 | `PowerDefinition.cs` | Tipo, coste, tiempo de carga, duración del haz, nivel requerido, color del haz ([14.4](./NOVA_Estados_Animaciones.md#144-paleta-funcional)) y, con la fase 6, VFX. El drenaje se calcula como coste / tiempo de carga (`T3-01`). **Sin campo de alcance:** el alcance es global y por tanto no es un parámetro de balance ([7.2](#72-tabla-de-poderes)). |
-| `BalanceConfig.cs` | Velocidad del protón, daño por disparo del Magnetar, multiplicador del Magnetar, buffer de doble clic, duración de reconversión, auto-deshielo, tasa de decaimiento, **coste de encendido, Materia Inerte, umbral de susto y devolución al cancelar una carga** (los cuatro, de 16.1) |
+| `BalanceConfig.cs` | Velocidad del protón, daño por disparo del Magnetar, multiplicador del Magnetar, buffer de doble clic, duración de reconversión, auto-deshielo, tasa de decaimiento, **coste de encendido, Materia Inerte, umbral de susto y devolución al cancelar una carga** (los cuatro, de 16.1), **ventana de expiración del power-up** (9.1, `T5-04`) y duración de la cascada de conquista (10.1, `T5-03`) |
 | `LevelDefinition.cs` | Lista de `NodeSpawnData`, referencia a `EnemyProfile`, config de drops, duración objetivo y **las mecánicas que el nivel permite** ([11.1](#111-estructura)): tipos que se pueden encender, poderes que se pueden cargar y si se puede reconvertir |
 | `NodeSpawnData.cs` | `[Serializable] struct`: posición, tipo, nivel, facción, energía inicial |
-| `PowerUpDefinition.cs` | Tipo, magnitud, duración, icono, estadística afectada |
+| `PowerUpDefinition.cs` | Tipo, magnitud, duración, icono, estadística afectada y **peso en el sorteo del tipo** (los dos iguales: el 50 % / 50 % de [9.2](#92-tipos)). Una instancia por tipo en `Assets/Data/PowerUps/` (`T5-04`) |
+| `DropSchedule.cs` | `[Serializable] struct`, la config de drops de `LevelDefinition`: primer drop, intervalo mínimo y máximo, y máximo por nivel. Los tres niveles de un mapa llevan la fila de [9.3](#93-calendario-de-drops) (`T5-04`) |
 | `EnemyProfile.cs` | Los 8 parámetros de la tabla [12.5](./NOVA_Algoritmo_Enemigo.md#125-perfiles-por-mapa) |
 | `EnemyScoring.cs` | Los pesos de las funciones de puntuación del Enemigo ([12.3](./NOVA_Algoritmo_Enemigo.md#123-función-de-puntuación-atacar), 12.3.1 y 12.3.2): `ValorTipo`, bonus, penalizaciones, afinidades, necesidades de encendido y bases de mejora. Uno solo, igual para los tres mapas; lo que cambia por mapa está en `EnemyProfile` (`T4-02`) |
 | `UiText.cs` | **Todos los textos de la UI**, en español: nombres de tipo, formatos del panel, `DORMIDO`, `NIVEL MÁXIMO`… Una instancia, `Assets/Data/UiText.asset`. El juego es solo en español, pero ningún texto se escribe en un script o un prefab ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #39) |
@@ -935,6 +936,7 @@ Se fija con el atributo `[DefaultExecutionOrder]` en cada script, no en *Project
 
 ```
 -100  NodeRegistry, ProtonRegistry
+ -80  PowerUpSpawner, FactionBuffs
  -50  InputRouter
  -40  EnemyController
    0  NodeController y componentes de nodo
@@ -968,8 +970,8 @@ Estos valores deben vivir en `BalanceConfig.asset` y en las `NodeDefinition`. No
 | Duración de la reconversión | 3.0 s |
 | Auto-deshielo | 30 s |
 | Tasa de Decaimiento | 2 E/s |
-| Duración de los power-ups | 20 s |
-| Magnitud de los power-ups | +50% |
+| Duración de los power-ups | 20 s (`PowerUpDefinition`, uno por tipo) |
+| Magnitud de los power-ups | +50% (`PowerUpDefinition`, uno por tipo) |
 | Ventana de expiración del power-up | 30 s |
 | Umbral de susto | 1.5 s |
 | Área jugable | **15 × 8.4375 u** |

@@ -108,9 +108,9 @@ namespace Nova.Enemy
         public int Energy => State.Energy;
         public bool IsLit => State.Type != NodeType.Asteroid;
 
-        // Lo que el algoritmo ve de un nodo de la partida (T4-04). El power-up llega con T5-04; los
-        // protones que le llegan los pone EnemyBoard.Capture (T4-05), y lo que ofrece cada componente
-        // según el nivel, los mismos componentes (T5-01).
+        // Lo que el algoritmo ve de un nodo de la partida (T4-04). El power-up, de NodeIgnition (T5-04);
+        // los protones que le llegan los pone EnemyBoard.Capture (T4-05), y lo que ofrece cada
+        // componente según el nivel, los mismos componentes (T5-01).
         public static BoardNode From(int index, NodeController node, IReadOnlyList<BoardProton> incoming = null)
         {
             if (node == null)
@@ -131,8 +131,10 @@ namespace Nova.Enemy
                     charging = caster.Power.Type;
             }
 
+            bool marked = node.TryGetComponent(out NodeIgnition marker) && marker.IsMarked;
+
             return new BoardNode(index, node.Snapshot(), node.transform.position, radius, upgradeCost,
-                definition.ConversionCost, charging, ready, false, incoming,
+                definition.ConversionCost, charging, ready, marked, incoming,
                 Offered(LitTypes, t => node.TryGetComponent(out NodeIgnition ignition) && ignition.Offers(t)),
                 Offered(LitTypes, t => node.TryGetComponent(out NodeConverter converter) && converter.Offers(t)),
                 Offered(AllPowers, t => node.TryGetComponent(out PulsarCaster pulsar) && pulsar.Offers(t)));

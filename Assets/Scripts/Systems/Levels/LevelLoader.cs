@@ -12,7 +12,8 @@ namespace Nova.Systems
     // y sus componentes reciben las mecánicas del nivel (11.1, 18 #36): los tipos que NodeIgnition
     // puede encender, los de NodeConverter y los poderes de PulsarCaster. Lo que el nivel no permite
     // queda fuera de sus listas, así que sale Unavailable, gris y sin coste (18 #29), para los dos
-    // bandos: el Enemigo lo lee de los mismos componentes (EnemyBoard).
+    // bandos: el Enemigo lo lee de los mismos componentes (EnemyBoard). Cada nodo recibe además los
+    // FactionBuffs del nivel (T5-04).
     //
     // Cargar otro nivel descarga el anterior. Va a -90, como PlacedNode: después de los registros
     // (-100), que fijan su Instance en Awake, y antes que cualquier otro script que lea los nodos.
@@ -33,6 +34,9 @@ namespace Nova.Systems
 
         [Tooltip("Opcional: sin él se usa NodeRegistry.Instance.")]
         [SerializeField] NodeRegistry registry;
+
+        [Tooltip("Opcional: los buffs de facción que consultan los nodos (9, T5-04). Sin ellos, ningún nodo va acelerado.")]
+        [SerializeField] FactionBuffs buffs;
 
         [Tooltip("Opcional: el nivel que se carga al empezar. Para las escenas de prueba; en el juego lo pide GameManager (T5-05).")]
         [SerializeField] LevelDefinition startLevel;
@@ -86,6 +90,7 @@ namespace Nova.Systems
                     converter.Configure(Balance, conversion);
                 if (node.TryGetComponent(out PulsarCaster caster))
                     caster.Configure(Balance, allowedPowers);
+                node.UseBuffs(buffs);
 
                 if (spawn.Level > 0)
                     node.Initialize(definition, spawn.Faction, spawn.InitialEnergy, spawn.Level);
@@ -120,8 +125,10 @@ namespace Nova.Systems
 
         // Para la escena de prueba y los tests: el cableado normal es por el Inspector.
         public void Configure(BalanceConfig config, NodeController template, IEnumerable<NodeDefinition> nodeDefinitions,
-                              IEnumerable<PowerDefinition> powerDefinitions, NodeRegistry nodeRegistry = null, LevelDefinition level = null)
+                              IEnumerable<PowerDefinition> powerDefinitions, NodeRegistry nodeRegistry = null, LevelDefinition level = null,
+                              FactionBuffs factionBuffs = null)
         {
+            buffs = factionBuffs;
             balance = config;
             nodePrefab = template;
             definitions = nodeDefinitions != null ? new List<NodeDefinition>(nodeDefinitions).ToArray() : Array.Empty<NodeDefinition>();

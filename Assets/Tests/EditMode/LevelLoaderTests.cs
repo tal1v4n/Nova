@@ -96,6 +96,19 @@ namespace Nova.Tests
         static NodeSpawnData Spawn(NodeType type, Faction faction, int energy, float x, float y, int level = 0) =>
             new NodeSpawnData(new Vector2(x, y), type, faction, energy, level);
 
+        // T5-04: cada nodo consulta los FactionBuffs del nivel.
+        [Test]
+        public void EveryNodeReadsTheLevelBuffs()
+        {
+            var buffs = registry.gameObject.AddComponent<FactionBuffs>();
+            loader.Configure(Balance, template.GetComponent<NodeController>(), Definitions, Powers, registry, null, buffs);
+            loader.Load(Level(1, Spawn(NodeType.Star, Faction.Player, 25, -5f, 0f, 1), Spawn(NodeType.Star, Faction.Enemy, 25, 5f, 0f, 1)));
+            buffs.Apply(Faction.Player, AssetDatabase.LoadAssetAtPath<PowerUpDefinition>("Assets/Data/PowerUps/HydrogenCloud.asset"));
+
+            Assert.AreEqual(1.5f, loader.Nodes[0].BuffMultiplier(PowerUpStat.EnergyGeneration), 1e-6f);
+            Assert.AreEqual(1f, loader.Nodes[1].BuffMultiplier(PowerUpStat.EnergyGeneration), 1e-6f);
+        }
+
         // --- LevelDefinition ---
 
         [TestCase(1, 1)]

@@ -64,3 +64,8 @@ MonoBehaviour:
   ignitionTypes: 010000000200000003000000i
   powers: 0000000001000000i
   allowsConversion: 0
+  drops:
+    firstDrop: 30
+    minInterval: 50
+    maxInterval: 70
+    maxDrops: 4

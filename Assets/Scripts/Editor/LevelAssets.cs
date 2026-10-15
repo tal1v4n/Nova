@@ -182,7 +182,7 @@ namespace Nova.Editor
                     level = ScriptableObject.CreateInstance<LevelDefinition>();
                     AssetDatabase.CreateAsset(level, path);
                 }
-                level.Configure(number, profile, Durations[i], Spawns[i], IgnitionTypes(map), Powers(map), map == 3);
+                level.Configure(number, profile, Durations[i], Spawns[i], IgnitionTypes(map), Powers(map), map == 3, Drops(map));
                 EditorUtility.SetDirty(level);
             }
             AssetDatabase.SaveAssets();
@@ -197,5 +197,10 @@ namespace Nova.Editor
         static PowerType[] Powers(int map) => map == 1 ? new PowerType[0]
             : map == 2 ? new[] { PowerType.AbsoluteZero, PowerType.Decay }
             : new[] { PowerType.AbsoluteZero, PowerType.Decay, PowerType.Wormhole };
+
+        // Calendario de drops de 9.3 (T5-04).
+        public static DropSchedule Drops(int map) => map == 1 ? new DropSchedule(25f, 40f, 55f, 3)
+            : map == 2 ? new DropSchedule(30f, 50f, 70f, 4)
+            : new DropSchedule(35f, 60f, 85f, 5);
     }
 }

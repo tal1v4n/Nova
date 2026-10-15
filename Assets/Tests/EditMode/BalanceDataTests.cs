@@ -102,6 +102,7 @@ namespace Nova.Tests
             Assert.AreEqual(2f, balance.DecayRate);
             Assert.AreEqual(1.5f, balance.ScareThreshold);
             Assert.AreEqual(0.5f, balance.ChargeCancelRefund);
+            Assert.AreEqual(30f, balance.PowerUpExpiry);
             Assert.AreEqual(3.0f, balance.CascadeDuration);
         }
 
@@ -162,6 +163,35 @@ namespace Nova.Tests
         {
             UnityEngine.Color32 color = Power(asset).BeamColor;
             Assert.AreEqual(new UnityEngine.Color32((byte)r, (byte)g, (byte)b, 0xFF), color);
+        }
+
+        // --- Power-ups (9, T5-04) ---
+
+        const string PowerUpsFolder = "Assets/Data/PowerUps";
+
+        [Test]
+        public void ThereIsExactlyOneDefinitionPerPowerUp()
+        {
+            var types = AssetDatabase.FindAssets("t:PowerUpDefinition")
+                .Select(guid => AssetDatabase.LoadAssetAtPath<PowerUpDefinition>(AssetDatabase.GUIDToAssetPath(guid)).Type)
+                .OrderBy(t => t)
+                .ToArray();
+
+            CollectionAssert.AreEqual(new[] { PowerUpType.CosmicRay, PowerUpType.HydrogenCloud }, types);
+        }
+
+        // 9.1 y 9.2: +50 % durante 20 s, y 50 % / 50 % en el sorteo.
+        [TestCase("CosmicRay", PowerUpType.CosmicRay, PowerUpStat.AttackSpeed)]
+        [TestCase("HydrogenCloud", PowerUpType.HydrogenCloud, PowerUpStat.EnergyGeneration)]
+        public void PowerUpDefinitionMatchesSpec(string asset, PowerUpType type, PowerUpStat stat)
+        {
+            var powerUp = AssetDatabase.LoadAssetAtPath<PowerUpDefinition>($"{PowerUpsFolder}/{asset}.asset");
+            Assert.IsNotNull(powerUp, $"Falta {PowerUpsFolder}/{asset}.asset");
+            Assert.AreEqual(type, powerUp.Type);
+            Assert.AreEqual(stat, powerUp.Stat);
+            Assert.AreEqual(0.5f, powerUp.Magnitude);
+            Assert.AreEqual(20f, powerUp.Duration);
+            Assert.AreEqual(1f, powerUp.DropWeight, "Los dos pesos iguales: 50 % / 50 %.");
         }
 
         // --- Perfiles del Enemigo (12.5, T4-01) ---

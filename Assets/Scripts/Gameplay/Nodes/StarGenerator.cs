@@ -10,6 +10,9 @@ namespace Nova.Gameplay
     // El tiempo se acumula en microsegundos enteros y el sobrante pasa al intervalo siguiente:
     // los intervalos de 1.05 s y 0.85 s no son múltiplos de 20 ms, y así conservan su tasa media
     // exacta sin la deriva de sumar floats.
+    //
+    // Nube de Hidrógeno (9.2, T5-04): el reloj corre ×1.5, que es el intervalo × 0.667 de 9.2. El
+    // tiempo acelerado se suma al progreso, así que el buff actúa desde el tick en que llega.
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NodeController))]
     public sealed class StarGenerator : MonoBehaviour
@@ -49,7 +52,7 @@ namespace Nova.Gameplay
             if (interval <= 0)
                 throw new InvalidOperationException($"Estrella nivel {Node.Level} sin intervalo de generación.");
 
-            elapsedMicros += ToMicros(deltaTime);
+            elapsedMicros += ToMicros(deltaTime * Node.BuffMultiplier(PowerUpStat.EnergyGeneration));
 
             int generated = 0;
             int room = Node.EnergyCap - Node.Energy;

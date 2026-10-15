@@ -57,6 +57,8 @@ namespace Nova.Editor
         const string PowersFolder = "Assets/Data/Powers";
         static readonly string[] Powers = { "AbsoluteZero", "Decay", "Wormhole" };
 
+        const string PowerUpsFolder = "Assets/Data/PowerUps"; // T5-04
+
         // Los tres nodos de la fase 1, sobre el tablero de 15 x 8.4375 u (T.8). El Asteroide queda
         // a 2.12 u de la Estrella del Jugador, dentro de la regla de 2.25 u de 11.3. El Enemigo no
         // actúa hasta la fase 4, pero su Estrella genera.
@@ -213,7 +215,7 @@ namespace Nova.Editor
                 spawns.Add(new NodeSpawnData(spec.position, (NodeType)System.Enum.Parse(typeof(NodeType), spec.type), spec.faction, spec.energy, spec.level));
             level.Configure(4, profile, 150f, spawns,
                 new[] { NodeType.Star, NodeType.Pulsar, NodeType.Magnetar },
-                new[] { PowerType.AbsoluteZero, PowerType.Decay }, false);
+                new[] { PowerType.AbsoluteZero, PowerType.Decay }, false, LevelAssets.Drops(2)); // T5-04
             EditorUtility.SetDirty(level);
             AssetDatabase.SaveAssets();
 
@@ -223,11 +225,23 @@ namespace Nova.Editor
             NodeRegistry registry = CreateSystems(balance, font, text, camera, out ProtonRegistry protons, out PowerBeamSystem beams);
             registry.gameObject.AddComponent<WinConditionChecker>().Configure(balance, registry, protons); // T5-03
 
+            // T5-04: power-ups del cielo con el calendario del mapa 2.
+            var buffs = registry.gameObject.AddComponent<FactionBuffs>();
+            var powerUps = new[] { "CosmicRay", "HydrogenCloud" };
+            PowerUpDefinition[] powerUpDefinitions = System.Array.ConvertAll(powerUps,
+                n => AssetDatabase.LoadAssetAtPath<PowerUpDefinition>($"{PowerUpsFolder}/{n}.asset"));
+
             PowerDefinition[] powers = System.Array.ConvertAll(Powers, Power);
             var loaderObject = new GameObject("Level");
-            loaderObject.AddComponent<LevelLoader>().Configure(balance, template,
-                System.Array.ConvertAll(new[] { "Asteroid", "Star", "Pulsar", "Magnetar" }, Definition), powers, registry, level);
+            var loader = loaderObject.AddComponent<LevelLoader>();
+            loader.Configure(balance, template,
+                System.Array.ConvertAll(new[] { "Asteroid", "Star", "Pulsar", "Magnetar" }, Definition), powers, registry, level, buffs);
             EditorUtility.SetDirty(loaderObject);
+
+            var spawner = registry.gameObject.AddComponent<PowerUpSpawner>();
+            spawner.Configure(balance, powerUpDefinitions, buffs, registry, 0, loader);
+            registry.gameObject.AddComponent<ProvisionalPowerUpView>().Configure(spawner);
+            EditorUtility.SetDirty(registry.gameObject);
 
             CreateEnemy(level.EnemyProfile, registry, protons, balance, powers);
 

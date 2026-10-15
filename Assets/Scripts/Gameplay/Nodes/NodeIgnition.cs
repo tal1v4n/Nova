@@ -10,7 +10,9 @@ namespace Nova.Gameplay
     // nivel 1 de Estrella, Púlsar o Magnetar. Las reglas son de ConversionRules; aquí se cobra
     // el coste y se cambia el tipo. Con el Tope de 10 y el coste de 10, el nodo nuevo nace a 0.
     //
-    // La recogida del power-up que 15.5 le asigna llega con PowerUpSpawner (T5-04).
+    // Recogida del power-up (9.1, T5-04): PowerUpSpawner marca un Asteroide neutral y el primer
+    // bando que lo encienda se lleva el efecto. La marca sobrevive a las capturas, porque para
+    // encenderlo hay que poseerlo antes; la quita el encendido o el spawner al apagarse.
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NodeController))]
     public sealed class NodeIgnition : MonoBehaviour
@@ -21,6 +23,14 @@ namespace Nova.Gameplay
         [SerializeField] NodeDefinition[] targets = Array.Empty<NodeDefinition>();
 
         NodeController node;
+        PowerUpDefinition powerUp;
+
+        // El power-up que espera sobre este Asteroide, o null.
+        public PowerUpDefinition PowerUp => powerUp;
+        public bool IsMarked => powerUp != null;
+
+        // (bando que enciende, power-up) al encender un Asteroide marcado. Lo atiende PowerUpSpawner.
+        public event Action<Faction, PowerUpDefinition> OnPowerUpCollected;
 
         // Validación sin efectos. La usan el comando y el menú radial (T2-02), que pinta cada
         // opción deshabilitada con el coste en rojo (13.7) o como no disponible.
@@ -48,7 +58,31 @@ namespace Nova.Gameplay
             NodeDefinition definition = DefinitionFor(targetType);
             Node.SubtractEnergy(check.Cost);
             Node.ChangeType(definition, 1);
+
+            if (powerUp != null)
+            {
+                PowerUpDefinition collected = powerUp;
+                powerUp = null;
+                OnPowerUpCollected?.Invoke(actor, collected);
+            }
             return check;
+        }
+
+        // Un power-up cae sobre este Asteroide (9.1). Solo sobre uno neutral: un Asteroide propio no
+        // recibe power-ups (17, caso 26).
+        public void Mark(PowerUpDefinition definition)
+        {
+            if (definition == null)
+                throw new ArgumentNullException(nameof(definition));
+            if (!Node.IsInitialized || Node.Type != NodeType.Asteroid || Node.Faction != Faction.Neutral)
+                throw new InvalidOperationException($"{name}: un power-up solo cae sobre un Asteroide neutral.");
+            powerUp = definition;
+        }
+
+        // El power-up se apaga sin que nadie lo recoja (9.1), o el nivel termina.
+        public void Unmark()
+        {
+            powerUp = null;
         }
 
         // Para la escena de prueba y los tests: el cableado normal es por el Inspector.

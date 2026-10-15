@@ -22,6 +22,8 @@ namespace Nova.Tests
         [TestCase(typeof(NodeStateFlags), 6)] // 14.1, los cinco que se suman más None
         [TestCase(typeof(PowerType), 3)]    // Sección 7
         [TestCase(typeof(ImpactResult), 5)] // 15.3, sin Destroyed (T.7 #40)
+        [TestCase(typeof(PowerUpType), 2)]  // 9.2: Rayo Cósmico y Nube de Hidrógeno
+        [TestCase(typeof(PowerUpStat), 2)]  // 9.2: velocidad de ataque y generación
         public void EnumHasExactlyTheSpecifiedValues(Type enumType, int expected)
         {
             Assert.AreEqual(expected, Enum.GetValues(enumType).Length);

@@ -1,6 +1,7 @@
 using System;
 using Nova.Core;
 using Nova.Data;
+using Nova.Systems;
 using UnityEngine;
 
 namespace Nova.Gameplay
@@ -12,6 +13,9 @@ namespace Nova.Gameplay
     [RequireComponent(typeof(NodeLevelComponent), typeof(NodeStateMachine))]
     public sealed class NodeController : MonoBehaviour
     {
+        [Tooltip("Opcional: los buffs de facción del nivel (9, T5-04). Sin ellos, el nodo nunca va acelerado. Lo asigna LevelLoader.")]
+        [SerializeField] FactionBuffs buffs;
+
         NodeIdentity identity;
         NodeOwnership ownership;
         NodeEnergy energy;
@@ -35,6 +39,15 @@ namespace Nova.Gameplay
         public bool IsInitialized => Identity.Definition != null;
 
         public bool HasState(NodeStateFlags flag) => StateMachine.Has(flag);
+
+        // Factor de los power-ups de su facción sobre una estadística (9.2): 1 sin buff. Lo consultan
+        // StarGenerator, MagnetarTurret y PulsarCaster en cada tick.
+        public float BuffMultiplier(PowerUpStat stat) => buffs != null ? buffs.Multiplier(Faction, stat) : 1f;
+
+        public void UseBuffs(FactionBuffs factionBuffs)
+        {
+            buffs = factionBuffs;
+        }
 
         // Reenvío de los eventos de los componentes: quien escucha al nodo no necesita conocerlos.
         public event Action<Faction, Faction> OnFactionChanged

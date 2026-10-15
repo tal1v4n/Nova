@@ -103,6 +103,25 @@ namespace Nova.Tests
             Assert.AreEqual(level.EnemyProfile.UsesConversion, level.AllowsConversion, "11.1 coincide con 12.5.");
         }
 
+        // 9.3, fila del mapa: primer drop, intervalo y máximo por nivel (T5-04).
+        static readonly (float first, float min, float max, int count)[] DropTable =
+        {
+            (25f, 40f, 55f, 3),
+            (30f, 50f, 70f, 4),
+            (35f, 60f, 85f, 5),
+        };
+
+        [TestCaseSource(nameof(Numbers))]
+        public void EachLevelHasTheDropScheduleOfItsMap(int number)
+        {
+            DropSchedule drops = Level(number).Drops;
+            var row = DropTable[(number - 1) / 3];
+            Assert.AreEqual(row.first, drops.FirstDrop);
+            Assert.AreEqual(row.min, drops.MinInterval);
+            Assert.AreEqual(row.max, drops.MaxInterval);
+            Assert.AreEqual(row.count, drops.MaxDrops);
+        }
+
         [TestCaseSource(nameof(Numbers))]
         public void EachNodeStartsWithTheEnergyOfEighteenThirtySeven(int number)
         {

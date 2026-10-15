@@ -22,6 +22,9 @@ namespace Nova.Gameplay
     // Como StarGenerator, va en todo nodo que pueda llegar a ser Magnetar y solo actúa cuando lo
     // es (desviación 143). El Magnetar neutral dispara a los dos bandos (3.2, T2-06); reconvirtiendo
     // no dispara (8.1, T2-07), y congelado tampoco (7.3, T3-04).
+    //
+    // Rayo Cósmico (9.2, T5-04): la recarga corre ×1.5 con el buff de su facción. El neutral no
+    // tiene facción que lo recoja.
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NodeController))]
     public sealed class MagnetarTurret : MonoBehaviour
@@ -66,7 +69,7 @@ namespace Nova.Gameplay
 
             // Recargando, el tick cuenta; cargada, el arma no adelanta el siguiente disparo.
             if (cooldownMicros > 0)
-                cooldownMicros -= ToMicros(deltaTime);
+                cooldownMicros -= ToMicros(deltaTime * Node.BuffMultiplier(PowerUpStat.AttackSpeed));
             while (cooldownMicros <= 0)
             {
                 Proton target = FindTarget();
