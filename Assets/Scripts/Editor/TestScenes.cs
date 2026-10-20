@@ -251,6 +251,104 @@ namespace Nova.Editor
             Debug.Log($"[Nova] Escena de prueba generada en {scenePath}, con el nivel {Phase5LevelPath}. Dale a Play.");
         }
 
+        // T5-05: la escena Game de 15.2, la única que juega los nueve niveles. GameManager carga el
+        // nivel que le pidan —el 1 si se le da a Play aquí— y lleva la pausa, el fin de nivel y el
+        // reinicio, que vuelve a cargar esta escena. Es la primera escena de Build Settings que no es
+        // de prueba; la sobrescribe entera, conservando su GUID.
+        const string GameScenePath = "Assets/Scenes/Game.unity";
+        const string LevelsFolder = "Assets/Data/Levels";
+
+        [MenuItem("Nova/Fase 5/Generar escena Game")]
+        public static void GenerateGame()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                return;
+
+            var balance = AssetDatabase.LoadAssetAtPath<BalanceConfig>(BalancePath);
+            var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontPath);
+            var text = AssetDatabase.LoadAssetAtPath<UiText>(TextPath);
+            var scoring = AssetDatabase.LoadAssetAtPath<EnemyScoring>(ScoringPath);
+            var levels = new LevelDefinition[9];
+            for (int i = 0; i < levels.Length; i++)
+                levels[i] = AssetDatabase.LoadAssetAtPath<LevelDefinition>($"{LevelsFolder}/Level{i + 1}.asset");
+            if (balance == null || font == null || text == null || scoring == null || System.Array.IndexOf(levels, null) >= 0)
+            {
+                Debug.LogError($"[Nova] Faltan {BalancePath}, {FontPath}, {TextPath}, {ScoringPath} o alguno de los nueve niveles de {LevelsFolder} (Nova → Fase 5 → Generar los 9 niveles).");
+                return;
+            }
+
+            NodeController template = WriteNodePrefab();
+            if (template == null)
+                return;
+
+            Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            Camera camera = CreateCamera();
+
+            var flow = new GameObject("Game");
+            var game = flow.AddComponent<GameManager>();
+            NodeRegistry registry = CreateSystems(balance, font, text, camera, out ProtonRegistry protons, out PowerBeamSystem beams, game);
+
+            var buffs = registry.gameObject.AddComponent<FactionBuffs>();
+            PowerDefinition[] powers = System.Array.ConvertAll(Powers, Power);
+            var loaderObject = new GameObject("Level");
+            var loader = loaderObject.AddComponent<LevelLoader>();
+            loader.Configure(balance, template,
+                System.Array.ConvertAll(new[] { "Asteroid", "Star", "Pulsar", "Magnetar" }, Definition), powers, registry, null, buffs);
+
+            var checker = registry.gameObject.AddComponent<WinConditionChecker>();
+            checker.Configure(balance, registry, protons, loader);
+
+            var spawner = registry.gameObject.AddComponent<PowerUpSpawner>();
+            spawner.Configure(balance, System.Array.ConvertAll(new[] { "CosmicRay", "HydrogenCloud" },
+                n => AssetDatabase.LoadAssetAtPath<PowerUpDefinition>($"{PowerUpsFolder}/{n}.asset")), buffs, registry, 0, loader);
+            registry.gameObject.AddComponent<ProvisionalPowerUpView>().Configure(spawner);
+
+            // El Enemigo toma el perfil del nivel que cargue GameManager (12.5).
+            var enemy = new GameObject("Enemy");
+            var enemyIssuer = enemy.AddComponent<EnemyCommandIssuer>();
+            enemyIssuer.Configure(registry.GetComponent<ProtonLauncher>());
+            enemy.AddComponent<EnemyController>().Configure(levels[0].EnemyProfile, scoring, balance, enemyIssuer, powers, registry, 0, protons, loader);
+
+            var recorder = flow.AddComponent<MatchRecorder>();
+            recorder.Configure(registry, checker);
+            game.Configure(loader, checker, recorder, levels, levels[0]);
+            // Pausa y fin, fieles a la maqueta (T.2 regla 8): uGUI, con su EventSystem y los sprites de A.2.
+            flow.AddComponent<PauseMenu>().Configure(game, font, text);
+            flow.AddComponent<EndLevelScreen>().Configure(game, font, text, registry, NodeSprites());
+            new GameObject("EventSystem", typeof(UnityEngine.EventSystems.EventSystem),
+                typeof(UnityEngine.InputSystem.UI.InputSystemUIInputModule));
+
+            EditorUtility.SetDirty(flow);
+            EditorUtility.SetDirty(registry.gameObject);
+            EditorUtility.SetDirty(loaderObject);
+            EditorUtility.SetDirty(enemy);
+            EditorSceneManager.SaveScene(scene, GameScenePath);
+            AssetDatabase.Refresh();
+
+            Debug.Log($"[Nova] Escena Game generada en {GameScenePath}. Dale a Play: empieza en el nivel 1; para otro, cambia Start Level en GameManager.");
+        }
+
+        // Los sprites de nodo que ArtBridge copió a Assets/Sprites/nodes (T0-05). Sin sincronizar, la
+        // lista sale vacía y las pantallas de fin dejan el hueco de cada icono.
+        const string NodeSpritesFolder = "Assets/Sprites/nodes";
+
+        static Sprite[] NodeSprites()
+        {
+            var sprites = new System.Collections.Generic.List<Sprite>();
+            if (!AssetDatabase.IsValidFolder(NodeSpritesFolder))
+            {
+                Debug.LogWarning($"[Nova] No existe {NodeSpritesFolder}: sincroniza con Nova → Arte → Sincronizar sprites desde art.");
+                return sprites.ToArray();
+            }
+            foreach (string guid in AssetDatabase.FindAssets("t:Sprite", new[] { NodeSpritesFolder }))
+            {
+                var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(AssetDatabase.GUIDToAssetPath(guid));
+                if (sprite != null)
+                    sprites.Add(sprite);
+            }
+            return sprites.ToArray();
+        }
+
         static void Generate(string sceneName, (string name, string type, Faction faction, int energy, int level, Vector2 position)[] nodes,
             string enemyProfile = null)
         {
@@ -333,7 +431,8 @@ namespace Nova.Editor
             return camera;
         }
 
-        static NodeRegistry CreateSystems(BalanceConfig balance, TMP_FontAsset font, UiText text, Camera camera, out ProtonRegistry protons, out PowerBeamSystem beams)
+        static NodeRegistry CreateSystems(BalanceConfig balance, TMP_FontAsset font, UiText text, Camera camera, out ProtonRegistry protons, out PowerBeamSystem beams,
+            GameManager game = null)
         {
             var go = new GameObject("Systems");
 
@@ -354,7 +453,7 @@ namespace Nova.Editor
             var sendLine = go.AddComponent<SendLineState>(); // T2-09
             sendLine.Configure(selection, menu, aim);
             var router = go.AddComponent<InputRouter>();
-            router.Configure(balance, selection, issuer, menu, panel, camera, sendLine, aim);
+            router.Configure(balance, selection, issuer, menu, panel, camera, sendLine, aim, game); // T5-05: Esc pausa
 
             go.AddComponent<ProvisionalSelectionView>().Configure(selection);
             go.AddComponent<ProvisionalSendLineView>().Configure(sendLine);

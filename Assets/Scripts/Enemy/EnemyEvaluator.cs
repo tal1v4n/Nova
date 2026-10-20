@@ -10,8 +10,9 @@ namespace Nova.Enemy
     // y sin estado (12.7): misma entrada, misma salida. El ruido lo pone Pick con un System.Random
     // que llega de fuera, con semilla.
     //
-    // Genera las candidatas de 12.2 —todas menos reforzar, que solo existe en la defensa de 12.4— y
-    // las puntúa en una sola escala para que compitan contra UmbralDeAccion. Las reglas de juego no se
+    // Genera las candidatas de 12.2 —todas menos reforzar, que solo existe en la defensa de 12.4—, más
+    // expandir y abastecer de 12.3.4, y las puntúa en una sola escala para que compitan contra
+    // UmbralDeAccion. Las reglas de juego no se
     // repiten aquí: lo que es legal lo dicen ConversionRules, PowerRules y EnergyMath.
     //
     // Sin distancia en los poderes (12.7): ScorePoder y ScoreCarga no leen ninguna posición.
@@ -94,22 +95,58 @@ namespace Nova.Enemy
             return IsExposed(board, node, remainingEnergy, scoring) ? scoring.DrainPenalty : 0f;
         }
 
-        // Score de 12.3 para un origen propio y un destino ajeno. null si el origen no puede enviar o
-        // el CosteEfectivo supera su Energía al 100 %.
+        // Carga propia que ya vuela hacia el nodo (12.3.4): lo que falta para capturarlo o abastecerlo
+        // se cuenta sin ella. Sin esto el algoritmo repetía cada ciclo el envío que ya estaba en el aire.
+        public static int OwnChargeInFlight(EnemyBoard board, BoardNode target)
+        {
+            int charge = 0;
+            foreach (BoardProton proton in target.Incoming)
+            {
+                if (proton.Proton.Faction == board.Self)
+                    charge += proton.Proton.Charge;
+            }
+            return charge;
+        }
+
+        // NecesidadExpansion (12.3.4): cuanto menos tiene, más vale un nodo nuevo.
+        public static float ExpansionNeed(EnemyBoard board, EnemyScoring scoring)
+        {
+            int own = 0;
+            foreach (BoardNode node in board.Nodes)
+            {
+                if (node.Faction == board.Self)
+                    own++;
+            }
+            return scoring.ExpansionNeed / Math.Max(1, own);
+        }
+
+        // Score de 12.3 para un origen propio y un destino ajeno. null si el origen no puede enviar, si
+        // el CosteEfectivo supera su Energía al 100 % o si lo que ya vuela hacia él lo cubre.
+        //
+        // Contra un Neutral es Expandir (12.3.4): economía, sin MultiplicadorAgresividad, con
+        // NecesidadExpansion y con PenalizacionDistancia, para que tome antes lo que tiene cerca.
         public static EnemyAction? ScoreAttack(EnemyBoard board, BoardNode source, BoardNode target,
                                               EnemyProfile profile, EnemyScoring scoring)
         {
             if (!CanSend(board, source) || target.Faction == board.Self || target == source)
                 return null;
 
-            int cost = EffectiveCost(board, target);
-            if (cost > source.Energy)
+            int cost = EffectiveCost(board, target) - OwnChargeInFlight(board, target);
+            if (cost <= 0 || cost > source.Energy)
                 return null;
 
             SendPlan plan = PlanSend(source.Energy, cost, profile);
             float bonus = profile.PrioritizesPowerUps && target.PowerUpMarked ? scoring.PowerUpBonus : 0f;
             float risk = scoring.RouteRiskPerMagnetar * HostileMagnetarsOnRoute(board, source, target);
             float drain = DrainPenalty(board, source, source.Energy - plan.Charge, scoring);
+
+            if (target.Faction == Faction.Neutral)
+            {
+                float value = scoring.TypeValue(target.Type) + ExpansionNeed(board, scoring);
+                float distance = scoring.ExpansionDistanceWeight * Vector2.Distance(source.Position, target.Position);
+                float expand = value * plan.Reach + bonus - cost - risk - drain - distance;
+                return new EnemyAction(EnemyActionKind.Attack, source.Index, target.Index, expand, fullSend: plan.FullSend);
+            }
 
             float score = (scoring.TypeValue(target.Type) * plan.Reach + bonus - cost - risk - drain)
                           * profile.AggressionMultiplier;
@@ -228,10 +265,51 @@ namespace Nova.Enemy
             return scoring.ConversionBase - node.ConversionCost;
         }
 
+        // --- Abastecer (12.3.4) ---
+
+        // Energía que le falta a un nodo propio para lo que le toca hacer, descontando la que ya le
+        // llega: un Asteroide, el coste de encendido; un Púlsar sin poder listo, el coste del poder que
+        // carga o, si no carga ninguno, el del más caro que su nivel permite. 0 si no le falta nada.
+        public static int SupplyNeed(EnemyBoard board, BoardNode target)
+        {
+            if (target.Faction != board.Self || target.State.IsConverting)
+                return 0;
+
+            int wanted;
+            if (target.Type == NodeType.Asteroid)
+                wanted = OffersAnyIgnition(target) ? board.IgnitionCost : 0;
+            else if (target.Type == NodeType.Pulsar && !target.ReadyPower.HasValue)
+                wanted = target.ChargingPower.HasValue ? PowerCost(board, target.ChargingPower.Value) : MostExpensivePower(board, target);
+            else
+                return 0;
+
+            return Math.Max(0, wanted - target.Energy - OwnChargeInFlight(board, target));
+        }
+
+        // ScoreAbastecer: la base del destino por la parte de lo que le falta que cubre un 50 %, menos
+        // PenalizacionVaciado del origen. null si no le falta nada o el origen no puede enviar. Un Púlsar
+        // no abastece: su Energía es munición.
+        public static float? ScoreSupply(EnemyBoard board, BoardNode source, BoardNode target, EnemyScoring scoring)
+        {
+            if (source == target || source.Type == NodeType.Pulsar || !CanSend(board, source))
+                return null;
+            int need = SupplyNeed(board, target);
+            if (need <= 0)
+                return null;
+
+            int charge = EnergyMath.SendAmount(source.Energy, false);
+            float reach = Mathf.Clamp01((float)charge / need);
+            float value = target.Type == NodeType.Asteroid ? scoring.SupplyAsteroidBase : scoring.SupplyPulsarBase;
+            return value * reach - DrainPenalty(board, source, source.Energy - charge, scoring);
+        }
+
         // --- Lista de candidatas (12.2) ---
 
-        // Todas las candidatas del ciclo, puntuadas y en el orden de desempate de 12.3.3.
-        public static List<EnemyAction> Candidates(EnemyBoard board, EnemyProfile profile, EnemyScoring scoring)
+        // Todas las candidatas del ciclo, puntuadas y en el orden de desempate de 12.3.3. Sin hostile
+        // —la Paciencia del nivel, 12.5.1—, nada contra el rival: ni atacarle ni lanzarle un poder.
+        // Expandir, abastecer, encender, mejorar y cargar siguen.
+        public static List<EnemyAction> Candidates(EnemyBoard board, EnemyProfile profile, EnemyScoring scoring,
+                                                   bool hostile = true)
         {
             if (board == null)
                 throw new ArgumentNullException(nameof(board));
@@ -250,15 +328,20 @@ namespace Nova.Enemy
                 {
                     foreach (BoardNode target in board.Nodes)
                     {
+                        if (!hostile && target.Faction == board.Opponent)
+                            continue;
                         EnemyAction? attack = ScoreAttack(board, node, target, profile, scoring);
                         if (attack.HasValue)
                             result.Add(attack.Value);
+                        float? supply = ScoreSupply(board, node, target, scoring);
+                        if (supply.HasValue)
+                            result.Add(new EnemyAction(EnemyActionKind.Supply, node.Index, target.Index, supply.Value));
                     }
                 }
 
                 AddIgnitions(board, node, scoring, result);
                 AddUpgrade(board, node, scoring, result);
-                AddPowers(board, node, profile, scoring, result);
+                AddPowers(board, node, profile, scoring, result, hostile);
             }
             AddConversion(board, profile, scoring, result);
 
@@ -269,8 +352,10 @@ namespace Nova.Enemy
         // --- Elección (12.1 pasos 4–6, 12.3.3) ---
 
         // Aplica el ruido a cada candidata, en el orden de Candidates, y devuelve la mejor si supera
-        // el umbral; si no, null (acumular). Sin random o con ruido 0, no hay ruido.
-        public static EnemyAction? Pick(IReadOnlyList<EnemyAction> candidates, EnemyProfile profile, System.Random random)
+        // el umbral; si no, null (acumular). Sin random o con ruido 0, no hay ruido. Con noisy, deja
+        // en ella cada candidata con su ruido, en el mismo orden (overlay de depuración, 12.5.2).
+        public static EnemyAction? Pick(IReadOnlyList<EnemyAction> candidates, EnemyProfile profile, System.Random random,
+                                        List<EnemyAction> noisy = null)
         {
             if (candidates == null)
                 throw new ArgumentNullException(nameof(candidates));
@@ -284,9 +369,10 @@ namespace Nova.Enemy
                 float score = candidate.Score;
                 if (random != null && noise > 0f)
                     score *= 1f + (float)(random.NextDouble() * 2.0 - 1.0) * noise;
-                EnemyAction noisy = candidate.WithScore(score);
-                if (best == null || Precedes(noisy, best.Value))
-                    best = noisy;
+                EnemyAction withNoise = candidate.WithScore(score);
+                noisy?.Add(withNoise);
+                if (best == null || Precedes(withNoise, best.Value))
+                    best = withNoise;
             }
             return best.HasValue && best.Value.Score > profile.ActionThreshold ? best : null;
         }
@@ -342,7 +428,8 @@ namespace Nova.Enemy
             result.Add(new EnemyAction(EnemyActionKind.Upgrade, node.Index, -1, ScoreUpgrade(board, node, scoring)));
         }
 
-        static void AddPowers(EnemyBoard board, BoardNode node, EnemyProfile profile, EnemyScoring scoring, List<EnemyAction> result)
+        static void AddPowers(EnemyBoard board, BoardNode node, EnemyProfile profile, EnemyScoring scoring,
+                              List<EnemyAction> result, bool hostile)
         {
             if (node.Type != NodeType.Pulsar)
                 return;
@@ -353,7 +440,7 @@ namespace Nova.Enemy
                     return;
                 foreach (BoardNode target in board.Nodes)
                 {
-                    if (!IsPowerCandidate(board, target))
+                    if (!IsPowerCandidate(board, target) || (!hostile && target.Faction == board.Opponent))
                         continue;
                     result.Add(new EnemyAction(EnemyActionKind.LaunchPower, node.Index, target.Index,
                         ScorePower(board, node.ReadyPower.Value, target, profile, scoring), power: node.ReadyPower.Value));
@@ -399,6 +486,34 @@ namespace Nova.Enemy
         {
             return source.Faction == board.Self && source.IsLit && !source.State.IsFrozen && !source.State.IsConverting
                 && EnergyMath.SendAmount(source.Energy, false) > 0;
+        }
+
+        static bool OffersAnyIgnition(BoardNode asteroid)
+        {
+            foreach (NodeType type in IgnitionTypes)
+            {
+                if (asteroid.OffersIgnition(type))
+                    return true;
+            }
+            return false;
+        }
+
+        static int PowerCost(EnemyBoard board, PowerType type)
+        {
+            PowerDefinition power = board.Power(type);
+            return power != null ? power.Cost : 0;
+        }
+
+        // El poder más caro que el Púlsar puede cargar a su nivel y en este nivel de juego (11.1).
+        static int MostExpensivePower(EnemyBoard board, BoardNode pulsar)
+        {
+            int cost = 0;
+            foreach (PowerDefinition power in board.Powers)
+            {
+                if (power != null && pulsar.OffersPower(power.Type) && pulsar.State.Level >= power.RequiredLevel)
+                    cost = Math.Max(cost, power.Cost);
+            }
+            return cost;
         }
 
         static int CountOwn(EnemyBoard board, NodeType type)

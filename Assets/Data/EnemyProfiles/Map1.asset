@@ -20,3 +20,4 @@ MonoBehaviour:
   prioritizesPowerUps: 0
   fullSendMargin: 0
   decisionNoise: 0.25
+  gracePeriod: 0

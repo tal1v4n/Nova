@@ -32,7 +32,8 @@ namespace Nova.Enemy
                 case EnemyActionKind.Attack:
                     return Send(actor, At(nodes, action.Target), action.FullSend) == LaunchBlock.None;
                 case EnemyActionKind.Reinforce:
-                    // 12.4: siempre el 50 %.
+                case EnemyActionKind.Supply:
+                    // 12.4 y 12.3.4: siempre el 50 %.
                     return Send(actor, At(nodes, action.Target), false) == LaunchBlock.None;
                 case EnemyActionKind.Evacuate:
                     // 12.4: toda la Energía, cediendo un nodo vacío en vez de uno lleno (T4-05).

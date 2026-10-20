@@ -101,6 +101,10 @@ namespace Nova.Tests
             Assert.AreEqual(50f, s.UpgradeBase(NodeType.Pulsar));
             Assert.AreEqual(40f, s.UpgradeBase(NodeType.Magnetar));
             Assert.AreEqual(80f, s.ConversionBase);
+            Assert.AreEqual(40f, s.ExpansionNeed);
+            Assert.AreEqual(2f, s.ExpansionDistanceWeight);
+            Assert.AreEqual(70f, s.SupplyAsteroidBase);
+            Assert.AreEqual(45f, s.SupplyPulsarBase);
         }
 
         // --- Tests mínimos de 12.7 ---
@@ -455,6 +459,135 @@ namespace Nova.Tests
 
             Add(Faction.Enemy, NodeType.Star, 0, new Vector2(0f, 4f));
             Assert.IsFalse(EnemyEvaluator.Candidates(Board(), Map3, Scoring).Any(a => a.Kind == EnemyActionKind.Convert), "Con una Estrella, no.");
+        }
+
+        // --- Estrategia (12.3.4) ---
+
+        // Un protón propio de esa Carga que ya vuela hacia target.
+        static BoardNode WithIncoming(BoardNode node, int charge) =>
+            new BoardNode(node.Index, node.State, node.Position, node.MagnetarRadius, node.UpgradeCost, node.ConversionCost,
+                node.ChargingPower, node.ReadyPower, node.PowerUpMarked,
+                new[] { new BoardProton(new IncomingProton(Faction.Enemy, charge, 2f), 0) });
+
+        // 16.
+        [Test]
+        public void ExpandingIsEconomyAndPrefersTheCloserAsteroid()
+        {
+            BoardNode own = Add(Faction.Enemy, NodeType.Star, 30, new Vector2(5f, 0f));
+            BoardNode near = Add(Faction.Neutral, NodeType.Asteroid, 10, new Vector2(3f, 0f));
+            BoardNode far = Add(Faction.Neutral, NodeType.Asteroid, 10, new Vector2(-1f, 0f));
+            EnemyBoard board = Board();
+
+            float one = EnemyEvaluator.ScoreAttack(board, own, near, Map1, Scoring).Value.Score;
+            float three = EnemyEvaluator.ScoreAttack(board, own, near, Map3, Scoring).Value.Score;
+            Assert.AreEqual(40f + 40f - 10f - 2f * 2f, one, 1e-4f, "Valor + necesidad con un nodo − coste − distancia.");
+            Assert.AreEqual(one, three, 1e-4f, "Expandir no lleva MultiplicadorAgresividad.");
+            Assert.Greater(one, EnemyEvaluator.ScoreAttack(board, own, far, Map1, Scoring).Value.Score);
+
+            EnemyAction best = Best(board, Map1).Value;
+            Assert.AreEqual(EnemyActionKind.Attack, best.Kind, "Con el perfil del mapa 1, expandir supera el umbral de 40.");
+            Assert.AreEqual(near.Index, best.Target);
+        }
+
+        // 17.
+        [Test]
+        public void ExpansionNeedFallsWithEveryOwnNode()
+        {
+            Add(Faction.Enemy, NodeType.Star, 30, Vector2.zero);
+            Assert.AreEqual(40f, EnemyEvaluator.ExpansionNeed(Board(), Scoring));
+            Add(Faction.Enemy, NodeType.Asteroid, 0, new Vector2(0f, 2f));
+            Add(Faction.Enemy, NodeType.Magnetar, 10, new Vector2(0f, -2f));
+            Add(Faction.Enemy, NodeType.Star, 10, new Vector2(2f, 0f));
+            Assert.AreEqual(10f, EnemyEvaluator.ExpansionNeed(Board(), Scoring));
+        }
+
+        // 18.
+        [Test]
+        public void ItSuppliesItsOwnAsteroidUntilItCanBeIgnited()
+        {
+            BoardNode star = Add(Faction.Enemy, NodeType.Star, 40, new Vector2(5f, 0f));
+            BoardNode rock = Add(Faction.Enemy, NodeType.Asteroid, 2, new Vector2(3f, 0f));
+            EnemyBoard board = Board();
+
+            Assert.AreEqual(8, EnemyEvaluator.SupplyNeed(board, rock));
+            Assert.AreEqual(70f, EnemyEvaluator.ScoreSupply(board, star, rock, Scoring).Value, 1e-4f, "20 cubren los 8 que faltan.");
+            EnemyAction best = Best(board, Map1).Value;
+            Assert.AreEqual(EnemyActionKind.Supply, best.Kind);
+            Assert.AreEqual(rock.Index, best.Target);
+
+            nodes[rock.Index] = WithIncoming(rock, 8);
+            Assert.AreEqual(0, EnemyEvaluator.SupplyNeed(Board(), nodes[rock.Index]), "Lo que ya vuela lo cubre.");
+            Assert.IsFalse(EnemyEvaluator.Candidates(Board(), Map1, Scoring).Any(a => a.Kind == EnemyActionKind.Supply));
+        }
+
+        // 19.
+        [Test]
+        public void ItSuppliesAStalledPulsarButAPulsarNeverSupplies()
+        {
+            BoardNode star = Add(Faction.Enemy, NodeType.Star, 40, new Vector2(5f, 0f));
+            BoardNode pulsar = Add(Faction.Enemy, NodeType.Pulsar, 0, new Vector2(5f, 2f), level: 2, charging: PowerType.Decay);
+            Add(Faction.Enemy, NodeType.Asteroid, 0, new Vector2(3f, 0f));
+            EnemyBoard board = Board();
+
+            Assert.AreEqual(35, EnemyEvaluator.SupplyNeed(board, pulsar), "Lo que cuesta el Decaimiento que carga.");
+            Assert.AreEqual(45f * 20f / 35f, EnemyEvaluator.ScoreSupply(board, star, pulsar, Scoring).Value, 1e-3f);
+            Assert.IsNull(EnemyEvaluator.ScoreSupply(board, pulsar, nodes[2], Scoring));
+
+            nodes.Clear();
+            Add(Faction.Enemy, NodeType.Star, 40, Vector2.zero);
+            BoardNode full = Add(Faction.Enemy, NodeType.Pulsar, 30, new Vector2(0f, 2f));
+            Assert.AreEqual(0, EnemyEvaluator.SupplyNeed(Board(), full), "A nivel 1 solo pide los 20 del Cero Absoluto.");
+        }
+
+        // 20.
+        [Test]
+        public void ItDoesNotRepeatAnAttackThatIsAlreadyInTheAir()
+        {
+            BoardNode own = Add(Faction.Enemy, NodeType.Star, 40, new Vector2(5f, 0f));
+            BoardNode rock = Add(Faction.Neutral, NodeType.Asteroid, 10, new Vector2(3f, 0f));
+            Assert.IsTrue(EnemyEvaluator.ScoreAttack(Board(), own, rock, Map1, Scoring).HasValue);
+
+            nodes[rock.Index] = WithIncoming(rock, 6);
+            EnemyAction rest = EnemyEvaluator.ScoreAttack(Board(), own, nodes[rock.Index], Map1, Scoring).Value;
+            Assert.AreEqual(40f + 40f - 4f - 4f, rest.Score, 1e-4f, "Solo cuenta lo que falta: 10 − 6.");
+
+            nodes[rock.Index] = WithIncoming(rock, 10);
+            Assert.IsNull(EnemyEvaluator.ScoreAttack(Board(), own, nodes[rock.Index], Map1, Scoring));
+        }
+
+        // 21.
+        [Test]
+        public void WithoutHostilityItDevelopsAndLeavesThePlayerAlone()
+        {
+            Add(Faction.Enemy, NodeType.Star, 50, new Vector2(5f, 0f));
+            Add(Faction.Enemy, NodeType.Pulsar, 50, new Vector2(5f, 2f), ready: PowerType.AbsoluteZero);
+            Add(Faction.Player, NodeType.Star, 2, new Vector2(-5f, 0f));
+            Add(Faction.Neutral, NodeType.Asteroid, 10, new Vector2(3f, 0f));
+            EnemyBoard board = Board();
+
+            List<EnemyAction> patient = EnemyEvaluator.Candidates(board, Map1, Scoring, hostile: false);
+            Assert.IsFalse(patient.Any(a => (a.Kind == EnemyActionKind.Attack || a.Kind == EnemyActionKind.LaunchPower) && a.Target == 2));
+            Assert.IsTrue(patient.Any(a => a.Kind == EnemyActionKind.Attack && a.Target == 3), "Expandir sí.");
+            Assert.IsTrue(patient.Any(a => a.Kind == EnemyActionKind.Upgrade), "Mejorar sí.");
+
+            List<EnemyAction> hostile = EnemyEvaluator.Candidates(board, Map1, Scoring);
+            Assert.IsTrue(hostile.Any(a => a.Kind == EnemyActionKind.Attack && a.Target == 2));
+            Assert.IsTrue(hostile.Any(a => a.Kind == EnemyActionKind.LaunchPower && a.Target == 2));
+        }
+
+        // 22. El nivel 1 tal como empieza: el primer paso es tomar el Asteroide de su lado.
+        [Test]
+        public void OnLevelOneItOpensByTakingItsOwnAsteroid()
+        {
+            Add(Faction.Player, NodeType.Star, 25, new Vector2(-5f, 0f));
+            Add(Faction.Enemy, NodeType.Star, 25, new Vector2(5f, 0f));
+            Add(Faction.Neutral, NodeType.Asteroid, 10, new Vector2(-3.25f, 1f));
+            BoardNode own = Add(Faction.Neutral, NodeType.Asteroid, 10, new Vector2(3.25f, -1f));
+            Add(Faction.Neutral, NodeType.Asteroid, 10, new Vector2(0f, 2f));
+
+            EnemyAction best = Best(Board(), Map1).Value;
+            Assert.AreEqual(EnemyActionKind.Attack, best.Kind);
+            Assert.AreEqual(own.Index, best.Target);
         }
 
         [Test]

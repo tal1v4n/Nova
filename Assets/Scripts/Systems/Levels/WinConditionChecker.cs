@@ -31,12 +31,16 @@ namespace Nova.Systems
         [Tooltip("Opcional: sin él se usa ProtonRegistry.Instance. Sin ninguno, no hay protones que mirar.")]
         [SerializeField] ProtonRegistry protons;
 
+        [Tooltip("Opcional: las mecánicas del nivel cargado, para las vías del estancamiento (13.11). Sin él, todas existen.")]
+        [SerializeField] LevelLoader loader;
+
         readonly List<OutcomeNode> board = new List<OutcomeNode>();
         readonly List<NodeController> cascade = new List<NodeController>();
         long cascadeMicros;
         long cascadeElapsed;
         int conquered;
         bool ended;
+        StarRoute[] routes = Array.Empty<StarRoute>();
 
         public LevelOutcome Outcome { get; private set; }
 
@@ -46,6 +50,10 @@ namespace Nova.Systems
 
         public bool IsCascading => Outcome == LevelOutcome.Victory && !ended;
         public bool IsOver => ended;
+
+        // Con el estancamiento, las cinco vías de 10.2 y por qué no alcanza ninguna (13.11, 18 #41);
+        // vacío con cualquier otro resultado.
+        public IReadOnlyList<StarRoute> Routes => routes;
 
         // Al decidirse el resultado: con la victoria, al empezar la cascada.
         public event Action<LevelOutcome> OnOutcome;
@@ -81,12 +89,15 @@ namespace Nova.Systems
             cascadeElapsed = 0;
             conquered = 0;
             ended = false;
+            routes = Array.Empty<StarRoute>();
         }
 
         // Para la escena de prueba y los tests: el cableado normal es por el Inspector.
-        public void Configure(BalanceConfig config, NodeRegistry nodeRegistry = null, ProtonRegistry protonRegistry = null)
+        public void Configure(BalanceConfig config, NodeRegistry nodeRegistry = null, ProtonRegistry protonRegistry = null,
+                              LevelLoader levelLoader = null)
         {
             balance = config;
+            loader = levelLoader;
             nodes = nodeRegistry;
             protons = protonRegistry;
             Restart();
@@ -115,6 +126,13 @@ namespace Nova.Systems
             {
                 VanishEnemyProtons();
                 BuildCascade(registry);
+            }
+            else if (outcome == LevelOutcome.Stalemate)
+            {
+                // Las cuentas que acaban de declararlo, guardadas para la pantalla de derrota.
+                LevelDefinition level = loader != null ? loader.Current : null;
+                routes = OutcomeRules.StarRoutes(board, Balance.IgnitionCost, Balance.MagnetarResistance,
+                    level == null || level.AllowsConversion, level == null || level.AllowsPower(PowerType.Wormhole));
             }
             OnOutcome?.Invoke(outcome);
 

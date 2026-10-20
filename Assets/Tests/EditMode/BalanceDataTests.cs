@@ -201,15 +201,20 @@ namespace Nova.Tests
         static EnemyProfile Profile(string name) =>
             AssetDatabase.LoadAssetAtPath<EnemyProfile>($"{ProfilesFolder}/{name}.asset");
 
+        // Los tres de referencia de 12.5, uno por mapa, y los nueve por nivel de 12.5.2.
         [Test]
-        public void ThereIsOneProfilePerMap()
+        public void ThereIsOneProfilePerMapAndOnePerLevel()
         {
             var names = AssetDatabase.FindAssets("t:EnemyProfile")
                 .Select(guid => System.IO.Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(guid)))
                 .OrderBy(n => n)
                 .ToArray();
 
-            CollectionAssert.AreEqual(new[] { "Map1", "Map2", "Map3" }, names);
+            var expected = new[] { "Map1", "Map2", "Map3" }
+                .Concat(Enumerable.Range(1, 9).Select(n => $"Level{n}Enemy"))
+                .OrderBy(n => n)
+                .ToArray();
+            CollectionAssert.AreEqual(expected, names);
         }
 
         // La tabla de 12.5, columna a columna. «Nunca» envía al 100 % es margen 0.

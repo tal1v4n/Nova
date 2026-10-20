@@ -1,7 +1,7 @@
 {
     "name": "Nova.UI",
     "rootNamespace": "Nova.UI",
-    "references": ["Nova.Core", "Nova.Data", "Nova.Gameplay", "Nova.Input", "Nova.Utils", "Unity.TextMeshPro"],
+    "references": ["Nova.Core", "Nova.Data", "Nova.Gameplay", "Nova.Enemy", "Nova.Input", "Nova.Utils", "Unity.TextMeshPro", "Unity.InputSystem", "UnityEngine.UI"],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

@@ -138,6 +138,49 @@ namespace Nova.Tests
             }
         }
 
+        // 12.5.1: durante la Paciencia no ataca al Jugador aunque sea lo que más puntúa; después, sí.
+        [Test]
+        public void DuringItsPatienceItLeavesThePlayerAlone()
+        {
+            Node("Star", Faction.Enemy, 50, new Vector2(5f, 0f), level: 5);
+            NodeController player = Node("Star", Faction.Player, 1, new Vector2(-5f, 0f));
+            EnemyProfile patient = Object.Instantiate(Profile("Map3"));
+            var serialized = new SerializedObject(patient);
+            serialized.FindProperty("gracePeriod").floatValue = 10f;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            controller.Configure(patient, Scoring, Balance, issuer, Powers, registry, 7);
+            Assert.AreEqual(10f, controller.GraceRemaining, 1e-4f);
+            int interval = Mathf.RoundToInt(Profile("Map3").DecisionInterval / Tick);
+
+            Run(interval);
+            Assert.AreEqual(1, controller.Cycles);
+            Assert.IsFalse(controller.IsHostile);
+            Assert.IsFalse(controller.LastAction.HasValue, "Su único objetivo es el Jugador: espera.");
+
+            Run(Mathf.CeilToInt(10f / Tick));
+            Assert.IsTrue(controller.IsHostile);
+            Assert.IsTrue(controller.LastAction.HasValue);
+            Assert.AreEqual(EnemyActionKind.Attack, controller.LastAction.Value.Kind);
+            Assert.AreEqual(Faction.Player, player.Faction, "El protón aún vuela.");
+            Object.DestroyImmediate(patient);
+        }
+
+        // 12.5.2: el overlay de depuración enseña las candidatas del último ciclo, con ruido y de mejor
+        // a peor, y la primera es la elegida.
+        [Test]
+        public void ItKeepsTheLastCandidatesBestFirst()
+        {
+            Skirmish();
+            EnemyAction? chosen = controller.Decide();
+
+            IReadOnlyList<EnemyAction> candidates = controller.LastCandidates;
+            Assert.Greater(candidates.Count, 1);
+            Assert.AreEqual(chosen.Value.Score, candidates[0].Score);
+            Assert.AreEqual(chosen.Value.Kind, candidates[0].Kind);
+            for (int i = 1; i < candidates.Count; i++)
+                Assert.GreaterOrEqual(candidates[i - 1].Score, candidates[i].Score);
+        }
+
         [Test]
         public void ALongTickStillDecidesOnlyOnce()
         {

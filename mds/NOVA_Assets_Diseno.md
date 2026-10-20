@@ -977,6 +977,10 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 
 ## A.6 UI — [13](./NOVA_GameDesign_Spec.md#13-controles-y-ui)
 
+
+
+**Las pantallas fuera de partida no están aquí** (2026-10-17, [18](./NOVA_GameDesign_Spec.md#18-decisiones-tomadas-por-defecto) #46): menú principal, selección de nivel, pausa, victoria y derrota se construyen en código con el lenguaje de 13.12 y los sprites de este inventario, fieles a la maqueta. Salieron `ART-UI-MAINMENU`, `ART-UI-LEVELSELECT`, `ART-UI-PAUSE`, `ART-UI-END-WIN` y `ART-UI-END-LOSE`, que pedían un PNG por pantalla. Lo que esas pantallas necesitan del inventario son los nodos (A.2), los fondos (A.4.5) y la línea de plasma (`ART-WLD-LINK`, A.4.3).
+
 | ID | Elemento | Notas | Archivo | Estado |
 |---|---|---|---|---|
 | `ART-UI-HUD-ENERGY` | Número de Energía sobre el nodo | Legible sobre cualquier estado (14.7) | `art/ui/ui_energy_label.png` | ⬜ |
@@ -988,10 +992,6 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-UI-CHARGE` | Barra de carga bajo el Púlsar | **Visible también en el Púlsar enemigo** ([7.5](./NOVA_GameDesign_Spec.md#75-agujero-de-gusano)) | `art/ui/ui_charge_bar.png` | ⬜ |
 | `ART-UI-POWERBAR` | Barra de poder inferior | Dos colores, crece desde los extremos | `art/ui/ui_power_bar.png` | ⬜ |
 | `ART-UI-TOPBAR` | Cronómetro, nivel, pausa | [13.6](./NOVA_GameDesign_Spec.md#136-hud-permanente) | `art/ui/ui_topbar.png` | ⬜ |
-| `ART-UI-END-WIN` | Pantalla de victoria | Botones Siguiente / Repetir | `art/ui/ui_end_win.png` | ⬜ |
-| `ART-UI-END-LOSE` | Pantalla de derrota | Botones Reintentar / Volver al mapa | `art/ui/ui_end_lose.png` | ⬜ |
-| `ART-UI-LEVELSELECT` | Mapa de selección de nivel | 3 mapas × 3 niveles, con bloqueo | `art/ui/ui_level_select.png` | ⬜ |
-| `ART-UI-PAUSE` | Menú de pausa | Incluye reiniciar nivel | `art/ui/ui_pause.png` | ⬜ |
 
 ---
 
@@ -1007,12 +1007,12 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | 3 | **0** | Nada de código. **Regeneración pendiente** a 960×540 por [T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada) |
 | A.5 VFX | 15 | 0 | `VFXPool`, fase 6 |
-| A.6 UI | 13 | 0 | Pulido de UI (fase 6) |
-| **Total** | **108** | **46** | — |
+| A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
+| **Total** | **104** | **46** | — |
 
 **Y los ✅ bajan de 49 a 46 el 2026-09-28**, sin que nadie retire un asset: los tres fondos pasan a ⬜ porque el tablero encogió a 15 × 8.4375 u y su lienzo con él ([T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada)). **El total sigue en 106**; lo que cambia es el estado, no el inventario. Es la primera vez que una decisión de diseño **desmarca** arte ya terminado, y salió barato por donde el propio T.8 predijo: el fondo es una constante en un generador, no una pieza dibujada a mano.
 
-El total subió de 90 a 94 porque el Protón pasa de 2 archivos a 6 (A.4.2), y de 94 a 95 porque `SinEncender` necesita **dos** assets y no uno: `ART-ST-IGN` y `ART-ST-READY` tienen distinto número de frames y no caben en una fila (A.3.2). **Y baja de 95 a 94** al quitarse `ART-WLD-RANGE`: con alcance global no hay círculo de alcance que dibujar (A.4.3). **Y sube de 94 a 106** al descubrirse que el anillo del Magnetar necesita **un archivo por nivel** y no uno para los cinco: escalar uno solo daría factores no enteros (A.4.1). Los tres proyectiles de poder no alteran el conteo —pasan a ser tres haces— pero dejan de ser el mismo asset (A.4.2). **Y sube de 106 a 108 el 2026-10-10**: el disparo del Magnetar pasa a ser un arco de plasma en el color de quien dispara, y `ART-WLD-RAD-SHOT` pasa de uno a tres archivos (A.4.1). `ART-WLD-LINK` también se convierte en filamento de plasma, pero sigue siendo un archivo (A.4.3, A.4.6).
+El total subió de 90 a 94 porque el Protón pasa de 2 archivos a 6 (A.4.2), y de 94 a 95 porque `SinEncender` necesita **dos** assets y no uno: `ART-ST-IGN` y `ART-ST-READY` tienen distinto número de frames y no caben en una fila (A.3.2). **Y baja de 95 a 94** al quitarse `ART-WLD-RANGE`: con alcance global no hay círculo de alcance que dibujar (A.4.3). **Y sube de 94 a 106** al descubrirse que el anillo del Magnetar necesita **un archivo por nivel** y no uno para los cinco: escalar uno solo daría factores no enteros (A.4.1). Los tres proyectiles de poder no alteran el conteo —pasan a ser tres haces— pero dejan de ser el mismo asset (A.4.2). **Y sube de 106 a 108 el 2026-10-10**: el disparo del Magnetar pasa a ser un arco de plasma en el color de quien dispara, y `ART-WLD-RAD-SHOT` pasa de uno a tres archivos (A.4.1). `ART-WLD-LINK` también se convierte en filamento de plasma, pero sigue siendo un archivo (A.4.3, A.4.6).  **Y baja de 109 a 104 el 2026-10-17**: las cinco pantallas fuera de partida dejan de ser PNG y se construyen en código (A.6, 18 #46).
 
 **A.2 está cerrado: los cuatro nodos, 34 de 34.** Estrella `ART-NOD-STR-01…05` (10), Púlsar `ART-NOD-PUL-01…03` (6), Magnetar `ART-NOD-MAG-01…05` (15, tres facciones) y Asteroide `ART-NOD-AST-00N/P/E` (3). **`T6-01` deja de estar bloqueada por arte** ([NOVA_Tracking.md](./NOVA_Tracking.md), T.4): su dependencia `ART-NOD-*` está completa, y a partir de aquí solo la retiene su dependencia de código.
 
@@ -1099,6 +1099,8 @@ Ninguna decisión de art design queda abierta. Se conservan aquí con su motivo,
 | Color de un fondo | **Solo rampas sin significado** (`bg_s1/2/3`). Las cinco con significado de juego están prohibidas. Los mapas se separan por estructura, no por tono | A.4.5 |
 | Tamaño de lo que hay en un fondo | Nada puede caer en la franja de huella de un nodo (0.6–1.2 u): o muy por debajo o muy por encima | A.4.5 |
 | Viñeta | **Al revés**: mínima en el centro. El centro es el tablero | A.4.5 |
+| Degradados por alfa | **Permitidos solo en la UI fuera del tablero** —menús y pantallas de fin—. En el tablero, trama siempre (2026-10-14) | Contrato, regla 7; [13.12](./NOVA_GameDesign_Spec.md#1312-lenguaje-y-movimiento-de-la-ui) |
+| Lenguaje de la UI | Marcos de 4 px con esquina en escalera, Jersey 10 en múltiplos de 18.67 px, cian = lo que puedes hacer, magenta = lo que falta (2026-10-15) | [13.12](./NOVA_GameDesign_Spec.md#1312-lenguaje-y-movimiento-de-la-ui); 18 #45 |
 | Señal de nivel del Asteroide | No tiene: un solo nivel. Todo el trabajo de lectura se va a la facción | A.2.1 |
 | Varias propuestas por nodo | Conviven en `art/nodes/<nodo>/v<n>/`; la descartada no se borra | A.1 |
 | Varias propuestas por overlay | Misma regla que los nodos, en `art/states/<estado>/v<n>/`. El generador declara `ESTADO` y `VERSION` y escribe con `dir_estado(estado, version)` | A.1, A.3 |

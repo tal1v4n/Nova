@@ -141,6 +141,17 @@ Estos píxeles van a una capa aparte del lienzo, `glow`, que **no genera
 contorno exterior**. Si generaran contorno, cada punto de la trama saldría
 perfilado en negro y el resplandor parecería suciedad.
 
+**Excepción: la UI fuera del tablero** (2026-10-14, con el usuario;
+[18](./NOVA_GameDesign_Spec.md#18-decisiones-tomadas-por-defecto) #44). En los
+menús y las pantallas de fin —halos tras un sprite, el brillo que recorre un
+botón, velos que entran y salen— el degradado **puede ser de alfa**, porque es
+luz de la interfaz y se mueve en continuo
+([13.12](./NOVA_GameDesign_Spec.md#1312-lenguaje-y-movimiento-de-la-ui)).
+**Dentro del tablero no hay excepción**: nodos, overlays, VFX, protones, haces
+y fondos siguen con trama y alfa binario. Y los sprites del tablero que se
+reutilizan en un menú siguen siendo los mismos PNG: la excepción vale para lo
+que la UI dibuja alrededor de ellos, no para ellos.
+
 ---
 
 ## Catálogo de primitivas

@@ -504,7 +504,9 @@ Con `S` así, el Jugador **todavía puede** volver a tener una Estrella, y no ha
 | Victoria | Pantalla de victoria. Se desbloquea el siguiente nivel. Botón "Siguiente" y "Repetir". |
 | Derrota | Pantalla de derrota. Botón "Reintentar" que **reinicia el nivel desde cero**, y "Volver al mapa". |
 
-El jugador puede reiniciar el nivel en cualquier momento desde el menú de pausa. No hay guardado a mitad de nivel.
+El jugador puede reiniciar el nivel en cualquier momento desde el menú de pausa ([13.10](#1310-menú-de-pausa)). No hay guardado a mitad de nivel.
+
+**Orden.** En la victoria, primero la cascada de conquista de 10.1 en tiempo de juego, sus 3 s enteros; al terminar, la partida se congela ([15.8](#158-presentation), *Tiempo de la UI y pausa*) y entra la pantalla. En la derrota la pantalla entra en el tick en que `WinConditionChecker` la declara. Qué enseña cada pantalla está en [13.11](#1311-pantallas-de-fin-de-nivel).
 
 ---
 
@@ -602,7 +604,7 @@ El clic izquierdo significa una cosa u otra **según haya o no una selección ac
 | **Arrastre izquierdo** (lazo), empiece donde empiece | Selección múltiple de nodos propios **que puedan enviar**. Los Asteroides quedan fuera: no son orígenes legales ([5.2](#52-envío)). El lazo **sustituye** a la selección activa, no se suma a ella. Empezarlo sobre un nodo ya no envía nada: el envío por arrastre es del botón derecho |
 | **Clic derecho** sobre cualquier nodo | Abre el panel de información y mejoras ([13.3](#133-panel-de-clic-derecho)) |
 | **Clic derecho** en vacío | Cancela la selección y cierra el panel |
-| **Esc** | Menú de pausa |
+| **Esc** | Menú de pausa ([13.10](#1310-menú-de-pausa)), si no hay apuntado, menú de encendido ni panel que cerrar antes |
 
 **Clic o arrastre.** Una pulsación pasa a ser arrastre cuando el cursor se aleja más de **4 px de la referencia de 960 × 540** —8 px físicos a 1080p— del punto donde se pulsó ([16.1](#161-globales)). Por debajo es un clic. La regla es la misma para los dos botones.
 
@@ -738,6 +740,104 @@ Tres opciones, siempre las mismas y siempre las tres, en el orden de [16.2](#162
 
 El estado `SinEncender` ya avisa de cuál de las dos lecturas toca sin abrir nada: la brasa está quieta por debajo de 10 y crepita al llegar ([14.1](./NOVA_Estados_Animaciones.md#141-estados-del-nodo)).
 
+> **13.8 a 13.12 cierran [T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #38** (2026-10-14, con el usuario). La maqueta de referencia es el lienzo «NOVA — Pantallas de flujo» (https://claude.ai/artifact/JMm26STzjPXyQG15SGNUXz, privado del usuario). **Si la maqueta y esta sección no coinciden, manda esta sección** ([T.2](./NOVA_Tracking.md#t2-reglas-del-ciclo-de-trabajo) #6): la maqueta usa datos de ejemplo y no se mantiene al día.
+
+### 13.8 Menú principal
+
+Escena `MainMenu`. Fondo del mapa 1, el título **NOVA** y una Estrella del Jugador N5 grande a la derecha. Tres opciones, en este orden:
+
+| Opción | Acción |
+|---|---|
+| **Continuar** | Debajo, en pequeño: `Mapa 2 · Nivel 5 · El Cinturón`, del nivel máximo desbloqueado. Lo carga **directamente** en `Game`, sin pasar por la selección. Si el máximo es el 1 —primera vez—, se llama **Jugar** y no lleva subtítulo. Si los nueve están ganados, carga el 9 |
+| **Mapa estelar** | Abre `LevelSelect` ([13.9](#139-selección-de-nivel)) |
+| **Salir** | Cierra la aplicación |
+
+- La opción **activa** es la que está bajo el cursor; sin cursor encima, la última que lo estuvo, y al entrar, la primera. Cada opción lleva un Asteroide a su izquierda; el de la activa se ve como Estrella y una línea de plasma ([14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma)) la une con la Estrella grande. Es la línea de envío del juego usada como cursor de menú: enseña el gesto antes de la primera partida.
+- Pie: leyenda de facciones (cian Tú, magenta Enemigo, gris Neutral) y la versión.
+- `Esc` no hace nada en esta pantalla.
+
+### 13.9 Selección de nivel
+
+Escena `LevelSelect`, «Carta estelar». **Una sola pantalla, sin scroll**, en dos franjas:
+
+**La carta (arriba).** Los fondos de los tres mapas, uno por tercio de pantalla, con el nombre del mapa y su rango de niveles y duraciones; un mapa al que todavía no se ha llegado sale atenuado. Encima, los nueve niveles como nodos en una ruta:
+
+| Nivel | Se dibuja como |
+|---|---|
+| Ganado (`< máximo`) | Estrella del Jugador N1 |
+| Siguiente (`= máximo`) | Asteroide del Jugador, con un anillo que gira y un sonar, y el rótulo `SIGUIENTE` |
+| Bloqueado (`> máximo`) | Asteroide neutral atenuado |
+
+Los tramos de la ruta hasta el siguiente son plasma del Jugador; los demás, una línea discontinua gris. Arriba a la derecha, `N / 9 conquistados`, que es el máximo desbloqueado menos 1: **no se guarda nada más** ([1.2](#12-alcance-cerrado)). Ganar el nivel 9 guarda un máximo de **10**, que significa «los nueve ganados».
+
+**El informe (abajo).** Lo rellena el nivel **seleccionado**: al entrar, el siguiente; con un clic, cualquier otro, también uno bloqueado, que se puede consultar pero no lanzar. Todo sale de su `LevelDefinition` ([15.4](#154-data--scriptableobjects)); la pantalla no guarda ni duplica datos de nivel.
+
+1. `MAPA 2 · EL CINTURÓN`, `Nivel 5` y la duración objetivo.
+2. En el primer nivel de cada mapa, `Nuevo:` con las mecánicas introducidas de [11.1](#111-estructura).
+3. Los nodos iniciales de [11.2](#112-diseño-de-niveles) en tres grupos, **Tú**, **Enemigo** y **Neutrales**, con el sprite real de cada uno, su nivel (`N2`) y `×k` si se repite.
+4. Las mecánicas del mapa ([11.1](#111-estructura)): tipos que se pueden encender, poderes —cada uno en su color de [14.4](./NOVA_Estados_Animaciones.md#144-paleta-funcional)— y reconversión `SÍ`/`NO`. Lo que el mapa no permite sale **tachado en gris**, como en 18 #36.
+5. **Lanzar** o, si está bloqueado, `BLOQUEADO · Gana el nivel N`, sin acción.
+
+`Esc` o `◂ MENÚ` vuelven a `MainMenu`.
+
+### 13.10 Menú de pausa
+
+Lo abre `Esc` o el botón de pausa del HUD (13.6). `Esc` cierra antes lo más reciente: **apuntado, menú de encendido, panel de clic derecho y, solo si no hay nada de eso, pausa** (13.3, 13.5, 13.7; es el orden de `InputRouter.PressEscape`). Al abrirse **congela la partida** ([15.8](#158-presentation), *Tiempo de la UI y pausa*); el tablero queda visible y quieto detrás de un velo de trama.
+
+Tres columnas:
+
+| Columna | Contenido |
+|---|---|
+| **Este nivel** | Mapa y nivel; las condiciones de victoria y de derrota en una línea cada una (10.1, 10.2); las mecánicas que el mapa añade; `OBJETIVO 2:50 · VAS 2:14` |
+| **Pausa** | **Continuar** (o `Esc`), **Reiniciar nivel**, **Volver al mapa** |
+| **Controles** | Resumen de [13.1](#131-ratón): clic izquierdo, doble clic, arrastre derecho, arrastre izquierdo, clic derecho, clic sobre Asteroide propio y `Esc` |
+
+**Reiniciar nivel** y **Volver al mapa** piden confirmación dentro del mismo panel —`¿Reiniciar desde cero? Esta partida no se guarda.` con el botón de la acción y **Cancelar**—, porque los dos tiran la partida y no hay guardado a mitad de nivel (10.3). Con la confirmación abierta, `Esc` la cancela; sin ella, `Esc` reanuda.
+
+### 13.11 Pantallas de fin de nivel
+
+Las dos entran sobre el tablero congelado, con el mismo velo de trama que la pausa. Lo que enseñan sale de `MatchRecorder` ([15.6](#156-systems--escena)), que existe solo en memoria y se pierde al salir del nivel ([1.2](#12-alcance-cerrado)).
+
+**Victoria** — `SISTEMA CONQUISTADO`.
+
+| Bloque | Contenido |
+|---|---|
+| Datos | **Tiempo**, con la diferencia sobre la duración objetivo; **nodos al final**, y cuántos llegaron por la cascada; **pico de Energía** de la barra de poder y cuándo; **capturas** hechas y perdidas |
+| Curva de poder | La barra de poder (13.6) a lo largo de la partida, con la marca del momento en que el Jugador pasa a tener más de la mitad y se queda así |
+| Siguiente nivel | `DESBLOQUEADO · Nivel 6`, con los nodos iniciales del Enemigo y los neutrales especiales de 11.2. Botones **Siguiente** y **Repetir** (10.3). En el nivel 9 no hay siguiente: el bloque dice `LOS NUEVE SISTEMAS CONQUISTADOS` y **Siguiente** pasa a ser **Volver al mapa** |
+
+**Derrota** — `SEÑAL PERDIDA`, con la causa: `ANIQUILACIÓN` o `ESTANCAMIENTO` (10.2).
+
+| Bloque | Contenido |
+|---|---|
+| Por qué | En el estancamiento, la Energía `S` que quedaba y **las cinco vías de 10.2**, cada una con por qué no alcanza: `No tienes ninguno`, `Cuesta 20 · faltan 6` o `No existe en el mapa 2`. Son las cuentas que ya hace `OutcomeRules` al declararlo, y se enseñan en vez de tirarse. En la aniquilación, cuándo cayó el último nodo |
+| Curva de poder | La misma de la victoria, con la marca en el **mejor momento** del Jugador: su proporción más alta |
+| Pista | Una línea de consejo por mapa, en `UiText` |
+| Botones | **Reintentar** y **Volver al mapa** (10.3) |
+
+**La curva de poder.** `MatchRecorder` guarda **una muestra por segundo de juego** con la proporción del Jugador sobre la suma de las dos barras de 13.6; al dibujarla, las muestras se agrupan en **64 columnas** de ancho fijo, cian abajo y magenta arriba.
+
+### 13.12 Lenguaje y movimiento de la UI
+
+**Lenguaje visual: un instrumento de a bordo.** Aprobado por el usuario el 2026-10-15 sobre la lámina «Lenguaje de UI» del lienzo «NOVA — Pantallas de flujo» (T.7 #4).
+
+- **Geometría.** Paneles y botones con **marco de 4 px** y **esquina en escalera** de 4 + 4 px. Ningún radio. Todo a múltiplos de 2 px de pantalla, el ×2 del arte a 1080p.
+- **Tipografía.** Jersey 10, solo en múltiplos de 18.67 px: ×1 etiquetas en mayúsculas espaciadas, ×2 texto y datos, ×3 título de panel, ×4 botón principal, ×6 y ×8 títulos de pantalla.
+- **Color con significado**, todo de `nova_paleta.py`. **Cian (`STR_P[3]`) es lo que el jugador puede hacer**; **magenta (`STR_E[3]`) es lo que le falta o lo que le amenaza**, nunca al revés; gris es bloqueado o secundario. Fondo `#0B0E1A`, relleno de panel `#11142A`, marco `STR_P[6]`, texto `STR_P[1]`. Los poderes, en sus colores de [14.4](./NOVA_Estados_Animaciones.md#144-paleta-funcional).
+- **Botones.** **Primario**: relleno cian y texto oscuro; encima, se aclara. **Secundario**: relleno de panel y marco `STR_P[6]`. **Pulsado**: baja 4 px. **Con coste**: el coste a la derecha, en cian. **Sin Energía**: atenuado y con el coste en magenta y lo que falta (`30 · faltan 12`); **nunca se oculta**.
+- **Velos** de pausa y fin: trama al 50 % sobre el tablero, como el arte.
+
+**Regla de movimiento: la materia va a pasos, la energía fluye.**
+
+- **Materia** —nodos, overlays, protones, todo sprite del contrato de arte— se mueve por pasos a 12 fps y en píxel entero, como ya dice [NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md). En los menús también.
+- **Energía, luz e interfaz** —líneas de plasma, halos, paneles, botones, números— se mueven en continuo con una sola curva, la **orbital**: `cubic-bezier(.2, .8, .2, 1)`, que sale rápido y se posa. En Unity es un `AnimationCurve` con esa forma, compartido por toda la UI.
+- **Duraciones:** 160 ms encima y pulsado; 320–700 ms entradas; 50–160 ms de escalonado entre hermanos; una coreografía de fin de nivel no pasa de **3.5 s**; los bucles de ambiente duran **2.4 s o más** y hay **tres como mucho** por pantalla.
+- **La UI nunca anima el tablero en partida.** El tablero es del juego y de [14](./NOVA_Estados_Animaciones.md).
+
+- **Las pantallas 13.8–13.11 se implementan fieles a la maqueta**, no con primitivas ([18](#18-decisiones-tomadas-por-defecto) #46). La maqueta usa datos de ejemplo: si discrepa de este documento, manda este documento.
+
+Los seis patrones de la maqueta, con su sitio: **Ignición** (entrada escalonada), **Flujo** (energía que corre por el plasma), **Sonar** (lo que toca hacer ahora), **Carga** (el botón secundario se llena al pasar el ratón), **Cascada** (conversión por distancia, 10.1) y **Señal perdida** (una sola vez, al entrar la derrota).
+
 ---
 
 ## 14. Feedback visual y estados
@@ -819,6 +919,8 @@ Assets/
 | `ImpactResolver.cs` | Resolución de impacto de protón, incluido el caso congelado. Entrada: snapshot. Salida: `ImpactResult` + deltas. **Sin efectos secundarios.** |
 | `ConversionRules.cs` | Validez y coste de encendido, mejora y reconversión |
 | `ThreatCalculator.cs` | Dado un nodo y los protones en vuelo, dice si está amenazado y en cuánto tiempo. Usado por el algoritmo **y** por el estado `Asustado`. |
+| `OutcomeRules.cs` | Victoria, aniquilación y estancamiento (10.1, 10.2), y las cinco vías de 10.2 con su motivo para la pantalla de derrota (`StarRoutes`, 13.11, `T5-05`) |
+| `PowerCurve.cs` | Proporción del Jugador sobre las dos barras de 13.6, las 64 columnas de la curva de poder y sus dos marcas (13.11, `T5-05`) |
 | `GameEventChannels.cs` | Definición de los canales de evento |
 
 ### 15.4 Data — ScriptableObjects
@@ -877,7 +979,8 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 | `PowerUpSpawner.cs` | Temporizadores, elección de Asteroide, expiración |
 | `FactionBuffs.cs` | Buffs activos por facción y su consulta por los componentes |
 | `WinConditionChecker.cs` | Victoria, derrota, estancamiento, cascada de conquista |
-| `ProgressSaver.cs` | Nivel máximo desbloqueado en `PlayerPrefs` |
+| `ProgressSaver.cs` | Nivel máximo desbloqueado en `PlayerPrefs`, de 1 a 10: el 10 es «los nueve ganados» ([13.9](#139-selección-de-nivel)) |
+| `MatchRecorder.cs` | Datos de la partida en curso para las pantallas de fin ([13.11](#1311-pantallas-de-fin-de-nivel)): tiempo, pico de la barra de poder, capturas hechas y perdidas, nodos ganados por la cascada y una muestra por segundo de la barra. **Solo en memoria**: no se guarda nada ([1.2](#12-alcance-cerrado)) |
 
 ### 15.7 Input, Enemigo y UI
 
@@ -900,7 +1003,10 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 | `IgnitionMenuState.cs` | Estado del menú radial de encendido: abierto o no, sobre qué Asteroide, dónde y la geometría de sus opciones. Lo abre y lo cierra `InputRouter`; vive en `Nova.Input` porque el router resuelve el clic contra él |
 | `IgnitionMenu.cs` | Dibuja el menú radial de encendido. Solo lee `IgnitionMenuState` y valida cada opción con `NodeIgnition.Check` |
 | `PowerBarUI.cs` | Barra inferior. Lee de `NodeRegistry`, no acumula estado. |
-| `EndLevelScreen.cs` | Victoria y derrota |
+| `EndLevelScreen.cs` | Victoria y derrota ([13.11](#1311-pantallas-de-fin-de-nivel)). Lee `MatchRecorder` y, en el estancamiento, las cinco vías de `OutcomeRules` |
+| `PauseMenu.cs` | Menú de pausa ([13.10](#1310-menú-de-pausa)), con sus confirmaciones. Lee `Esc` por su cuenta mientras está abierto ([15.8](#158-presentation), *Tiempo de la UI y pausa*) |
+| `MainMenuScreen.cs` | Menú principal ([13.8](#138-menú-principal)) |
+| `LevelSelectScreen.cs` | Carta estelar e informe del nivel ([13.9](#139-selección-de-nivel)). Lee `ProgressSaver` y los nueve `LevelDefinition` |
 
 ### 15.8 Presentation
 
@@ -913,6 +1019,29 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 | `VFXPool.cs` | Pool de efectos |
 | `AudioDirector.cs` | Reacción sonora a eventos |
 | `CameraShake.cs` | Sacudida en capturas grandes |
+
+#### Tiempo de la UI y pausa
+
+Cerrado el 2026-10-14 con [T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #38 ([18](#18-decisiones-tomadas-por-defecto) #42).
+
+**Pausar es `Time.timeScale = 0`, y lo hace solo `GameManager`.** Como toda la lógica corre en `FixedUpdate` ([15.10](#1510-orden-de-ejecución)) y con la escala a 0 Unity no ejecuta ningún `FixedUpdate`, la partida entera se detiene sin que ningún sistema tenga que saber que hay pausa: generación, protones, Magnetares, cargas, temporizadores de estado, power-ups y el algoritmo. El cronómetro del HUD (13.6) cuenta tiempo **de juego**, así que también se para. La misma congelación se usa al entrar una pantalla de fin de nivel (10.3).
+
+**Dos relojes, uno por capa:**
+
+| Qué | Reloj | Por qué |
+|---|---|---|
+| Lógica de juego | `Time.fixedDeltaTime` en `FixedUpdate` | Determinismo de 12.7; ya era así |
+| `Presentation` del tablero —`NodeAnimator`, `VFXPool`, protones, arcos, `CameraShake`— | Tiempo **escalado**: `Time.deltaTime`, `Animator` en `Normal` | En pausa el tablero tiene que quedarse quieto. Un nodo que siguiera cabeceando diría que el juego corre |
+| UI de menús, pausa y fin de nivel (13.8–13.12) | Tiempo **no escalado**: `Time.unscaledDeltaTime`, `Animator.updateMode = AnimatorUpdateMode.UnscaledTime`, `WaitForSecondsRealtime` en las corrutinas | Con la escala a 0, una animación en tiempo escalado no avanza: el menú de pausa entraría congelado y sus botones no responderían con movimiento |
+
+El HUD permanente (13.6), el panel de clic derecho y el menú de encendido son UI **de partida** y van con tiempo escalado: en pausa se quedan como estaban.
+
+**La entrada, con la pausa.** `InputRouter` lee en `Update` y procesa en `FixedUpdate`; con la escala a 0 el segundo no corre, y eso rompe dos cosas si no se trata:
+
+1. `Esc` se encolaría y no se procesaría nunca, así que **no se podría salir de la pausa con `Esc`**. Mientras la pausa está abierta, `Esc` lo lee **`PauseMenu`** en su `Update`, no `InputRouter`.
+2. Los clics hechos sobre el menú se acumularían en la cola y **llegarían al tablero al reanudar**. Mientras la pausa está abierta, `InputRouter` **no encola nada**, y al pausar **vacía la cola** y suelta cualquier arrastre a medias sin enviar —como soltar en vacío ([13.1](#131-ratón))—. La línea de envío desaparece.
+
+**Al salir de `Game`** —Reiniciar, Volver al mapa, Siguiente, Reintentar o Repetir— `GameManager` devuelve la escala a 1 **antes** de cargar la escena. `timeScale` es global y sobrevive al cambio de escena: olvidarlo deja `LevelSelect` o el nivel nuevo congelados.
 
 ### 15.9 Comunicación entre capas
 
@@ -1104,6 +1233,15 @@ Reglas que no estaban en el diseño original y que se añadieron para cerrar hue
 | 35 | **«Cancelar +N»** es un botón de la rueda, bajo las ranuras, visible mientras hay una carga en curso o un poder listo, con la Energía que devuelve (7.1). La ranura brillante queda solo para apuntar | 7.1 permite cancelar, también con el poder ya cargado (#19), pero ninguna sección decía con qué control. Con el botón ningún clic tiene dos significados. Decidido con el usuario en `T3-07` |
 | 36 | **Las mecánicas se bloquean por mapa** ([11.1](#111-estructura)), para los dos bandos y con la misma presentación que #29 y #33: tipo de encendido, ranura de poder o botón de reconversión **en gris y sin coste**. El bloqueo es de acciones, no de nodos | 11.1 decía que cada mapa «introduce» mecánicas y 13.7 ofrecía siempre las tres opciones. Se resuelve con datos en `LevelDefinition`, por la misma vía que `ActionBlock.Unavailable`. Decidido con el usuario el 2026-10-12 (T.7 #46) |
 | 37 | **Energía inicial** ([Apéndice](#apéndice--diseño-de-los-9-niveles)): un Asteroide empieza con 10, sea de quien sea; un nodo encendido del Jugador o del Enemigo, con **la mitad de su Tope**; un Magnetar neutral, **lleno** | 11.2 daba tipo y nivel y `NodeSpawnData` pide la Energía. La mitad deja a cada bando capturar su primer Asteroide en el primer envío y no regala mejoras, y la ventaja del Enemigo sigue saliendo de cuántos nodos tiene y de qué nivel. El Magnetar neutral lleno es el muro que 11.3 describe. Decidido con el usuario el 2026-10-12 (T.7 #47) |
+| 38 | **Continuar** del menú principal carga **directamente** el nivel máximo desbloqueado; con el máximo en 1 se llama **Jugar**, y con los nueve ganados carga el 9 ([13.8](#138-menú-principal)) | Es lo que el jugador quiere en casi todas las sesiones, y la persistencia solo guarda ese número (1.2). La selección queda a un clic, en **Mapa estelar**. Decidido con el usuario al cerrar T.7 #38 |
+| 39 | **Reiniciar nivel** y **Volver al mapa** piden confirmación dentro del menú de pausa; con ella abierta, `Esc` la cancela ([13.10](#1310-menú-de-pausa)) | Los dos tiran la partida y no hay guardado a mitad de nivel (10.3). Un clic de más no debería costar una partida de cuatro minutos. Decidido al cerrar T.7 #38 |
+| 40 | Las pantallas de fin enseñan **datos de la partida y la curva de poder**, guardados por `MatchRecorder` **solo en memoria**: una muestra por segundo de juego, dibujada en 64 columnas ([13.11](#1311-pantallas-de-fin-de-nivel)) | 10.3 solo daba los botones. Los datos explican la partida sin añadir persistencia, que 1.2 limita al nivel máximo. Decidido al cerrar T.7 #38 |
+| 41 | La derrota por estancamiento **enseña las cinco vías de 10.2** y por qué no alcanza ninguna ([13.11](#1311-pantallas-de-fin-de-nivel)) | Es la única derrota que el jugador no ve venir: tiene nodos y Energía y pierde igual. `OutcomeRules` ya calcula las cinco cuentas para declararla; enseñarlas convierte la derrota en una lección. Decidido al cerrar T.7 #38 |
+| 42 | **Pausar es `Time.timeScale = 0`**; el tablero va con tiempo escalado y la UI de menús, pausa y fin con **tiempo no escalado**. En pausa, `PauseMenu` lee `Esc` e `InputRouter` no encola nada y vacía su cola; al salir de `Game`, la escala vuelve a 1 antes de cargar ([15.8](#158-presentation), *Tiempo de la UI y pausa*) | Con la lógica en `FixedUpdate` (15.10), la escala a 0 detiene la partida entera sin tocar ningún sistema. Pero `InputRouter` procesa en `FixedUpdate`, así que sin las dos excepciones `Esc` no saldría de la pausa y los clics sobre el menú caerían en el tablero al reanudar. Pedido por el usuario al cerrar T.7 #38 |
+| 43 | **Lenguaje de movimiento de la UI:** la materia va a pasos (12 fps, píxel entero) y la energía, la luz y la interfaz fluyen con una sola curva, `cubic-bezier(.2, .8, .2, 1)`; como mucho tres bucles de ambiente por pantalla ([13.12](#1312-lenguaje-y-movimiento-de-la-ui)) | Pedido por el usuario el 2026-10-14: más movimiento y más fluido sin abandonar el pixel art. Separar materia de energía conserva el contrato de los sprites y deja libre todo lo demás |
+| 44 | **Degradados por alfa permitidos en la UI fuera del tablero** —halos, brillos y velos de menús y pantallas de fin— ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), regla 7, *Excepción*) | Aceptado por el usuario el 2026-10-14. Dentro del tablero la regla 7 sigue entera: allí la trama es lo que mantiene a los nodos y al fondo en la misma imagen |
+
+| 46 | **Las pantallas fuera de partida se implementan fieles a la maqueta** del lienzo «NOVA — Pantallas de flujo» en la tarea de código que las crea —`T5-05` pausa y fin, `T5-06` menú principal y selección—, construidas en código con el lenguaje de 13.12 y sprites del inventario ([NOVA_Tracking.md](./NOVA_Tracking.md), T.2, regla 8) | Pedido por el usuario el 2026-10-17 al ver las provisionales. Son pantallas enteras sin piezas de arte propias: hacerlas con primitivas obligaba a reescribirlas en la fase 6. La UI de partida sigue las reglas 4 y 5 |
 
 ---
 

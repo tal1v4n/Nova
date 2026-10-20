@@ -40,6 +40,9 @@ El algoritmo **nunca actúa más de una vez por ciclo**. Esto lo hace legible y 
 | Cargar poder | Posee un Púlsar sin poder cargado |
 | Lanzar poder | Posee un Púlsar con poder cargado y existe **al menos un nodo encendido que no sea suyo** —del Jugador, o el Magnetar neutral— ([7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido)) |
 | Reconvertir | Se queda sin Estrellas y tiene un nodo con Energía suficiente |
+| Abastecer | Un nodo propio necesita Energía para lo siguiente que le toca —un Asteroide para encenderse, un Púlsar para su poder— y otro nodo propio que no sea Púlsar puede enviarle ([12.3.4](#1234-estrategia-expandir-abastecer-y-no-repetir-envíos)) |
+
+**Atacar un nodo Neutral es Expandir** y puntúa como economía ([12.3.4](#1234-estrategia-expandir-abastecer-y-no-repetir-envíos)): sigue siendo la acción *Atacar* de la tabla, con su lugar en el orden de desempate, pero con otra fórmula.
 
 > **«Dentro del alcance efectivo» se ha eliminado de la primera fila, y es la corrección de un hueco antiguo.** Nunca existió un alcance de envío: [5.2](./NOVA_GameDesign_Spec.md#52-envío) permite a cualquier nodo que no sea Asteroide enviar a **cualquier** otro nodo del mapa, sin límite de distancia, desde la primera versión del documento. La distancia solo encarece el envío indirectamente —el protón tarda más en llegar y cruza más radios de Magnetar—, y eso ya lo mide `RiesgoDeRuta` en 12.3. El filtro real es la Energía, no la geometría.
 
@@ -153,7 +156,48 @@ ScoreReconvertir(nodo) = 80 - coste    # el destino es siempre Estrella
 
 El origen es el nodo propio con más Energía que puede pagarla y no tiene un poder en carga ni cargado ([8.1](./NOVA_GameDesign_Spec.md#81-reglas)). Puntúa 60 o 50: es supervivencia y supera siempre el umbral.
 
-**El multiplicador de agresividad** solo afecta a atacar, lanzar poder y cargar poder, que hereda `ScorePoder`. Encender, mejorar y reconvertir son economía.
+**El multiplicador de agresividad** solo afecta a atacar al rival, lanzar poder y cargar poder, que hereda `ScorePoder`. Encender, mejorar, reconvertir, expandir y abastecer son economía.
+
+### 12.3.4 Estrategia: expandir, abastecer y no repetir envíos
+
+Añadido el 2026-10-20 tras la primera prueba de juego del flujo completo. Con 12.3–12.3.2 tal cual, el Enemigo **solo sabía atacar**, y no por diseño sino por tres huecos de las fórmulas:
+
+1. **Capturar un Asteroide neutral no llegaba al umbral del mapa 1.** `(40 − 10) × 0.7 = 21`, contra un `UmbralDeAccion` de 40: el Enemigo del mapa 1 no se expandía nunca. Lo único que superaba el umbral era capturar una Estrella del Jugador recién vaciada, `(100 − 13) × 0.7 = 61`: castigaba cada envío del Jugador y no hacía nada más.
+2. **Un Asteroide capturado se quedaba muerto.** El 50 % de una Estrella con 25 es 12, que captura un Asteroide de 10 y le deja 2. Ninguna acción de 12.2 le enviaba Energía a un nodo propio salvo el refuerzo de 12.4, que solo responde a amenazas: nunca llegaba a 10 y no se encendía.
+3. **Repetía el envío que ya estaba en el aire.** El coste se calculaba con la Energía del destino, sin mirar los protones propios que ya iban hacia él: cada ciclo volvía a mandar el mismo ataque mientras el primero volaba.
+
+**Expandir** (atacar un nodo Neutral):
+
+```
+ScoreExpandir(origen, destino) =
+      (ValorTipo(destino) + NecesidadExpansion) * Alcance
+    + BonusPowerUp(destino)
+    - CostePendiente(destino)
+    - RiesgoDeRuta(origen, destino)
+    - PenalizacionVaciado(origen)
+    - 2 * Distancia(origen, destino)
+
+NecesidadExpansion = 40 / NodosPropios          # 40 con uno, 20 con dos, 10 con cuatro
+```
+
+Sin `MultiplicadorAgresividad`: tomar un nodo que nadie tiene es crecer, no agredir. La distancia **sí** entra aquí, y no contradice 12.7: la prohibición es de los poderes, y un protón que va lejos tarda más y deja al rival más tiempo para disputar el Asteroide. Con ella el Enemigo toma primero lo que tiene a su lado. En el nivel 1, al empezar, el Asteroide de su lado puntúa 66, el central 59 y el del Jugador 53.
+
+**Abastecer** (enviar el 50 % a un nodo propio):
+
+```
+ScoreAbastecer(origen, destino) = Base(destino) * min(1, Carga / Faltante) - PenalizacionVaciado(origen)
+
+Base: Asteroide 70, Púlsar 45
+Faltante(Asteroide) = coste de encendido − Energía − Carga propia en vuelo
+Faltante(Púlsar)    = coste del poder que carga (o, sin carga, del más caro que su nivel permite)
+                      − Energía − Carga propia en vuelo
+```
+
+Solo se genera con `Faltante > 0`, para un Asteroide que el nivel deja encender y un Púlsar sin poder listo ni reconversión en curso. **Un Púlsar no abastece**: su Energía es munición. El envío es siempre el 50 % ([5.2](./NOVA_GameDesign_Spec.md#52-envío)): lo que sobre al tope se pierde, como para el Jugador.
+
+**Carga en vuelo.** `CostePendiente = CosteEfectivo − Carga propia que ya vuela hacia el destino`. Si es ≤ 0 la candidata no se genera: el ataque que ya va en camino basta. Es lo que el Jugador ve en pantalla, así que no rompe 12.6.
+
+El resultado es un ciclo que se lee como un plan: tomar el Asteroide cercano, alimentarlo, encenderlo (Estrella, luego Púlsar o Magnetar según 12.3.2), mejorar, cargar poderes y atacar cuando hay una apertura.
 
 ### 12.3.3 Ruido y empates
 
@@ -189,6 +233,25 @@ La evacuación es lo que separa a un Enemigo que se defiende de uno que regala n
 El **ruido de decisión** altera aleatoriamente la puntuación final ([12.3.3](#1233-ruido-y-empates)). Es el mecanismo principal para que el mapa 1 se sienta torpe sin necesidad de un algoritmo distinto.
 
 *Envía al 100 %* guarda el **margen** de [12.3](#123-función-de-puntuación-atacar): el 100 % solo sale si la Energía del origen es al menos `CosteEfectivo × margen`. «Nunca» es no tener margen. *Prioriza power-ups* activa `BonusPowerUp`; sin él vale 0.
+
+### 12.5.1 Paciencia por nivel
+
+Durante los primeros segundos de la partida el Enemigo **no ataca al Jugador ni le lanza poderes**. Todo lo demás sigue: expandir, abastecer, encender, mejorar, cargar poderes y la defensa de 12.4. Es la ventana en la que el Jugador aprende sin que le quiten la Estrella al primer envío. Es un parámetro más de `EnemyProfile` (`gracePeriod`), en el perfil de cada nivel de 12.5.2. Valores iniciales:
+
+| Nivel | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+|---|---|---|---|---|---|---|---|---|---|
+| Paciencia | 45 s | 30 s | 20 s | 15 s | 10 s | 5 s | 0 | 0 | 0 |
+
+Añadida el 2026-10-20: el nivel 1 resultaba casi imposible de ganar en la prueba de juego, porque el Enemigo capturaba la Estrella del Jugador en cuanto este la vaciaba para tomar su primer Asteroide (12.3.4, hueco 1). Los valores son una propuesta, **pendiente de prueba de juego**.
+
+### 12.5.2 Ajuste por nivel
+
+Añadido el 2026-10-20 para afinar la curva jugando. **Cada nivel tiene su propio perfil**, `Assets/Data/EnemyProfiles/Level{n}Enemy.asset`, que es el que referencia su `LevelDefinition`. Los tres perfiles de la tabla de 12.5, `Map1`–`Map3`, se quedan como **valores de referencia**: los usan los tests de 12.7 y de ellos nacen los de nivel.
+
+- **Nova → Dificultad** (`DifficultyWindow`) enseña los nueve perfiles en una tabla, un nivel por columna. Edita los assets con Undo; en Play, el Enemigo los lee en cada ciclo, así que el cambio se nota en la partida en curso y se conserva al salir. Marca en rojo la celda de un nivel más fácil que el anterior, y tiene *Copiar →* al nivel siguiente, *Restablecer* a 12.5 y *Interpolar* en línea recta entre dos niveles. *Reconvierte* no se edita: lo fija el nivel (11.1), igual para los dos bandos.
+- **Overlay de depuración** (`EnemyDebugOverlay`, **F1** en Play, solo en el Editor y en builds de desarrollo): perfil en uso, si está paciente u hostil, las seis mejores candidatas del último ciclo con su puntuación ya con ruido —en verde las que superan el umbral— y las últimas decisiones.
+- **Generar los 9 niveles** crea `Level{n}Enemy` si falta, como copia de su mapa con la Paciencia de 12.5.1, y **nunca lo sobrescribe**.
+- **Los tests no fijan sus números**, solo reglas: valores válidos, un perfil distinto por nivel, *Reconvierte* = lo que permite el nivel, y que de un nivel al siguiente ni el intervalo, ni el umbral, ni el ruido, ni la Paciencia suban, ni la agresividad baje. Una celda en rojo en la ventana es un test en rojo.
 
 ### 12.6 Prohibiciones
 
@@ -227,3 +290,10 @@ El algoritmo no puede: ver protones antes de que se lancen, conocer los poderes 
 13. `RiesgoDeRuta` cuenta el Magnetar neutral y no cuenta los Magnetares del Enemigo.
 14. Sin Estrellas, `ScoreEncender` elige Estrella; con dos Estrellas y sin Púlsar, Púlsar.
 15. Con el mismo ruido y dos candidatas empatadas, gana siempre la misma, por el orden de 12.3.3.
+16. Expandir no lleva `MultiplicadorAgresividad`, prefiere el Asteroide más cercano y, con el perfil del mapa 1, supera el umbral.
+17. `NecesidadExpansion` es 40 con un nodo propio y 10 con cuatro.
+18. Abastece un Asteroide propio con 2 de Energía y deja de hacerlo cuando lo que ya vuela hacia él cubre lo que falta.
+19. Abastece un Púlsar parado a media carga con lo que cuesta su poder, y un Púlsar nunca abastece.
+20. Un ataque cuya Carga ya vuela hacia el destino solo cuenta lo que falta, y no se genera si ya lo cubre.
+21. Durante la Paciencia (12.5.1) no ataca al Jugador ni le lanza poderes, y sí se expande y mejora.
+22. En el nivel 1, al empezar, la primera acción es tomar el Asteroide de su lado.

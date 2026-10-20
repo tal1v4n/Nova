@@ -13,6 +13,7 @@ namespace Nova.Enemy
         LaunchPower = 5,
         Convert = 6,
         Evacuate = 7,    // Solo como respuesta de 12.4 (T4-05): todo al nodo propio no amenazado más cercano
+        Supply = 8,      // Abastecer (12.3.4): el 50 % a un nodo propio que lo necesita para encenderse o cargar
     }
 
     // Una candidata puntuada (12.3, 12.3.1, 12.3.2). Actor y Target son índices de NodeRegistry

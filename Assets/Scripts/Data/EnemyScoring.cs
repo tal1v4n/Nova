@@ -97,6 +97,20 @@ namespace Nova.Data
         [Header("Reconvertir (12.3.2)")]
         [SerializeField] float conversionBase = 80f;
 
+        [Header("Expandir (12.3.4)")]
+        [Tooltip("NecesidadExpansion: este valor / nodos propios, sumado al ValorTipo de un objetivo Neutral.")]
+        [SerializeField] float expansionNeed = 40f;
+
+        [Tooltip("PenalizacionDistancia: por cada unidad entre el origen y el objetivo Neutral.")]
+        [SerializeField, Min(0f)] float expansionDistanceWeight = 2f;
+
+        [Header("Abastecer (12.3.4)")]
+        [Tooltip("Abastecer un Asteroide propio que aún no llega al coste de encendido.")]
+        [SerializeField] float supplyAsteroidBase = 70f;
+
+        [Tooltip("Abastecer un Púlsar propio que no llega al coste de su poder.")]
+        [SerializeField] float supplyPulsarBase = 45f;
+
         public float TypeValue(NodeType type)
         {
             switch (type)
@@ -147,5 +161,9 @@ namespace Nova.Data
         public float ChargeValueFactor => chargeValueFactor;
         public float ChargeCostFactor => chargeCostFactor;
         public float ConversionBase => conversionBase;
+        public float ExpansionNeed => expansionNeed;
+        public float ExpansionDistanceWeight => expansionDistanceWeight;
+        public float SupplyAsteroidBase => supplyAsteroidBase;
+        public float SupplyPulsarBase => supplyPulsarBase;
     }
 }

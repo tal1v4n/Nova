@@ -165,5 +165,111 @@ namespace Nova.Tests
             Add(Faction.Enemy, NodeType.Magnetar, 100);
             Assert.AreEqual(LevelOutcome.Stalemate, Evaluate(), "Robar un Magnetar no da una Estrella.");
         }
+
+        // --- T5-05: las cinco vías, con su motivo, para la pantalla de derrota (13.11, 18 #41) ---
+
+        StarRoute[] Routes(bool conversion = true, bool wormhole = true) =>
+            OutcomeRules.StarRoutes(nodes, Ignition, Resistance, conversion, wormhole);
+
+        static int Capture(int energy) => EnergyMath.CaptureCost(energy, 1f);
+
+        [Test]
+        public void TheRoutesComeInTheOrderOfTheTable()
+        {
+            Add(Faction.Player, NodeType.Magnetar, 5);
+            Add(Faction.Enemy, NodeType.Star, 30);
+            StarRoute[] routes = Routes();
+            Assert.AreEqual(OutcomeRules.RouteCount, routes.Length);
+            for (int i = 0; i < routes.Length; i++)
+                Assert.AreEqual((StarRouteKind)i, routes[i].Kind);
+        }
+
+        [Test]
+        public void EachRouteSaysWhyItFallsShort()
+        {
+            // S = 5 + 3 = 8, sin Asteroide propio ni Púlsar.
+            Add(Faction.Player, NodeType.Magnetar, 5, conversion: 20);
+            Add(Faction.Player, NodeType.Magnetar, 3, conversion: 20);
+            Add(Faction.Neutral, NodeType.Asteroid, 10);
+            Add(Faction.Neutral, NodeType.Asteroid, 7);
+            Add(Faction.Enemy, NodeType.Star, 30);
+            Add(Faction.Enemy, NodeType.Star, 12);
+            StarRoute[] routes = Routes();
+
+            Assert.AreEqual(StarRouteBlock.NoneOwned, routes[0].Block, "No tiene Asteroide propio.");
+
+            Assert.AreEqual(StarRouteBlock.Short, routes[1].Block);
+            Assert.AreEqual(Capture(7) + Ignition, routes[1].Cost, "El Asteroide más barato, más encenderlo.");
+            Assert.AreEqual(8, routes[1].Have, "S");
+
+            Assert.AreEqual(StarRouteBlock.Short, routes[2].Block);
+            Assert.AreEqual(Capture(12), routes[2].Cost, "La Estrella más barata.");
+            Assert.AreEqual(Capture(12) - 8, routes[2].Missing);
+
+            Assert.AreEqual(StarRouteBlock.Short, routes[3].Block);
+            Assert.AreEqual(20, routes[3].Cost);
+            Assert.AreEqual(5, routes[3].Have, "Reconvertir es con la Energía del propio nodo: el que menos le falta.");
+            Assert.AreEqual(15, routes[3].Missing);
+
+            Assert.AreEqual(StarRouteBlock.NoneOwned, routes[4].Block, "Sin Púlsar que cargue el Gusano.");
+        }
+
+        [Test]
+        public void AMechanicTheLevelLacksDoesNotExistInTheMap()
+        {
+            Add(Faction.Player, NodeType.Pulsar, 5, level: 3, conversion: 20, wormhole: 60);
+            Add(Faction.Enemy, NodeType.Star, 30);
+            StarRoute[] routes = Routes(conversion: false, wormhole: false);
+            Assert.AreEqual(StarRouteBlock.NotInMap, routes[3].Block);
+            Assert.AreEqual(StarRouteBlock.NotInMap, routes[4].Block);
+        }
+
+        [Test]
+        public void WithoutTargetsNoneIsLeft()
+        {
+            Add(Faction.Player, NodeType.Pulsar, 5, level: 3, wormhole: 60);
+            Add(Faction.Enemy, NodeType.Magnetar, 30);
+            StarRoute[] routes = Routes();
+            Assert.AreEqual(StarRouteBlock.NoneLeft, routes[1].Block, "No queda Asteroide que capturar.");
+            Assert.AreEqual(StarRouteBlock.NoneLeft, routes[2].Block, "No queda Estrella que capturar.");
+            Assert.AreEqual(StarRouteBlock.NoneLeft, routes[4].Block, "Tiene el Gusano, pero no hay Estrella del Enemigo.");
+        }
+
+        [Test]
+        public void IgnitingAnOwnAsteroidCountsItsEnergyAndS()
+        {
+            Add(Faction.Player, NodeType.Asteroid, 3);
+            Add(Faction.Player, NodeType.Magnetar, 4);
+            Add(Faction.Enemy, NodeType.Star, 50);
+            StarRoute route = Routes()[0];
+            Assert.AreEqual(StarRouteBlock.Short, route.Block);
+            Assert.AreEqual(Ignition, route.Cost);
+            Assert.AreEqual(7, route.Have);
+            Assert.AreEqual(3, route.Missing);
+        }
+
+        // Con las mecánicas permitidas, una vía alcanza si y solo si CanRecoverStar lo dice: la
+        // pantalla enseña las mismas cuentas que declararon el estancamiento.
+        [TestCase(0, 2, 0, -1, -1)]
+        [TestCase(6, 2, 0, -1, -1)]
+        [TestCase(2, 0, 40, -1, -1)]
+        [TestCase(2, 0, 9, -1, -1)]
+        [TestCase(25, 0, 0, 20, -1)]
+        [TestCase(15, 0, 0, 20, -1)]
+        [TestCase(30, 0, 0, -1, 20)]
+        [TestCase(10, 3, 12, 30, 60)]
+        public void TheRoutesAgreeWithCanRecoverStar(int energy, int ownAsteroid, int enemyStar, int conversion, int wormhole)
+        {
+            Add(Faction.Player, wormhole >= 0 ? NodeType.Pulsar : NodeType.Magnetar, energy, level: 3, conversion: conversion, wormhole: wormhole);
+            if (ownAsteroid > 0)
+                Add(Faction.Player, NodeType.Asteroid, ownAsteroid);
+            Add(Faction.Neutral, NodeType.Asteroid, 10);
+            if (enemyStar > 0)
+                Add(Faction.Enemy, NodeType.Star, enemyStar);
+            Add(Faction.Enemy, NodeType.Magnetar, 100);
+
+            bool any = System.Array.Exists(Routes(), r => r.Reachable);
+            Assert.AreEqual(OutcomeRules.CanRecoverStar(nodes, Ignition, Resistance), any);
+        }
     }
 }

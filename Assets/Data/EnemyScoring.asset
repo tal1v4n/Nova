@@ -47,3 +47,7 @@ MonoBehaviour:
   chargeValueFactor: 0.5
   chargeCostFactor: 0.5
   conversionBase: 80
+  expansionNeed: 40
+  expansionDistanceWeight: 2
+  supplyAsteroidBase: 70
+  supplyPulsarBase: 45

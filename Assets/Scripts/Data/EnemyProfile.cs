@@ -2,9 +2,12 @@ using UnityEngine;
 
 namespace Nova.Data
 {
-    // Perfil del algoritmo del Enemigo (12.5, 15.4, T4-01): los ocho parámetros de la tabla de 12.5.
-    // Uno por mapa en Assets/Data/EnemyProfiles/ (Map1, Map2, Map3). Lo referencia LevelDefinition
-    // (T5-01) y lo leen EnemyController, EnemyEvaluator y EnemyThreatResponder.
+    // Perfil del algoritmo del Enemigo (12.5, 15.4, T4-01): los ocho parámetros de la tabla de 12.5 y
+    // la Paciencia de 12.5.1. En Assets/Data/EnemyProfiles/ hay dos juegos: Map1–Map3, los valores de
+    // referencia de 12.5 que usan los tests, y Level1Enemy–Level9Enemy, uno por nivel, que referencia
+    // cada LevelDefinition y que se ajustan a mano en la ventana Nova → Dificultad (12.5.2). Lo leen
+    // EnemyController, EnemyEvaluator y EnemyThreatResponder en cada ciclo: un cambio en Play se nota
+    // en la partida en curso.
     //
     // Solo datos: qué hace cada parámetro está en 12.3, 12.3.2, 12.3.3 y 12.4 (T.7 #48).
     [CreateAssetMenu(menuName = "Nova/Enemy Profile", fileName = "EnemyProfile")]
@@ -34,6 +37,9 @@ namespace Nova.Data
         [Tooltip("Ruido de decisión r: cada candidata se multiplica por 1 + U(−r, +r) (12.3.3).")]
         [SerializeField, Range(0f, 1f)] float decisionNoise;
 
+        [Tooltip("Paciencia (12.5.1): segundos de partida sin atacar al Jugador ni lanzarle poderes; solo se desarrolla.")]
+        [SerializeField, Min(0f)] float gracePeriod;
+
         public float DecisionInterval => decisionInterval;
         public float ActionThreshold => actionThreshold;
         public float AggressionMultiplier => aggressionMultiplier;
@@ -42,6 +48,7 @@ namespace Nova.Data
         public bool PrioritizesPowerUps => prioritizesPowerUps;
         public float FullSendMargin => fullSendMargin;
         public float DecisionNoise => decisionNoise;
+        public float GracePeriod => gracePeriod;
 
         // «Nunca» en la tabla de 12.5 es no tener margen.
         public bool AllowsFullSend => fullSendMargin > 0f;

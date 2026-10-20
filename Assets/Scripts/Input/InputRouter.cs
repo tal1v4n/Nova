@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Nova.Core;
 using Nova.Data;
 using Nova.Gameplay;
+using Nova.Systems;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -56,6 +57,9 @@ namespace Nova.Input
         [Tooltip("Opcional: sin él la rueda carga y cancela pero no apunta (T3-07).")]
         [SerializeField] PowerAimState aim;
 
+        [Tooltip("Opcional: sin él Esc solo avisa con OnPauseRequested y la entrada nunca se suspende (T5-05).")]
+        [SerializeField] GameManager game;
+
         readonly Queue<PointerEvent> pending = new Queue<PointerEvent>();
         int nodesMask = -1;
 
@@ -84,13 +88,73 @@ namespace Nova.Input
         NodeController ignoredNode;
         long ignoredUntil;
 
-        // Intención que todavía no tiene quien la atienda: el menú de pausa llega con T5-05.
+        // Esc sin nada que cerrar antes (13.10). Con GameManager, además, abre la pausa.
         public event Action OnPauseRequested;
+
+        bool subscribedToGame;
 
         public bool IsBufferActive => bufferActive;
 
+        // Fuera de partida —pausa o pantalla de fin— no se encola nada: FixedUpdate no corre con la
+        // escala a 0, y lo encolado llegaría al tablero al reanudar (15.8, Tiempo de la UI y pausa).
+        public bool IsSuspended => game != null && game.State != GameFlowState.Playing;
+
+        void OnEnable()
+        {
+            SubscribeGame();
+        }
+
+        void OnDisable()
+        {
+            UnsubscribeGame();
+        }
+
+        void SubscribeGame()
+        {
+            if (game != null && !subscribedToGame)
+            {
+                game.OnStateChanged += FlowChanged;
+                subscribedToGame = true;
+            }
+        }
+
+        void UnsubscribeGame()
+        {
+            if (subscribedToGame)
+            {
+                if (game != null)
+                    game.OnStateChanged -= FlowChanged;
+                subscribedToGame = false;
+            }
+        }
+
+        void FlowChanged(GameFlowState state)
+        {
+            if (state != GameFlowState.Playing)
+                Interrupt();
+        }
+
+        // Al pausar o terminar el nivel: vacía la cola y suelta cualquier pulsación a medias sin
+        // actuar, como soltar en vacío (13.1). La línea de envío desaparece. El buffer de doble clic
+        // se queda: su reloj es de juego y está parado.
+        public void Interrupt()
+        {
+            pending.Clear();
+            pressing = false;
+            dragging = false;
+            pressNode = null;
+            rightPressing = false;
+            rightDragging = false;
+            rightPressNode = null;
+            if (sendLine != null)
+                sendLine.EndDrag();
+        }
+
         void Update()
         {
+            if (IsSuspended)
+                return;
+
             Mouse mouse = Mouse.current;
             Camera cam = worldCamera != null ? worldCamera : Camera.main;
             if (mouse != null && cam != null)
@@ -348,7 +412,10 @@ namespace Nova.Input
                 Panel.Close();
                 return;
             }
+            // Solo si no hay nada de eso, pausa (13.10).
             OnPauseRequested?.Invoke();
+            if (game != null)
+                game.Pause();
         }
 
         // Avanza el reloj del buffer. En partida, un tick fijo; en los tests, lo que haga falta.
@@ -364,8 +431,12 @@ namespace Nova.Input
 
         // Para la escena de prueba y los tests: el cableado normal es por el Inspector.
         public void Configure(BalanceConfig config, SelectionManager selectionManager, PlayerCommandIssuer commandIssuer,
-            IgnitionMenuState menu, InfoPanelState panel, Camera cam = null, SendLineState line = null, PowerAimState powerAim = null)
+            IgnitionMenuState menu, InfoPanelState panel, Camera cam = null, SendLineState line = null, PowerAimState powerAim = null,
+            GameManager flow = null)
         {
+            UnsubscribeGame();
+            game = flow;
+            SubscribeGame();
             balance = config;
             selection = selectionManager;
             issuer = commandIssuer;

@@ -17,12 +17,11 @@ namespace Nova.Data
         [Tooltip("1 a 9 (11.2). El mapa sale de aquí: niveles 1–3, mapa 1; 4–6, mapa 2; 7–9, mapa 3.")]
         [SerializeField, Range(1, 9)] int number = 1;
 
-        [Tooltip("Perfil del algoritmo del mapa (12.5).")]
+        [Tooltip("Perfil del algoritmo de este nivel (12.5, 12.5.2): Level{n}Enemy, ajustable en Nova → Dificultad.")]
         [SerializeField] EnemyProfile enemyProfile;
 
         [Tooltip("Duración objetivo en segundos (11.2). Referencia de diseño: ninguna regla la usa.")]
         [SerializeField, Min(0f)] float targetDuration;
-
         [Tooltip("Nodos de partida, en el orden en que se registran (NodeRegistry, desempate de 12.3.3).")]
         [SerializeField] List<NodeSpawnData> spawns = new List<NodeSpawnData>();
 
@@ -61,8 +60,7 @@ namespace Nova.Data
                 throw new ArgumentOutOfRangeException(nameof(levelNumber), levelNumber, "Los niveles van del 1 al 9.");
             number = levelNumber;
             enemyProfile = profile;
-            targetDuration = duration;
-            spawns = nodes != null ? new List<NodeSpawnData>(nodes) : new List<NodeSpawnData>();
+            targetDuration = duration;            spawns = nodes != null ? new List<NodeSpawnData>(nodes) : new List<NodeSpawnData>();
             ignitionTypes = ignitions != null ? new List<NodeType>(ignitions).ToArray() : Array.Empty<NodeType>();
             powers = allowedPowers != null ? new List<PowerType>(allowedPowers).ToArray() : Array.Empty<PowerType>();
             allowsConversion = conversion;

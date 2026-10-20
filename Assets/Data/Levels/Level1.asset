@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Level1
   m_EditorClassIdentifier: Nova.Data::Nova.Data.LevelDefinition
   number: 1
-  enemyProfile: {fileID: 11400000, guid: ded9a8069a444a1eb7e67c558e1a7ce9, type: 2}
+  enemyProfile: {fileID: 11400000, guid: 64b5bfd9bc8640219b84bfb193c39a42, type: 2}
   targetDuration: 90
   spawns:
   - position: {x: -5, y: 0}

@@ -91,7 +91,8 @@ namespace Nova.Tests
             int map = (number - 1) / 3 + 1;
 
             Assert.AreEqual(map, level.Map);
-            Assert.AreEqual($"Map{map}", level.EnemyProfile != null ? level.EnemyProfile.name : null);
+            Assert.AreEqual($"Level{number}Enemy", level.EnemyProfile != null ? level.EnemyProfile.name : null,
+                "Cada nivel tiene su propio perfil (12.5.2).");
 
             Assert.IsTrue(level.AllowsIgnition(NodeType.Star));
             Assert.IsTrue(level.AllowsIgnition(NodeType.Magnetar));
@@ -120,6 +121,50 @@ namespace Nova.Tests
             Assert.AreEqual(row.min, drops.MinInterval);
             Assert.AreEqual(row.max, drops.MaxInterval);
             Assert.AreEqual(row.count, drops.MaxDrops);
+        }
+
+        // 12.5.2: los perfiles por nivel se ajustan a mano, así que no se comparan con números fijos
+        // sino con reglas: valores válidos, un perfil por nivel y una curva que no se vuelve más fácil.
+
+        [TestCaseSource(nameof(Numbers))]
+        public void EachLevelProfileHasValidValues(int number)
+        {
+            EnemyProfile profile = Level(number).EnemyProfile;
+            Assert.IsNotNull(profile);
+            Assert.GreaterOrEqual(profile.DecisionInterval, 0.02f, "Intervalo de decisión.");
+            Assert.GreaterOrEqual(profile.ActionThreshold, 0f, "Umbral.");
+            Assert.GreaterOrEqual(profile.AggressionMultiplier, 0f, "Agresividad.");
+            Assert.That(profile.DecisionNoise, Is.InRange(0f, 1f), "Ruido.");
+            Assert.GreaterOrEqual(profile.GracePeriod, 0f, "Paciencia.");
+            Assert.GreaterOrEqual(profile.FullSendMargin, 0f, "Margen del 100 %.");
+            Assert.That(profile.FullSendMargin == 0f || profile.FullSendMargin >= 1f, Is.True,
+                "Un margen entre 0 y 1 enviaría el 100 % sin llegar a capturar.");
+        }
+
+        [Test]
+        public void EachLevelHasItsOwnProfile()
+        {
+            var profiles = Numbers.Select(n => Level(n).EnemyProfile).ToList();
+            Assert.AreEqual(9, profiles.Distinct().Count(), "Dos niveles que comparten perfil no se pueden ajustar por separado.");
+        }
+
+        // Lo que Nova → Dificultad marca en rojo: de un nivel al siguiente, ninguno de los cinco
+        // parámetros con sentido de curva se vuelve más fácil.
+        [Test]
+        public void TheDifficultyNeverGoesDownFromOneLevelToTheNext()
+        {
+            var failures = new List<string>();
+            for (int n = 2; n <= 9; n++)
+            {
+                EnemyProfile before = Level(n - 1).EnemyProfile;
+                EnemyProfile now = Level(n).EnemyProfile;
+                if (now.DecisionInterval > before.DecisionInterval + 1e-4f) failures.Add($"Intervalo sube en el nivel {n}");
+                if (now.ActionThreshold > before.ActionThreshold + 1e-4f) failures.Add($"Umbral sube en el nivel {n}");
+                if (now.AggressionMultiplier < before.AggressionMultiplier - 1e-4f) failures.Add($"Agresividad baja en el nivel {n}");
+                if (now.DecisionNoise > before.DecisionNoise + 1e-4f) failures.Add($"Ruido sube en el nivel {n}");
+                if (now.GracePeriod > before.GracePeriod + 1e-4f) failures.Add($"Paciencia sube en el nivel {n}");
+            }
+            Assert.IsEmpty(failures, string.Join("; ", failures));
         }
 
         [TestCaseSource(nameof(Numbers))]

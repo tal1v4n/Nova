@@ -9,8 +9,10 @@ namespace Nova.Editor
     // Los nueve LevelDefinition de Assets/Data/Levels/ (T5-02), escritos de forma idempotente. Los
     // nodos son los del apéndice «Diseño de los 9 niveles» del maestro, y las demás columnas, las de
     // 11.1 y 11.2. Si el diseño cambia, se cambia aquí y en el apéndice, y se vuelve a generar: un
-    // asset retocado a mano en el Inspector se pierde al regenerar. LevelAssetsTests compara lo
-    // generado con 11.1, 11.2 y 11.3, no con esta tabla.
+    // asset retocado a mano en el Inspector se pierde al regenerar. La excepción son los perfiles del
+    // Enemigo por nivel (Level{n}Enemy, 12.5.2): se crean si faltan y nunca se sobrescriben, porque son
+    // los que se ajustan a mano. LevelAssetsTests compara lo generado con 11.1, 11.2 y 11.3, no con
+    // esta tabla.
     public static class LevelAssets
     {
         const string LevelsFolder = "Assets/Data/Levels";
@@ -18,6 +20,9 @@ namespace Nova.Editor
 
         // Duración objetivo de 11.2, en segundos.
         static readonly float[] Durations = { 90f, 110f, 130f, 150f, 170f, 190f, 210f, 230f, 240f };
+
+        // Paciencia del Enemigo de 12.5.1, en segundos: solo la del perfil de nivel recién creado.
+        public static readonly float[] GracePeriods = { 45f, 30f, 20f, 15f, 10f, 5f, 0f, 0f, 0f };
 
         static NodeSpawnData Spawn(NodeType type, Faction faction, int energy, float x, float y, int level = 0) =>
             new NodeSpawnData(new Vector2(x, y), type, faction, energy, level);
@@ -160,6 +165,33 @@ namespace Nova.Editor
 
         public static string PathOf(int number) => $"{LevelsFolder}/Level{number}.asset";
 
+        public static string ProfilePathOf(int number) => $"{ProfilesFolder}/Level{number}Enemy.asset";
+
+        // El perfil del nivel (12.5.2). Si ya existe se deja tal cual: es el que se ajusta a mano en
+        // Nova → Dificultad y regenerar no puede pisarlo. Si falta, nace como copia del perfil de su
+        // mapa (12.5) con la Paciencia de 12.5.1.
+        static EnemyProfile LevelProfile(int number, int map)
+        {
+            string path = ProfilePathOf(number);
+            var existing = AssetDatabase.LoadAssetAtPath<EnemyProfile>(path);
+            if (existing != null)
+                return existing;
+
+            var source = AssetDatabase.LoadAssetAtPath<EnemyProfile>($"{ProfilesFolder}/Map{map}.asset");
+            if (source == null)
+            {
+                Debug.LogError($"[Nova] Falta {ProfilesFolder}/Map{map}.asset.");
+                return null;
+            }
+            var profile = ScriptableObject.CreateInstance<EnemyProfile>();
+            EditorUtility.CopySerialized(source, profile);
+            var serialized = new SerializedObject(profile);
+            serialized.FindProperty("gracePeriod").floatValue = GracePeriods[number - 1];
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            AssetDatabase.CreateAsset(profile, path);
+            return profile;
+        }
+
         [MenuItem("Nova/Fase 5/Generar los 9 niveles")]
         public static void Generate()
         {
@@ -168,12 +200,9 @@ namespace Nova.Editor
             {
                 int number = i + 1;
                 int map = (number - 1) / LevelDefinition.LevelsPerMap + 1;
-                var profile = AssetDatabase.LoadAssetAtPath<EnemyProfile>($"{ProfilesFolder}/Map{map}.asset");
+                EnemyProfile profile = LevelProfile(number, map);
                 if (profile == null)
-                {
-                    Debug.LogError($"[Nova] Falta {ProfilesFolder}/Map{map}.asset.");
                     return;
-                }
 
                 string path = PathOf(number);
                 var level = AssetDatabase.LoadAssetAtPath<LevelDefinition>(path);
