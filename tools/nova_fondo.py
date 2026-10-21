@@ -3,7 +3,7 @@
 Por que vive fuera de `nova_core.py`. Ese modulo implementa el modelo de luz
 de un cuerpo dentro de una celda de 96 px: normal fingida de esfera, bandas,
 contorno, huella. Aqui no hay cuerpos ni contornos ni huella: hay campos de
-densidad de 2048x1152 px que se resuelven a color por trama. Son dos
+densidad de 960x540 px que se resuelven a color por trama. Son dos
 familias con reglas distintas, y el contrato ya las separa en su seccion de
 Resolucion. Meterlas en el mismo archivo solo compartiria el import.
 
@@ -44,7 +44,7 @@ import numpy as np
 from nova_paleta import FONDO, RAMPAS, hex_a_rgb
 from nova_core import BAYER8, rampa
 
-ANCHO, ALTO = 2048, 1152        # 32 x 18 u a PPU 64
+ANCHO, ALTO = 960, 540          # 15 x 8.4375 u a PPU 64 (T.8)
 CELDA = 96                      # ventana de medida = celda de un nodo
 
 # Rampas con las que se dibuja el CUERPO de un nodo. No entran las de
@@ -79,32 +79,39 @@ def luminancia(img):
 
 # --- Campos de densidad ----------------------------------------------------
 
-def _valor(rng, h, w, cy, cx):
-    """Ruido de valor con interpolacion suave, en [0,1]."""
-    g = rng.random((cy + 1, cx + 1))
+def _valor(rng, h, w, cy, cx, periodico=False):
+    """Ruido de valor con interpolacion suave, en [0,1].
+
+    Con `periodico` la columna `w` vuelve a ser la 0: el campo se puede
+    deslizar en horizontal sin costura, que es lo que necesita un fondo que
+    se mueve.
+    """
+    g = rng.random((cy + 1, cx if periodico else cx + 1))
     ys = np.linspace(0, cy, h, endpoint=False)
     xs = np.linspace(0, cx, w, endpoint=False)
     y0, x0 = ys.astype(int), xs.astype(int)
+    x1 = (x0 + 1) % cx if periodico else x0 + 1
     fy, fx = ys - y0, xs - x0
     fy = fy * fy * (3 - 2 * fy)                  # smoothstep
     fx = fx * fx * (3 - 2 * fx)
-    a, b = g[y0][:, x0], g[y0][:, x0 + 1]
-    c, d = g[y0 + 1][:, x0], g[y0 + 1][:, x0 + 1]
+    a, b = g[y0][:, x0], g[y0][:, x1]
+    c, d = g[y0 + 1][:, x0], g[y0 + 1][:, x1]
     arr = a + (b - a) * fx
     aba = c + (d - c) * fx
     return arr + (aba - arr) * fy[:, None]
 
 
 def ruido(rng, h=None, w=None, celdas=4, octavas=4, persistencia=0.55,
-          cresta=False):
+          cresta=False, periodico=False):
     """fBm en [0,1]. Con `cresta`, filamentos: 1 - |2n-1|, que es lo que
-    convierte una mancha en una nube con hebras."""
+    convierte una mancha en una nube con hebras. Con `periodico`, cierra en
+    horizontal: ver `_valor`."""
     h, w = h or ALTO, w or ANCHO
     out = np.zeros((h, w), np.float32)
     amp, tot = 1.0, 0.0
     for o in range(octavas):
         c = celdas * 2 ** o
-        n = _valor(rng, h, w, max(1, round(c * h / w)), c)
+        n = _valor(rng, h, w, max(1, round(c * h / w)), c, periodico)
         if cresta:
             n = 1.0 - np.abs(2.0 * n - 1.0)
         out += amp * n
@@ -253,15 +260,18 @@ def estrellas(img, rng, cuantas, ramp, factor=None, brillo=1.0):
             img[y + dy, x + dx] = ramp[3]
 
 
+def ventanas(img):
+    """Media de luminancia de cada ventana de 96x96 px, por suma acumulada."""
+    ac = luminancia(img).cumsum(0).cumsum(1)
+    ac = np.pad(ac, ((1, 0), (1, 0)))
+    k = CELDA
+    return (ac[k:, k:] - ac[:-k, k:] - ac[k:, :-k] + ac[:-k, :-k]) / (k * k)
+
+
 def informe(nombre, img):
     """Comprueba el presupuesto de contraste sobre la imagen terminada."""
     lum = luminancia(img)
-    h, w = lum.shape
-    ac = lum.cumsum(0).cumsum(1)
-    ac = np.pad(ac, ((1, 0), (1, 0)))
-    k = CELDA
-    ventanas = (ac[k:, k:] - ac[:-k, k:] - ac[k:, :-k] + ac[:-k, :-k]) / (k * k)
-    peor = ventanas.max()
+    peor = ventanas(img).max()
     colores = len(np.unique(img.reshape(-1, 3), axis=0))
     estado = 'OK ' if peor <= TOPE else 'AVISO'
     print(f'{estado} {nombre:14} media {lum.mean():5.2f}  '

@@ -125,14 +125,15 @@ GEN_NODO = {'asteroide': 'gen_asteroide_v1', 'estrella': 'gen_estrella_v1',
 
 
 def hojas_fondo(out):
-    """Los tres fondos solos y con su tablero de muestra encima."""
+    """Los tres fondos de la v1 solos y con su tablero de muestra encima.
+    Los de la v2 se mueven y sus vistas las escribe `gen_fondos_v2.py`."""
     import importlib
     from nova_core import RAIZ
     d = dir_preview('fondos')
     gen = {k: getattr(importlib.import_module(m), k) for k, m in GEN_NODO.items()}
     for n, piezas in TABLEROS.items():
         bg = np.asarray(Image.open(
-            os.path.join(RAIZ, 'art', 'bg', f'bg_section{n}.png'))).copy()
+            os.path.join(RAIZ, 'art', 'bg', 'fondos', 'v1', f'bg_section{n}.png'))).copy()
         solo = Image.fromarray(bg).resize((1024, 576), Image.NEAREST)
         solo.save(os.path.join(d, f's{n}.png'))
         for nodo, niv, fac, x, y in piezas:

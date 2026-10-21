@@ -39,7 +39,7 @@ art/
 ├── fx/                 fx_<id>.png | fx_<id>_sheet.png  fx_cap_sheet.png
 ├── world/              world_<elemento>.png           world_proton_player.png
 ├── ui/                 ui_<elemento>.png              ui_powerwheel_slot.png
-├── bg/                 bg_<seccion>.png               bg_section1.png
+├── bg/fondos/v<n>/     bg_<seccion>.png | bg_ufo_sheet.png  fondos/v2/bg_section1.png
 └── _preview/           hojas de contacto, no son asset de juego
 ```
 
@@ -884,47 +884,64 @@ Son los **únicos items del juego**. No hay más y no debe haber más: la [secci
 
 ### A.4.5 Fondos
 
-**Diseño cerrado.** Generador: `tools/gen_fondos_v1.py` sobre `tools/nova_fondo.py` → `art/bg/`.
+**Diseño cerrado: v2, con movimiento** (2026-10-20). Generador: `tools/gen_fondos_v2.py` sobre `tools/nova_fondo.py` → `art/bg/fondos/v2/`. La v1, estática y a 2048 × 1152, sigue en `art/bg/fondos/v1/` con su generador `gen_fondos_v1.py`, que fija su propio lienzo y reproduce sus PNG píxel a píxel.
 
 **960 × 540 px = 15 × 8.4375 u a PPU 64**: el área jugable entera, sin scroll. Es una de las cuatro familias exentas de la celda de 96 ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Resolución*).
 
-> **Los tres fondos vuelven a ⬜ el 2026-09-28.** Estaban ✅ a 2048 × 1152, que era el tablero de 32 × 18 u; al cerrarse [T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada) el lienzo pasa a **960 × 540** (primero se pidió 1280 × 720 y se corrigió el mismo día) y **hay que regenerarlos**. El diseño **no cambia** —las tres ideas, las tres reglas y la viñeta invertida se conservan— y tampoco cambia el generador: es `ANCHO, ALTO` en `tools/nova_fondo.py` y volver a lanzar `gen_fondos_v1.py`. Lo que sí hay que reajustar son las constantes que están **en píxeles**: `sigma`, la comba de la corriente de S2 y el tamaño de la grava, que a 0.469× del lienzo anterior dejarían de medir lo que medían en unidades de mundo. Y hay que volver a pasar `informe()`: el presupuesto de contraste se mide por ventana de 96 × 96 px, y esa ventana es ahora una fracción mayor de la imagen.
+> **Historia.** Los tres fondos se cerraron ✅ el 2026-09-18 a 2048 × 1152, el tablero de 32 × 18 u. **Volvieron a ⬜ el 2026-09-28** al cerrarse [T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada), que encogió el tablero a 15 × 8.4375 u. Al regenerarlos el 2026-10-20 el usuario pidió algo más que el cambio de lienzo: **que se movieran** sin estorbar a la partida, después de ver lo que el movimiento había hecho por las pantallas de pausa y fin. La composición de la v1 se conserva —las tres ideas, las reglas y la viñeta invertida—, con las constantes en píxeles multiplicadas por 960 / 2048. **Cambia una sola pieza de composición, el planeta del mapa 1**: escalado medía 110 px de radio, el orden del anillo de un Magnetar (96–160 px, A.4.1), y una circunferencia de ese tamaño en el fondo se lee como un radio de alcance. Pasa a 300 px de radio y casi fuera de cuadro: solo entra el limbo, y un limbo no se confunde con un anillo.
 
-#### Las tres reglas, y las tres son comprobables
+#### Las reglas de composición, y las cuatro son comprobables
 
-**1. Presupuesto de contraste.** La media de luminancia de **cualquier ventana de 96 × 96 px** —la celda de un nodo— se queda por debajo del **tono más oscuro de un cuerpo de nodo** (el índice 6 de las rampas de cuerpo, hoy 26.9). Si el fondo local lo supera, el lado en sombra de un nodo pasa a ser más oscuro que el cielo que lo rodea y el nodo deja de leerse como objeto iluminado para leerse como un agujero recortado. Por debajo, **todo nodo es siempre más claro que su entorno, mire donde mire la luz**. `informe()` lo verifica sobre el PNG terminado y avisa; el tope se calcula de la paleta, así que si cambia una rampa de cuerpo el presupuesto se mueve solo.
+**1. Presupuesto de contraste, en cada fotograma.** La media de luminancia de **cualquier ventana de 96 × 96 px** —la celda de un nodo— se queda por debajo del **tono más oscuro de un cuerpo de nodo** (el índice 6 de las rampas de cuerpo, hoy 26.9). Si el fondo local lo supera, el lado en sombra de un nodo pasa a ser más oscuro que el cielo que lo rodea y el nodo deja de leerse como objeto iluminado para leerse como un agujero recortado. Por debajo, **todo nodo es siempre más claro que su entorno, mire donde mire la luz**. Con el fondo en movimiento ya no basta con medir un PNG: `informe_ciclo()` lo mide en el **peor fotograma de dos minutos**. El tope se calcula de la paleta, así que si cambia una rampa de cuerpo el presupuesto se mueve solo.
 
 > La primera versión puso la cota en la luminancia de `CONTORNO` (18.1), razonando que el perfilado dejaría de leerse. Es falso: el contorno está a 18.1 y el fondo plano a 14.2, así que **nunca fue un perfilado de alto contraste contra el cielo**. Su trabajo es separar piezas que se solapan, no recortar la silueta. Con esa cota los tres fondos salían correctos y vacíos.
 
-**2. Solo rampas sin significado.** Las tres rampas `bg_s1`, `bg_s2` y `bg_s3` existen para esto. Todas las demás entradas de la paleta llevan un significado de juego encima —facción, estado o power-up— y un fondo pintado con una de ellas **le miente al jugador durante toda la partida**. `gusano`, `hielo`, `decaimiento`, `rayo` e `hidrogeno` están expresamente prohibidas: son las cinco que hay que reconocer al instante en mitad del tablero. La consecuencia es que **los tres mapas no se separan por tono**, se separan por estructura y densidad.
+**2. Solo rampas sin significado.** Las tres rampas `bg_s1`, `bg_s2` y `bg_s3` existen para esto, y `neutral` para las estrellas y el ovni. Todas las demás entradas de la paleta llevan un significado de juego encima —facción, estado o power-up— y un fondo pintado con una de ellas **le miente al jugador durante toda la partida**. `gusano`, `hielo`, `decaimiento`, `rayo` e `hidrogeno` están expresamente prohibidas: son las cinco que hay que reconocer al instante en mitad del tablero. La consecuencia es que **los tres mapas no se separan por tono**, se separan por estructura, densidad y, desde la v2, por **cómo se mueven**.
 
-**3. Nada del fondo puede medir lo que mide un nodo.** La huella de un nodo va de 0.6 a 1.2 u (38 a 77 px). Cualquier objeto del fondo que caiga en esa franja **es un nodo a ojos del jugador** hasta que intente clicarlo, y eso es peor que un fondo feo. Todo lo que hay está muy por debajo —grava de 8 a 20 px— o muy por encima —un planeta de 276 px—. Es la única regla de composición que no se negocia por estética.
+**3. Nada del fondo puede medir lo que mide un nodo.** La huella de un nodo va de 0.6 a 1.2 u (38 a 77 px). Cualquier objeto del fondo que caiga en esa franja **es un nodo a ojos del jugador** hasta que intente clicarlo, y eso es peor que un fondo feo. Todo lo que hay está muy por debajo —grava de 5 a 10 px, el ovni de 24— o muy por encima —el planeta de 600 px de diámetro—. Es la única regla de composición que no se negocia por estética.
 
-**Y la viñeta va al revés.** En casi cualquier juego la viñeta oscurece los bordes para llevar la mirada al centro. Aquí el centro es el tablero, así que todo lo que el fondo tenga que enseñar se va a los bordes y la zona donde se juega se queda lo más vacía posible.
+**4. Y la viñeta va al revés.** En casi cualquier juego la viñeta oscurece los bordes para llevar la mirada al centro. Aquí el centro es el tablero, así que todo lo que el fondo tenga que enseñar se va a los bordes y la zona donde se juega se queda lo más vacía posible.
 
 **Todo por trama.** No hay un solo degradado suave: cada nube es un campo de densidad resuelto con la misma matriz de Bayer 8×8 que usan el halo de la Estrella y los conos del Púlsar. Es lo que hace que el fondo pertenezca a la misma imagen que los nodos en vez de parecer una foto detrás de ellos. Lo que se modula no es el tono sino **cuántos píxeles se encienden**: la cobertura máxima de cada banda se despeja del presupuesto, no se ajusta a ojo.
 
-| ID | Elemento | Idea | Archivo | Estado |
+#### El movimiento
+
+**Se anima la trama, no el dibujo.** La matriz de Bayer queda clavada a la rejilla del fondo y lo que se desplaza es el campo de densidad que se compara contra ella: las nubes fluyen encendiendo y apagando píxeles sueltos, nada se mueve en subpíxel y la rejilla no se rompe. Es el mismo mecanismo de la v1 evaluado con `t`. Las reglas del movimiento son del contrato ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Fondos con movimiento*); aquí, cómo las usa cada mapa. **Cada mapa se mueve a su manera y ninguno toma prestado el gesto de otro:**
+
+| Mapa | Gesto | Qué se mueve | Qué no se mueve |
+|---|---|---|---|
+| S1 Sistema Interior | **Luz que barre** | Del sol fuera de cuadro salen rayos en dos juegos que giran en sentidos opuestos (0.007–0.015 rad/s, unos 4 px/s a 400 px del sol); el polvo zodiacal solo se ilumina donde le da un rayo y se aleja del sol a 6 px/s; el conjunto respira en 10 s y, al respirar y al pasar un rayo, lava y devuelve las estrellas débiles | Jirones, planeta y estrellas medias y fuertes: son lo que dice que la cámara no se mueve |
+| S2 El Cinturón | **Materia que fluye** | La corriente fluye **a lo largo de su arco** —el grano vive en coordenadas de la banda—, a 6.5 px/s por el borde interior y a 4 por el exterior, con dos granos que se cruzan; las chispas viajan cada una a la velocidad de su fila y desfasadas, sin saltar a la vez; las estrellas débiles se tapan y destapan al paso de cada grumo; diez rocas de grava recorren el arco | Las brasas y las estrellas medias y fuertes |
+| S3 Espacio Profundo | **El vacío deriva**, por profundidades | Las estrellas medias derivan a 0.9 px/s; delante pasa polvo en tres capas a 2, 5.7 y 6.9 px/s, más claro cuanto más cerca; los velos **ondulan como humo**, porque su campo se deforma con otro campo que también se mueve; una de cada tres estrellas medias titila bajando y subiendo de un índice en un índice | La galaxia y las estrellas fuertes, infinitamente lejos: dan la escala |
+
+**Sin bucle.** En el juego no hay fotogramas guardados ni un bucle que vuelva a empezar: el fondo se calcula en cada fotograma a partir del tiempo de partida, que no vuelve a cero mientras dura el nivel. Cada capa es periódica por su cuenta y sin costura —el ruido cierra en horizontal, la respiración es un seno— y sus periodos no son múltiplos entre sí, así que el conjunto no se repite dentro de un nivel. Las vistas previas en GIF sí cortan, porque son grabaciones.
+
+**El ovni.** Un platillo de 24 × 13 px que cruza el tablero de tarde en tarde. Se dibuja con `esferoide` —la primitiva y la luz de la Estrella y el Púlsar— para que pertenezca a la imagen: casco en `neutral`, cúpula en `bg_s3`, cinco luces en el ecuador que se persiguen, la encendida al índice 1, y un cabeceo de 0.1 rad. Hoja de 16 frames a 12 fps. Va a 30 px/s con un vaivén de ±3 px, **por debajo de los nodos**, y su ruta es de cada mapa: en S1 cruza a la altura del polvo con el sol a la espalda, en S2 **surfea el borde interior de la corriente** y en S3 cruza en diagonal, contra la deriva. Sale **uno como mucho, cada 45–90 s** al azar, con un generador propio que no toca el del algoritmo del Enemigo ([12.7](./NOVA_Algoritmo_Enemigo.md#127-contrato-de-implementación)). Es la única excepción a la regla de velocidad del contrato y está acotada allí.
+
+| ID | Elemento | Idea | Archivo | Estado | Vista previa |
+|---|---|---|---|---|---|
+| `ART-BG-01` | Mapa 1 — Sistema Interior | Lleno, polvoriento, **barrido por la luz de un sol que no se ve**: está fuera del encuadre. Dibujarlo dentro metería en el tablero un objeto más brillante que cualquier Estrella, y la Estrella es el nodo que hay que encontrar primero. Su resplandor lava las estrellas de la izquierda y explica el polvo zodiacal. Un planeta interior a contraluz, del que solo se ve el filo | `art/bg/fondos/v2/bg_section1.png` | ✅ | ![](../art/bg/fondos/v2/bg_section1.png) |
+| `ART-BG-02` | Mapa 2 — El Cinturón | Una corriente de escombro cruza el cielo **combada**, porque una banda recta de esquina a esquina pasa por el centro, que es donde se juega. Y **oculta estrellas**: es lo único que la hace leer como materia y no como una mancha clara | `art/bg/fondos/v2/bg_section2.png` | ✅ | ![](../art/bg/fondos/v2/bg_section2.png) |
+| `ART-BG-03` | Mapa 3 — Espacio Profundo | Vacío. El único cuya idea es la ausencia: media imagen es fondo plano. Dos velos de filamentos en esquinas opuestas y una galaxia del tamaño de una uña, que está ahí para dar **escala**, que es lo que convierte el vacío en distancia en vez de en un PNG sin terminar | `art/bg/fondos/v2/bg_section3.png` | ✅ | ![](../art/bg/fondos/v2/bg_section3.png) |
+| `ART-BG-UFO` | Ovni de los tres mapas | Platillo de 24 × 13 px en celda de 32, hoja de **16 frames, bucle**. Ver arriba | `art/bg/fondos/v2/bg_ufo_sheet.png` | ✅ | ![](../art/bg/fondos/v2/bg_ufo_sheet.png) |
+
+**Lo que es el asset.** Un fondo con movimiento no es un PNG: es un **campo** que se evalúa en cada fotograma. Los `bg_section<n>.png` son su fotograma en `t = 0` —lo que enseñan esta tabla y la vista de un menú sin animar— y la fuente de verdad es `fotograma(t)` de `gen_fondos_v2.py`, la **referencia** que el material de Unity tiene que reproducir. Las texturas de datos que lee ese material —campos de densidad, rampas, estrellas y motas— y los fotogramas de referencia para los tests los exporta el mismo generador en la tarea que integra los fondos, `T5-05b` ([NOVA_Tracking.md](./NOVA_Tracking.md), T.4), porque su formato se decide junto al shader que los lee.
+
+**Medido sobre dos minutos de fotogramas** (tope 26.9):
+
+| Mapa | Peor ventana 96×96 | Margen | Píxeles que cambian por segundo | Colores |
 |---|---|---|---|---|
-| `ART-BG-01` | Mapa 1 — Sistema Interior | Lleno, polvoriento, **barrido por la luz de un sol que no se ve**: está fuera del encuadre. Dibujarlo dentro metería en el tablero un objeto más brillante que cualquier Estrella, y la Estrella es el nodo que hay que encontrar primero. Su resplandor lava las estrellas de la izquierda y explica el polvo zodiacal. Un planeta interior a contraluz, del que solo se ve el filo | `art/bg/bg_section1.png` | ⬜ |
-| `ART-BG-02` | Mapa 2 — El Cinturón | Una corriente de escombro cruza el cielo **combada**, porque una banda recta de esquina a esquina pasa por el centro, que es donde se juega. Y **oculta estrellas**: es lo único que la hace leer como materia y no como una mancha clara | `art/bg/bg_section2.png` | ⬜ |
-| `ART-BG-03` | Mapa 3 — Espacio Profundo | Vacío. El único cuya idea es la ausencia: media imagen es fondo plano. Dos velos de filamentos en esquinas opuestas y una galaxia del tamaño de una uña, que está ahí para dar **escala**, que es lo que convierte el vacío en distancia en vez de en un PNG sin terminar | `art/bg/bg_section3.png` | ⬜ |
+| S1 Sistema Interior | 18.25 | +8.65 | ~16 600 | 9 |
+| S2 El Cinturón | 21.93 | +4.97 | ~83 000 | 9 |
+| S3 Espacio Profundo | 15.58 | +11.32 | ~9 300 | 9 |
 
-**Medido sobre el PNG final** (tope 26.9):
+El salto máximo de la media de una ventana entre dos fotogramas seguidos es de 0.09: nada parpadea.
 
-| Mapa | Media | Peor ventana 96×96 | Margen | Colores |
-|---|---|---|---|---|
-| S1 Sistema Interior | 15.69 | 20.05 | +6.84 | 8 |
-| S2 El Cinturón | 16.92 | 22.64 | +4.25 | 9 |
-| S3 Espacio Profundo | 14.53 | 16.39 | +10.51 | 10 |
+**Comprobación con nodos encima:** `art/_preview/fondos/v2/s<n>_tablero.png`, con el nivel más cargado de cada mapa (3, 6 y 9) del [Apéndice del maestro](./NOVA_GameDesign_Spec.md#apéndice--diseño-de-los-9-niveles) y el ovni de paso. Las vistas en movimiento —`s<n>_real.gif`, `s<n>_x8.gif`, `s<n>_tablero.gif`, `s<n>_ovni.gif` y `ovni_x6.gif`— las escribe `py tools/gen_fondos_v2.py` en la misma carpeta y **no se versionan**: pesan unos 100 MB y son salida derivada.
 
-Ocho a diez colores por imagen de 2.4 millones de píxeles: son de paleta, no fotografías oscurecidas.
-
-**Comprobación con nodos encima:** `art/_preview/fondos/s<n>_tablero.png`, con la mezcla de nodos que pide [11.2](./NOVA_GameDesign_Spec.md#112-diseño-de-niveles) para cada mapa. No son niveles reales —las coordenadas siguen pendientes— pero son lo único que responde a la pregunta que importa: si el fondo deja leer lo que va encima.
-
-![](../art/_preview/fondos/s1.png)
-![](../art/_preview/fondos/s2.png)
-![](../art/_preview/fondos/s3.png)
+![](../art/_preview/fondos/v2/s1_tablero.png)
+![](../art/_preview/fondos/v2/s2_tablero.png)
+![](../art/_preview/fondos/v2/s3_tablero.png)
 
 ### A.4.6 Filamento de plasma — [14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma)
 
@@ -1005,10 +1022,12 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.2 Protón y haces de poder | 9 | 0 | `ProtonVisual`, `PowerBeam`, fase 6 |
 | A.4.3 Selección y apuntado | **4** | 0 | Pulido de input (fase 6) |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
-| A.4.5 Fondos | 3 | **0** | Nada de código. **Regeneración pendiente** a 960×540 por [T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada) |
+| A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
 | A.5 VFX | 15 | 0 | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **104** | **46** | — |
+| **Total** | **105** | **50** | — |
+
+**Y los ✅ suben de 46 a 50 el 2026-10-20**, con el total de 104 a 105: los tres fondos vuelven a ✅ regenerados a 960 × 540 y **con movimiento** (A.4.5), y entra el ovni, `ART-BG-UFO`, el primer asset que no pide ninguna regla de juego. Ningún otro grupo cambia.
 
 **Y los ✅ bajan de 49 a 46 el 2026-09-28**, sin que nadie retire un asset: los tres fondos pasan a ⬜ porque el tablero encogió a 15 × 8.4375 u y su lienzo con él ([T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada)). **El total sigue en 106**; lo que cambia es el estado, no el inventario. Es la primera vez que una decisión de diseño **desmarca** arte ya terminado, y salió barato por donde el propio T.8 predijo: el fondo es una constante en un generador, no una pieza dibujada a mano.
 
@@ -1086,7 +1105,7 @@ Ninguna decisión de art design queda abierta. Se conservan aquí con su motivo,
 | Color del haz de poder | **Por poder, no por facción.** Reutiliza `hielo`, `decaimiento` y `gusano`; la autoría se lee por el Púlsar del que sale | A.4.2, [14.4](./NOVA_Estados_Animaciones.md#144-paleta-funcional) |
 | Línea de envío y disparo del Magnetar | **Filamento de plasma**, como en un globo de plasma: serpentea, chisporrotea y fluye hacia la punta. Color de facción, nunca el violeta de `gusano`. Tesela repetida, no estirada | A.4.6, [14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma) |
 | Círculo de alcance del poder | **No existe.** La separación válido/no válido se resuelve atenuando en código | A.4.3 |
-| Assets fuera de la celda de 96 | Radio del Magnetar, fondos y protón son familias con resolución propia | Contrato, sección Resolución |
+| Assets fuera de la celda de 96 | Radio del Magnetar, fondos —ovni incluido— y protón son familias con resolución propia | Contrato, sección Resolución |
 | Señal de nivel del Púlsar | **Frentes de onda contables** sobre un eje inclinado, no púas radiales. Se descartó una v1 entera por parecerse a la Estrella | A.2.3 |
 | Señal de nivel del Magnetar | **Esquirlas capturadas**, una por nivel, aditivas y posicionales; la más externa marca el alcance | A.2.4 |
 | Partición de materiales | Estrella **luz continua**, Púlsar **luz tramada**, Magnetar **materia** (cero `glow`). | Contrato, A.2.4 |
@@ -1095,8 +1114,10 @@ Ninguna decisión de art design queda abierta. Se conservan aquí con su motivo,
 | Acabado del Asteroide | **Mate, sin especular.** Única excepción a la regla 3 del contrato: una roca lijada por micrometeoritos no es material pulido | Contrato, A.2.1 |
 | Cara del Asteroide | **Ojos cerrados**, dos rendijas asimétricas. Sirve igual para `Dormido` y para `SinEncender`; los abre `ART-ST-SCARE` | A.2.1 |
 | Marca de posesión del Asteroide | **El overlay `ART-ST-IGN`, no el sprite.** Ninguna geometría cambia entre facciones (14.0 #3) | A.2.1 |
-| Cota de brillo de un fondo | La media de cualquier ventana de 96×96 por debajo del tono más oscuro de un cuerpo de nodo, calculado de la paleta | A.4.5 |
-| Color de un fondo | **Solo rampas sin significado** (`bg_s1/2/3`). Las cinco con significado de juego están prohibidas. Los mapas se separan por estructura, no por tono | A.4.5 |
+| Cota de brillo de un fondo | La media de cualquier ventana de 96×96 por debajo del tono más oscuro de un cuerpo de nodo, calculado de la paleta. **En cada fotograma**, desde que el fondo se mueve | A.4.5 |
+| Color de un fondo | **Solo rampas sin significado** (`bg_s1/2/3`, y `neutral` para estrellas y ovni). Las cinco con significado de juego están prohibidas. Los mapas se separan por estructura y por cómo se mueven, no por tono | A.4.5 |
+| Movimiento de un fondo | **Se mueve la trama, no el dibujo**: Bayer fija y campo de densidad que se desplaza. Lento, sin destellos, sin gestos del juego, en tiempo de juego y sin bucle. Un gesto por mapa: luz que barre, materia que fluye, vacío que deriva (2026-10-20) | Contrato, *Fondos con movimiento*; A.4.5 |
+| Ovni | **Única excepción a la regla de velocidad**: 24 × 13 px, rampa `neutral`, bajo los nodos, uno como mucho cada 45–90 s (2026-10-20) | Contrato, *Fondos con movimiento*; A.4.5 |
 | Tamaño de lo que hay en un fondo | Nada puede caer en la franja de huella de un nodo (0.6–1.2 u): o muy por debajo o muy por encima | A.4.5 |
 | Viñeta | **Al revés**: mínima en el centro. El centro es el tablero | A.4.5 |
 | Degradados por alfa | **Permitidos solo en la UI fuera del tablero** —menús y pantallas de fin—. En el tablero, trama siempre (2026-10-14) | Contrato, regla 7; [13.12](./NOVA_GameDesign_Spec.md#1312-lenguaje-y-movimiento-de-la-ui) |

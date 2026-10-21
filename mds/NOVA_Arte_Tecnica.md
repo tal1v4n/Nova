@@ -148,7 +148,8 @@ botón, velos que entran y salen— el degradado **puede ser de alfa**, porque e
 luz de la interfaz y se mueve en continuo
 ([13.12](./NOVA_GameDesign_Spec.md#1312-lenguaje-y-movimiento-de-la-ui)).
 **Dentro del tablero no hay excepción**: nodos, overlays, VFX, protones, haces
-y fondos siguen con trama y alfa binario. Y los sprites del tablero que se
+y fondos siguen con trama y alfa binario. Que los fondos se muevan desde la v2
+no la toca: lo que se mueve es la trama misma (*Fondos con movimiento*). Y los sprites del tablero que se
 reutilizan en un menú siguen siendo los mismos PNG: la excepción vale para lo
 que la UI dibuja alrededor de ellos, no para ellos.
 
@@ -465,7 +466,7 @@ los nodos:
 
 | Familia | Resolución | Motivo |
 |---|---|---|
-| `art/bg/*` | **960×540** | Ver *Fondos*. Son 15 × 8.4375 u a PPU 64: el tablero entero ([T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada), cerrada el 2026-09-28). Eran 2048×1152 cuando el tablero medía 32 × 18 u, y llegaron a pedirse a 1280×720 durante unas horas, con el tablero de 20 u. |
+| `art/bg/*` | **960×540**; el ovni, celda de **32** | Ver *Fondos*. Son 15 × 8.4375 u a PPU 64: el tablero entero ([T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada), cerrada el 2026-09-28). Eran 2048×1152 cuando el tablero medía 32 × 18 u, y llegaron a pedirse a 1280×720 durante unas horas, con el tablero de 20 u. El ovni (`bg_ufo_sheet`) mide 24 × 13 px y va en celdas de 32: es parte del fondo, no un nodo, y en 96 sería tres cuartas partes de aire. |
 | `art/world/world_radius_*` | Hasta 384×384 | El radio del Magnetar mide 1.5–2.5 u, y 2.5 u a PPU 64 son 160 px **de radio**: 320 px de lado ([A.4.1](./NOVA_Assets_Diseno.md#a41-radio-de-alcance-del-magnetar)). **Un archivo por nivel**, porque escalar uno solo daría factores no enteros. |
 | `art/world/world_proton_*` | 48×48 | Ver abajo. |
 | Trazos estirables: `world_beam_*`, `world_link_sheet`, `world_radius_shot_*` | **16 px de alto**, largo variable | Unen dos puntos arbitrarios del tablero, de 1 u a 17.2 u, así que se dibujan por piezas (nacimiento, tramo y punta) y no por longitud. El haz estira su tramo; el filamento de plasma lo **repite en mosaico**, porque una onda estirada pierde la rejilla ([NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md), A.4.2 y A.4.6). |
@@ -492,6 +493,8 @@ oscuro de un cuerpo de nodo**, el índice 6 de las rampas de cuerpo. Si el
 fondo local lo supera, el lado en sombra de un nodo pasa a ser más oscuro que
 el cielo que lo rodea: deja de leerse como objeto iluminado y se lee como un
 agujero recortado. El tope se calcula de la paleta, no se escribe a mano.
+Y se cumple **en cada fotograma**: desde que los fondos se mueven, un PNG que
+pasa no demuestra nada (*Fondos con movimiento*).
 
 **Se modula la cobertura, no el tono.** En una celda de 96 px un degradado
 puede recorrer la rampa entera porque la pieza es pequeña y va sobre fondo
@@ -510,7 +513,8 @@ para el 5, algo menos de la mitad; para el 4, la cuarta parte. De ahí sale la
 trama muy oscura, poca trama media y acentos contados**.
 
 **Solo rampas sin significado.** `bg_s1`, `bg_s2` y `bg_s3` existen porque
-todas las demás rampas llevan encima un significado de juego, y un fondo
+—con `neutral`, que es de las estrellas y del ovni— todas las demás rampas
+llevan encima un significado de juego, y un fondo
 pintado con una de ellas le miente al jugador durante toda la partida.
 `gusano`, `hielo`, `decaimiento`, `rayo` e `hidrogeno` están **prohibidas en
 un fondo**: son las cinco que hay que reconocer al instante.
@@ -525,13 +529,81 @@ viñeta lleva la mirada al centro, y aquí el centro es el tablero.
 | Primitiva | Para qué |
 |---|---|
 | `lienzo`, `luminancia` | Base y medida |
-| `ruido(rng, celdas, octavas, cresta)` | fBm en [0,1]. Con `cresta`, filamentos en vez de manchas |
+| `ruido(rng, celdas, octavas, cresta, periodico)` | fBm en [0,1]. Con `cresta`, filamentos en vez de manchas. Con `periodico`, cierra en horizontal: el campo se puede deslizar sin costura |
 | `disco`, `banda`, `vineta` | Campos de densidad: caída radial, franja combada, viñeta invertida |
 | `cobertura(ramp, banda, parte)` | Despeja del presupuesto la fracción máxima de píxeles de una banda |
 | `tramar(img, dens, ramp, capas)` | Trama por cobertura. `capas` = `(banda, desde, parte)` |
 | `silueta(img, dens, ramp, filo, hacia)` | Cuerpo lejano: masa a color de fondo y solo el canto a la luz |
 | `estrellas(img, rng, n, ramp, factor)` | Campo determinista en tres escalones de brillo |
-| `informe(nombre, img)` | Verifica el presupuesto sobre el PNG terminado |
+| `ventanas(img)`, `informe(nombre, img)` | La media de cada ventana de 96×96, y el presupuesto verificado sobre una imagen terminada |
+
+### Fondos con movimiento
+
+Desde la v2 (2026-10-20, [18](./NOVA_GameDesign_Spec.md#18-decisiones-tomadas-por-defecto) #47)
+los fondos se mueven. Las reglas de arriba siguen enteras; estas se suman, y
+todas existen por la misma razón: **nada del fondo puede confundirse con algo
+que pasa en la partida.** El jugador lee el tablero con la visión periférica,
+y la visión periférica es, ante todo, un detector de movimiento.
+
+**Se mueve la trama, no el dibujo.** La matriz de Bayer queda clavada a la
+rejilla del fondo y lo que se desplaza es el campo de densidad que se compara
+contra ella. Las nubes fluyen encendiendo y apagando píxeles sueltos; nada se
+mueve en subpíxel, nada se escala y la rejilla no se rompe. Es la única forma
+de mover un fondo de trama sin traicionar la regla 7: deslizar el PNG
+arrastraría el patrón de Bayer con él, y el patrón dejaría de ser una textura
+para ser un objeto que se mueve.
+
+1. **Lento.** Ningún campo pasa de **7 px/s**. Un protón va a 160: la
+   diferencia es la que separa «el cielo se mueve» de «algo viene hacia mí».
+2. **Sin destellos.** Nada se **enciende en su sitio** por encima del índice
+   4 de su rampa. Lo claro solo se desplaza, o sube y baja **de un índice en
+   un índice**: un punto que viaja no es un destello, uno que aparece sí.
+   Capturas, impactos y disparos hablan con destellos.
+3. **Ningún gesto del juego.** Nada compacto que viaje rápido en línea recta
+   (protones), nada que caiga (power-ups, sección 9), ninguna onda que se
+   expanda (captura, cascada de conquista).
+4. **Tiempo de juego.** El fondo avanza con el tiempo **escalado**, así que se
+   congela con la pausa y con las pantallas de fin, como el resto del tablero
+   ([15.8](./NOVA_GameDesign_Spec.md#158-presentation), *Tiempo de la UI y pausa*).
+5. **Sin bucle.** El fondo es una función continua de `t`, el tiempo desde
+   que empieza el nivel, y no un ciclo de fotogramas. Cada capa es periódica
+   por su cuenta y cierra sin costura —ruido `periodico`, senos—, con
+   periodos que no son múltiplos entre sí: el conjunto no se repite dentro de
+   un nivel. Para no perder precisión en partidas largas, cada capa reduce su
+   propia fase antes de usarla.
+6. **Un gesto por mapa.** Los tres fondos se distinguían por estructura; ahora
+   también por cómo se mueven, y ninguno toma prestado el gesto de otro
+   ([NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md), A.4.5).
+7. **Los sprites del fondo son materia.** Lo que el fondo mueve como objeto
+   —la grava del Cinturón, el ovni— va a **píxel entero** y sus hojas a **12
+   fps**, como un nodo. La trama, que es luz y polvo, fluye en continuo al
+   ritmo de la pantalla: es la regla de movimiento de
+   [13.12](./NOVA_GameDesign_Spec.md#1312-lenguaje-y-movimiento-de-la-ui)
+   —la materia va a pasos, la energía fluye— aplicada al fondo.
+
+**El ovni es la única excepción a la regla 1, y por eso se acota aparte.** Va
+a 30 px/s —cinco veces más lento que un protón y nunca en línea recta, con
+vaivén—, mide 24 × 13 px —por debajo de la huella mínima de 38—, va en la
+rampa `neutral`, se dibuja **debajo** de los nodos y sale uno como mucho, cada
+45–90 s, con un generador aleatorio propio que no toca el del Enemigo.
+Cualquier otro objeto que se quiera añadir al cielo cumple las siete reglas o
+abre su propia excepción con el usuario; no hereda esta.
+
+**La referencia es `fotograma(t)`.** Cada generador de fondo con movimiento
+expone `fotograma(t)`, que devuelve la imagen en el instante `t`, y es la
+fuente de verdad: el material de Unity tiene que reproducirlo. Se verifica con
+`informe_ciclo()`, que mide el presupuesto en el **peor fotograma** de dos
+minutos y además el **salto** máximo de la media de una ventana entre dos
+fotogramas seguidos —lo que el ojo lee como parpadeo— y los píxeles que
+cambian por segundo, que es cuánto movimiento hay.
+
+| Pieza del generador | Para qué |
+|---|---|
+| `desliza(campo, dx)` | Desplazamiento horizontal con fracción: lo que hace un muestreo bilineal |
+| `muestrea(campo, fy, fx)` | Muestreo bilineal en coordenadas arbitrarias: deformar un campo, no solo deslizarlo |
+| `deriva(y0, x0, vy, vx, t)` | Puntos que viajan y dan la vuelta al lienzo, en píxel entero |
+| `capa_fija(dibuja)`, `poner`, `pegar` | Lo que no se mueve, calculado una vez y puesto encima |
+| `informe_ciclo(nombre, fotograma)` | Presupuesto, salto y píxeles por segundo sobre dos minutos |
 
 ## Importación en Unity
 

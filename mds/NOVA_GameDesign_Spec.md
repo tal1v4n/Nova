@@ -833,6 +833,7 @@ Las dos entran sobre el tablero congelado, con el mismo velo de trama que la pau
 - **Energía, luz e interfaz** —líneas de plasma, halos, paneles, botones, números— se mueven en continuo con una sola curva, la **orbital**: `cubic-bezier(.2, .8, .2, 1)`, que sale rápido y se posa. En Unity es un `AnimationCurve` con esa forma, compartido por toda la UI.
 - **Duraciones:** 160 ms encima y pulsado; 320–700 ms entradas; 50–160 ms de escalonado entre hermanos; una coreografía de fin de nivel no pasa de **3.5 s**; los bucles de ambiente duran **2.4 s o más** y hay **tres como mucho** por pantalla.
 - **La UI nunca anima el tablero en partida.** El tablero es del juego y de [14](./NOVA_Estados_Animaciones.md).
+- **El fondo del tablero sí se mueve, y no es UI** ([18](#18-decisiones-tomadas-por-defecto) #47). Es la misma regla aplicada al cielo: su trama —luz y polvo— fluye en continuo y lo que viaja por él como objeto —la grava del Cinturón, el ovni— va a píxel entero y a 12 fps. Lo anima `BackgroundView` ([15.8](#158-presentation)) con las reglas de *Fondos con movimiento* del [contrato de arte](./NOVA_Arte_Tecnica.md), y es el mismo en partida y en los menús que lo enseñan (13.8, 13.9).
 
 - **Las pantallas 13.8–13.11 se implementan fieles a la maqueta**, no con primitivas ([18](#18-decisiones-tomadas-por-defecto) #46). La maqueta usa datos de ejemplo: si discrepa de este documento, manda este documento.
 
@@ -894,9 +895,10 @@ Assets/
 │   ├── Nodes/
 │   ├── Powers/
 │   ├── Levels/
+│   ├── Backgrounds/          # Un BackgroundDefinition por mapa, generado (T5-05b)
 │   └── EnemyProfiles/
 ├── Prefabs/
-├── Art/
+├── Art/                      # Fuentes y Shaders/ (el material de los fondos, T5-05b)
 ├── Audio/
 └── Scenes/
     ├── Boot.unity
@@ -931,7 +933,8 @@ Assets/
 | `NodeLevelData.cs` | `[Serializable] struct`: coste de mejora, intervalo de generación, radio, cadencia |
 | `PowerDefinition.cs` | Tipo, coste, tiempo de carga, duración del haz, nivel requerido, color del haz ([14.4](./NOVA_Estados_Animaciones.md#144-paleta-funcional)) y, con la fase 6, VFX. El drenaje se calcula como coste / tiempo de carga (`T3-01`). **Sin campo de alcance:** el alcance es global y por tanto no es un parámetro de balance ([7.2](#72-tabla-de-poderes)). |
 | `BalanceConfig.cs` | Velocidad del protón, daño por disparo del Magnetar, multiplicador del Magnetar, buffer de doble clic, duración de reconversión, auto-deshielo, tasa de decaimiento, **coste de encendido, Materia Inerte, umbral de susto y devolución al cancelar una carga** (los cuatro, de 16.1), **ventana de expiración del power-up** (9.1, `T5-04`) y duración de la cascada de conquista (10.1, `T5-03`) |
-| `LevelDefinition.cs` | Lista de `NodeSpawnData`, referencia a `EnemyProfile`, config de drops, duración objetivo y **las mecánicas que el nivel permite** ([11.1](#111-estructura)): tipos que se pueden encender, poderes que se pueden cargar y si se puede reconvertir |
+| `LevelDefinition.cs` | Lista de `NodeSpawnData`, referencia a `EnemyProfile`, config de drops, duración objetivo, **las mecánicas que el nivel permite** ([11.1](#111-estructura)): tipos que se pueden encender, poderes que se pueden cargar y si se puede reconvertir, y **el fondo de su mapa** (`BackgroundDefinition`, `T5-05b`) |
+| `BackgroundDefinition.cs` | El fondo con movimiento de un mapa ([NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md), A.4.5): su material, las texturas de datos que lee, los parámetros de cada capa —velocidades, periodos, amplitudes— y los del ovni: ruta, velocidad e intervalo de 45–90 s. **No se escribe a mano**: lo genera `BackgroundAssets` desde lo que exporta `tools/gen_fondos_v2.py`, que es la referencia. Tres instancias, una por mapa, en `Assets/Data/Backgrounds/` (`T5-05b`) |
 | `NodeSpawnData.cs` | `[Serializable] struct`: posición, tipo, nivel, facción, energía inicial |
 | `PowerUpDefinition.cs` | Tipo, magnitud, duración, icono, estadística afectada y **peso en el sorteo del tipo** (los dos iguales: el 50 % / 50 % de [9.2](#92-tipos)). Una instancia por tipo en `Assets/Data/PowerUps/` (`T5-04`) |
 | `DropSchedule.cs` | `[Serializable] struct`, la config de drops de `LevelDefinition`: primer drop, intervalo mínimo y máximo, y máximo por nivel. Los tres niveles de un mapa llevan la fila de [9.3](#93-calendario-de-drops) (`T5-04`) |
@@ -1019,6 +1022,8 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 | `VFXPool.cs` | Pool de efectos |
 | `AudioDirector.cs` | Reacción sonora a eventos |
 | `CameraShake.cs` | Sacudida en capturas grandes |
+| `BackgroundView.cs` | El fondo con movimiento de un mapa: un sprite de 15 × 8.4375 u por debajo de todo, con el material de su `BackgroundDefinition`. Lleva el tiempo del fondo en `double`, reduce la fase de cada capa y se la pasa al material. En `Game` toma el fondo del nivel que cargó `LevelLoader`; en los menús, el que se le asigne, y admite una **ventana** —la franja del fondo que enseña— para la carta estelar de 13.9 (`T5-05b`) |
+| `BackgroundFlyby.cs` | El ovni del fondo: cuándo sale (45–90 s, generador aleatorio propio, nunca el del Enemigo), su ruta de mapa y su hoja de 16 frames a 12 fps, a píxel entero y bajo los nodos (`T5-05b`) |
 
 #### Tiempo de la UI y pausa
 
@@ -1031,7 +1036,7 @@ Cerrado el 2026-10-14 con [T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #38 (
 | Qué | Reloj | Por qué |
 |---|---|---|
 | Lógica de juego | `Time.fixedDeltaTime` en `FixedUpdate` | Determinismo de 12.7; ya era así |
-| `Presentation` del tablero —`NodeAnimator`, `VFXPool`, protones, arcos, `CameraShake`— | Tiempo **escalado**: `Time.deltaTime`, `Animator` en `Normal` | En pausa el tablero tiene que quedarse quieto. Un nodo que siguiera cabeceando diría que el juego corre |
+| `Presentation` del tablero —`NodeAnimator`, `VFXPool`, protones, arcos, `CameraShake`, `BackgroundView`, `BackgroundFlyby`— | Tiempo **escalado**: `Time.deltaTime`, `Animator` en `Normal` | En pausa el tablero tiene que quedarse quieto. Un nodo que siguiera cabeceando diría que el juego corre |
 | UI de menús, pausa y fin de nivel (13.8–13.12) | Tiempo **no escalado**: `Time.unscaledDeltaTime`, `Animator.updateMode = AnimatorUpdateMode.UnscaledTime`, `WaitForSecondsRealtime` en las corrutinas | Con la escala a 0, una animación en tiempo escalado no avanza: el menú de pausa entraría congelado y sus botones no responderían con movimiento |
 
 El HUD permanente (13.6), el panel de clic derecho y el menú de encendido son UI **de partida** y van con tiempo escalado: en pausa se quedan como estaban.
@@ -1240,8 +1245,9 @@ Reglas que no estaban en el diseño original y que se añadieron para cerrar hue
 | 42 | **Pausar es `Time.timeScale = 0`**; el tablero va con tiempo escalado y la UI de menús, pausa y fin con **tiempo no escalado**. En pausa, `PauseMenu` lee `Esc` e `InputRouter` no encola nada y vacía su cola; al salir de `Game`, la escala vuelve a 1 antes de cargar ([15.8](#158-presentation), *Tiempo de la UI y pausa*) | Con la lógica en `FixedUpdate` (15.10), la escala a 0 detiene la partida entera sin tocar ningún sistema. Pero `InputRouter` procesa en `FixedUpdate`, así que sin las dos excepciones `Esc` no saldría de la pausa y los clics sobre el menú caerían en el tablero al reanudar. Pedido por el usuario al cerrar T.7 #38 |
 | 43 | **Lenguaje de movimiento de la UI:** la materia va a pasos (12 fps, píxel entero) y la energía, la luz y la interfaz fluyen con una sola curva, `cubic-bezier(.2, .8, .2, 1)`; como mucho tres bucles de ambiente por pantalla ([13.12](#1312-lenguaje-y-movimiento-de-la-ui)) | Pedido por el usuario el 2026-10-14: más movimiento y más fluido sin abandonar el pixel art. Separar materia de energía conserva el contrato de los sprites y deja libre todo lo demás |
 | 44 | **Degradados por alfa permitidos en la UI fuera del tablero** —halos, brillos y velos de menús y pantallas de fin— ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), regla 7, *Excepción*) | Aceptado por el usuario el 2026-10-14. Dentro del tablero la regla 7 sigue entera: allí la trama es lo que mantiene a los nodos y al fondo en la misma imagen |
-
+| 45 | **Lenguaje visual de la UI: un instrumento de a bordo.** Marcos de 4 px con esquina en escalera, Jersey 10 en múltiplos de 18.67 px, cian (`STR_P[3]`) para lo que el jugador puede hacer y magenta (`STR_E[3]`) para lo que le falta o le amenaza, estados de botón y velos por trama ([13.12](#1312-lenguaje-y-movimiento-de-la-ui)). **La selección por corchetes de la lámina no se adopta** | Aprobado por el usuario el 2026-10-15 sobre la lámina «Lenguaje de UI» del lienzo «NOVA — Pantallas de flujo» (T.7 #4). Los corchetes no entran porque la selección es `ART-WLD-SEL` (A.4.3) y la esquina del nodo ya es de `ART-ST-BUFF`. *Fila reconstruida el 2026-10-20 a partir de T.7 #4 y del registro: se citaba desde 13.12, T.7 y A.8, pero no llegó a escribirse en esta tabla* |
 | 46 | **Las pantallas fuera de partida se implementan fieles a la maqueta** del lienzo «NOVA — Pantallas de flujo» en la tarea de código que las crea —`T5-05` pausa y fin, `T5-06` menú principal y selección—, construidas en código con el lenguaje de 13.12 y sprites del inventario ([NOVA_Tracking.md](./NOVA_Tracking.md), T.2, regla 8) | Pedido por el usuario el 2026-10-17 al ver las provisionales. Son pantallas enteras sin piezas de arte propias: hacerlas con primitivas obligaba a reescribirlas en la fase 6. La UI de partida sigue las reglas 4 y 5 |
+| 47 | **Los fondos de los tres mapas se mueven**, sin estorbar a la partida: se mueve la trama, no el dibujo; lento, sin destellos, sin gestos del juego, en tiempo de juego y sin bucle, con un gesto por mapa —luz que barre, materia que fluye, vacío que deriva— y un ovni de tarde en tarde como única excepción a la regla de velocidad ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Fondos con movimiento*; [NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md), A.4.5) | Pedido por el usuario el 2026-10-20 al regenerar los fondos para el tablero de T.8, tras ver lo que el movimiento hizo por las pantallas de pausa y fin. Rompe a propósito el fondo estático de la v1; las reglas de composición —presupuesto, rampas, tamaño, viñeta— se conservan y se miden en cada fotograma. Aprobado sobre las vistas previas de `gen_fondos_v2.py` |
 
 ---
 

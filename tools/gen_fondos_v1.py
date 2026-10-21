@@ -5,6 +5,10 @@ Ref: NOVA_Assets_Diseno.md A.4.5 · NOVA_GameDesign_Spec.md 11.1
 
 2048x1152 px = 32x18 u a PPU 64: el area jugable entera, sin scroll.
 
+DE ANTES DE T.8. El tablero encogio a 15 x 8.4375 u y `nova_fondo` paso a
+960x540; esta version fija su propio lienzo para seguir reproduciendo sus
+PNG tal cual. La vigente es la v2 (`gen_fondos_v2.py`).
+
 TRES REGLAS, Y LAS TRES SON COMPROBABLES
 
 1. PRESUPUESTO DE CONTRASTE. Toda silueta de nodo va perfilada con #141021
@@ -57,9 +61,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import numpy as np
 from PIL import Image
 
+import nova_fondo
 from nova_core import RAIZ, rampa
-from nova_fondo import (ALTO, ANCHO, banda, disco, estrellas, informe,
-                        lienzo, ruido, silueta, tramar, vineta)
+from nova_fondo import (banda, disco, estrellas, informe, lienzo, ruido,
+                        silueta, tramar, vineta)
+
+# las primitivas leen el lienzo del modulo al llamarlas, no al importarlas
+nova_fondo.ANCHO, nova_fondo.ALTO = 2048, 1152
+ANCHO, ALTO = nova_fondo.ANCHO, nova_fondo.ALTO
 
 VERSION = 1
 SEMILLAS = {1: 20260918, 2: 20260919, 3: 20260920}
@@ -215,7 +224,7 @@ SECCIONES = {1: ('Sistema Interior', seccion1),
 
 
 def main():
-    d = os.path.join(RAIZ, 'art', 'bg')
+    d = os.path.join(RAIZ, 'art', 'bg', 'fondos', f'v{VERSION}')
     os.makedirs(d, exist_ok=True)
     ok = True
     for n, (nombre, fn) in SECCIONES.items():
