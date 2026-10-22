@@ -925,15 +925,15 @@ Son los **únicos items del juego**. No hay más y no debe haber más: la [secci
 | `ART-BG-03` | Mapa 3 — Espacio Profundo | Vacío. El único cuya idea es la ausencia: media imagen es fondo plano. Dos velos de filamentos en esquinas opuestas y una galaxia del tamaño de una uña, que está ahí para dar **escala**, que es lo que convierte el vacío en distancia en vez de en un PNG sin terminar | `art/bg/fondos/v2/bg_section3.png` | ✅ | ![](../art/bg/fondos/v2/bg_section3.png) |
 | `ART-BG-UFO` | Ovni de los tres mapas | Platillo de 24 × 13 px en celda de 32, hoja de **16 frames, bucle**. Ver arriba | `art/bg/fondos/v2/bg_ufo_sheet.png` | ✅ | ![](../art/bg/fondos/v2/bg_ufo_sheet.png) |
 
-**Lo que es el asset.** Un fondo con movimiento no es un PNG: es un **campo** que se evalúa en cada fotograma. Los `bg_section<n>.png` son su fotograma en `t = 0` —lo que enseñan esta tabla y la vista de un menú sin animar— y la fuente de verdad es `fotograma(t)` de `gen_fondos_v2.py`, la **referencia** que el material de Unity tiene que reproducir. Las texturas de datos que lee ese material —campos de densidad, rampas, estrellas y motas— y los fotogramas de referencia para los tests los exporta el mismo generador en la tarea que integra los fondos, `T5-05b` ([NOVA_Tracking.md](./NOVA_Tracking.md), T.4), porque su formato se decide junto al shader que los lee.
+**Lo que es el asset.** Un fondo con movimiento no es un PNG: es un **campo** que se evalúa en cada fotograma. Los `bg_section<n>.png` son su fotograma en `t = 0` —lo que enseñan esta tabla y la vista de un menú sin animar— y la fuente de verdad es `fotograma(t)` de `gen_fondos_v2.py`, la **referencia** que el material de Unity tiene que reproducir. Lo que lee ese material lo exporta el mismo generador con `py tools/gen_fondos_v2.py --exporta` (`T5-05b`, [NOVA_Tracking.md](./NOVA_Tracking.md), T.4), en esta misma carpeta y todo derivado: los **campos de densidad** a 8 bits (`bg_section<n>_fields*.png`), lo **fijo** a color con su clase en el alfa —128 por debajo de los puntos que se mueven, 255 por encima— (`_static`), las **capas de puntos** con la fracción de partida de cada punto (`_points*`), la **grava** como hoja (`bg_section2_rocks_sheet.png`), los **parámetros** de cada capa y del ovni (`bg_section<n>.json`) y tres **fotogramas de referencia** en `ref/`, a 0, 61.7 y 3599.3 s, que `ArtBridge` no copia. Desde entonces `fotograma(t)` se calcula **desde esos datos ya cuantizados** y no desde los campos en coma flotante, así que la referencia y el material leen exactamente lo mismo; frente a la versión aprobada el 2026-10-20 cambia entre el 0.1 % y el 0.4 % de los píxeles, sueltos en los umbrales de la trama, y el presupuesto queda igual.
 
 **Medido sobre dos minutos de fotogramas** (tope 26.9):
 
 | Mapa | Peor ventana 96×96 | Margen | Píxeles que cambian por segundo | Colores |
 |---|---|---|---|---|
 | S1 Sistema Interior | 18.25 | +8.65 | ~16 600 | 9 |
-| S2 El Cinturón | 21.93 | +4.97 | ~83 000 | 9 |
-| S3 Espacio Profundo | 15.58 | +11.32 | ~9 300 | 9 |
+| S2 El Cinturón | 21.92 | +4.97 | ~83 000 | 9 |
+| S3 Espacio Profundo | 15.58 | +11.31 | ~9 300 | 9 |
 
 El salto máximo de la media de una ventana entre dos fotogramas seguidos es de 0.09: nada parpadea.
 

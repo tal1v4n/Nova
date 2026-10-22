@@ -8,7 +8,8 @@ namespace Nova.Data
     // Un nivel de los nueve (11, 15.4, T5-01): sus nodos de partida, el perfil del Enemigo, la
     // duración objetivo y las mecánicas que el nivel permite (11.1, 18 #36), las mismas para los
     // dos bandos. Los nueve assets viven en Assets/Data/Levels/ (T5-02); los instancia LevelLoader.
-    // La config de drops de 15.4 es el calendario de 9.3 (T5-04), que lee PowerUpSpawner.
+    // La config de drops de 15.4 es el calendario de 9.3 (T5-04), que lee PowerUpSpawner. El fondo
+    // con movimiento de su mapa lo dibuja BackgroundView (T5-05b).
     [CreateAssetMenu(menuName = "Nova/Level Definition", fileName = "Level")]
     public sealed class LevelDefinition : ScriptableObject
     {
@@ -38,6 +39,10 @@ namespace Nova.Data
         [Header("Power-ups del cielo (9.3)")]
         [SerializeField] DropSchedule drops;
 
+        [Header("Fondo (A.4.5)")]
+        [Tooltip("El fondo con movimiento de su mapa (Assets/Data/Backgrounds/Map{n}). Lo asigna LevelAssets.")]
+        [SerializeField] BackgroundDefinition background;
+
         public int Number => number;
         public int Map => (number - 1) / LevelsPerMap + 1;
         public EnemyProfile EnemyProfile => enemyProfile;
@@ -47,6 +52,7 @@ namespace Nova.Data
         public IReadOnlyList<PowerType> Powers => powers;
         public bool AllowsConversion => allowsConversion;
         public DropSchedule Drops => drops;
+        public BackgroundDefinition Background => background;
 
         public bool AllowsIgnition(NodeType type) => Array.IndexOf(ignitionTypes, type) >= 0;
         public bool AllowsPower(PowerType type) => Array.IndexOf(powers, type) >= 0;
@@ -54,17 +60,19 @@ namespace Nova.Data
         // Para los tests y el generador de la escena de prueba: el cableado normal es por el Inspector.
         public void Configure(int levelNumber, EnemyProfile profile, float duration, IEnumerable<NodeSpawnData> nodes,
                               IEnumerable<NodeType> ignitions, IEnumerable<PowerType> allowedPowers, bool conversion,
-                              DropSchedule dropSchedule = default)
+                              DropSchedule dropSchedule = default, BackgroundDefinition mapBackground = null)
         {
             if (levelNumber < 1 || levelNumber > 9)
                 throw new ArgumentOutOfRangeException(nameof(levelNumber), levelNumber, "Los niveles van del 1 al 9.");
             number = levelNumber;
             enemyProfile = profile;
-            targetDuration = duration;            spawns = nodes != null ? new List<NodeSpawnData>(nodes) : new List<NodeSpawnData>();
+            targetDuration = duration;
+            spawns = nodes != null ? new List<NodeSpawnData>(nodes) : new List<NodeSpawnData>();
             ignitionTypes = ignitions != null ? new List<NodeType>(ignitions).ToArray() : Array.Empty<NodeType>();
             powers = allowedPowers != null ? new List<PowerType>(allowedPowers).ToArray() : Array.Empty<PowerType>();
             allowsConversion = conversion;
             drops = dropSchedule;
+            background = mapBackground;
         }
     }
 }

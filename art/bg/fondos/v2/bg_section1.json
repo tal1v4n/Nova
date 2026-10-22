@@ -1,0 +1,902 @@
+{
+ "map": 1,
+ "name": "Sistema Interior",
+ "version": 2,
+ "width": 960,
+ "height": 540,
+ "frame": "bg_section1.png",
+ "budget": 26.893,
+ "textures": [
+  {
+   "property": "_Fields0",
+   "file": "bg_section1_fields0.png"
+  },
+  {
+   "property": "_Fields1",
+   "file": "bg_section1_fields1.png"
+  },
+  {
+   "property": "_Points",
+   "file": "bg_section1_points.png"
+  },
+  {
+   "property": "_Static",
+   "file": "bg_section1_static.png"
+  }
+ ],
+ "floats": [
+  {
+   "property": "_ABreath",
+   "value": 0.12
+  }
+ ],
+ "vectors": [
+  {
+   "property": "_L1Desde",
+   "value": [
+    0.0,
+    0.52,
+    0.86,
+    0.0
+   ]
+  },
+  {
+   "property": "_L1Cob",
+   "value": [
+    1.0,
+    0.10830213151087137,
+    0.023126002052495685,
+    0.0
+   ]
+  },
+  {
+   "property": "_L2Desde",
+   "value": [
+    0.0,
+    0.3,
+    0.65,
+    0.0
+   ]
+  },
+  {
+   "property": "_L2Cob",
+   "value": [
+    0.9946235835296756,
+    0.1444028420144952,
+    0.02775120246299482,
+    0.0
+   ]
+  },
+  {
+   "property": "_L3Desde",
+   "value": [
+    0.1,
+    0.55,
+    0.84,
+    0.0
+   ]
+  },
+  {
+   "property": "_L3Cob",
+   "value": [
+    0.8051714723811662,
+    0.10830213151087137,
+    0.037001603283993094,
+    0.0
+   ]
+  },
+  {
+   "property": "_Sol",
+   "value": [
+    -150.0,
+    237.6,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "property": "_RayK",
+   "value": [
+    23.0,
+    37.0,
+    61.0,
+    0.0
+   ]
+  },
+  {
+   "property": "_RayP",
+   "value": [
+    0.45,
+    0.3,
+    0.25,
+    0.0
+   ]
+  }
+ ],
+ "colors": [
+  {
+   "property": "_CFondo",
+   "value": "#0B0E1A"
+  },
+  {
+   "property": "_C3",
+   "value": "#7A6A70"
+  },
+  {
+   "property": "_C4",
+   "value": "#4E4152"
+  },
+  {
+   "property": "_C5",
+   "value": "#2E2740"
+  },
+  {
+   "property": "_C6",
+   "value": "#15121F"
+  },
+  {
+   "property": "_CDebil",
+   "value": "#5D6580"
+  }
+ ],
+ "phases": [
+  {
+   "property": "_Breath",
+   "rate": 0.1,
+   "period": 1.0,
+   "offset": 0.0
+  },
+  {
+   "property": "_Ray0",
+   "rate": -0.253,
+   "period": 6.283185307179586,
+   "offset": 6.035727355054006
+  },
+  {
+   "property": "_Ray1",
+   "rate": 0.259,
+   "period": 6.283185307179586,
+   "offset": 0.5434929583561838
+  },
+  {
+   "property": "_Ray2",
+   "rate": -0.9149999999999999,
+   "period": 6.283185307179586,
+   "offset": 5.626822145891363
+  },
+  {
+   "property": "_Polvo",
+   "rate": 6.0,
+   "period": 960.0,
+   "offset": 0.0
+  }
+ ],
+ "lists": [],
+ "axis": [],
+ "ufo": {
+  "sheet": "bg_ufo_sheet.png",
+  "cell": 32,
+  "frames": 16,
+  "fps": 12,
+  "speed": 30.0,
+  "sway": 3.0,
+  "swayPeriod": 2.4,
+  "intervalMin": 45.0,
+  "intervalMax": 90.0,
+  "direction": 1,
+  "startY": 194.4,
+  "slope": 0.04,
+  "surf": false,
+  "surfOffset": 0.0
+ },
+ "rocks": {
+  "sheet": "",
+  "cell": 0,
+  "list": []
+ },
+ "references": [
+  {
+   "t": 0.0,
+   "file": "ref/bg_section1_ref0.png",
+   "rocks": []
+  },
+  {
+   "t": 61.7,
+   "file": "ref/bg_section1_ref1.png",
+   "rocks": []
+  },
+  {
+   "t": 3599.3,
+   "file": "ref/bg_section1_ref2.png",
+   "rocks": []
+  }
+ ],
+ "ufoSamples": [
+  {
+   "s": 0.0,
+   "visible": true,
+   "x": -32,
+   "y": 193,
+   "frame": 0
+  },
+  {
+   "s": 0.37,
+   "visible": true,
+   "x": -21,
+   "y": 196,
+   "frame": 4
+  },
+  {
+   "s": 0.74,
+   "visible": true,
+   "x": -10,
+   "y": 197,
+   "frame": 8
+  },
+  {
+   "s": 1.1099999999999999,
+   "visible": true,
+   "x": 1,
+   "y": 195,
+   "frame": 13
+  },
+  {
+   "s": 1.48,
+   "visible": true,
+   "x": 12,
+   "y": 193,
+   "frame": 1
+  },
+  {
+   "s": 1.85,
+   "visible": true,
+   "x": 24,
+   "y": 192,
+   "frame": 6
+  },
+  {
+   "s": 2.2199999999999998,
+   "visible": true,
+   "x": 35,
+   "y": 194,
+   "frame": 10
+  },
+  {
+   "s": 2.59,
+   "visible": true,
+   "x": 46,
+   "y": 198,
+   "frame": 15
+  },
+  {
+   "s": 2.96,
+   "visible": true,
+   "x": 57,
+   "y": 200,
+   "frame": 3
+  },
+  {
+   "s": 3.33,
+   "visible": true,
+   "x": 68,
+   "y": 199,
+   "frame": 7
+  },
+  {
+   "s": 3.7,
+   "visible": true,
+   "x": 79,
+   "y": 197,
+   "frame": 12
+  },
+  {
+   "s": 4.07,
+   "visible": true,
+   "x": 90,
+   "y": 195,
+   "frame": 0
+  },
+  {
+   "s": 4.4399999999999995,
+   "visible": true,
+   "x": 101,
+   "y": 196,
+   "frame": 5
+  },
+  {
+   "s": 4.81,
+   "visible": true,
+   "x": 112,
+   "y": 199,
+   "frame": 9
+  },
+  {
+   "s": 5.18,
+   "visible": true,
+   "x": 123,
+   "y": 202,
+   "frame": 14
+  },
+  {
+   "s": 5.55,
+   "visible": true,
+   "x": 134,
+   "y": 203,
+   "frame": 2
+  },
+  {
+   "s": 5.92,
+   "visible": true,
+   "x": 146,
+   "y": 201,
+   "frame": 7
+  },
+  {
+   "s": 6.29,
+   "visible": true,
+   "x": 157,
+   "y": 199,
+   "frame": 11
+  },
+  {
+   "s": 6.66,
+   "visible": true,
+   "x": 168,
+   "y": 198,
+   "frame": 15
+  },
+  {
+   "s": 7.03,
+   "visible": true,
+   "x": 179,
+   "y": 200,
+   "frame": 4
+  },
+  {
+   "s": 7.4,
+   "visible": true,
+   "x": 190,
+   "y": 204,
+   "frame": 8
+  },
+  {
+   "s": 7.77,
+   "visible": true,
+   "x": 201,
+   "y": 205,
+   "frame": 13
+  },
+  {
+   "s": 8.14,
+   "visible": true,
+   "x": 212,
+   "y": 205,
+   "frame": 1
+  },
+  {
+   "s": 8.51,
+   "visible": true,
+   "x": 223,
+   "y": 202,
+   "frame": 6
+  },
+  {
+   "s": 8.879999999999999,
+   "visible": true,
+   "x": 234,
+   "y": 201,
+   "frame": 10
+  },
+  {
+   "s": 9.25,
+   "visible": true,
+   "x": 246,
+   "y": 202,
+   "frame": 15
+  },
+  {
+   "s": 9.62,
+   "visible": true,
+   "x": 257,
+   "y": 205,
+   "frame": 3
+  },
+  {
+   "s": 9.99,
+   "visible": true,
+   "x": 268,
+   "y": 208,
+   "frame": 7
+  },
+  {
+   "s": 10.36,
+   "visible": true,
+   "x": 279,
+   "y": 208,
+   "frame": 12
+  },
+  {
+   "s": 10.73,
+   "visible": true,
+   "x": 290,
+   "y": 207,
+   "frame": 0
+  },
+  {
+   "s": 11.1,
+   "visible": true,
+   "x": 301,
+   "y": 204,
+   "frame": 5
+  },
+  {
+   "s": 11.47,
+   "visible": true,
+   "x": 312,
+   "y": 204,
+   "frame": 9
+  },
+  {
+   "s": 11.84,
+   "visible": true,
+   "x": 323,
+   "y": 206,
+   "frame": 14
+  },
+  {
+   "s": 12.209999999999999,
+   "visible": true,
+   "x": 334,
+   "y": 209,
+   "frame": 2
+  },
+  {
+   "s": 12.58,
+   "visible": true,
+   "x": 345,
+   "y": 211,
+   "frame": 6
+  },
+  {
+   "s": 12.95,
+   "visible": true,
+   "x": 356,
+   "y": 210,
+   "frame": 11
+  },
+  {
+   "s": 13.32,
+   "visible": true,
+   "x": 368,
+   "y": 208,
+   "frame": 15
+  },
+  {
+   "s": 13.69,
+   "visible": true,
+   "x": 379,
+   "y": 207,
+   "frame": 4
+  },
+  {
+   "s": 14.06,
+   "visible": true,
+   "x": 390,
+   "y": 208,
+   "frame": 8
+  },
+  {
+   "s": 14.43,
+   "visible": true,
+   "x": 401,
+   "y": 211,
+   "frame": 13
+  },
+  {
+   "s": 14.8,
+   "visible": true,
+   "x": 412,
+   "y": 213,
+   "frame": 1
+  },
+  {
+   "s": 15.17,
+   "visible": true,
+   "x": 423,
+   "y": 214,
+   "frame": 6
+  },
+  {
+   "s": 15.54,
+   "visible": true,
+   "x": 434,
+   "y": 212,
+   "frame": 10
+  },
+  {
+   "s": 15.91,
+   "visible": true,
+   "x": 445,
+   "y": 210,
+   "frame": 14
+  },
+  {
+   "s": 16.28,
+   "visible": true,
+   "x": 456,
+   "y": 210,
+   "frame": 3
+  },
+  {
+   "s": 16.65,
+   "visible": true,
+   "x": 467,
+   "y": 212,
+   "frame": 7
+  },
+  {
+   "s": 17.02,
+   "visible": true,
+   "x": 479,
+   "y": 215,
+   "frame": 12
+  },
+  {
+   "s": 17.39,
+   "visible": true,
+   "x": 490,
+   "y": 217,
+   "frame": 0
+  },
+  {
+   "s": 17.759999999999998,
+   "visible": true,
+   "x": 501,
+   "y": 216,
+   "frame": 5
+  },
+  {
+   "s": 18.13,
+   "visible": true,
+   "x": 512,
+   "y": 214,
+   "frame": 9
+  },
+  {
+   "s": 18.5,
+   "visible": true,
+   "x": 523,
+   "y": 212,
+   "frame": 14
+  },
+  {
+   "s": 18.87,
+   "visible": true,
+   "x": 534,
+   "y": 213,
+   "frame": 2
+  },
+  {
+   "s": 19.24,
+   "visible": true,
+   "x": 545,
+   "y": 217,
+   "frame": 6
+  },
+  {
+   "s": 19.61,
+   "visible": true,
+   "x": 556,
+   "y": 219,
+   "frame": 11
+  },
+  {
+   "s": 19.98,
+   "visible": true,
+   "x": 567,
+   "y": 220,
+   "frame": 15
+  },
+  {
+   "s": 20.35,
+   "visible": true,
+   "x": 578,
+   "y": 218,
+   "frame": 4
+  },
+  {
+   "s": 20.72,
+   "visible": true,
+   "x": 590,
+   "y": 216,
+   "frame": 8
+  },
+  {
+   "s": 21.09,
+   "visible": true,
+   "x": 601,
+   "y": 216,
+   "frame": 13
+  },
+  {
+   "s": 21.46,
+   "visible": true,
+   "x": 612,
+   "y": 218,
+   "frame": 1
+  },
+  {
+   "s": 21.83,
+   "visible": true,
+   "x": 623,
+   "y": 221,
+   "frame": 5
+  },
+  {
+   "s": 22.2,
+   "visible": true,
+   "x": 634,
+   "y": 223,
+   "frame": 10
+  },
+  {
+   "s": 22.57,
+   "visible": true,
+   "x": 645,
+   "y": 222,
+   "frame": 14
+  },
+  {
+   "s": 22.94,
+   "visible": true,
+   "x": 656,
+   "y": 220,
+   "frame": 3
+  },
+  {
+   "s": 23.31,
+   "visible": true,
+   "x": 667,
+   "y": 218,
+   "frame": 7
+  },
+  {
+   "s": 23.68,
+   "visible": true,
+   "x": 678,
+   "y": 219,
+   "frame": 12
+  },
+  {
+   "s": 24.05,
+   "visible": true,
+   "x": 690,
+   "y": 222,
+   "frame": 0
+  },
+  {
+   "s": 24.419999999999998,
+   "visible": true,
+   "x": 701,
+   "y": 225,
+   "frame": 5
+  },
+  {
+   "s": 24.79,
+   "visible": true,
+   "x": 712,
+   "y": 226,
+   "frame": 9
+  },
+  {
+   "s": 25.16,
+   "visible": true,
+   "x": 723,
+   "y": 224,
+   "frame": 13
+  },
+  {
+   "s": 25.53,
+   "visible": true,
+   "x": 734,
+   "y": 221,
+   "frame": 2
+  },
+  {
+   "s": 25.9,
+   "visible": true,
+   "x": 745,
+   "y": 221,
+   "frame": 6
+  },
+  {
+   "s": 26.27,
+   "visible": true,
+   "x": 756,
+   "y": 224,
+   "frame": 11
+  },
+  {
+   "s": 26.64,
+   "visible": true,
+   "x": 767,
+   "y": 227,
+   "frame": 15
+  },
+  {
+   "s": 27.009999999999998,
+   "visible": true,
+   "x": 778,
+   "y": 229,
+   "frame": 4
+  },
+  {
+   "s": 27.38,
+   "visible": true,
+   "x": 789,
+   "y": 228,
+   "frame": 8
+  },
+  {
+   "s": 27.75,
+   "visible": true,
+   "x": 800,
+   "y": 225,
+   "frame": 13
+  },
+  {
+   "s": 28.12,
+   "visible": true,
+   "x": 812,
+   "y": 224,
+   "frame": 1
+  },
+  {
+   "s": 28.49,
+   "visible": true,
+   "x": 823,
+   "y": 225,
+   "frame": 5
+  },
+  {
+   "s": 28.86,
+   "visible": true,
+   "x": 834,
+   "y": 228,
+   "frame": 10
+  },
+  {
+   "s": 29.23,
+   "visible": true,
+   "x": 845,
+   "y": 231,
+   "frame": 14
+  },
+  {
+   "s": 29.6,
+   "visible": true,
+   "x": 856,
+   "y": 231,
+   "frame": 3
+  },
+  {
+   "s": 29.97,
+   "visible": true,
+   "x": 867,
+   "y": 229,
+   "frame": 7
+  },
+  {
+   "s": 30.34,
+   "visible": true,
+   "x": 878,
+   "y": 227,
+   "frame": 12
+  },
+  {
+   "s": 30.71,
+   "visible": true,
+   "x": 889,
+   "y": 227,
+   "frame": 0
+  },
+  {
+   "s": 31.08,
+   "visible": true,
+   "x": 900,
+   "y": 229,
+   "frame": 4
+  },
+  {
+   "s": 31.45,
+   "visible": true,
+   "x": 912,
+   "y": 233,
+   "frame": 9
+  },
+  {
+   "s": 31.82,
+   "visible": true,
+   "x": 923,
+   "y": 234,
+   "frame": 13
+  },
+  {
+   "s": 32.19,
+   "visible": true,
+   "x": 934,
+   "y": 233,
+   "frame": 2
+  },
+  {
+   "s": 32.56,
+   "visible": true,
+   "x": 945,
+   "y": 231,
+   "frame": 6
+  },
+  {
+   "s": 32.93,
+   "visible": true,
+   "x": 956,
+   "y": 230,
+   "frame": 11
+  },
+  {
+   "s": 33.3,
+   "visible": true,
+   "x": 967,
+   "y": 231,
+   "frame": 15
+  },
+  {
+   "s": 33.67,
+   "visible": true,
+   "x": 978,
+   "y": 234,
+   "frame": 4
+  },
+  {
+   "s": 34.04,
+   "visible": true,
+   "x": 989,
+   "y": 237,
+   "frame": 8
+  },
+  {
+   "s": 34.41,
+   "visible": false,
+   "x": 0,
+   "y": 0,
+   "frame": 0
+  },
+  {
+   "s": 34.78,
+   "visible": false,
+   "x": 0,
+   "y": 0,
+   "frame": 0
+  },
+  {
+   "s": 35.15,
+   "visible": false,
+   "x": 0,
+   "y": 0,
+   "frame": 0
+  },
+  {
+   "s": 35.519999999999996,
+   "visible": false,
+   "x": 0,
+   "y": 0,
+   "frame": 0
+  },
+  {
+   "s": 35.89,
+   "visible": false,
+   "x": 0,
+   "y": 0,
+   "frame": 0
+  }
+ ]
+}

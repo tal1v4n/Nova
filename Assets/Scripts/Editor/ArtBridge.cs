@@ -13,11 +13,17 @@ namespace Nova.Editor
     // La versión elegida la marca NOVA_Assets_Diseno.md (A.1), no la carpeta, así que la lista
     // se deriva de sus filas ✅ en vez de mantenerse a mano en un segundo sitio.
     // Assets/Sprites/ es salida derivada: este script la reescribe entera y borra lo que sobra.
+    //
+    // De una carpeta de versión se copian también sus JSON (T5-05b): los parámetros de los fondos con
+    // movimiento, que lee BackgroundAssets. Sus subcarpetas no: ref/ es para los tests.
     public static class ArtBridge
     {
         const string InventoryPath = "mds/NOVA_Assets_Diseno.md";
         const string ArtRoot = "art";
         const string SpritesRoot = "Assets/Sprites";
+
+        // Lo que se copia de una carpeta de versión, y lo que se borra de Assets/Sprites/ si sobra.
+        static readonly string[] CopiedPatterns = { "*.png", "*.json" };
 
         // Ruta de arte dentro de una fila de tabla: ../art/<ruta>.png
         static readonly Regex ArtPathPattern = new Regex(@"\.\./art/([^)\s]+?\.png)");
@@ -67,7 +73,7 @@ namespace Nova.Editor
 
             if (Directory.Exists(spritesRoot))
             {
-                foreach (string file in Directory.GetFiles(spritesRoot, "*.png", SearchOption.AllDirectories))
+                foreach (string file in CopiedPatterns.SelectMany(p => Directory.GetFiles(spritesRoot, p, SearchOption.AllDirectories)))
                 {
                     string relative = Path.GetRelativePath(spritesRoot, file).Replace('\\', '/');
                     if (plan.ContainsKey(relative))
@@ -121,7 +127,7 @@ namespace Nova.Editor
                     string sourceDir = Path.Combine(artRoot, versionDir);
                     if (!Directory.Exists(sourceDir))
                         throw new InvalidDataException($"No existe art/{versionDir}.");
-                    foreach (string file in Directory.GetFiles(sourceDir, "*.png"))
+                    foreach (string file in CopiedPatterns.SelectMany(p => Directory.GetFiles(sourceDir, p)))
                         AddFile(plan, artRoot, $"{versionDir}/{Path.GetFileName(file)}",
                             $"{asset}/{Path.GetFileName(file)}");
                 }

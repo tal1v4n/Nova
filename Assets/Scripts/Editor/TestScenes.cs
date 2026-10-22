@@ -298,6 +298,13 @@ namespace Nova.Editor
             var checker = registry.gameObject.AddComponent<WinConditionChecker>();
             checker.Configure(balance, registry, protons, loader);
 
+            // T5-05b: el fondo con movimiento del nivel que cargue LevelLoader, con su ovni y su grava.
+            var sky = new GameObject("Background");
+            sky.AddComponent<BackgroundView>().Configure(null, loader);
+            sky.AddComponent<BackgroundFlyby>();
+            if (levels[0].Background == null)
+                Debug.LogWarning("[Nova] Los niveles no tienen fondo: genera los fondos con Nova → Arte → Generar fondos.");
+
             var spawner = registry.gameObject.AddComponent<PowerUpSpawner>();
             spawner.Configure(balance, System.Array.ConvertAll(new[] { "CosmicRay", "HydrogenCloud" },
                 n => AssetDatabase.LoadAssetAtPath<PowerUpDefinition>($"{PowerUpsFolder}/{n}.asset")), buffs, registry, 0, loader);
@@ -322,6 +329,7 @@ namespace Nova.Editor
             EditorUtility.SetDirty(registry.gameObject);
             EditorUtility.SetDirty(loaderObject);
             EditorUtility.SetDirty(enemy);
+            EditorUtility.SetDirty(sky);
             EditorSceneManager.SaveScene(scene, GameScenePath);
             AssetDatabase.Refresh();
 

@@ -13,6 +13,9 @@ namespace Nova.Editor
     // Enemigo por nivel (Level{n}Enemy, 12.5.2): se crean si faltan y nunca se sobrescriben, porque son
     // los que se ajustan a mano. LevelAssetsTests compara lo generado con 11.1, 11.2 y 11.3, no con
     // esta tabla.
+    //
+    // Cada nivel lleva además el fondo de su mapa (T5-05b), que genera BackgroundAssets: si todavía no
+    // existe, el nivel queda sin fondo y se avisa.
     public static class LevelAssets
     {
         const string LevelsFolder = "Assets/Data/Levels";
@@ -211,11 +214,37 @@ namespace Nova.Editor
                     level = ScriptableObject.CreateInstance<LevelDefinition>();
                     AssetDatabase.CreateAsset(level, path);
                 }
-                level.Configure(number, profile, Durations[i], Spawns[i], IgnitionTypes(map), Powers(map), map == 3, Drops(map));
+                level.Configure(number, profile, Durations[i], Spawns[i], IgnitionTypes(map), Powers(map), map == 3, Drops(map),
+                    Background(map));
                 EditorUtility.SetDirty(level);
             }
             AssetDatabase.SaveAssets();
             Debug.Log($"[Nova] Los 9 niveles generados en {LevelsFolder}.");
+        }
+
+        // A cada nivel ya generado, el fondo de su mapa, sin tocar lo demás. Lo llama BackgroundAssets
+        // al generar los fondos.
+        public static void AssignBackgrounds()
+        {
+            for (int number = 1; number <= Spawns.Length; number++)
+            {
+                var level = AssetDatabase.LoadAssetAtPath<LevelDefinition>(PathOf(number));
+                if (level == null)
+                    continue;
+                var serialized = new SerializedObject(level);
+                serialized.FindProperty("background").objectReferenceValue = Background(level.Map);
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(level);
+            }
+            AssetDatabase.SaveAssets();
+        }
+
+        static BackgroundDefinition Background(int map)
+        {
+            var background = AssetDatabase.LoadAssetAtPath<BackgroundDefinition>(BackgroundAssets.PathOf(map));
+            if (background == null)
+                Debug.LogWarning($"[Nova] Falta {BackgroundAssets.PathOf(map)}: el mapa {map} queda sin fondo (Nova → Arte → Generar fondos).");
+            return background;
         }
 
         // Mecánicas de 11.1.
