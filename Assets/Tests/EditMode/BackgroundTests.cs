@@ -168,11 +168,21 @@ namespace Nova.Tests
                         identical++;
                 }
                 double share = (double)identical / got.Length;
+                if (share < MinIdentical)
+                    SaveForInspection(rendered, $"map{map}_t{reference.t:0.0}.png");
                 Assert.GreaterOrEqual(share, MinIdentical, $"Mapa {map}, t = {reference.t}: {share:P3} de píxeles idénticos.");
 
                 double worst = WorstWindow(got);
                 Assert.LessOrEqual(worst, data.budget + 1e-3, $"Mapa {map}, t = {reference.t}: una ventana de 96×96 pasa del presupuesto.");
             }
+        }
+
+        // Lo renderizado, en Temp/BackgroundTests/ (no se versiona), para mirarlo junto a ref/.
+        static void SaveForInspection(Texture2D rendered, string file)
+        {
+            string folder = Path.Combine(Directory.GetParent(Application.dataPath).FullName, "Temp", "BackgroundTests");
+            Directory.CreateDirectory(folder);
+            File.WriteAllBytes(Path.Combine(folder, file), rendered.EncodeToPNG());
         }
 
         // Media de luminancia de la ventana de 96×96 más clara (ventanas() de tools/nova_fondo.py).
@@ -211,11 +221,14 @@ namespace Nova.Tests
             flyby.Step(0f);
             Vector3[] rocks = flyby.Rocks.Select(r => r.transform.localPosition).ToArray();
 
+            // En Play, con timeScale = 0, Time.deltaTime llega a 0, que es lo que reciben las dos en su
+            // Update. En EditMode Time.deltaTime no se escala, así que se les pasa lo que llegaría.
             Time.timeScale = 0f;
             for (int i = 0; i < 10; i++)
             {
-                view.Advance(Time.deltaTime);
-                flyby.Step(Time.deltaTime);
+                float paused = Time.timeScale * (1f / 60f);
+                view.Advance(paused);
+                flyby.Step(paused);
             }
 
             Assert.AreEqual(12.5, view.Elapsed, "15.8: con la partida en pausa el fondo no avanza.");
