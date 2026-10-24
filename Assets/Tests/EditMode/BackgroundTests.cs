@@ -38,10 +38,11 @@ namespace Nova.Tests
         public void TearDown()
         {
             Time.timeScale = timeScale;
-            foreach (UnityEngine.Object o in created)
+            // Al revés de como se crearon: la cámara antes que la textura en la que dibuja.
+            for (int i = created.Count - 1; i >= 0; i--)
             {
-                if (o != null)
-                    UnityEngine.Object.DestroyImmediate(o);
+                if (created[i] != null)
+                    UnityEngine.Object.DestroyImmediate(created[i]);
             }
             created.Clear();
         }
@@ -131,7 +132,8 @@ namespace Nova.Tests
             BackgroundExport data = Export(map);
             BackgroundView view = CreateView(Definition(map), out _);
 
-            var target = Track(new RenderTexture(Width, Height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB));
+            // Con profundidad: el render graph de URP la exige en la textura de salida de una cámara.
+            var target = Track(new RenderTexture(Width, Height, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB));
             var cameraObject = Track(new GameObject("Background Camera"));
             cameraObject.transform.position = new Vector3(0f, 0f, -10f);
             var camera = cameraObject.AddComponent<Camera>();
@@ -175,6 +177,7 @@ namespace Nova.Tests
                 double worst = WorstWindow(got);
                 Assert.LessOrEqual(worst, data.budget + 1e-3, $"Mapa {map}, t = {reference.t}: una ventana de 96×96 pasa del presupuesto.");
             }
+            camera.targetTexture = null;
         }
 
         // Lo renderizado, en Temp/BackgroundTests/ (no se versiona), para mirarlo junto a ref/.
