@@ -90,6 +90,12 @@ namespace Nova.Editor
                 data.axis);
 
             BackgroundExport.UfoEntry ufo = data.ufo;
+            if (!ufo.surf && ufo.startYMax <= ufo.startYMin)
+            {
+                // Un JSON de antes del sorteo de altura: el ovni saldría siempre por el borde de arriba.
+                Debug.LogError($"[Nova] {ExportPathOf(map)} no trae el margen de altura del ovni: exporta con `py tools/gen_fondos_v2.py --exporta` y sincroniza.");
+                return false;
+            }
             Sprite[] ufoFrames = Sheet(ufo.sheet);
             if (ufoFrames.Length != ufo.frames)
                 Debug.LogWarning($"[Nova] {ufo.sheet}: {ufoFrames.Length} frames importados de {ufo.frames}.");
