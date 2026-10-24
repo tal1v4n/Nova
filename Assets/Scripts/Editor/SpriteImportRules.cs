@@ -30,8 +30,8 @@ namespace Nova.Editor
         // defecto de 2048 Unity la reduciría y rompería la rejilla.
         const int MaxTextureSize = 8192;
 
-        // Subirla reimporta todo lo que pasa por aquí. 1: las texturas de datos, en 2D (T5-05b).
-        public override uint GetVersion() => 1;
+        // Subirla reimporta todo lo que pasa por aquí. 1: las texturas de datos (T5-05b); 2: todo en 2D.
+        public override uint GetVersion() => 2;
 
         void OnPreprocessTexture()
         {
@@ -39,6 +39,9 @@ namespace Nova.Editor
                 return;
 
             var importer = (TextureImporter)assetImporter;
+            // El .meta mínimo de ArtBridge (solo el GUID) lo completa Unity con la forma en cubemap,
+            // y con ella no hay Texture2D ni Sprite que cargar. Todo lo de Assets/Sprites/ es 2D.
+            importer.textureShape = TextureImporterShape.Texture2D;
             Match data = DataTexturePattern.Match(System.IO.Path.GetFileNameWithoutExtension(assetPath));
             if (data.Success)
             {
@@ -72,9 +75,6 @@ namespace Nova.Editor
         static void ImportDataTexture(TextureImporter importer, bool isColor)
         {
             importer.textureType = TextureImporterType.Default;
-            // El .meta mínimo de ArtBridge deja la forma en cubemap; un sprite la fuerza a 2D, una
-            // textura Default no.
-            importer.textureShape = TextureImporterShape.Texture2D;
             importer.sRGBTexture = isColor;
             importer.alphaSource = TextureImporterAlphaSource.FromInput;
             importer.alphaIsTransparency = false;
