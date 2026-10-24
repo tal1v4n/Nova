@@ -209,6 +209,8 @@
   "direction": 1,
   "startY": 432.0,
   "slope": -0.3,
+  "startYMin": 326.2,
+  "startYMax": 521.0,
   "surf": false,
   "surfOffset": 0.0
  },

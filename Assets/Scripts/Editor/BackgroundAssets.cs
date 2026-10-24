@@ -94,7 +94,8 @@ namespace Nova.Editor
             if (ufoFrames.Length != ufo.frames)
                 Debug.LogWarning($"[Nova] {ufo.sheet}: {ufoFrames.Length} frames importados de {ufo.frames}.");
             definition.ConfigureUfo(ufoFrames, ufo.frames, ufo.fps, ufo.cell, ufo.speed, ufo.sway, ufo.swayPeriod,
-                ufo.intervalMin, ufo.intervalMax, ufo.direction, ufo.startY, ufo.slope, ufo.surf, ufo.surfOffset);
+                ufo.intervalMin, ufo.intervalMax, ufo.direction, ufo.startY, ufo.startYMin, ufo.startYMax, ufo.slope,
+                ufo.surf, ufo.surfOffset);
 
             BackgroundExport.RocksEntry rocks = data.rocks;
             bool hasRocks = rocks != null && rocks.list != null && rocks.list.Length > 0;

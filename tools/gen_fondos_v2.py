@@ -357,30 +357,45 @@ def ovni(t):
 HOJA_OVNI = [ovni(i / OVNI_FRAMES) for i in range(OVNI_FRAMES)]
 
 
+# En cada salida el juego sortea por que lado entra el ovni y, si va en linea
+# recta, a que altura (pedido por el usuario el 2026-10-23). `direction` y
+# `startY` son la salida de las vistas previas y de los tests; `startYMin` y
+# `startYMax`, el margen del sorteo: el ovni entero y su vaiven caben en el
+# tablero de punta a punta, tambien con la pendiente.
+
 def ovni_recto(y0, sentido, pendiente=0.0):
     """Cruza el tablero de lado a lado con un vaiven vertical."""
+    margen = OVNI_CELDA / 2 + OVNI['sway']
+    caida = pendiente * (ANCHO + 2 * OVNI_CELDA)
     return dict(OVNI, direction=sentido, startY=float(y0), slope=float(pendiente),
+                startYMin=float(margen + max(0.0, -caida)),
+                startYMax=float(ALTO - margen - max(0.0, caida)),
                 surf=False, surfOffset=0.0)
 
 
 def ovni_surf(sentido, desplazamiento):
-    """Cruza siguiendo el eje de una banda, a `desplazamiento` px de el."""
-    return dict(OVNI, direction=sentido, startY=0.0, slope=0.0,
-                surf=True, surfOffset=float(desplazamiento))
+    """Cruza siguiendo el eje de una banda, a `desplazamiento` px de el: la
+    altura la pone la banda y solo se sortea el lado."""
+    return dict(OVNI, direction=sentido, startY=0.0, slope=0.0, startYMin=0.0,
+                startYMax=0.0, surf=True, surfOffset=float(desplazamiento))
 
 
-def ruta(desc, eje=None):
+def ruta(desc, eje=None, sentido=None, y0=None):
     """La posicion del ovni `s` segundos despues de salir, o None si ya salio
-    del tablero. Es la que reproduce `BackgroundDefinition` en Unity."""
+    del tablero. Es la que reproduce `BackgroundDefinition` en Unity.
+    `sentido` e `y0`, si se dan, son los de una salida sorteada."""
+    sentido = desc['direction'] if sentido is None else sentido
+    y0 = desc['startY'] if y0 is None else y0
+
     def pos(s):
         recorrido = desc['speed'] * s - OVNI_CELDA
         if recorrido > ANCHO + OVNI_CELDA:
             return None
-        x = recorrido if desc['direction'] > 0 else ANCHO - recorrido
+        x = recorrido if sentido > 0 else ANCHO - recorrido
         if desc['surf']:
             y = eje[int(min(max(x, 0), ANCHO - 1))] + desc['surfOffset']
         else:
-            y = desc['startY'] + desc['slope'] * recorrido
+            y = y0 + desc['slope'] * recorrido
         return x, y + desc['sway'] * math.sin(2 * math.pi * s / desc['swayPeriod'])
     return pos
 

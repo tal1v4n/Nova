@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Map1
+  m_Shader: {fileID: 4800000, guid: eb5943e75b35d7241a88f11484dc6692, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _Fields0:
+        m_Texture: {fileID: 2800000, guid: 513b93a36d3088196d8e66581210307b, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Fields1:
+        m_Texture: {fileID: 2800000, guid: 7de56f6b0233ba84ffea3e4584b6f9f6, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Points:
+        m_Texture: {fileID: 2800000, guid: f727401019a379afc01498dad580c129, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Static:
+        m_Texture: {fileID: 2800000, guid: 527d5ac5e2411af0756b71c9ff1c7ff2, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _ABreath: 0.12
+    - _Breath: 0
+    - _Polvo: 0
+    - _Ray0: 0
+    - _Ray1: 0
+    - _Ray2: 0
+    m_Colors:
+    - _C3: {r: 0.47843137, g: 0.41568628, b: 0.4392157, a: 1}
+    - _C4: {r: 0.30588236, g: 0.25490198, b: 0.32156864, a: 1}
+    - _C5: {r: 0.18039216, g: 0.15294118, b: 0.2509804, a: 1}
+    - _C6: {r: 0.08235294, g: 0.07058824, b: 0.12156863, a: 1}
+    - _CDebil: {r: 0.3647059, g: 0.39607844, b: 0.5019608, a: 1}
+    - _CFondo: {r: 0.043137256, g: 0.05490196, b: 0.101960786, a: 1}
+    - _L1Cob: {r: 1, g: 0.10830213, b: 0.023126002, a: 0}
+    - _L1Desde: {r: 0, g: 0.52, b: 0.86, a: 0}
+    - _L2Cob: {r: 0.9946236, g: 0.14440285, b: 0.027751202, a: 0}
+    - _L2Desde: {r: 0, g: 0.3, b: 0.65, a: 0}
+    - _L3Cob: {r: 0.8051715, g: 0.10830213, b: 0.037001602, a: 0}
+    - _L3Desde: {r: 0.1, g: 0.55, b: 0.84, a: 0}
+    - _RayK: {r: 23, g: 37, b: 61, a: 0}
+    - _RayP: {r: 0.45, g: 0.3, b: 0.25, a: 0}
+    - _Sol: {r: -150, g: 237.6, b: 0, a: 0}
+    - _Window: {r: 0, g: 0, b: 960, a: 540}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

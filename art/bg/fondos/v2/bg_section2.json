@@ -4707,6 +4707,8 @@
   "direction": -1,
   "startY": 0.0,
   "slope": 0.0,
+  "startYMin": 0.0,
+  "startYMax": 0.0,
   "surf": true,
   "surfOffset": 49.21875
  },

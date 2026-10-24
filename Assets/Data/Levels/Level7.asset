@@ -89,3 +89,4 @@ MonoBehaviour:
     minInterval: 60
     maxInterval: 85
     maxDrops: 5
+  background: {fileID: 11400000, guid: c572e072a7ff69b428cd6ffc7a4a35f2, type: 2}

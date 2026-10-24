@@ -88,6 +88,8 @@ namespace Nova.Data
             public double intervalMax;
             public int direction;
             public double startY;
+            public double startYMin;
+            public double startYMax;
             public double slope;
             public bool surf;
             public double surfOffset;

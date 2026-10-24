@@ -242,6 +242,7 @@ namespace Nova.Tests
             BackgroundView view = CreateView(definition, out BackgroundFlyby flyby, seed: 20261021 + map);
             const float step = 0.05f;
             var launches = new List<double>();
+            var directions = new HashSet<int>();
             double time = 0.0;
             bool wasActive = false;
             int launched = 0;
@@ -257,11 +258,15 @@ namespace Nova.Tests
                     Assert.AreEqual(launched + 1, flyby.UfoLaunches, "Dos ovnis en el mismo paso.");
                     launches.Add(time);
                     launched = flyby.UfoLaunches;
+                    directions.Add(flyby.LaunchDirection);
+                    if (!definition.UfoFollowsStream)
+                        Assert.That(flyby.LaunchStartY, Is.InRange(definition.UfoStartYMin, definition.UfoStartYMax), "Entra a una altura del margen.");
                 }
                 wasActive = flyby.UfoActive;
             }
 
             Assert.GreaterOrEqual(launches.Count, 18, "En media hora salen entre 20 y 40.");
+            CollectionAssert.AreEquivalent(new[] { 1, -1 }, directions, "Entra por los dos lados.");
             Assert.That(launches[0], Is.InRange(45.0 - step, 90.0 + step), "El primero también espera.");
             for (int i = 1; i < launches.Count; i++)
                 Assert.That(launches[i] - launches[i - 1], Is.InRange(45.0 - step, 90.0 + step), $"Salida {i + 1}.");

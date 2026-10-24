@@ -9,7 +9,8 @@ namespace Nova.Presentation
     //
     // El ovni sale uno como mucho, cada 45–90 s contados de salida a salida, con un generador
     // aleatorio propio: nunca el del algoritmo del Enemigo (12.7). Su ruta es la de su mapa
-    // (BackgroundDefinition.UfoAt). La grava sigue el tiempo de BackgroundView, así que está donde la
+    // (BackgroundDefinition.UfoAt), y en cada salida el mismo generador sortea por qué lado entra y
+    // a qué altura; siguiendo la corriente del Cinturón, solo el lado. La grava sigue el tiempo de BackgroundView, así que está donde la
     // pone fotograma(t). Todo avanza con el tiempo escalado: la pausa lo congela.
     //
     // Con una ventana más pequeña que el tablero (la carta estelar de 13.9), un sprite solo se
@@ -32,10 +33,17 @@ namespace Nova.Presentation
         System.Random random;
         double untilNext;
         double ufoAge = -1.0;
+        int launchDirection = 1;
+        double launchStartY;
 
         // Hay un ovni cruzando, y cuántos han salido desde que se enseña este fondo.
         public bool UfoActive => ufoAge >= 0.0;
         public int UfoLaunches { get; private set; }
+
+        // La salida sorteada del ovni en curso, o del último: lado (1, desde la izquierda; -1, desde
+        // la derecha) y altura de entrada en píxeles.
+        public int LaunchDirection => launchDirection;
+        public double LaunchStartY => launchStartY;
 
         internal SpriteRenderer Ufo => ufo;
         internal SpriteRenderer[] Rocks => rocks;
@@ -62,7 +70,7 @@ namespace Nova.Presentation
             if (UfoActive)
             {
                 ufoAge += deltaTime;
-                if (!shown.UfoAt(ufoAge, out _, out _))
+                if (!shown.UfoAt(ufoAge, launchDirection, launchStartY, out _, out _))
                     ufoAge = -1.0;
             }
             untilNext -= deltaTime;
@@ -72,6 +80,8 @@ namespace Nova.Presentation
                 // momento justo, el ovni ya lo lleva recorrido.
                 ufoAge = -untilNext;
                 untilNext += NextInterval();
+                launchDirection = random.Next(2) == 0 ? 1 : -1;
+                launchStartY = shown.UfoStartYMin + random.NextDouble() * (shown.UfoStartYMax - shown.UfoStartYMin);
                 UfoLaunches++;
             }
             Place();
@@ -90,7 +100,7 @@ namespace Nova.Presentation
 
             if (ufo == null)
                 return;
-            if (!UfoActive || !shown.UfoAt(ufoAge, out Vector2Int pixel, out int frame))
+            if (!UfoActive || !shown.UfoAt(ufoAge, launchDirection, launchStartY, out Vector2Int pixel, out int frame))
             {
                 ufo.enabled = false;
                 return;

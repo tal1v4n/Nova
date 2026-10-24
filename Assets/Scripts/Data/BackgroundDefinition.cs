@@ -124,10 +124,14 @@ namespace Nova.Data
         [SerializeField] double ufoIntervalMin = 45.0;
         [SerializeField] double ufoIntervalMax = 90.0;
 
-        [Tooltip("1: de izquierda a derecha; -1: al revés.")]
+        [Tooltip("La salida de referencia del generador: 1, de izquierda a derecha; -1, al revés. En partida se sortea.")]
         [SerializeField] int ufoDirection = 1;
 
+        [Tooltip("La altura de entrada de referencia. En partida se sortea entre ufoStartYMin y ufoStartYMax.")]
         [SerializeField] double ufoStartY;
+
+        [SerializeField] double ufoStartYMin;
+        [SerializeField] double ufoStartYMax;
         [SerializeField] double ufoSlope;
 
         [Tooltip("Sigue el eje de la corriente a ufoSurfOffset píxeles, en vez de ir en línea recta.")]
@@ -150,6 +154,11 @@ namespace Nova.Data
         public int UfoCell => ufoCell;
         public double UfoIntervalMin => ufoIntervalMin;
         public double UfoIntervalMax => ufoIntervalMax;
+        public double UfoStartYMin => ufoStartYMin;
+        public double UfoStartYMax => ufoStartYMax;
+
+        // Siguiendo la corriente la altura la pone el eje: solo se sortea el lado.
+        public bool UfoFollowsStream => ufoSurf;
 
         // (value mod period) en [0, period); con periodo 0, el valor tal cual.
         public static double Reduce(double value, double period)
@@ -161,8 +170,12 @@ namespace Nova.Data
         }
 
         // ruta() y ovni_en() de gen_fondos_v2.py: el píxel central del ovni y su frame `age` segundos
-        // después de salir, o false si ya ha cruzado el tablero.
-        public bool UfoAt(double age, out Vector2Int pixel, out int ufoFrame)
+        // después de salir, o false si ya ha cruzado el tablero. Sin más, la salida de referencia del
+        // generador; BackgroundFlyby pasa la que sortea: lado (1 o -1) y altura de entrada.
+        public bool UfoAt(double age, out Vector2Int pixel, out int ufoFrame) =>
+            UfoAt(age, ufoDirection, ufoStartY, out pixel, out ufoFrame);
+
+        public bool UfoAt(double age, int direction, double startY, out Vector2Int pixel, out int ufoFrame)
         {
             pixel = default;
             ufoFrame = 0;
@@ -171,10 +184,10 @@ namespace Nova.Data
             double travelled = ufoSpeed * age - ufoCell;
             if (travelled > Width + ufoCell)
                 return false;
-            double x = ufoDirection > 0 ? travelled : Width - travelled;
+            double x = direction > 0 ? travelled : Width - travelled;
             double y = ufoSurf
                 ? axis[(int)Math.Min(Math.Max(x, 0.0), Width - 1)] + ufoSurfOffset
-                : ufoStartY + ufoSlope * travelled;
+                : startY + ufoSlope * travelled;
             y += ufoSway * Math.Sin(2.0 * Math.PI * age / ufoSwayPeriod);
             pixel = new Vector2Int((int)Math.Round(x), (int)Math.Round(y));
             ufoFrame = (int)(age * ufoFps) % ufoFrameCount;
@@ -206,10 +219,11 @@ namespace Nova.Data
         }
 
         public void ConfigureUfo(Sprite[] frames, int frameCount, int fps, int cell, double speed, double sway, double swayPeriod,
-                                 double intervalMin, double intervalMax, int direction, double startY, double slope,
-                                 bool surf, double surfOffset)
+                                 double intervalMin, double intervalMax, int direction, double startY, double startYMin,
+                                 double startYMax, double slope, bool surf, double surfOffset)
         {
-            if (frameCount <= 0 || fps <= 0 || swayPeriod <= 0.0 || intervalMin <= 0.0 || intervalMax < intervalMin)
+            if (frameCount <= 0 || fps <= 0 || swayPeriod <= 0.0 || intervalMin <= 0.0 || intervalMax < intervalMin
+                || startYMax < startYMin)
                 throw new ArgumentException("Ovni sin frames, sin cadencia o con un intervalo imposible.");
             ufoFrames = frames ?? Array.Empty<Sprite>();
             ufoFrameCount = frameCount;
@@ -222,6 +236,8 @@ namespace Nova.Data
             ufoIntervalMax = intervalMax;
             ufoDirection = direction;
             ufoStartY = startY;
+            ufoStartYMin = startYMin;
+            ufoStartYMax = startYMax;
             ufoSlope = slope;
             ufoSurf = surf;
             ufoSurfOffset = surfOffset;
