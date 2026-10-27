@@ -36,3 +36,24 @@ MonoBehaviour:
     generationInterval: 0.85
     radius: 0
     fireRate: 0
+  art:
+  - neutral: {fileID: 0}
+    player: {fileID: 21300000, guid: c41494085a630186baee6ceb30c432a5, type: 3}
+    enemy: {fileID: 21300000, guid: f5ed098e2b2dada00fed6e8e4f30b930, type: 3}
+    footprintPixels: 39
+  - neutral: {fileID: 0}
+    player: {fileID: 21300000, guid: a9eb489f126e56f91a340da532d1a61e, type: 3}
+    enemy: {fileID: 21300000, guid: 9999f6346a1b72ca82b0d00b1a08e5c6, type: 3}
+    footprintPixels: 51
+  - neutral: {fileID: 0}
+    player: {fileID: 21300000, guid: 72871eea6c9eedf3538b8501cbeafe4b, type: 3}
+    enemy: {fileID: 21300000, guid: 7deae708a79395e4f9022ae033a526f0, type: 3}
+    footprintPixels: 61
+  - neutral: {fileID: 0}
+    player: {fileID: 21300000, guid: a3c25c0d1da9e0c6c6bce5b963170b0e, type: 3}
+    enemy: {fileID: 21300000, guid: 7882da29666d358ffe66da6e99c14d14, type: 3}
+    footprintPixels: 68
+  - neutral: {fileID: 0}
+    player: {fileID: 21300000, guid: d56b0221fcaead1bd363ca1ed542afa7, type: 3}
+    enemy: {fileID: 21300000, guid: a0ebc0ebe56971ee19d413dbbfdf5af7, type: 3}
+    footprintPixels: 72

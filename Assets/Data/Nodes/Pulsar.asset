@@ -28,3 +28,16 @@ MonoBehaviour:
     generationInterval: 0
     radius: 0
     fireRate: 0
+  art:
+  - neutral: {fileID: 0}
+    player: {fileID: 21300000, guid: ea121a6ce51ff63c3d2c66ef2cffec06, type: 3}
+    enemy: {fileID: 21300000, guid: e449d863d4337fb069d16a0ee13d04fe, type: 3}
+    footprintPixels: 44
+  - neutral: {fileID: 0}
+    player: {fileID: 21300000, guid: 0b211f4af71f224c5d013f6651a04974, type: 3}
+    enemy: {fileID: 21300000, guid: a2073ed13a798c0d0bd8d1f661643dcb, type: 3}
+    footprintPixels: 60
+  - neutral: {fileID: 0}
+    player: {fileID: 21300000, guid: 7cf623caa40c40a846c416b8b44a8a0e, type: 3}
+    enemy: {fileID: 21300000, guid: 62b6a5274326909da11fe466734c0f07, type: 3}
+    footprintPixels: 68

@@ -24,6 +24,8 @@ GameObject:
   - component: {fileID: 8277416823028780402}
   - component: {fileID: 3434578706569215705}
   - component: {fileID: 7399294446711799842}
+  - component: {fileID: 5299858289095822301}
+  - component: {fileID: 2703543337690549304}
   - component: {fileID: 7172865981769028165}
   - component: {fileID: 8826767285077947241}
   - component: {fileID: 7219644904623616947}
@@ -276,6 +278,30 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 0.5
+--- !u!114 &5299858289095822301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7921229937245829407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8596a3283b465d44ac1c5d67cf67310, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Gameplay::Nova.Gameplay.NodeCollider2D
+--- !u!114 &2703543337690549304
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7921229937245829407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c15c61f9d0a0b6342b455446c83343ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.NodeVisual
 --- !u!114 &7172865981769028165
 MonoBehaviour:
   m_ObjectHideFlags: 0
