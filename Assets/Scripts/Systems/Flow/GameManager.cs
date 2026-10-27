@@ -34,6 +34,7 @@ namespace Nova.Systems
     {
         public const string GameScene = "Game";
         public const string LevelSelectScene = "LevelSelect";
+        public const string MainMenuScene = "MainMenu";
 
         public static GameManager Instance { get; private set; }
 
@@ -43,7 +44,7 @@ namespace Nova.Systems
         [Tooltip("Los nueve niveles, en orden (11.2): de aquí sale el siguiente.")]
         [SerializeField] LevelDefinition[] levels = Array.Empty<LevelDefinition>();
 
-        [Tooltip("El nivel que se carga si nadie ha pedido otro: al darle a Play en Game desde el editor.")]
+        [Tooltip("El nivel que se carga si nadie ha pedido otro: al darle a Play en Game desde el editor, con Nova → Empezar Play desde el menú apagado.")]
         [SerializeField] LevelDefinition startLevel;
 
         [SerializeField] LevelLoader loader;

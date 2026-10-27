@@ -319,6 +319,8 @@ namespace Nova.Editor
             var recorder = flow.AddComponent<MatchRecorder>();
             recorder.Configure(registry, checker);
             game.Configure(loader, checker, recorder, levels, levels[0]);
+            // T5-06: ganar desbloquea el siguiente nivel.
+            flow.AddComponent<ProgressSaver>().Configure(game);
             // Pausa y fin, fieles a la maqueta (T.2 regla 8): uGUI, con su EventSystem y los sprites de A.2.
             flow.AddComponent<PauseMenu>().Configure(game, font, text);
             flow.AddComponent<EndLevelScreen>().Configure(game, font, text, registry, NodeSprites());
@@ -333,7 +335,99 @@ namespace Nova.Editor
             EditorSceneManager.SaveScene(scene, GameScenePath);
             AssetDatabase.Refresh();
 
-            Debug.Log($"[Nova] Escena Game generada en {GameScenePath}. Dale a Play: empieza en el nivel 1; para otro, cambia Start Level en GameManager.");
+            Debug.Log($"[Nova] Escena Game generada en {GameScenePath}. Play empieza en el menú; para jugar aquí un nivel, apaga Nova → Empezar Play desde el menú y elige Start Level en GameManager.");
+        }
+
+        // T5-06: Boot, el menú principal (13.8) y la carta estelar (13.9). Sobrescribe las tres escenas
+        // enteras, conservando su GUID. Los menús enseñan el fondo con movimiento de su mapa debajo del
+        // lienzo: el del mapa 1 entero en el menú, y en la carta, una franja de cada mapa bajo su tercio.
+        const string BootScenePath = "Assets/Scenes/Boot.unity";
+        const string MainMenuScenePath = "Assets/Scenes/MainMenu.unity";
+        const string LevelSelectScenePath = "Assets/Scenes/LevelSelect.unity";
+        const string LinkSheetPath = "Assets/Sprites/world/link/world_link_sheet.png";
+
+        // La maqueta pone las franjas de la carta en (640 · i, 96) con 640 x 624 px de lienzo: a 1080p,
+        // 320 x 312 píxeles del arte. La ventana de cada mapa, en píxeles de su fondo.
+        static readonly RectInt[] ChartWindows =
+        {
+            new RectInt(18, 122, 320, 312),
+            new RectInt(328, 122, 320, 312),
+            new RectInt(638, 122, 320, 312),
+        };
+
+        [MenuItem("Nova/Fase 5/Generar escenas de menú")]
+        public static void GenerateMenus()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                return;
+
+            var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontPath);
+            var text = AssetDatabase.LoadAssetAtPath<UiText>(TextPath);
+            var levels = new LevelDefinition[9];
+            for (int i = 0; i < levels.Length; i++)
+                levels[i] = AssetDatabase.LoadAssetAtPath<LevelDefinition>($"{LevelsFolder}/Level{i + 1}.asset");
+            if (font == null || text == null || System.Array.IndexOf(levels, null) >= 0)
+            {
+                Debug.LogError($"[Nova] Faltan {FontPath}, {TextPath} o alguno de los nueve niveles de {LevelsFolder} (Nova → Fase 5 → Generar los 9 niveles).");
+                return;
+            }
+            var sheet = AssetDatabase.LoadAssetAtPath<Texture2D>(LinkSheetPath);
+            if (sheet == null)
+                Debug.LogWarning($"[Nova] No existe {LinkSheetPath}: sincroniza con Nova → Arte → Sincronizar sprites desde art. Las líneas de plasma saldrán vacías.");
+            if (levels[0].Background == null)
+                Debug.LogWarning("[Nova] Los niveles no tienen fondo: genera los fondos con Nova → Arte → Generar fondos.");
+            Sprite[] sprites = NodeSprites();
+
+            // Boot: solo pasa al menú.
+            Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            CreateCamera();
+            new GameObject("Boot").AddComponent<SceneBoot>();
+            EditorSceneManager.SaveScene(scene, BootScenePath);
+
+            // Menú principal: el fondo del mapa 1 entero, con su ovni.
+            scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            CreateCamera();
+            var sky = new GameObject("Background");
+            sky.AddComponent<BackgroundView>().Configure(levels[0].Background);
+            sky.AddComponent<BackgroundFlyby>();
+            var menu = new GameObject("MainMenu");
+            menu.AddComponent<MainMenuScreen>().Configure(font, text, levels, sprites, sheet);
+            CreateEventSystem();
+            EditorSceneManager.SaveScene(scene, MainMenuScenePath);
+
+            // Carta estelar: una franja de cada mapa debajo de su tercio de pantalla.
+            scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            CreateCamera();
+            for (int map = 0; map < 3; map++)
+            {
+                var band = new GameObject($"Background{map + 1}");
+                band.transform.position = ChartCenter(map);
+                band.AddComponent<BackgroundView>().Configure(levels[map * LevelDefinition.LevelsPerMap].Background, null, ChartWindows[map]);
+                band.AddComponent<BackgroundFlyby>();
+            }
+            var chart = new GameObject("LevelSelect");
+            chart.AddComponent<LevelSelectScreen>().Configure(font, text, levels, sprites, sheet);
+            CreateEventSystem();
+            EditorSceneManager.SaveScene(scene, LevelSelectScenePath);
+
+            AssetDatabase.Refresh();
+            Debug.Log("[Nova] Escenas Boot, MainMenu y LevelSelect generadas. Para el progreso de 13.9, ProgressSaver guarda el máximo en PlayerPrefs (Nova.MaxUnlocked).");
+        }
+
+        // El centro de la franja de un mapa en el mundo: el lienzo de 1920 x 1080 es el tablero de
+        // 15 x 8.4375 u, a 128 px de lienzo por unidad.
+        static Vector3 ChartCenter(int map)
+        {
+            const float CanvasPerUnit = 128f;
+            float x = 320f + 640f * map;
+            float y = 96f + 312f;
+            return new Vector3(x / CanvasPerUnit - 7.5f, 4.21875f - y / CanvasPerUnit, 0f);
+        }
+
+        static void CreateEventSystem()
+        {
+            new GameObject("EventSystem", typeof(UnityEngine.EventSystems.EventSystem),
+                typeof(UnityEngine.InputSystem.UI.InputSystemUIInputModule));
         }
 
         // Los sprites de nodo que ArtBridge copió a Assets/Sprites/nodes (T0-05). Sin sincronizar, la

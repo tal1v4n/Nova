@@ -29,6 +29,7 @@ namespace Nova.UI
             public float Duration;
             public Func<float, float> Curve;
             public Action<float> Apply;
+            public UnityEngine.Object Owner;
             public bool Done;
         }
 
@@ -37,6 +38,7 @@ namespace Nova.UI
             public float Delay;
             public float Period;
             public Action<float> Apply;
+            public UnityEngine.Object Owner;
         }
 
         readonly List<Track> tracks = new List<Track>();
@@ -46,17 +48,22 @@ namespace Nova.UI
         public float Time => time;
 
         // Una transición: a los delay s empieza y dura duration s. apply recibe el avance ya curvado.
-        public void Add(float delay, float duration, Func<float, float> curve, Action<float> apply)
+        // Con owner, la pista muere con él: una pantalla que rehace una parte —el informe de la carta
+        // estelar— no deja pistas animando objetos destruidos.
+        public void Add(float delay, float duration, Func<float, float> curve, Action<float> apply, UnityEngine.Object owner = null)
         {
             apply(curve(0f));
-            tracks.Add(new Track { Delay = delay, Duration = Mathf.Max(0.0001f, duration), Curve = curve, Apply = apply });
+            tracks.Add(new Track { Delay = delay, Duration = Mathf.Max(0.0001f, duration), Curve = curve, Apply = apply, Owner = owner });
         }
 
         // Un bucle de ambiente: apply recibe la fase, de 0 a 1, cada period s, desde delay.
-        public void Repeat(float delay, float period, Action<float> apply)
+        public void Repeat(float delay, float period, Action<float> apply, UnityEngine.Object owner = null)
         {
-            loops.Add(new Loop { Delay = delay, Period = period, Apply = apply });
+            loops.Add(new Loop { Delay = delay, Period = period, Apply = apply, Owner = owner });
         }
+
+        // Tenía dueño y ya no existe.
+        static bool Gone(UnityEngine.Object owner) => !ReferenceEquals(owner, null) && owner == null;
 
         void Update()
         {
@@ -66,6 +73,8 @@ namespace Nova.UI
         public void Step(float deltaTime)
         {
             time += deltaTime;
+            tracks.RemoveAll(track => Gone(track.Owner));
+            loops.RemoveAll(loop => Gone(loop.Owner));
             foreach (Track track in tracks)
             {
                 if (track.Done || time < track.Delay)
@@ -84,6 +93,7 @@ namespace Nova.UI
         // Todo en su sitio final.
         public void Finish()
         {
+            tracks.RemoveAll(track => Gone(track.Owner));
             foreach (Track track in tracks)
             {
                 if (!track.Done)
@@ -147,13 +157,13 @@ namespace Nova.UI
             {
                 group.alpha = t;
                 target.anchoredPosition = home + new Vector2(0f, -distance * (1f - t));
-            });
+            }, target);
         }
 
         public void Fade(RectTransform target, float delay, float duration, Func<float, float> curve = null)
         {
             CanvasGroup group = Group(target);
-            Add(delay, duration, curve ?? Ease, t => group.alpha = t);
+            Add(delay, duration, curve ?? Ease, t => group.alpha = t, target);
         }
 
         // drop: cae 16 px desde arriba y aparece.
@@ -165,7 +175,7 @@ namespace Nova.UI
             {
                 group.alpha = t;
                 target.anchoredPosition = home + new Vector2(0f, 16f * (1f - t));
-            });
+            }, target);
         }
 
         public static CanvasGroup Group(RectTransform target)

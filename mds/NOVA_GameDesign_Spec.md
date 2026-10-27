@@ -982,7 +982,8 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 | `PowerUpSpawner.cs` | Temporizadores, elección de Asteroide, expiración |
 | `FactionBuffs.cs` | Buffs activos por facción y su consulta por los componentes |
 | `WinConditionChecker.cs` | Victoria, derrota, estancamiento, cascada de conquista |
-| `ProgressSaver.cs` | Nivel máximo desbloqueado en `PlayerPrefs`, de 1 a 10: el 10 es «los nueve ganados» ([13.9](#139-selección-de-nivel)) |
+| `ProgressSaver.cs` | Nivel máximo desbloqueado en `PlayerPrefs`, de 1 a 10: el 10 es «los nueve ganados» ([13.9](#139-selección-de-nivel)). Escucha `OnLevelEnded`: ganar el nivel n desbloquea el n + 1, y nunca baja. Guarda tras `IProgressStore`, que los tests cambian por memoria |
+| `SceneBoot.cs` | `Boot`, la escena 0, pasa al menú principal |
 | `MatchRecorder.cs` | Datos de la partida en curso para las pantallas de fin ([13.11](#1311-pantallas-de-fin-de-nivel)): tiempo, pico de la barra de poder, capturas hechas y perdidas, nodos ganados por la cascada y una muestra por segundo de la barra. **Solo en memoria**: no se guarda nada ([1.2](#12-alcance-cerrado)) |
 
 ### 15.7 Input, Enemigo y UI

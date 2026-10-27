@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Nova.Core;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -102,6 +103,37 @@ namespace Nova.UI
             bool ring = d > 2.6f && d < 4.6f && !(x < 4 && y > 5);
             bool tip = (y == 9 && x >= 1 && x <= 4) || (x == 1 && y >= 6 && y <= 9);
             return ring || tip ? 1f : 0f;
+        });
+
+        static Sprite ring;
+        static Sprite dashedRing;
+        static Sprite brackets;
+
+        // El sonar del nivel siguiente (13.9): un aro de 3 px en 96 px, a ×1.
+        public static Sprite Ring => ring != null ? ring : ring = Make("Ring", 96, 96, (x, y) =>
+        {
+            float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(48f, 48f));
+            return d >= 45f && d <= 48f ? 1f : 0f;
+        });
+
+        // El anillo que gira alrededor del nivel siguiente: r 58 y 4 px en 128, a ×2, con 22 trazos
+        // iguales para que la vuelta cierre.
+        public static Sprite DashedRing => dashedRing != null ? dashedRing : dashedRing = Make("DashedRing", 64, 64, (x, y) =>
+        {
+            Vector2 p = new Vector2(x + 0.5f - 32f, y + 0.5f - 32f);
+            float d = p.magnitude;
+            float turn = Mathf.Repeat(Mathf.Atan2(p.y, p.x) / (2f * Mathf.PI), 1f);
+            return d >= 28f && d <= 30f && Mathf.Repeat(turn * 22f, 1f) < 0.5f ? 1f : 0f;
+        });
+
+        // Los corchetes de selección («esquinas, no anillos»): 128 px con tramos de 28 y 4 de grueso, a ×4.
+        public static Sprite Brackets => brackets != null ? brackets : brackets = Make("Brackets", 32, 32, (x, y) =>
+        {
+            bool nearX = x < 7 || x > 24;
+            bool nearY = y < 7 || y > 24;
+            bool edgeX = x == 0 || x == 31;
+            bool edgeY = y == 0 || y == 31;
+            return (edgeX && nearY) || (edgeY && nearX) ? 1f : 0f;
         });
 
         static Sprite Make(string name, int w, int h, System.Func<int, int, float> alpha, Vector4 border = default,
@@ -304,6 +336,21 @@ namespace Nova.UI
             if (sprite == null)
                 image.color = new Color(0f, 0f, 0f, 0f);
             return image;
+        }
+
+        // Un sprite de A.2 por su nombre de archivo: str_lvl3_enemy, ast_lvl0_neutral… null si no está.
+        public static Sprite NodeSpriteFor(IEnumerable<Sprite> sprites, NodeType type, int level, Faction faction)
+        {
+            string prefix = type == NodeType.Star ? "str" : type == NodeType.Pulsar ? "pul" : type == NodeType.Magnetar ? "mag" : "ast";
+            string name = $"{prefix}_lvl{level}_{faction.ToString().ToLowerInvariant()}";
+            if (sprites == null)
+                return null;
+            foreach (Sprite sprite in sprites)
+            {
+                if (sprite != null && sprite.name == name)
+                    return sprite;
+            }
+            return null;
         }
 
         // Una tecla de la lista de controles: marco de 2 px alrededor del texto.

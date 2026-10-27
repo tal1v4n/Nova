@@ -232,6 +232,74 @@ namespace Nova.Data
             "Pista: el Agujero de Gusano también se lleva un Magnetar neutral entero.",
         };
 
+        [Header("Menú principal (13.8)")]
+        [SerializeField] string tagline = "CAPTURA · ENCIENDE · CONQUISTA";
+        [SerializeField] string gameTitle = "NOVA";
+        [SerializeField] string play = "JUGAR";
+        [SerializeField] string continueGame = "CONTINUAR";
+
+        [Tooltip("Debajo de Continuar: {0} mapa, {1} nivel, {2} nombre del mapa.")]
+        [SerializeField] string continueFormat = "Mapa {0} · Nivel {1} · {2}";
+
+        [SerializeField] string starMap = "MAPA ESTELAR";
+        [SerializeField] string quit = "SALIR";
+        [SerializeField] string legendNeutral = "Neutral";
+
+        [Tooltip("La versión en el pie: {0} es Application.version.")]
+        [SerializeField] string versionFormat = "v{0}";
+
+        [Header("Carta estelar (13.9)")]
+        [SerializeField] string backToMenu = "MENÚ";
+        [SerializeField] string starChart = "CARTA ESTELAR";
+
+        [Tooltip("{0} niveles ganados.")]
+        [SerializeField] string conqueredFormat = "{0} / 9 conquistados";
+
+        [SerializeField] string mapCapFormat = "MAPA 0{0}";
+
+        [Tooltip("{0} y {1} primer y último nivel; {2} y {3} sus duraciones.")]
+        // Guion y no raya: Jersey 10 no tiene «–».
+        [SerializeField] string mapRangeFormat = "Niveles {0}-{1} · {2} a {3}";
+
+        [SerializeField] string nodeLevelFormat = "NIVEL {0}";
+        [SerializeField] string nextTag = "SIGUIENTE";
+
+        [Tooltip("{0} mapa, {1} su nombre en mayúsculas.")]
+        [SerializeField] string reportMapFormat = "MAPA {0} · {1}";
+
+        [SerializeField] string targetDurationFormat = "Duración objetivo {0}";
+        [SerializeField] string introducedFormat = "Nuevo: {0}";
+
+        [Tooltip("Las mecánicas que introduce cada mapa (11.1), del 1 al 3.")]
+        [SerializeField] string[] mapIntros =
+        {
+            "envío, captura, Estrella, Magnetar y mejoras",
+            "Púlsar, Cero Absoluto, Decaimiento y Magnetar neutral",
+            "Agujero de Gusano, reconversión y un algoritmo agresivo",
+        };
+
+        [SerializeField] string sideYou = "TÚ";
+        [SerializeField] string sideEnemy = "ENEMIGO";
+        [SerializeField] string sideNeutrals = "NEUTRALES";
+
+        [Tooltip("El nivel de un nodo en el informe: N2.")]
+        [SerializeField] string unitLevelFormat = "N{0}";
+
+        [SerializeField] string unitCountFormat = "×{0}";
+        [SerializeField] string ignitionHeader = "ENCENDER";
+        [SerializeField] string pulsarPowersHeader = "PODERES DEL PÚLSAR";
+
+        [Tooltip("{0} es Sí o No.")]
+        [SerializeField] string conversionHeaderFormat = "RECONVERSIÓN · {0}";
+
+        [SerializeField] string yes = "SÍ";
+        [SerializeField] string no = "NO";
+        [SerializeField] string launch = "LANZAR";
+        [SerializeField] string locked = "BLOQUEADO";
+
+        [Tooltip("{0} es el nivel que hay que ganar para desbloquearlo.")]
+        [SerializeField] string winToUnlockFormat = "Gana el nivel {0}";
+
         public string TypeName(NodeType type)
         {
             switch (type)
@@ -374,6 +442,41 @@ namespace Nova.Data
         }
 
         public string Hint(int map) => Pick(hints, map - 1, nameof(map));
+
+        public string Tagline => tagline;
+        public string GameTitle => gameTitle;
+        public string Play => play;
+        public string ContinueGame => continueGame;
+        public string ContinueLine(int map, int level) => Format(continueFormat, map, level, MapName(map));
+        public string StarMap => starMap;
+        public string Quit => quit;
+        public string LegendNeutral => legendNeutral;
+        public string Version(string version) => Format(versionFormat, version);
+
+        public string BackToMenu => backToMenu;
+        public string StarChart => starChart;
+        public string ConqueredCount(int conquered) => Format(conqueredFormat, conquered);
+        public string MapCap(int map) => Format(mapCapFormat, map);
+        public string MapRange(int first, int last, float firstDuration, float lastDuration) =>
+            Format(mapRangeFormat, first, last, Clock(firstDuration), Clock(lastDuration));
+        public string NodeLevel(int level) => Format(nodeLevelFormat, level);
+        public string NextTag => nextTag;
+        public string ReportMap(int map) => Format(reportMapFormat, map, MapName(map).ToUpperInvariant());
+        public string TargetDuration(float seconds) => Format(targetDurationFormat, Clock(seconds));
+        public string Introduced(int map) => Format(introducedFormat, Pick(mapIntros, map - 1, nameof(map)));
+        public string SideYou => sideYou;
+        public string SideEnemy => sideEnemy;
+        public string SideNeutrals => sideNeutrals;
+        public string UnitLevel(int level) => Format(unitLevelFormat, level);
+        public string UnitCount(int count) => Format(unitCountFormat, count);
+        public string IgnitionHeader => ignitionHeader;
+        public string PulsarPowersHeader => pulsarPowersHeader;
+        // El valor llega ya escrito: la carta lo pinta en gris cuando el mapa no la permite.
+        public string ConversionHeader(string value) => Format(conversionHeaderFormat, value);
+        public string YesNo(bool value) => value ? yes : no;
+        public string Launch => launch;
+        public string Locked => locked;
+        public string WinToUnlock(int level) => Format(winToUnlockFormat, level);
 
         static string Pick(string[] values, int index, string parameter)
         {

@@ -206,6 +206,87 @@ namespace Nova.Tests
             Assert.AreEqual(0f, Time.timeScale);
         }
 
+        // --- ProgressSaver (T5-06) ---
+
+        sealed class MemoryStore : IProgressStore
+        {
+            public int Value = ProgressSaver.FirstLevel;
+            public int Read(int fallback) => Value;
+            public void Write(int value) => Value = value;
+        }
+
+        // Un ProgressSaver sobre la partida, con el progreso en memoria: la suite no toca PlayerPrefs.
+        MemoryStore Progress(int max)
+        {
+            var store = new MemoryStore { Value = max };
+            ProgressSaver.Store = store;
+            var go = new GameObject("Progress");
+            spawned.Add(go);
+            go.AddComponent<ProgressSaver>().Configure(game);
+            return store;
+        }
+
+        [Test]
+        public void WinningALevelUnlocksTheNext()
+        {
+            try
+            {
+                MemoryStore store = Progress(4);
+                game.Begin(levels[3]);
+                Win();
+                Assert.AreEqual(5, store.Value);
+                Assert.AreEqual(4, ProgressSaver.Conquered);
+            }
+            finally
+            {
+                ProgressSaver.Store = null;
+            }
+        }
+
+        [Test]
+        public void WinningTheNinthSavesTen()
+        {
+            try
+            {
+                MemoryStore store = Progress(9);
+                game.Begin(levels[8]);
+                Win();
+                Assert.AreEqual(ProgressSaver.AllConquered, store.Value, "13.9: el 10 es «los nueve ganados».");
+                Assert.AreEqual(9, ProgressSaver.ContinueLevel, "13.8: con los nueve ganados, Continuar carga el 9.");
+            }
+            finally
+            {
+                ProgressSaver.Store = null;
+            }
+        }
+
+        [Test]
+        public void LosingOrReplayingAnOldLevelNeverLowersTheMax()
+        {
+            try
+            {
+                MemoryStore store = Progress(6);
+                game.Begin(levels[1]);
+                Win();
+                Assert.AreEqual(6, store.Value, "Repetir el 2 no baja el máximo.");
+
+                game.Begin(levels[5]);
+                NodeOf(Faction.Player, NodeType.Star).Steal(Faction.Enemy);
+                Run(Tick);
+                Assert.AreEqual(LevelOutcome.Annihilation, game.Outcome);
+                Assert.AreEqual(6, store.Value, "Perder no desbloquea nada.");
+
+                ProgressSaver.Unlock(3);
+                Assert.AreEqual(6, store.Value);
+                ProgressSaver.Unlock(42);
+                Assert.AreEqual(ProgressSaver.AllConquered, store.Value, "Nunca pasa de 10.");
+            }
+            finally
+            {
+                ProgressSaver.Store = null;
+            }
+        }
+
         [Test]
         public void TheEndScreenCannotBePaused()
         {
