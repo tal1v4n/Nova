@@ -101,10 +101,23 @@ namespace Nova.Tests
         [TestCase("Asteroid", Faction.Player, false)]
         [TestCase("Star", Faction.Player, false)]
         [TestCase("Magnetar", Faction.Player, false)]
+        [Section17(33)]
         public void ValidTargetIsAnyLitNodeThatIsNotYours(string type, Faction owner, bool valid)
         {
             NodeController target = Node(type, owner, 10);
             Assert.AreEqual(valid, PowerRules.IsValidTarget(target.Snapshot(), Faction.Player));
+        }
+
+        // 17 caso 33: ningún Asteroide lo es nunca, sea de quien sea y tenga la Energía que tenga.
+        [Test]
+        [Section17(33)]
+        public void NoAsteroidIsEverATarget([Values] Faction owner, [Values(0, 5, 10)] int energy)
+        {
+            PulsarCaster ready = ReadyPulsar(Faction.Player);
+            NodeController asteroid = Node("Asteroid", owner, energy, new Vector2(0f, 3f));
+
+            Assert.IsFalse(PowerRules.IsValidTarget(asteroid.Snapshot(), Faction.Player));
+            Assert.AreEqual(ActionBlock.InvalidTarget, ready.CheckLaunch(Faction.Player, asteroid).Block);
         }
 
         // --- Lanzamiento ---
@@ -130,6 +143,7 @@ namespace Nova.Tests
         }
 
         [Test]
+        [Section17(33)]
         public void LaunchChecksFollowTheRules()
         {
             PulsarCaster ready = ReadyPulsar(Faction.Player);
@@ -181,6 +195,7 @@ namespace Nova.Tests
         }
 
         [Test]
+        [Section17(35)]
         public void ABeamIsNotAProtonAndNoMagnetarSeesIt()
         {
             var go = new GameObject("Protons");
@@ -199,6 +214,7 @@ namespace Nova.Tests
         }
 
         [Test]
+        [Section17(27)]
         public void ATargetThatBecomesTheLaunchersDissipatesTheBeam()
         {
             PulsarCaster caster = ReadyPulsar(Faction.Player);
@@ -242,6 +258,7 @@ namespace Nova.Tests
         }
 
         [Test]
+        [Section17(28)]
         public void ThePulsarCapturedDuringTheBeamStillDeliversForItsLauncher()
         {
             PulsarCaster caster = ReadyPulsar(Faction.Player);
@@ -262,6 +279,7 @@ namespace Nova.Tests
         // --- Orden (17 caso 29) ---
 
         [Test]
+        [Section17(29)]
         public void SameTickBeamsResolveByPulsarEnergyFirst()
         {
             PulsarCaster weak = ReadyPulsar(Faction.Player, 40, new Vector2(-4f, 0f));
@@ -277,6 +295,7 @@ namespace Nova.Tests
         }
 
         [Test]
+        [Section17(29)]
         public void SameTickBeamsWithEqualEnergyResolveInLaunchOrder()
         {
             PulsarCaster first = ReadyPulsar(Faction.Player, 70, new Vector2(-4f, 0f));

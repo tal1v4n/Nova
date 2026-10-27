@@ -224,6 +224,7 @@ namespace Nova.Tests
         // Mismo tick, distinta llegada: el Jugador (0.99 u, llega a los 16 ms del tick) resuelve
         // antes que el Enemigo (1 u, a los 20 ms). El segundo opera sobre el resultado del primero.
         [Test]
+        [Section17(1)]
         public void EarlierArrivalInTheTickResolvesFirst()
         {
             NodeController rock = Node("Asteroid", Faction.Neutral, 10, Vector2.zero);
@@ -241,6 +242,7 @@ namespace Nova.Tests
 
         // Empate exacto de llegada: primero el de mayor Carga.
         [Test]
+        [Section17(1)]
         public void OnATieTheBiggerChargeResolvesFirst()
         {
             NodeController rock = Node("Asteroid", Faction.Neutral, 10, Vector2.zero);
@@ -258,6 +260,7 @@ namespace Nova.Tests
 
         // Empate de llegada y de Carga: primero el que se lanzó antes.
         [Test]
+        [Section17(1)]
         public void OnAFullTieTheFirstLaunchedResolvesFirst()
         {
             NodeController rock = Node("Asteroid", Faction.Neutral, 10, Vector2.zero);

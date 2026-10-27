@@ -34,6 +34,7 @@ namespace Nova.Tests
 
         // 17, caso 5: el excedente se descarta.
         [Test]
+        [Section17(5)]
         public void AbsorptionOverflowIsDiscarded()
         {
             var o = Hit(Faction.Player, 40, Star(Faction.Player, 30));
@@ -51,6 +52,7 @@ namespace Nova.Tests
 
         // 17, caso 2: la facción se comprueba en el impacto. El snapshot ya trae la facción actual.
         [Test]
+        [Section17(2)]
         public void NodeThatBecameOwnFactionAbsorbs()
         {
             var o = Hit(Faction.Player, 10, Star(Faction.Player, 0));
@@ -115,6 +117,7 @@ namespace Nova.Tests
 
         // 17, caso 7: Carga 1 contra un Magnetar a 0 lo captura y lo deja a 0.
         [Test]
+        [Section17(7)]
         public void ChargeOneCapturesMagnetarAtZero()
         {
             var o = Hit(Faction.Enemy, 1, Magnetar(Faction.Player, 0));
@@ -223,6 +226,7 @@ namespace Nova.Tests
 
         // El segundo protón opera sobre el resultado del primero.
         [Test]
+        [Section17(1)]
         public void SecondImpactOperatesOnTheFirstResult()
         {
             var target = Star(Faction.Neutral, 10);

@@ -386,6 +386,7 @@ namespace Nova.Tests
         }
 
         [Test]
+        [Section17(22)]
         public void EverySelectedOriginLaunchesItsOwnProton()
         {
             NodeController a = Node("Star", Faction.Player, 40);

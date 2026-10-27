@@ -61,6 +61,7 @@ namespace Nova.Tests
         // --- Estancamiento (10.2, 2) ---
 
         [Test]
+        [Section17(19)]
         public void SixEnergyAndNoStarIsAStalemate()
         {
             // Caso 19.
@@ -79,6 +80,7 @@ namespace Nova.Tests
         }
 
         [Test]
+        [Section17(19)]
         public void NothingIsCheckedWhileSomethingCanStillChangeTheCount()
         {
             Add(Faction.Player, NodeType.Magnetar, 6);
@@ -109,6 +111,7 @@ namespace Nova.Tests
 
         [TestCase(20, LevelOutcome.None)]
         [TestCase(19, LevelOutcome.Stalemate)]
+        [Section17(18)]
         public void ANeutralAsteroidCanBeCapturedAndLit(int energy, LevelOutcome expected)
         {
             // Caso 18 en los mapas 1 y 2: 10 para capturarlo y 10 para encenderlo.
@@ -120,6 +123,7 @@ namespace Nova.Tests
 
         [TestCase(15, LevelOutcome.None)]
         [TestCase(16, LevelOutcome.Stalemate)]
+        [Section17(19)]
         public void AnEnemyStarCanBeCaptured(int starEnergy, LevelOutcome expected)
         {
             Add(Faction.Player, NodeType.Magnetar, 15);
@@ -139,6 +143,7 @@ namespace Nova.Tests
         [TestCase(30, 30, LevelOutcome.None)]
         [TestCase(30, 29, LevelOutcome.Stalemate)]
         [TestCase(-1, 80, LevelOutcome.Stalemate)]
+        [Section17(18)]
         public void ANodeCanBeReconvertedWhereTheLevelAllowsIt(int cost, int energy, LevelOutcome expected)
         {
             // Caso 18 en el mapa 3, sin Asteroides ni Estrella que capturar.

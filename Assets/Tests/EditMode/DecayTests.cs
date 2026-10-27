@@ -181,6 +181,7 @@ namespace Nova.Tests
 
         // 17 caso 11.
         [Test]
+        [Section17(11)]
         public void AtZeroItStaysInfectedAndWithItsOwner()
         {
             NodeController magnetar = Node("Magnetar", Faction.Enemy, 3);
@@ -195,6 +196,7 @@ namespace Nova.Tests
 
         // 17 caso 13.
         [Test]
+        [Section17(13)]
         public void AnotherDecayRestartsTheEffectWithoutDoublingTheRate()
         {
             NodeController magnetar = Node("Magnetar", Faction.Enemy, 30);
@@ -254,6 +256,7 @@ namespace Nova.Tests
 
         // 17 caso 12.
         [Test]
+        [Section17(12)]
         public void ItsOwnerCuresItAndAddsTheEnergy()
         {
             NodeController magnetar = Node("Magnetar", Faction.Enemy, 10);
@@ -298,6 +301,7 @@ namespace Nova.Tests
 
         // 17 caso 32.
         [Test]
+        [Section17(7, 32)]
         public void ANeutralMagnetarDrainsToZeroKeepsFiringAndFallsToChargeOne()
         {
             NodeController magnetar = Node("Magnetar", Faction.Neutral, 100);

@@ -469,6 +469,7 @@ namespace Nova.Tests
 
         // 17 caso 34: sin ningún nodo encendido que no sea suyo, el poder se queda cargado.
         [Test]
+        [Section17(34)]
         public void WithNoLegalTargetThePowerStaysChargedIndefinitely()
         {
             NodeController pulsar = ReadyPulsar();

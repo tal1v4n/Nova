@@ -191,6 +191,7 @@ namespace Nova.Tests
         }
 
         [Test]
+        [Section17(9)]
         public void FrozenPausesTheChargeWithoutLosingIt()
         {
             PulsarCaster caster = Pulsar(100);
@@ -327,6 +328,7 @@ namespace Nova.Tests
         // --- Captura (7.5, 17 caso 10) ---
 
         [Test]
+        [Section17(10)]
         public void CapturedMidChargeLosesTheCharge()
         {
             PulsarCaster caster = Pulsar(100);
@@ -344,6 +346,7 @@ namespace Nova.Tests
         }
 
         [Test]
+        [Section17(10)]
         public void CapturedWithThePowerReadyHandsItToTheNewOwner()
         {
             PulsarCaster caster = Pulsar(100);

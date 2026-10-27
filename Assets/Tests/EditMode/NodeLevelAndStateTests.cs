@@ -181,6 +181,7 @@ namespace Nova.Tests
 
         // Caso 23 de la sección 17: sobre un nodo enemigo no hay mejora.
         [Test]
+        [Section17(23)]
         public void OnlyTheOwnerCanUpgrade()
         {
             node.Initialize(Definition("Star"), Faction.Enemy, 50);

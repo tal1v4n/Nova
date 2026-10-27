@@ -317,6 +317,7 @@ namespace Nova.Tests
         // --- Congelado pausa (8.1, 17 caso 8) ---
 
         [Test]
+        [Section17(8)]
         public void FreezingPausesTheClockAndThawingResumesIt()
         {
             NodeController star = Node("Star", Faction.Player, 50);
@@ -458,6 +459,7 @@ namespace Nova.Tests
         }
 
         [Test]
+        [Section17(23)]
         public void ForeignNodeHasNoConversion()
         {
             panel.Open(Node("Star", Faction.Enemy, 50), Vector2.zero);

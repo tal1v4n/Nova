@@ -226,6 +226,7 @@ namespace Nova.Tests
         }
 
         [Test]
+        [Section17(24)]
         public void MaxLevelReplacesTheButton()
         {
             panel.Open(Node("Star", Faction.Player, 50, 5), Vector2.zero);
@@ -235,12 +236,15 @@ namespace Nova.Tests
         }
 
         [Test]
+        [Section17(23)]
         public void ForeignNodeHasNoButton()
         {
             panel.Open(Node("Star", Faction.Enemy, 50), Vector2.zero);
 
             Assert.AreEqual(NodeInfoPanel.ButtonLook.Hidden, view.Button);
             Assert.AreEqual("Estrella · Nivel 1", view.Line(0), "La información sí se ve.");
+            Assert.AreEqual("Energía 50 / 50", view.Line(1));
+            Assert.AreEqual("Generación: 0.50 E/s", view.Line(2), "13.4: la velocidad de ataque de la Estrella.");
         }
 
         [Test]

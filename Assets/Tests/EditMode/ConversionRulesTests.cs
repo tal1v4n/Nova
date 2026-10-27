@@ -78,6 +78,7 @@ namespace Nova.Tests
         [TestCase(NodeType.Star, 5, 5)]
         [TestCase(NodeType.Pulsar, 3, 3)]
         [TestCase(NodeType.Magnetar, 5, 5)]
+        [Section17(24)]
         public void UpgradeBlockedAtMaxLevel(NodeType type, int level, int maxLevel)
         {
             Assert.AreEqual(ActionBlock.MaxLevel,
@@ -105,6 +106,7 @@ namespace Nova.Tests
 
         // 17, caso 23: sobre un nodo ajeno no hay mejora ni reconversión.
         [Test]
+        [Section17(23)]
         public void UpgradeAndConversionRequireOwnership()
         {
             var enemyStar = Node(Faction.Enemy, NodeType.Star, 1, 50);
@@ -172,6 +174,7 @@ namespace Nova.Tests
 
         // 17, caso 18: sin Estrellas pero con 80 en un Magnetar, puede reconvertirlo por 30.
         [Test]
+        [Section17(18)]
         public void MagnetarWithEightyCanConvertForThirty()
         {
             Assert.IsTrue(ConversionRules.CheckConversion(

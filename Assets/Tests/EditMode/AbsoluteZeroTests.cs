@@ -182,6 +182,7 @@ namespace Nova.Tests
 
         [TestCase(Faction.Enemy)]
         [TestCase(Faction.Neutral)]
+        [Section17(31)]
         public void AFrozenMagnetarDoesNotFire(Faction owner)
         {
             NodeController magnetar = Node("Magnetar", owner, 50);
@@ -252,6 +253,7 @@ namespace Nova.Tests
 
         // 17 caso 9.
         [Test]
+        [Section17(9)]
         public void AChargeInProgressPausesWhileFrozenAndResumesAfterThawing()
         {
             NodeController pulsar = Node("Pulsar", Faction.Player, 70);
@@ -271,6 +273,7 @@ namespace Nova.Tests
 
         // 17 caso 8.
         [Test]
+        [Section17(8)]
         public void AConversionInProgressPausesWhileFrozenAndResumesAfterThawing()
         {
             NodeController star = Node("Star", Faction.Player, 50);
@@ -346,6 +349,7 @@ namespace Nova.Tests
         }
 
         [Test]
+        [Section17(31)]
         public void AFrozenMagnetarHalvesTheDrain()
         {
             NodeController magnetar = Node("Magnetar", Faction.Neutral, 50);

@@ -130,6 +130,7 @@ namespace Nova.Tests
 
         // 17 caso 30.
         [Test]
+        [Section17(30)]
         public void ItTakesAFullNeutralMagnetarWhole()
         {
             NodeController thief = WormholePulsar(Faction.Enemy, position: new Vector2(-4f, 0f));
@@ -177,6 +178,7 @@ namespace Nova.Tests
 
         // 17 caso 14.
         [Test]
+        [Section17(14)]
         public void ItCapturesAFrozenNodeAndRemovesTheFreeze()
         {
             NodeController thief = WormholePulsar(Faction.Player, position: new Vector2(-4f, 0f));
@@ -253,6 +255,7 @@ namespace Nova.Tests
 
         // 17 caso 10.
         [Test]
+        [Section17(10)]
         public void AReadyPowerChangesSidesIntactAndIsUsableAtOnce()
         {
             NodeController thief = WormholePulsar(Faction.Player, position: new Vector2(-4f, 0f));
@@ -285,6 +288,7 @@ namespace Nova.Tests
 
         // 17 caso 28, con el Gusano como causa de la captura.
         [Test]
+        [Section17(28)]
         public void ABeamAlreadyLaunchedCompletesForItsLauncherAndThePulsarChangesSidesEmpty()
         {
             NodeController victimPulsar = Node("Pulsar", Faction.Enemy, 100, new Vector2(4f, 0f));
@@ -308,6 +312,7 @@ namespace Nova.Tests
         // siguen siendo válidos —cada objetivo sigue sin ser del lanzador del haz que le llega—, así
         // que los dos Púlsares acaban intercambiados.
         [Test]
+        [Section17(29)]
         public void TwoWormholesTheSameTickSwapThePulsars()
         {
             NodeController strong = WormholePulsar(Faction.Player, 100, new Vector2(-4f, 0f)); // 40 tras cargar
@@ -325,6 +330,7 @@ namespace Nova.Tests
 
         // Caso 27 con el Gusano: el segundo haz apunta a un nodo que el primero ya le dio a su lanzador.
         [Test]
+        [Section17(27, 29)]
         public void AWormholeOnANodeAlreadyStolenForTheLauncherDissipates()
         {
             NodeController first = WormholePulsar(Faction.Player, 100, new Vector2(-4f, 0f));

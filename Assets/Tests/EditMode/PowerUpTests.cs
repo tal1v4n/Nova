@@ -129,6 +129,7 @@ namespace Nova.Tests
 
         // 17, caso 17.
         [Test]
+        [Section17(17)]
         public void TheSecondOfTheSameTypeRestartsTheTimerWithoutStacking()
         {
             buffs.Apply(Faction.Player, HydrogenCloud);
@@ -179,6 +180,7 @@ namespace Nova.Tests
 
         // 17, caso 15.
         [Test]
+        [Section17(15)]
         public void NobodyIgnitesItAndItGoesOutAfterThirtySeconds()
         {
             Board();
@@ -221,6 +223,7 @@ namespace Nova.Tests
 
         // 17, caso 16.
         [Test]
+        [Section17(16)]
         public void WithoutNeutralAsteroidsTheDropIsSkippedAndDoesNotCount()
         {
             Node("Star", Faction.Player, 25, 1);
@@ -288,6 +291,7 @@ namespace Nova.Tests
 
         // 17, caso 26.
         [Test]
+        [Section17(26)]
         public void AnOwnAsteroidNeverReceivesAPowerUp()
         {
             NodeController own = Node("Asteroid", Faction.Player, 10);

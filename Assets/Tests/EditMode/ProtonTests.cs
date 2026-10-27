@@ -109,6 +109,7 @@ namespace Nova.Tests
 
         // 5.2: el 50 % de 1 no se ejecuta; el 100 % de 1 sí.
         [Test]
+        [Section17(22)]
         public void HalfOfOneDoesNotLaunch()
         {
             NodeController star = Node("Star", Faction.Player, 1, Vector2.zero);
@@ -205,6 +206,7 @@ namespace Nova.Tests
 
         // 17, caso 3: el protón conserva la facción del emisor en el lanzamiento.
         [Test]
+        [Section17(3)]
         public void ProtonKeepsTheFactionOfItsLaunch()
         {
             NodeController star = Node("Star", Faction.Player, 20, Vector2.zero);
@@ -215,6 +217,29 @@ namespace Nova.Tests
             FlyAndImpact(proton);
 
             Assert.AreEqual(Faction.Player, rock.Faction);
+        }
+
+        // 17, caso 25: la evacuación. Enviar el 100 % desde un nodo atacado es legal, para los dos
+        // bandos: la Energía se salva y el atacante llega a un nodo vacío.
+        [TestCase(Faction.Player, Faction.Enemy)]
+        [TestCase(Faction.Enemy, Faction.Player)]
+        [Section17(25)]
+        public void FullSendFromANodeUnderAttackIsLegal(Faction side, Faction attacker)
+        {
+            NodeController star = Node("Star", side, 30, Vector2.zero);
+            NodeController refuge = Node("Star", side, 0, new Vector2(-1f, 0f));
+            NodeController hostile = Node("Star", attacker, 40, new Vector2(3f, 0f));
+            Proton attack = Launch(hostile, star);  // Carga 20, en vuelo hacia star
+
+            Proton evacuation = Launch(star, refuge, fullSend: true);
+            Assert.AreEqual(30, evacuation.Charge);
+            Assert.AreEqual(0, star.Energy);
+
+            FlyAndImpact(evacuation);
+            FlyAndImpact(attack);
+            Assert.AreEqual(30, refuge.Energy, "La Energía se salvó.");
+            Assert.AreEqual(attacker, star.Faction, "El atacante toma un nodo vacío.");
+            Assert.AreEqual(20, star.Energy);
         }
 
         // --- Impacto (5.3, 6.2) ---
@@ -298,6 +323,7 @@ namespace Nova.Tests
 
         // 17, caso 2: la facción se comprueba al llegar, no al lanzar.
         [Test]
+        [Section17(2)]
         public void TargetThatBecameFriendlyAbsorbs()
         {
             NodeController star = Node("Star", Faction.Player, 20, Vector2.zero);

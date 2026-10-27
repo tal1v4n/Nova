@@ -196,6 +196,7 @@ namespace Nova.Tests
         }
 
         [Test]
+        [Section17(21)]
         public void TheEnemyProtonsInFlightVanishAtTheVictory()
         {
             // Caso 21.
@@ -220,6 +221,7 @@ namespace Nova.Tests
         // --- Estancamiento (10.2), leído de los componentes ---
 
         [Test]
+        [Section17(19)]
         public void SixEnergyWithoutAStarIsAStalemate()
         {
             Node("Magnetar", Faction.Player, 6, new Vector2(-5f, 0f));
@@ -233,6 +235,7 @@ namespace Nova.Tests
         }
 
         [Test]
+        [Section17(19)]
         public void AProtonOfThePlayerInFlightPostponesTheStalemate()
         {
             NodeController player = Node("Magnetar", Faction.Player, 6, new Vector2(-5f, 0f));
@@ -246,6 +249,7 @@ namespace Nova.Tests
 
         [TestCase(true, LevelOutcome.None)]
         [TestCase(false, LevelOutcome.Stalemate)]
+        [Section17(18)]
         public void ReconvertingCountsOnlyWhereTheLevelAllowsIt(bool allowed, LevelOutcome expected)
         {
             // Caso 18: 30 en un Magnetar, sin Asteroides ni Estrella que capturar.
@@ -257,6 +261,7 @@ namespace Nova.Tests
         }
 
         [Test]
+        [Section17(20)]
         public void ACaptureInTheLastTickIsSeenInTheNext()
         {
             // 15.10 y caso 20: el impacto se resuelve tras los FixedUpdate, y +20 lo ve después.
@@ -271,6 +276,101 @@ namespace Nova.Tests
             Assert.AreEqual(Faction.Player, enemy.Faction);
             checker.Tick(Tick);
             Assert.AreEqual(LevelOutcome.Victory, checker.Outcome);
+        }
+
+        // --- Sección 17 con la partida entera ---
+
+        // Un tick de partida en el orden de 15.10: Magnetares (0), protones (+10), impactos y +20.
+        void PlayTick(MagnetarTurret turret)
+        {
+            turret.Tick(Tick);
+            foreach (Proton proton in new List<Proton>(protons.InFlight))
+                proton.Tick(Tick);
+            protons.ResolveArrivals();
+            checker.Tick(Tick);
+        }
+
+        MagnetarTurret NeutralMagnetar(Vector2 position)
+        {
+            NodeController magnetar = Node("Magnetar", Faction.Neutral, 100, position);
+            var turret = magnetar.gameObject.AddComponent<MagnetarTurret>();
+            turret.Configure(Balance, protons);
+            return turret;
+        }
+
+        // Caso 20: el Magnetar neutral rebaja el último protón y la victoria se decide con lo que llega.
+        [Test]
+        [Section17(20)]
+        public void ANeutralMagnetarShootsTheLastProtonAndTheVictoryIsCheckedAfter()
+        {
+            NodeController player = Node("Star", Faction.Player, 20, new Vector2(-2f, 0f));
+            NodeController enemy = Node("Star", Faction.Enemy, 5, new Vector2(2f, 0f));
+            MagnetarTurret turret = NeutralMagnetar(new Vector2(0f, 0.5f));
+            int shots = 0;
+            turret.OnShot += (m, p) => shots++;
+            Assert.AreEqual(LaunchBlock.None, launcher.TryLaunch(player, enemy, Faction.Player, false, out _));
+
+            for (int i = 0; protons.Count > 0; i++)
+            {
+                Assert.Less(i, 1000, "El protón no llega.");
+                PlayTick(turret);
+                if (enemy.Faction == Faction.Enemy)
+                    Assert.AreEqual(LevelOutcome.None, checker.Outcome, "Nada se decide antes del impacto.");
+            }
+
+            Assert.Greater(shots, 0, "El protón cruzó el radio.");
+            Assert.AreEqual(Faction.Player, enemy.Faction);
+            Assert.AreEqual(10 - 2 * shots - 5, enemy.Energy, "Captura con la Carga que dejó el Magnetar.");
+            Assert.AreEqual(LevelOutcome.Victory, checker.Outcome);
+        }
+
+        // Caso 20, derribado: sin impacto no hay victoria.
+        [Test]
+        [Section17(20)]
+        public void ALastProtonShotDownIsNoVictory()
+        {
+            NodeController player = Node("Star", Faction.Player, 4, new Vector2(-2f, 0f));
+            NodeController enemy = Node("Star", Faction.Enemy, 0, new Vector2(2f, 0f));
+            MagnetarTurret turret = NeutralMagnetar(new Vector2(0f, 0.5f));
+            Assert.AreEqual(LaunchBlock.None, launcher.TryLaunch(player, enemy, Faction.Player, false, out Proton proton));
+            bool shotDown = false;
+            proton.OnShotDown += _ => shotDown = true;
+
+            for (int i = 0; protons.Count > 0; i++)
+            {
+                Assert.Less(i, 1000, "El protón no termina.");
+                PlayTick(turret);
+            }
+
+            Assert.IsTrue(shotDown, "Carga 2, un disparo.");
+            Assert.AreEqual(Faction.Enemy, enemy.Faction);
+            Assert.AreEqual(LevelOutcome.None, checker.Outcome);
+        }
+
+        // Caso 4: un nodo nunca deja de existir. Capturado, vaciado o tomado por la cascada sigue
+        // siendo el mismo objeto en el registro, y un protón que iba hacia él siempre tiene dónde llegar.
+        [Test]
+        [Section17(4)]
+        public void ANodeIsNeverDestroyedItOnlyChangesSides()
+        {
+            NodeController player = Node("Star", Faction.Player, 50, new Vector2(-1f, 0f));
+            NodeController enemy = Node("Star", Faction.Enemy, 5, new Vector2(1f, 0f));
+            NodeController rock = Node("Asteroid", Faction.Neutral, 10, new Vector2(0f, 3f));
+            int count = registry.Count;
+            Assert.AreEqual(LaunchBlock.None, launcher.TryLaunch(player, enemy, Faction.Player, false, out Proton first));
+            Assert.AreEqual(LaunchBlock.None, launcher.TryLaunch(player, enemy, Faction.Player, false, out Proton second));
+
+            first.Impact();     // Carga 25 contra 5: captura con 20
+            checker.Tick(Tick);
+            Assert.AreEqual(LevelOutcome.Victory, checker.Outcome);
+            second.Impact();    // el mismo nodo, ya propio: absorbe 12
+            Run(Balance.CascadeDuration + 1f);
+
+            Assert.IsTrue(enemy != null, "El nodo capturado sigue en la escena.");
+            Assert.AreEqual(32, enemy.Energy);
+            Assert.AreEqual(Faction.Player, rock.Faction, "La cascada lo cambia de bando, no lo quita.");
+            Assert.AreEqual(count, registry.Count);
+            Assert.IsTrue(registry.Contains(enemy) && registry.Contains(rock) && registry.Contains(player));
         }
     }
 }

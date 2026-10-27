@@ -257,6 +257,7 @@ namespace Nova.Tests
         // --- Derribo (6.3, 17 caso 6) ---
 
         [Test]
+        [Section17(6)]
         public void ReachingZeroShootsTheProtonDown()
         {
             MagnetarTurret turret = Magnetar(Faction.Enemy);
