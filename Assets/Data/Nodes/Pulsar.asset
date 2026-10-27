@@ -33,11 +33,116 @@ MonoBehaviour:
     player: {fileID: 21300000, guid: ea121a6ce51ff63c3d2c66ef2cffec06, type: 3}
     enemy: {fileID: 21300000, guid: e449d863d4337fb069d16a0ee13d04fe, type: 3}
     footprintPixels: 44
+    neutralIdle: []
+    playerIdle:
+    - {fileID: -804196494, guid: 29ef1d12debb060d4b960c945494da58, type: 3}
+    - {fileID: 1728853490, guid: 29ef1d12debb060d4b960c945494da58, type: 3}
+    - {fileID: -2073135939, guid: 29ef1d12debb060d4b960c945494da58, type: 3}
+    - {fileID: -1400107628, guid: 29ef1d12debb060d4b960c945494da58, type: 3}
+    - {fileID: 1549580892, guid: 29ef1d12debb060d4b960c945494da58, type: 3}
+    - {fileID: -134656372, guid: 29ef1d12debb060d4b960c945494da58, type: 3}
+    - {fileID: -753912023, guid: 29ef1d12debb060d4b960c945494da58, type: 3}
+    - {fileID: -1851640338, guid: 29ef1d12debb060d4b960c945494da58, type: 3}
+    - {fileID: 1447697352, guid: 29ef1d12debb060d4b960c945494da58, type: 3}
+    - {fileID: -1776776969, guid: 29ef1d12debb060d4b960c945494da58, type: 3}
+    - {fileID: -1364732716, guid: 29ef1d12debb060d4b960c945494da58, type: 3}
+    - {fileID: -1164105571, guid: 29ef1d12debb060d4b960c945494da58, type: 3}
+    - {fileID: -1622003713, guid: 29ef1d12debb060d4b960c945494da58, type: 3}
+    - {fileID: 300461317, guid: 29ef1d12debb060d4b960c945494da58, type: 3}
+    - {fileID: 1641064004, guid: 29ef1d12debb060d4b960c945494da58, type: 3}
+    - {fileID: -1366494468, guid: 29ef1d12debb060d4b960c945494da58, type: 3}
+    enemyIdle:
+    - {fileID: -70138633, guid: 468e94f0f7c70778bf5870ce0b8500cc, type: 3}
+    - {fileID: -2089662080, guid: 468e94f0f7c70778bf5870ce0b8500cc, type: 3}
+    - {fileID: -1457014426, guid: 468e94f0f7c70778bf5870ce0b8500cc, type: 3}
+    - {fileID: 1757040068, guid: 468e94f0f7c70778bf5870ce0b8500cc, type: 3}
+    - {fileID: 1211599222, guid: 468e94f0f7c70778bf5870ce0b8500cc, type: 3}
+    - {fileID: -1525242190, guid: 468e94f0f7c70778bf5870ce0b8500cc, type: 3}
+    - {fileID: -690824546, guid: 468e94f0f7c70778bf5870ce0b8500cc, type: 3}
+    - {fileID: -861387227, guid: 468e94f0f7c70778bf5870ce0b8500cc, type: 3}
+    - {fileID: 1180877063, guid: 468e94f0f7c70778bf5870ce0b8500cc, type: 3}
+    - {fileID: -1151525797, guid: 468e94f0f7c70778bf5870ce0b8500cc, type: 3}
+    - {fileID: 520413030, guid: 468e94f0f7c70778bf5870ce0b8500cc, type: 3}
+    - {fileID: -226675581, guid: 468e94f0f7c70778bf5870ce0b8500cc, type: 3}
+    - {fileID: -1160666764, guid: 468e94f0f7c70778bf5870ce0b8500cc, type: 3}
+    - {fileID: -2080668677, guid: 468e94f0f7c70778bf5870ce0b8500cc, type: 3}
+    - {fileID: 320077067, guid: 468e94f0f7c70778bf5870ce0b8500cc, type: 3}
+    - {fileID: -1121386569, guid: 468e94f0f7c70778bf5870ce0b8500cc, type: 3}
   - neutral: {fileID: 0}
     player: {fileID: 21300000, guid: 0b211f4af71f224c5d013f6651a04974, type: 3}
     enemy: {fileID: 21300000, guid: a2073ed13a798c0d0bd8d1f661643dcb, type: 3}
     footprintPixels: 60
+    neutralIdle: []
+    playerIdle:
+    - {fileID: 1296919329, guid: e5efd0fee006d95943ff3397f15c28f9, type: 3}
+    - {fileID: -1747529325, guid: e5efd0fee006d95943ff3397f15c28f9, type: 3}
+    - {fileID: 687460530, guid: e5efd0fee006d95943ff3397f15c28f9, type: 3}
+    - {fileID: -1404218104, guid: e5efd0fee006d95943ff3397f15c28f9, type: 3}
+    - {fileID: -1870968053, guid: e5efd0fee006d95943ff3397f15c28f9, type: 3}
+    - {fileID: -540252669, guid: e5efd0fee006d95943ff3397f15c28f9, type: 3}
+    - {fileID: -1471556658, guid: e5efd0fee006d95943ff3397f15c28f9, type: 3}
+    - {fileID: -1005701175, guid: e5efd0fee006d95943ff3397f15c28f9, type: 3}
+    - {fileID: 1323515145, guid: e5efd0fee006d95943ff3397f15c28f9, type: 3}
+    - {fileID: -391281267, guid: e5efd0fee006d95943ff3397f15c28f9, type: 3}
+    - {fileID: -106887984, guid: e5efd0fee006d95943ff3397f15c28f9, type: 3}
+    - {fileID: 1590667402, guid: e5efd0fee006d95943ff3397f15c28f9, type: 3}
+    - {fileID: -2133898106, guid: e5efd0fee006d95943ff3397f15c28f9, type: 3}
+    - {fileID: 610606713, guid: e5efd0fee006d95943ff3397f15c28f9, type: 3}
+    - {fileID: -823588070, guid: e5efd0fee006d95943ff3397f15c28f9, type: 3}
+    - {fileID: 666562116, guid: e5efd0fee006d95943ff3397f15c28f9, type: 3}
+    enemyIdle:
+    - {fileID: 1697255044, guid: 8333e5eac4f21a110386efef0f6b698c, type: 3}
+    - {fileID: -693543209, guid: 8333e5eac4f21a110386efef0f6b698c, type: 3}
+    - {fileID: 594420673, guid: 8333e5eac4f21a110386efef0f6b698c, type: 3}
+    - {fileID: 756369976, guid: 8333e5eac4f21a110386efef0f6b698c, type: 3}
+    - {fileID: -501972144, guid: 8333e5eac4f21a110386efef0f6b698c, type: 3}
+    - {fileID: 1543171096, guid: 8333e5eac4f21a110386efef0f6b698c, type: 3}
+    - {fileID: 2124455157, guid: 8333e5eac4f21a110386efef0f6b698c, type: 3}
+    - {fileID: -819764236, guid: 8333e5eac4f21a110386efef0f6b698c, type: 3}
+    - {fileID: 733861366, guid: 8333e5eac4f21a110386efef0f6b698c, type: 3}
+    - {fileID: -136905160, guid: 8333e5eac4f21a110386efef0f6b698c, type: 3}
+    - {fileID: 1030154019, guid: 8333e5eac4f21a110386efef0f6b698c, type: 3}
+    - {fileID: -1416572366, guid: 8333e5eac4f21a110386efef0f6b698c, type: 3}
+    - {fileID: -8685131, guid: 8333e5eac4f21a110386efef0f6b698c, type: 3}
+    - {fileID: -942158204, guid: 8333e5eac4f21a110386efef0f6b698c, type: 3}
+    - {fileID: 19236317, guid: 8333e5eac4f21a110386efef0f6b698c, type: 3}
+    - {fileID: 1120660102, guid: 8333e5eac4f21a110386efef0f6b698c, type: 3}
   - neutral: {fileID: 0}
     player: {fileID: 21300000, guid: 7cf623caa40c40a846c416b8b44a8a0e, type: 3}
     enemy: {fileID: 21300000, guid: 62b6a5274326909da11fe466734c0f07, type: 3}
     footprintPixels: 68
+    neutralIdle: []
+    playerIdle:
+    - {fileID: 1511529303, guid: dbd01bf32e26bca138b412f663fd7cc4, type: 3}
+    - {fileID: -812258127, guid: dbd01bf32e26bca138b412f663fd7cc4, type: 3}
+    - {fileID: 798321739, guid: dbd01bf32e26bca138b412f663fd7cc4, type: 3}
+    - {fileID: 195182087, guid: dbd01bf32e26bca138b412f663fd7cc4, type: 3}
+    - {fileID: 165037610, guid: dbd01bf32e26bca138b412f663fd7cc4, type: 3}
+    - {fileID: -967957980, guid: dbd01bf32e26bca138b412f663fd7cc4, type: 3}
+    - {fileID: -416939754, guid: dbd01bf32e26bca138b412f663fd7cc4, type: 3}
+    - {fileID: 2002275741, guid: dbd01bf32e26bca138b412f663fd7cc4, type: 3}
+    - {fileID: 1942998322, guid: dbd01bf32e26bca138b412f663fd7cc4, type: 3}
+    - {fileID: 841889694, guid: dbd01bf32e26bca138b412f663fd7cc4, type: 3}
+    - {fileID: 286047663, guid: dbd01bf32e26bca138b412f663fd7cc4, type: 3}
+    - {fileID: -635007542, guid: dbd01bf32e26bca138b412f663fd7cc4, type: 3}
+    - {fileID: -1317194325, guid: dbd01bf32e26bca138b412f663fd7cc4, type: 3}
+    - {fileID: 767220584, guid: dbd01bf32e26bca138b412f663fd7cc4, type: 3}
+    - {fileID: -898466435, guid: dbd01bf32e26bca138b412f663fd7cc4, type: 3}
+    - {fileID: 676138306, guid: dbd01bf32e26bca138b412f663fd7cc4, type: 3}
+    enemyIdle:
+    - {fileID: -644386171, guid: bfd1bfa969dc18fca727b8884075560e, type: 3}
+    - {fileID: 851851209, guid: bfd1bfa969dc18fca727b8884075560e, type: 3}
+    - {fileID: -125954921, guid: bfd1bfa969dc18fca727b8884075560e, type: 3}
+    - {fileID: -724626630, guid: bfd1bfa969dc18fca727b8884075560e, type: 3}
+    - {fileID: -1016096705, guid: bfd1bfa969dc18fca727b8884075560e, type: 3}
+    - {fileID: -642723108, guid: bfd1bfa969dc18fca727b8884075560e, type: 3}
+    - {fileID: -937314748, guid: bfd1bfa969dc18fca727b8884075560e, type: 3}
+    - {fileID: 1987093251, guid: bfd1bfa969dc18fca727b8884075560e, type: 3}
+    - {fileID: -452569047, guid: bfd1bfa969dc18fca727b8884075560e, type: 3}
+    - {fileID: 1596418309, guid: bfd1bfa969dc18fca727b8884075560e, type: 3}
+    - {fileID: 341463994, guid: bfd1bfa969dc18fca727b8884075560e, type: 3}
+    - {fileID: 2124306910, guid: bfd1bfa969dc18fca727b8884075560e, type: 3}
+    - {fileID: -498166752, guid: bfd1bfa969dc18fca727b8884075560e, type: 3}
+    - {fileID: 276397558, guid: bfd1bfa969dc18fca727b8884075560e, type: 3}
+    - {fileID: -382061260, guid: bfd1bfa969dc18fca727b8884075560e, type: 3}
+    - {fileID: 1829049816, guid: bfd1bfa969dc18fca727b8884075560e, type: 3}

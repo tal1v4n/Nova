@@ -41,19 +41,34 @@ MonoBehaviour:
     player: {fileID: 21300000, guid: d375d7a109c4efb63e4aa4279fb08174, type: 3}
     enemy: {fileID: 21300000, guid: 0500beaf2418eef4a212aff007355921, type: 3}
     footprintPixels: 41
+    neutralIdle: []
+    playerIdle: []
+    enemyIdle: []
   - neutral: {fileID: 21300000, guid: 21d36d7fdcce500511e4f0979d16f3d1, type: 3}
     player: {fileID: 21300000, guid: c93592337af23f0e78d4d71c709901f1, type: 3}
     enemy: {fileID: 21300000, guid: 9a3d37d5eaf3b1ee32d183cf4d3cf01a, type: 3}
     footprintPixels: 60
+    neutralIdle: []
+    playerIdle: []
+    enemyIdle: []
   - neutral: {fileID: 21300000, guid: e6d29ef49d7080900026d9fdb31d5397, type: 3}
     player: {fileID: 21300000, guid: 1c0ad79491c603cae275a2dc024674c1, type: 3}
     enemy: {fileID: 21300000, guid: 82a19bd708e6714bbe34c38c59365014, type: 3}
     footprintPixels: 60
+    neutralIdle: []
+    playerIdle: []
+    enemyIdle: []
   - neutral: {fileID: 21300000, guid: 45b9dd839d142e29f580e1df952a2413, type: 3}
     player: {fileID: 21300000, guid: e15b75264fdce55da050d887fd3a1491, type: 3}
     enemy: {fileID: 21300000, guid: c23302a7e456bd6e93c38799ca66b77f, type: 3}
     footprintPixels: 67
+    neutralIdle: []
+    playerIdle: []
+    enemyIdle: []
   - neutral: {fileID: 21300000, guid: e59a6718eed920df4fdffe87a6937fe5, type: 3}
     player: {fileID: 21300000, guid: eba82466fad9d04b9b4f2f100613f47d, type: 3}
     enemy: {fileID: 21300000, guid: 473da5a9a359022a7f246d3cd5db15d9, type: 3}
     footprintPixels: 67
+    neutralIdle: []
+    playerIdle: []
+    enemyIdle: []
