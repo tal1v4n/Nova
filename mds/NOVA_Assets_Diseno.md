@@ -854,7 +854,7 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 | `ART-WLD-SEL` | Anillo de selección | Sobre nodo propio seleccionado | `art/world/world_select_ring.png` | ⬜ | `![](art/world/world_select_ring.png)` |
 | `ART-WLD-LASSO` | Lazo de selección múltiple | Rectángulo punteado | `art/world/world_lasso.png` | ⬜ | `![](art/world/world_lasso.png)` |
 | `ART-WLD-AIM` | Cursor de apuntado de poder | **Sin anillo de alcance.** Retícula que se posa sobre el objetivo bajo el cursor y solo sobre objetivos válidos ([7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido)) | `art/world/world_aim_cursor.png` | ⬜ | `![](art/world/world_aim_cursor.png)` |
-| `ART-WLD-LINK` | Línea de envío origen→cursor | Filamento de plasma en la rampa del Jugador que sigue al cursor durante el arrastre derecho y desde cada nodo de una selección activa ([13.1](./NOVA_GameDesign_Spec.md#131-ratón), [14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma)). Trazo estirable de tres piezas ([A.4.6](#a46-filamento-de-plasma--149)), **bucle de 16 frames**. Un solo archivo: solo el Jugador tiene cursor | `art/world/world_link_sheet.png` | ⬜ | `![](art/world/world_link_sheet.png)` |
+| `ART-WLD-LINK` | Línea de envío origen→cursor | Filamento de plasma en la rampa del Jugador que sigue al cursor durante el arrastre derecho y desde cada nodo de una selección activa ([13.1](./NOVA_GameDesign_Spec.md#131-ratón), [14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma)). Trazo estirable de tres piezas ([A.4.6](#a46-filamento-de-plasma--149)), **bucle de 16 frames**. Un solo archivo: solo el Jugador tiene cursor | `art/world/link/v2/world_link_sheet.png` | ✅ | ![](../art/world/link/v2/world_link_sheet.png) |
 
 **`ART-WLD-LINK` deja de ser una línea de arrastre y pasa a ser un filamento de plasma** (2026-10-10). Ya no se ve solo durante el arrastre: también sale de cada nodo de una selección activa, así que es el elemento de mundo que el jugador **más tiempo tiene en pantalla** después de los nodos, y por eso se anima. Sigue siendo **un** asset. Cambia el nombre de archivo, porque ahora es una hoja, y el conteo de A.4.3 no se mueve.
 
@@ -945,7 +945,15 @@ El salto máximo de la media de una ventana entre dos fotogramas seguidos es de 
 
 ### A.4.6 Filamento de plasma — [14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma)
 
-**Sin diseñar.** No es un grupo de inventario con IDs propios. Es el **lenguaje compartido** de dos assets que viven en otros grupos, y se escribe aquí una sola vez para que no diverjan:
+**La línea de envío, «El Hilo Vivo»: un dibujo y tres propuestas de color. Elegida la v2, plasma eléctrico** (2026-10-26, por el usuario); su rampa pasa a la paleta como `plasma_p`. `tools/gen_link_v<n>.py` → `art/world/link/v<n>/world_link_sheet.png`, con las vistas en `art/_preview/link/v<n>/` —`link_tablero_x2.png` y `link_frames_x3.png`, y en movimiento `link_tablero_x2.gif` y `link_x4.gif`— y las tres juntas en `link_comparar_color.png` y `link_comparar_detalle.png`.
+
+| Versión | Color | Reglas |
+|---|---|---|
+| v1 | `str_p`, el cian del Jugador entero | Las cumple |
+| **v2, plasma eléctrico — elegida** | Núcleo blanco, cian pegado al hilo y una vaina más ancha en azul eléctrico y añil (`#5B6BF5`, `#5A48D6`), con `#3FD7F5` literal en el índice 3. Pedida por el usuario: «algo tipo plasma» | Las cumple: el añil se queda en 236–247°, lejos del morado de `gusano` (~263°) |
+| v3, globo de plasma | Magenta y violeta, el color literal de un globo | **Rompe tres**: deja de ser del color del Jugador (14.9), se cruza con `gusano` y con `hidrogeno` |
+
+La v2 y la v3 son el dibujo de la v1 con otra rampa y la vaina más ancha: sustituyen `RAMP`, `CAIDA` y `TRAMA` de `gen_link_v1.py` y llaman a su `generar`. `SpriteImportRules` corta la hoja en sus tres piezas —`world_link_sheet_birth_<f>`, `_tile_<f>` y `_tip_<f>`— con el pivote del nacimiento en el centro del nodo, el del tramo en su lado de la punta y el de la punta en el contacto. El arco del Magnetar sigue sin diseñar. No es un grupo de inventario con IDs propios. Es el **lenguaje compartido** de dos assets que viven en otros grupos, y se escribe aquí una sola vez para que no diverjan:
 
 | Asset | Grupo | Bandos | Frames |
 |---|---|---|---|
@@ -961,6 +969,15 @@ El salto máximo de la media de una ventana entre dos fotogramas seguidos es de 
 - **Alto fijo de 16 px**, con el filamento dentro de una franja de ±4 px alrededor del eje y el resto para el resplandor y las ramitas. Es el mismo alto que el haz, así que los tres trazos del tablero miden lo mismo de grueso.
 - **Rotación libre por `transform`**, como el haz. La ondulación es simétrica *en promedio* respecto al eje largo, para que ningún ángulo revele un lado más cargado.
 - **Hoja horizontal por pieza**: `nacimiento | tramo | punta` en filas, un frame por columna.
+
+**Cómo lo resuelve la v1.**
+
+- **Medidas.** Nacimiento de 16 px, tramo de **256 px (4 u)** y punta de 32 con el contacto en x = 24, que es donde va el cursor. Los tres anchos son múltiplos de 8, así que la trama Bayer no salta en ninguna costura. La hoja tiene celdas de 256 × 16 en tres filas; el nacimiento y la punta ocupan el lado izquierdo de la suya.
+- **Tres capas que dicen hacia dónde va la Energía.** El **hilo**: núcleo de 1 px en `str_p[1]`, suma de cuatro armónicos que viajan hacia la punta cada uno a su velocidad, así que se retuerce mientras avanza en vez de deslizarse rígido. Los **paquetes**: dos cuentas blancas por tramo con la cola hacia el origen, que corren a 8 px por frame y llegan al contacto una vez por bucle; al llegar, el contacto **destella** tres frames con una cruz que se encoge. La **estela**: el hilo del frame anterior queda como eco tenue en trama.
+- **Ramitas** quebradas e inclinadas hacia la punta, tres por tramo y frame: nacen del color del hilo y al frame siguiente quedan en la banda 3, arrastradas por el flujo. Alternan de lado y nunca caen a menos de 28 px de las del frame anterior.
+- **El tramo se ancla en la punta.** La tesela entera toca la punta y se recorta la del lado del nodo, que cae debajo de su sprite (capa 0 de [14.7](./NOVA_Estados_Animaciones.md#147-prioridad-visual)): la única costura con salto queda tapada y el dibujo viaja pegado al cursor.
+- **Trama reflejada en el eje**, para que la misma densidad encienda lo mismo encima y debajo y el trazo no pese hacia un lado al girarlo.
+- **El generador falla si no se cumple**: alfa binario, solo `str_p[0..5]`, hilo dentro de ±4 px, las tres costuras sin salto de más de 1 px, 16 frames distintos por pieza, simetría en promedio por debajo del 6 % y ramitas sin repetir sitio, incluido el frame 15 contra el 0.
 
 **Lo que falta en el pipeline:** ninguna primitiva de `tools/nova_core.py` dibuja un trazo periódico de longitud variable, ni con ramitas. `veta_luz` es el material más cercano —una línea en `glow` sin contorno— pero recta. Hace falta una primitiva nueva, y la comparten estos cuatro archivos y los tres haces de A.4.2 ([NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #30 y #50).
 
@@ -1020,12 +1037,14 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.3 Estados | **9** | **9** ✅ | — (ya no bloquea `T6-02` ni `T6-03`) |
 | A.4.1 Radio del Magnetar | **18** | 0 | Legibilidad del Magnetar (fase 2 visual) |
 | A.4.2 Protón y haces de poder | 9 | 0 | `ProtonVisual`, `PowerBeam`, fase 6 |
-| A.4.3 Selección y apuntado | **4** | 0 | Pulido de input (fase 6) |
+| A.4.3 Selección y apuntado | **4** | **1** | Pulido de input (fase 6). `ART-WLD-LINK` ✅: ya no bloquea `T5-06` |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
 | A.5 VFX | 15 | 0 | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **105** | **50** | — |
+| **Total** | **105** | **51** | — |
+
+**Y los ✅ suben de 50 a 51 el 2026-10-26** con la línea de envío, `ART-WLD-LINK` v2 (A.4.3, A.4.6), que bloqueaba `T5-06`. El total no cambia.
 
 **Y los ✅ suben de 46 a 50 el 2026-10-20**, con el total de 104 a 105: los tres fondos vuelven a ✅ regenerados a 960 × 540 y **con movimiento** (A.4.5), y entra el ovni, `ART-BG-UFO`, el primer asset que no pide ninguna regla de juego. Ningún otro grupo cambia.
 

@@ -43,6 +43,12 @@ RAMPAS = {
     'str_p':      ('#FFFFFF','#E8FEFF','#A6F2FD','#3FD7F5','#2A9AD4','#2B5CA6','#26306B'),
     'str_e':      ('#FFFFFF','#FFE7EC','#FF9EB2','#F2456B','#B92A5C','#7A1F52','#3D1440'),
 
+    # ---- Linea de envio (ART-WLD-LINK v2, A.4.6): plasma del Jugador -----
+    # Nucleo blanco de calor, el ancla del Jugador junto al hilo y la vaina
+    # que se enfria hacia el azul electrico y el anil. El anil se queda en
+    # 236-247 grados, lejos del morado de `gusano` (~263).
+    'plasma_p':   ('#FFFFFF','#F4F0FF','#A9EEFF','#3FD7F5','#5B6BF5','#5A48D6','#2A1F66'),
+
     # ---- Corona de la Estrella: misma familia, un punto mas luminosa -----
     'cor_p':      ('#FFFFFF','#DBFBFF','#7FE8FC','#35C2EE','#2288C8','#23569C','#1E2C60'),
     'cor_e':      ('#FFFFFF','#FFDFE6','#FF8FA8','#EE3A66','#C02458','#851C4E','#45143E'),
