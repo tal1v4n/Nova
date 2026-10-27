@@ -837,9 +837,11 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 
 | ID | Elemento | Requisito | Archivo | Estado | Vista previa |
 |---|---|---|---|---|---|
-| `ART-WLD-RAD-IDLE` | Anillo de radio en reposo | Círculo tenue, radio exacto en unidades de mundo. **Cinco archivos**, uno por nivel | `art/world/world_radius_idle_lvl{1..5}.png` | ⬜ | `![](art/world/world_radius_idle_lvl5.png)` |
-| `ART-WLD-RAD-HOVER` | Anillo al pasar el ratón o seleccionar | Más brillante, con marca de nivel. **Cinco archivos** | `art/world/world_radius_hover_lvl{1..5}.png` | ⬜ | `![](art/world/world_radius_hover_lvl5.png)` |
-| `ART-WLD-RAD-NEUTRAL` | Variante neutral | Gris, para el Magnetar neutral que bloquea a ambos. **Cinco archivos** | `art/world/world_radius_neutral_lvl{1..5}.png` | ⬜ | `![](art/world/world_radius_neutral_lvl5.png)` |
+| `ART-WLD-RAD-NEUTRAL` | Anillo del Magnetar neutral | Tenue y **siempre visible**: bloquea a los dos bandos. **Cinco archivos**, uno por nivel | `art/world/radius/v2/world_radius_neutral_lvl{1..5}.png` | ✅ | ![](../art/world/radius/v2/world_radius_neutral_lvl1.png) ![](../art/world/radius/v2/world_radius_neutral_lvl5.png) |
+| `ART-WLD-RAD-ENEMY` | Anillo del Magnetar enemigo | Tenue y **siempre visible**: es la ruta que hay que esquivar. **Cinco archivos** | `art/world/radius/v2/world_radius_enemy_lvl{1..5}.png` | ✅ | ![](../art/world/radius/v2/world_radius_enemy_lvl1.png) ![](../art/world/radius/v2/world_radius_enemy_lvl5.png) |
+| `ART-WLD-RAD-PLAYER` | Anillo del Magnetar propio | Brillante y **a demanda**, al seleccionar o pasar el ratón. **Cinco archivos** | `art/world/radius/v2/world_radius_player_lvl{1..5}.png` | ✅ | ![](../art/world/radius/v2/world_radius_player_lvl1.png) ![](../art/world/radius/v2/world_radius_player_lvl5.png) |
+
+> **Uno por facción, cerrado el 2026-10-27** con el usuario ([NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #34). Las filas antes eran IDLE, HOVER y NEUTRAL, que mezclaban estado con facción: un anillo de reposo no decía de quién era el Magnetar. Los ajenos no tienen hover porque ya se ven siempre, y el propio solo existe a demanda. Siguen siendo 15 archivos.
 | `ART-WLD-RAD-SHOT` | Arco de plasma del disparo | Filamento de plasma del centro al protón, **2 frames** ([14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma)). Trazo estirable de tres piezas ([A.4.6](#a46-filamento-de-plasma--149)), no depende del radio. **Tres archivos**, uno por bando: el Magnetar neutral también dispara | `art/world/world_radius_shot_{player,enemy,neutral}_sheet.png` | ⬜ | `![](art/world/world_radius_shot_player_sheet.png)` |
 
 > **El disparo pasa de trazo recto a arco de plasma el 2026-10-10**, y de un archivo a tres. El trazo recto era uno solo porque nada en él dependía del bando. El arco va en el color del Magnetar que dispara, y una variante de color es otra rampa sobre la misma geometría ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Paleta*), no un tinte en Unity. A.4.1 pasa de 16 archivos a **18**.
@@ -863,6 +865,20 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 | 3 | 2.0 u | 128 | 256 |
 | 4 | 2.25 u | 144 | 288 |
 | 5 | 2.5 u | 160 | 320 |
+
+**Diseño cerrado: «El susurro»**, v2 (elegida por el usuario el 2026-10-27). Generador: `tools/gen_radio_v2.py` → `art/world/radius/v2/`; vistas con `--vista` en `art/_preview/radio/v2/`. Nace de la v1, que al usuario no le convenció y que **dibujaba demasiado**: un borde continuo y un cerco de limaduras en tres o cuatro Magnetares compiten con los nodos, que son el juego.
+
+- **Borde a medio tono.** La misma línea de 1 px con el lado de fuera en el radio exacto, pero **un píxel de cada dos**, recorrida en ángulo. Sin alfa parcial ni post-procesado la intensidad no se puede bajar: se reparte, y a 1× el ojo integra la alternancia como una línea a media luz. En ángulo y no por paridad de `x + y`, que en los tramos diagonales encendería la línea entera o la apagaría entera. Verificado en los 15: la mitad exacta del borde y nunca dos píxeles apagados seguidos.
+- **Velo:** 4 px por dentro, trama muy rala (densidad máxima 0.16) en la banda más oscura. Solo dice de qué lado está la zona.
+- **Nivel:** un punto sólido de 2 × 2 por esquirla, por fuera del borde y en el ángulo en que flota la esquirla del sprite. Es lo único que va lleno, porque es lo único que hay que contar.
+- **Facción:** misma geometría en las tres. Ajenos con el borde en la banda 4 de `mag_n`/`mag_e`; el propio una banda más claro (3 de `mag_p`), no a pleno brillo.
+
+**Propuesta v1: «El cerco»** (2026-10-27, **descartada por el usuario**: llamaba demasiado la atención; se conserva por A.1). Generador: `tools/gen_radio_v1.py` → `art/world/radius/v1/`; vistas con `--vista` en `art/_preview/radio/v1/` (`radio_tablero.png` y `_x2`, `radio_todos.png`, `radio_detalle_x3.png`).
+
+- **Borde:** una línea de 1 px cuyo lado de **fuera** es el radio exacto: los píxeles cuyo centro cae en `(R−1, R]`. Sin contorno, como `veta_luz`: en un trazo de 1 px el contorno tacha. Verificado en los 15: cerrado en 8-vecindad, sin huecos, sin tocar el lienzo.
+- **Cerco: limaduras de hierro.** Dos filas de trazos cortos por dentro del borde, **orientados por el campo del dipolo** con la misma regla que gira las esquirlas del sprite (A.2.4, `_giro_campo`): erizados en los polos, arriba y abajo, y peinados a lo largo del borde en los costados. Es el dibujo de las limaduras sobre un imán: dice de qué lado está el peligro y que ese peligro es un campo, sin pintar el disco. La fila de fuera es densa y clara y la de dentro rala y oscura, así que el campo se apaga hacia el centro sin trama. **Desordenadas a propósito**, pero de forma determinista (secuencia áurea, como las esquirlas): equiespaciadas y del mismo largo se leían como la escala de una regla, que es interfaz.
+- **Marcas de nivel: esquirlas en miniatura.** Un rombo de dos caras por esquirla del sprite, **en el mismo ángulo en que flota y con el mismo giro del campo**, por fuera del borde para no tocar la frontera. Cada esquirla `i` ya es el radio del nivel `i+1` comprimido a la celda (A.2.4), así que la marca es esa misma pieza proyectada a su alcance real: sprite y anillo cuentan el nivel en el mismo sitio. Es la mitigación de T.7 #14 —el Magnetar cuenta mal a 1× a partir de tres esquirlas— sin rediseñar el sprite.
+- **Facción: solo color y brillo.** La geometría es la misma en las tres (decidido con el usuario el 2026-10-27: la primera versión daba al propio una franja más ancha). Rampa del propio Magnetar —`mag_n`, `mag_e`, `mag_p`—: los ajenos, tenues (borde en la banda 3, limaduras en la 4 y la 5); el propio, brillante (borde en la 1, limaduras en la 2 y la 3).
 
 **Los cinco radios caen en píxel exacto** a PPU 64, así que el anillo dibujado y el radio de `MagnetarTurret`, que compara distancias en unidades de mundo, coinciden sin redondeo. Antes tres de los cinco no caían (2.4 u eran 153.6 px) y el dibujo redondeaba hasta 0.4 px.
 
@@ -1077,14 +1093,16 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 |---|---|---|---|
 | A.2 Nodos | **50** | **50** ✅ | — (ya no bloquea `T6-01` ni el idle de `T6-02`) |
 | A.3 Estados | **9** | **9** ✅ | — (ya no bloquea `T6-02` ni `T6-03`) |
-| A.4.1 Radio del Magnetar | **18** | 0 | Legibilidad del Magnetar (fase 2 visual) |
+| A.4.1 Radio del Magnetar | **18** | **15** | `T6-05`: faltan los tres arcos de disparo, `ART-WLD-RAD-SHOT` |
 | A.4.2 Protón y haces de poder | 9 | 0 | `ProtonVisual`, `PowerBeam`, fase 6 |
 | A.4.3 Selección y apuntado | **4** | **1** | Pulido de input (fase 6). `ART-WLD-LINK` ✅: ya no bloquea `T5-06` |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
 | A.5 VFX | 15 | 0 | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **121** | **67** | — |
+| **Total** | **121** | **82** | — |
+
+**Y los ✅ suben de 67 a 82 el 2026-10-27** con los 15 anillos de radio del Magnetar, «El susurro» v2 (A.4.1), uno por facción y nivel (T.7 #34). El total no cambia.
 
 **Y los ✅ suben de 51 a 67 el 2026-10-26**, con el total de 105 a 121: entran las **16 hojas de idle** de la Estrella (10) y el Púlsar (6), `ART-NOD-STR-IDLE-01…05` y `ART-NOD-PUL-IDLE-01…03` (A.2.2, A.2.3). Existían diseñadas y sin ID ([NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #6), y la columna *Arte* de `T6-02` no las recogía: sin ellas `T6-02` solo podía animar dos de los cuatro nodos.
 
@@ -1154,7 +1172,7 @@ Ninguna decisión de art design queda abierta. Se conservan aquí con su motivo,
 | 2 | ¿El nivel se indica solo por el sprite, o con pips/números? | **Solo sprite** | Cero UI extra. Se sostiene con señales redundantes: tamaño, temperatura del núcleo, densidad de atmósfera y halo. Coste asumido: el escalón N3→N4 es el más débil. |
 | 3 | ¿El Magnetar neutral usa gris o una tercera paleta? | Rampa `mag_n`, gris acerado derivado de `neutral` | Una tercera paleta propia lo convertiría en un tercer bando a ojos del jugador, y no lo es. |
 | 4 | ¿Tamaño de sprite por tipo en unidades de mundo? | Huella de **0.6 u a 1.2 u**; celda 96 px = 1.5 u, **PPU 64** | Con nodos más pequeños el clic se vuelve incómodo; con nodos más grandes, un Magnetar N1 (radio 2.0 u) apenas sobresaldría de su propio sprite y su anillo dejaría de informar. |
-| 5 | ¿Los nodos tienen cara/ojos? | **Sí, en todos** | [14.2](./NOVA_Estados_Animaciones.md#142-animación-de-susto) pide "ojos muy abiertos" para el susto. Sin cara habría que inventar otra señal para la lectura más importante del juego. |
+| 5 | ¿Los nodos tienen cara/ojos? | **Sí, en todos.** **Reabierta el 2026-10-27** por el usuario: conservarlos o quitarlos por completo, sin decidir ([NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #53) | [14.2](./NOVA_Estados_Animaciones.md#142-animación-de-susto) pide "ojos muy abiertos" para el susto. Sin cara habría que inventar otra señal para la lectura más importante del juego. |
 
 ### Cerradas fuera de A.8
 
