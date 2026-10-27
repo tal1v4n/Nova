@@ -559,6 +559,9 @@ namespace Nova.Editor
             router.Configure(balance, selection, issuer, menu, panel, camera, sendLine, aim, game); // T5-05: Esc pausa
 
             go.AddComponent<ProvisionalSelectionView>().Configure(selection);
+            // T6-05: los anillos de radio. Sin MagnetarArt asignado, el anillo sigue siendo el provisional.
+            go.AddComponent<MagnetarRadiusView>().Configure(
+                AssetDatabase.LoadAssetAtPath<MagnetarArt>(NodeArtAssets.MagnetarArtPath), registry);
             go.AddComponent<ProvisionalSendLineView>().Configure(sendLine);
             go.AddComponent<ProvisionalProtonView>().Configure(protons, font);
             go.AddComponent<ProvisionalBeamView>().Configure(beams);
@@ -608,6 +611,9 @@ namespace Nova.Editor
             serialized.FindProperty("font").objectReferenceValue = font;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             go.AddComponent<ProvisionalMagnetarView>();
+            // T6-05: el arco de cada disparo. Sin MagnetarArt asignado, el trazo sigue siendo el provisional.
+            go.AddComponent<MagnetarShotArc>().Configure(
+                AssetDatabase.LoadAssetAtPath<MagnetarArt>(NodeArtAssets.MagnetarArtPath));
             go.AddComponent<ProvisionalPulsarView>();
             // T6-02: los estados de 14.1 y el idle. Sin NodeStateArt asignado, los estados siguen provisionales.
             go.AddComponent<NodeAnimator>().Configure(balance,

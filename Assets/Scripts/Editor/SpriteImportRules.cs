@@ -10,8 +10,9 @@ namespace Nova.Editor
 {
     // T0-05: ajustes de importación de NOVA_Arte_Tecnica.md, «Importación en Unity»,
     // aplicados a todo lo que entra en Assets/Sprites/.
-    // Las hojas (_sheet) son una tira horizontal de frames cuadrados: la celda mide el alto. La de la
-    // línea de envío no: son tres piezas de un trazo en filas (A.4.6), y tiene su propio corte.
+    // Las hojas (_sheet) son una tira horizontal de frames cuadrados: la celda mide el alto. Las de los
+    // filamentos de plasma no —la línea de envío y los tres arcos del Magnetar—: son tres piezas de un
+    // trazo en filas (A.4.6), y tienen su propio corte.
     //
     // T5-05b: las texturas de datos de los fondos con movimiento no son sprites. Los campos y los
     // puntos son números —densidades y fracciones a 8 bits— y se leen en lineal; lo fijo es color y
@@ -103,11 +104,12 @@ namespace Nova.Editor
             }
         }
 
-        // ART-WLD-LINK: tres filas de 16 frames en celdas de 256 × 16, de arriba abajo nacimiento, tramo y
-        // punta, cada una pegada al lado izquierdo de su celda (tools/gen_link_v1.py). Pivotes: el
-        // nacimiento en el centro del nodo, el tramo en el lado de la punta —se ancla allí y se recorta
-        // del lado del nodo— y la punta en el punto de contacto, x = 24, que es el cursor.
-        const string LinkSheet = "world_link_sheet";
+        // ART-WLD-LINK y ART-WLD-RAD-SHOT: tres filas de frames en celdas de 256 × 16, de arriba abajo
+        // nacimiento, tramo y punta, cada una pegada al lado izquierdo de su celda (nova_core.Filamento).
+        // Pivotes: el nacimiento en el centro del nodo, el tramo en el lado de la punta —se ancla allí y
+        // se recorta del lado del nodo— y la punta en el punto de contacto, x = 24, que es el cursor o el
+        // protón. La línea tiene 16 frames y el arco 2: salen del ancho de la hoja.
+        static readonly Regex StrokeSheetPattern = new Regex(@"^world_(link|radius_shot_(player|enemy|neutral))_sheet$");
         const int LinkCell = 256;
         const int LinkHeight = 16;
         static readonly StrokePiece[] LinkPieces =
@@ -122,7 +124,7 @@ namespace Nova.Editor
             importer.GetSourceTextureWidthAndHeight(out int width, out int height);
             string baseName = System.IO.Path.GetFileNameWithoutExtension(importer.assetPath);
             SpriteRect[] rects;
-            if (baseName == LinkSheet)
+            if (StrokeSheetPattern.IsMatch(baseName))
             {
                 if (width % LinkCell != 0 || height != LinkHeight * LinkPieces.Length)
                 {

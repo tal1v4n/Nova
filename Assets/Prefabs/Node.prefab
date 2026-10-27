@@ -28,6 +28,7 @@ GameObject:
   - component: {fileID: 2703543337690549304}
   - component: {fileID: 7172865981769028165}
   - component: {fileID: 8826767285077947241}
+  - component: {fileID: 1661158970486546173}
   - component: {fileID: 7219644904623616947}
   - component: {fileID: 584352815515619169}
   m_Layer: 8
@@ -334,6 +335,19 @@ MonoBehaviour:
   ringThicknessPixels: 1
   shotThicknessPixels: 2
   shotSeconds: 0.1
+--- !u!114 &1661158970486546173
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7921229937245829407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e6ccd773179de3409c5b8054f24ab5e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.MagnetarShotArc
+  art: {fileID: 11400000, guid: cff5a10ce555e234cb2f8b787172c37d, type: 2}
 --- !u!114 &7219644904623616947
 MonoBehaviour:
   m_ObjectHideFlags: 0

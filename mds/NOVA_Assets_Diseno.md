@@ -839,10 +839,10 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 |---|---|---|---|---|---|
 | `ART-WLD-RAD-NEUTRAL` | Anillo del Magnetar neutral | Tenue y **siempre visible**: bloquea a los dos bandos. **Cinco archivos**, uno por nivel | `art/world/radius/v2/world_radius_neutral_lvl{1..5}.png` | ✅ | ![](../art/world/radius/v2/world_radius_neutral_lvl1.png) ![](../art/world/radius/v2/world_radius_neutral_lvl5.png) |
 | `ART-WLD-RAD-ENEMY` | Anillo del Magnetar enemigo | Tenue y **siempre visible**: es la ruta que hay que esquivar. **Cinco archivos** | `art/world/radius/v2/world_radius_enemy_lvl{1..5}.png` | ✅ | ![](../art/world/radius/v2/world_radius_enemy_lvl1.png) ![](../art/world/radius/v2/world_radius_enemy_lvl5.png) |
-| `ART-WLD-RAD-PLAYER` | Anillo del Magnetar propio | Brillante y **a demanda**, al seleccionar o pasar el ratón. **Cinco archivos** | `art/world/radius/v2/world_radius_player_lvl{1..5}.png` | ✅ | ![](../art/world/radius/v2/world_radius_player_lvl1.png) ![](../art/world/radius/v2/world_radius_player_lvl5.png) |
+| `ART-WLD-RAD-PLAYER` | Anillo del Magnetar propio | Una banda más claro que los ajenos y **siempre visible**, como ellos (2026-10-27, A.8 #1). **Cinco archivos** | `art/world/radius/v2/world_radius_player_lvl{1..5}.png` | ✅ | ![](../art/world/radius/v2/world_radius_player_lvl1.png) ![](../art/world/radius/v2/world_radius_player_lvl5.png) |
 
-> **Uno por facción, cerrado el 2026-10-27** con el usuario ([NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #34). Las filas antes eran IDLE, HOVER y NEUTRAL, que mezclaban estado con facción: un anillo de reposo no decía de quién era el Magnetar. Los ajenos no tienen hover porque ya se ven siempre, y el propio solo existe a demanda. Siguen siendo 15 archivos.
-| `ART-WLD-RAD-SHOT` | Arco de plasma del disparo | Filamento de plasma del centro al protón, **2 frames** ([14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma)). Trazo estirable de tres piezas ([A.4.6](#a46-filamento-de-plasma--149)), no depende del radio. **Tres archivos**, uno por bando: el Magnetar neutral también dispara | `art/world/world_radius_shot_{player,enemy,neutral}_sheet.png` | ⬜ | `![](art/world/world_radius_shot_player_sheet.png)` |
+> **Uno por facción, cerrado el 2026-10-27** con el usuario ([NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #34). Las filas antes eran IDLE, HOVER y NEUTRAL, que mezclaban estado con facción: un anillo de reposo no decía de quién era el Magnetar. Los ajenos no tienen hover porque ya se ven siempre, y el propio solo existía a demanda; desde el 2026-10-27 también se ve siempre (A.8 #1). Siguen siendo 15 archivos.
+| `ART-WLD-RAD-SHOT` | Arco de plasma del disparo | Filamento de plasma del centro al protón, **2 frames** ([14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma)). Trazo estirable de tres piezas ([A.4.6](#a46-filamento-de-plasma--149)), no depende del radio. **Tres archivos**, uno por bando: el Magnetar neutral también dispara | `art/world/shot/v1/world_radius_shot_{player,enemy,neutral}_sheet.png` | ✅ | ![](../art/world/shot/v1/world_radius_shot_player_sheet.png) ![](../art/world/shot/v1/world_radius_shot_enemy_sheet.png) ![](../art/world/shot/v1/world_radius_shot_neutral_sheet.png) |
 
 > **El disparo pasa de trazo recto a arco de plasma el 2026-10-10**, y de un archivo a tres. El trazo recto era uno solo porque nada en él dependía del bando. El arco va en el color del Magnetar que dispara, y una variante de color es otra rampa sobre la misma geometría ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Paleta*), no un tinte en Unity. A.4.1 pasa de 16 archivos a **18**.
 
@@ -850,7 +850,7 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 
 > **Este anillo no se ve afectado por el alcance global del Púlsar.** El que desapareció es `ART-WLD-RANGE`, el círculo de alcance del *poder* (A.4.3). El radio del Magnetar mide dónde caen sus disparos y sigue siendo información defensiva crítica: un protón que pasa a 0.1 u no recibe disparos, y eso no ha cambiado. Lo que sí cambió es que el Magnetar neutral **puede cambiar de dueño a mitad de partida** por un Agujero de Gusano ([7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido)), así que su anillo tiene que seguir siendo legible **en las tres rampas**, no solo en la neutral.
 
-**Decisión cerrada (A.8 #1):** el radio es **siempre visible en los Magnetares neutrales y enemigos** —es información defensiva crítica para trazar una ruta— y **a demanda en los propios**, al seleccionar o pasar el ratón. Mostrar siempre los propios satura la pantalla sin aportar nada: el jugador ya sabe dónde están sus defensas.
+**Decisión cerrada (A.8 #1), cambiada el 2026-10-27:** el radio es **siempre visible en los Magnetares de las tres facciones**. En neutrales y enemigos es información defensiva crítica para trazar una ruta. Los propios iban **a demanda**, al seleccionar o pasar el ratón, con el argumento de que mostrarlos satura la pantalla y el jugador ya sabe dónde están sus defensas; **el usuario los quiso siempre a la vista al probar `T6-05` en Play**. «El susurro» es lo bastante discreto para pagarlo, y el propio sigue una banda más claro que los ajenos.
 
 **Resolución:** hasta **384×384 px**. Es una de las cuatro familias exentas de la celda de 96 ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Resolución*).
 
@@ -881,6 +881,14 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 - **Facción: solo color y brillo.** La geometría es la misma en las tres (decidido con el usuario el 2026-10-27: la primera versión daba al propio una franja más ancha). Rampa del propio Magnetar —`mag_n`, `mag_e`, `mag_p`—: los ajenos, tenues (borde en la banda 3, limaduras en la 4 y la 5); el propio, brillante (borde en la 1, limaduras en la 2 y la 3).
 
 **Los cinco radios caen en píxel exacto** a PPU 64, así que el anillo dibujado y el radio de `MagnetarTurret`, que compara distancias en unidades de mundo, coinciden sin redondeo. Antes tres de los cinco no caían (2.4 u eran 153.6 px) y el dibujo redondeaba hasta 0.4 px.
+
+**El arco del disparo, cerrado: «El chispazo»**, v1 (aprobada por el usuario el 2026-10-27). Generador: `tools/gen_shot_v1.py` → `art/world/shot/v1/`, con las vistas en `art/_preview/shot/v1/` —`shot_frames_x4.png` (los dos frames de los tres bandos, con la línea de envío debajo para comparar), `shot_tablero.png` y `_x2`, y con `--gif` el tablero disparando a su cadencia—. Es `nova_core.Filamento` (A.4.6) con dos frames que se apagan en vez de un bucle. Lleva carpeta de versión, como el anillo y la línea de envío, aunque esta tabla decía `art/world/` a secas.
+
+- **Por qué es un chispazo y no un hilo.** La línea de envío dura lo que dure el gesto; el arco dura 0.17 s y a cadencia N5 sale 4.27 veces por segundo, así que un Magnetar que dispara sin pausa enseña un arco el 70 % del tiempo. Con el peso de la línea de envío, tres o cuatro Magnetares llenarían el tablero de luz. Se quita lo que en la línea es duración: **sin paquetes** (un disparo no «va llegando»), el hilo en **±3 px** y no en ±4, y la vaina cae el doble de rápido. El tramo enciende **1.3 px por columna**, contra 4.4 de la línea de envío v2.
+- **Dos frames que no vuelven.** El 0 es el golpe: el hilo en la banda clara, dos ramitas y una cruz corta en el contacto. El 1 es el apagado: todo baja una banda, las ramitas quedan como un codo arrastrado, el eco del golpe se queda en trama y el contacto se encoge a su punto. La onda avanza un octavo de su ciclo entre los dos, lo justo para que se retuerza hacia la punta.
+- **En la línea discreta de «El susurro».** Nada llega al blanco del índice 0. Los ajenos van en la mitad media de `mag_n` y `mag_e`; el propio, una banda más claro en `mag_p`, como su anillo. El punto más brillante es el contacto del golpe, y queda debajo del protón y de su destello (`ART-FX-SHOT`, A.5).
+- **Medidas.** Hojas de 512 × 48 con la forma de `world_link_sheet`: tres filas —nacimiento de 16, tramo de 256 y punta de 32 con el contacto en x = 24, el centro del protón— y una columna por frame. El tramo es más largo que cualquier arco (2.5 u más lo que se mueve el protón en 0.17 s), así que en la práctica nunca se repite. `SpriteImportRules` las corta con las mismas piezas y pivotes que la línea de envío.
+- **El generador falla si no se cumple:** alfa binario, colores solo de los índices 1–5, hilo dentro de ±3 px, las tres costuras sin salto de más de 1 px y el frame 1 con menos luz que el 0.
 
 ### A.4.2 Protón y haces de poder — [14.3](./NOVA_Estados_Animaciones.md#143-protón)
 
@@ -1011,7 +1019,7 @@ El salto máximo de la media de una ventana entre dos fotogramas seguidos es de 
 | **v2, plasma eléctrico — elegida** | Núcleo blanco, cian pegado al hilo y una vaina más ancha en azul eléctrico y añil (`#5B6BF5`, `#5A48D6`), con `#3FD7F5` literal en el índice 3. Pedida por el usuario: «algo tipo plasma» | Las cumple: el añil se queda en 236–247°, lejos del morado de `gusano` (~263°) |
 | v3, globo de plasma | Magenta y violeta, el color literal de un globo | **Rompe tres**: deja de ser del color del Jugador (14.9), se cruza con `gusano` y con `hidrogeno` |
 
-La v2 y la v3 son el dibujo de la v1 con otra rampa y la vaina más ancha: sustituyen `RAMP`, `CAIDA` y `TRAMA` de `gen_link_v1.py` y llaman a su `generar`. `SpriteImportRules` corta la hoja en sus tres piezas —`world_link_sheet_birth_<f>`, `_tile_<f>` y `_tip_<f>`— con el pivote del nacimiento en el centro del nodo, el del tramo en su lado de la punta y el de la punta en el contacto. El arco del Magnetar sigue sin diseñar. No es un grupo de inventario con IDs propios. Es el **lenguaje compartido** de dos assets que viven en otros grupos, y se escribe aquí una sola vez para que no diverjan:
+La v2 y la v3 son el dibujo de la v1 con otra rampa y la vaina más ancha: sustituyen `RAMP`, `CAIDA` y `TRAMA` de `gen_link_v1.py` y llaman a su `generar`. `SpriteImportRules` corta la hoja en sus tres piezas —`world_link_sheet_birth_<f>`, `_tile_<f>` y `_tip_<f>`— con el pivote del nacimiento en el centro del nodo, el del tramo en su lado de la punta y el de la punta en el contacto. El arco del Magnetar, «El chispazo», se describe en [A.4.1](#a41-radio-de-alcance-del-magnetar). No es un grupo de inventario con IDs propios. Es el **lenguaje compartido** de dos assets que viven en otros grupos, y se escribe aquí una sola vez para que no diverjan:
 
 | Asset | Grupo | Bandos | Frames |
 |---|---|---|---|
@@ -1037,7 +1045,7 @@ La v2 y la v3 son el dibujo de la v1 con otra rampa y la vaina más ancha: susti
 - **Trama reflejada en el eje**, para que la misma densidad encienda lo mismo encima y debajo y el trazo no pese hacia un lado al girarlo.
 - **El generador falla si no se cumple**: alfa binario, solo `str_p[0..5]`, hilo dentro de ±4 px, las tres costuras sin salto de más de 1 px, 16 frames distintos por pieza, simetría en promedio por debajo del 6 % y ramitas sin repetir sitio, incluido el frame 15 contra el 0.
 
-**Lo que falta en el pipeline:** ninguna primitiva de `tools/nova_core.py` dibuja un trazo periódico de longitud variable, ni con ramitas. `veta_luz` es el material más cercano —una línea en `glow` sin contorno— pero recta. Hace falta una primitiva nueva, y la comparten estos cuatro archivos y los tres haces de A.4.2 ([NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #30 y #50).
+**La primitiva: `nova_core.Filamento`** (2026-10-27, [NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #50). El filamento nació dentro de `gen_link_v1.py` y se trajo a `tools/nova_core.py` sin cambiar un píxel: sus valores por defecto son los de la línea de envío, y las hojas v1, v2 y v3 salen idénticas. Para el arco ganó lo que un trazo corto necesita: sin bucle (el frame 0 no tiene eco ni ramitas que se apagan), sin paquetes, `periodo` mayor que los frames, y ramitas, brillo y estela por frame; una subclase cambia los tonos y el contacto. Los cuatro archivos de esta tabla salen de ella. **Los tres haces de A.4.2 todavía no**: estiran su tramo en vez de repetirlo (T.7 #30).
 
 ---
 
@@ -1093,14 +1101,16 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 |---|---|---|---|
 | A.2 Nodos | **50** | **50** ✅ | — (ya no bloquea `T6-01` ni el idle de `T6-02`) |
 | A.3 Estados | **9** | **9** ✅ | — (ya no bloquea `T6-02` ni `T6-03`) |
-| A.4.1 Radio del Magnetar | **18** | **15** | `T6-05`: faltan los tres arcos de disparo, `ART-WLD-RAD-SHOT` |
+| A.4.1 Radio del Magnetar | **18** | **18** ✅ | — (ya no bloquea `T6-05`) |
 | A.4.2 Protón y haces de poder | 9 | 0 | `ProtonVisual`, `PowerBeam`, fase 6 |
 | A.4.3 Selección y apuntado | **4** | **1** | Pulido de input (fase 6). `ART-WLD-LINK` ✅: ya no bloquea `T5-06` |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
 | A.5 VFX | 15 | 0 | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **121** | **82** | — |
+| **Total** | **121** | **85** | — |
+
+**Y los ✅ suben de 82 a 85 el 2026-10-27** con los tres arcos de disparo del Magnetar, `ART-WLD-RAD-SHOT` v1, «El chispazo» (A.4.1). **A.4.1 queda cerrado, 18 de 18**, y `T6-05` deja de estar bloqueada por arte. El total no cambia.
 
 **Y los ✅ suben de 67 a 82 el 2026-10-27** con los 15 anillos de radio del Magnetar, «El susurro» v2 (A.4.1), uno por facción y nivel (T.7 #34). El total no cambia.
 
@@ -1116,7 +1126,7 @@ El total subió de 90 a 94 porque el Protón pasa de 2 archivos a 6 (A.4.2), y d
 
 **A.2 está cerrado: los cuatro nodos, 34 de 34.** Estrella `ART-NOD-STR-01…05` (10), Púlsar `ART-NOD-PUL-01…03` (6), Magnetar `ART-NOD-MAG-01…05` (15, tres facciones) y Asteroide `ART-NOD-AST-00N/P/E` (3). **`T6-01` deja de estar bloqueada por arte** ([NOVA_Tracking.md](./NOVA_Tracking.md), T.4): su dependencia `ART-NOD-*` está completa, y a partir de aquí solo la retiene su dependencia de código.
 
-Lo que sigue bloqueando la fase 6 son los otros nueve grupos de este inventario, empezando por A.4.1 (radio del Magnetar).
+Lo que sigue bloqueando la fase 6 son los otros nueve grupos de este inventario. A.4.1 (radio del Magnetar) se cerró el 2026-10-27.
 
 **A.3 está cerrada: los nueve overlays de estado, 9 de 9.** Con `ART-NOD-*` (A.2) y `ART-ST-*` (A.3) completos, **`T6-02` y `T6-03` dejan de estar bloqueadas por arte** ([NOVA_Tracking.md](./NOVA_Tracking.md), T.4): las tres primeras tareas de la fase 6 solo las retiene ya su cadena de código. Lo que queda por delante son cuatro grupos de mundo y UI —A.4.1, A.4.2, A.4.3 y A.6— y los quince VFX de A.5. **A.4.2 es ahora el grupo con más trabajo de diseño por delante**, no el más mecánico: los tres haces son la primera pieza del proyecto que se estira y se rota, y eso no lo ha hecho ningún asset todavía.
 
@@ -1126,7 +1136,7 @@ Lo que sigue bloqueando la fase 6 son los otros nueve grupos de este inventario,
 
 **Las hojas de idle ya tienen ID** (2026-10-26): `ART-NOD-STR-IDLE-*` y `ART-NOD-PUL-IDLE-*`, 16 archivos ✅ en A.2.2 y A.2.3. El Magnetar no aporta hojas: resuelve su idle por transform (A.2.4). Las 15 que hay generadas son de la v2 descartada y se quedan en `v2/`.
 
-**Infraestructura lista y reutilizable para todo lo demás:** paleta completa de **22 rampas** (`tools/nova_paleta.py`), **18 primitivas de nodo** en `tools/nova_core.py` y **7 primitivas de fondo** en `tools/nova_fondo.py`. Estado de uso real:
+**Infraestructura lista y reutilizable para todo lo demás:** paleta completa de **22 rampas** (`tools/nova_paleta.py`), **18 primitivas de nodo** y el **filamento de plasma** (`Filamento`, A.4.6) en `tools/nova_core.py` y **7 primitivas de fondo** en `tools/nova_fondo.py`. Estado de uso real:
 
 | Primitiva | La ejercita |
 |---|---|
@@ -1146,6 +1156,7 @@ Lo que sigue bloqueando la fase 6 son los otros nueve grupos de este inventario,
 | `anillo` | Halo de power-up (A.4.4) |
 | `tramar` | `ART-ST-FROZEN` (la escarcha que brota de la grieta), `ART-ST-DECAY` (la nube), `ART-ST-CONV` (la estela, el filo y el corte), `ART-ST-CAP` (los dos anillos), `ART-ST-BUFF` (el punto de apoyo) |
 | `veta_luz` | `ART-ST-FROZEN` (la red de grietas), `ART-ST-DECAY` (las gotas), `ART-ST-BUFF` (los chevrones) |
+| `Filamento` | `ART-WLD-LINK` (v1, v2 y v3), `ART-WLD-RAD-SHOT` (el arco, sin bucle) |
 | `tubo_gota` | **nadie todavía** |
 
 **Las primitivas de una propuesta descartada no se retiran.** `linea_dipolar` (Magnetar v2), `esquirla` y `estratos` (Asteroide v2) siguen en el catálogo: son materiales que no existían —un tubo cerrado de grosor variable, contorno recto con sombreado curvo, y capas paralelas sin centro— y están probadas sobre sprites reales. Lo que se descarta es un diseño, no una herramienta. Los tres cuerpos disponibles cubren ya las tres combinaciones posibles:
@@ -1168,7 +1179,7 @@ Ninguna decisión de art design queda abierta. Se conservan aquí con su motivo,
 
 | # | Pregunta | Decisión | Motivo |
 |---|---|---|---|
-| 1 | ¿El radio del Magnetar se ve siempre o solo al seleccionar? | Siempre en neutrales y enemigos; a demanda en los propios | Es información defensiva crítica para trazar ruta. Mostrar los propios satura sin aportar. |
+| 1 | ¿El radio del Magnetar se ve siempre o solo al seleccionar? | **Siempre, en las tres facciones** (cambiado el 2026-10-27 por el usuario; antes, a demanda en los propios) | En ajenos es información defensiva crítica para trazar ruta. En los propios se pensó que saturaba; visto en Play, el usuario los prefiere a la vista. |
 | 2 | ¿El nivel se indica solo por el sprite, o con pips/números? | **Solo sprite** | Cero UI extra. Se sostiene con señales redundantes: tamaño, temperatura del núcleo, densidad de atmósfera y halo. Coste asumido: el escalón N3→N4 es el más débil. |
 | 3 | ¿El Magnetar neutral usa gris o una tercera paleta? | Rampa `mag_n`, gris acerado derivado de `neutral` | Una tercera paleta propia lo convertiría en un tercer bando a ojos del jugador, y no lo es. |
 | 4 | ¿Tamaño de sprite por tipo en unidades de mundo? | Huella de **0.6 u a 1.2 u**; celda 96 px = 1.5 u, **PPU 64** | Con nodos más pequeños el clic se vuelve incómodo; con nodos más grandes, un Magnetar N1 (radio 2.0 u) apenas sobresaldría de su propio sprite y su anillo dejaría de informar. |

@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4825fa1e0d1fd04f89d7fa1dde685f6, type: 3}
+  m_Name: MagnetarArt
+  m_EditorClassIdentifier: Nova.Data::Nova.Data.MagnetarArt
+  ringNeutral:
+  - {fileID: 21300000, guid: a17b77eb85b49526f8421dfe999f29f6, type: 3}
+  - {fileID: 21300000, guid: 52b0bbd26d2027ab00d1b69dd554b780, type: 3}
+  - {fileID: 21300000, guid: 602143a053bd84981c0befe3de0802be, type: 3}
+  - {fileID: 21300000, guid: a61ff3b7929756afc27b8a7cb4ac1deb, type: 3}
+  - {fileID: 21300000, guid: ff35a9e57e34b1cc6f755024d4cc1bac, type: 3}
+  ringPlayer:
+  - {fileID: 21300000, guid: 4c170b6d39f275646b9f66574d4c4b42, type: 3}
+  - {fileID: 21300000, guid: e64c7c618b0dea4c06e01f50c65a3b98, type: 3}
+  - {fileID: 21300000, guid: 6bff308bded46875f2017c958a0282e6, type: 3}
+  - {fileID: 21300000, guid: 207c313cc563e384b9bb9ebf2147d219, type: 3}
+  - {fileID: 21300000, guid: f678aa9394cf67491e6fda99979d9180, type: 3}
+  ringEnemy:
+  - {fileID: 21300000, guid: fb64742c8a4ce87d22b4ca75cd5d5506, type: 3}
+  - {fileID: 21300000, guid: 8d2865cc7d615a3693c384183fdddfa0, type: 3}
+  - {fileID: 21300000, guid: 8357df5a9b8533dd93dc3824b82a9cb7, type: 3}
+  - {fileID: 21300000, guid: 1f82f97993642f0eb580051e3a00a6fd, type: 3}
+  - {fileID: 21300000, guid: 65ca4f3a91091f920ef65fed757db6d2, type: 3}
+  shotNeutral:
+    birth:
+    - {fileID: -1746214131, guid: 8e1c4c9ca40d4ceb9c29df289b039447, type: 3}
+    - {fileID: -1970589462, guid: 8e1c4c9ca40d4ceb9c29df289b039447, type: 3}
+    tile:
+    - {fileID: 261211974, guid: 8e1c4c9ca40d4ceb9c29df289b039447, type: 3}
+    - {fileID: 1577119889, guid: 8e1c4c9ca40d4ceb9c29df289b039447, type: 3}
+    tip:
+    - {fileID: -1291861200, guid: 8e1c4c9ca40d4ceb9c29df289b039447, type: 3}
+    - {fileID: 261295258, guid: 8e1c4c9ca40d4ceb9c29df289b039447, type: 3}
+  shotPlayer:
+    birth:
+    - {fileID: 1386702305, guid: 0bf9e51b52bfc01119d8ed8ccf19f235, type: 3}
+    - {fileID: -1336908512, guid: 0bf9e51b52bfc01119d8ed8ccf19f235, type: 3}
+    tile:
+    - {fileID: -386020879, guid: 0bf9e51b52bfc01119d8ed8ccf19f235, type: 3}
+    - {fileID: 617117052, guid: 0bf9e51b52bfc01119d8ed8ccf19f235, type: 3}
+    tip:
+    - {fileID: -172318328, guid: 0bf9e51b52bfc01119d8ed8ccf19f235, type: 3}
+    - {fileID: 617818507, guid: 0bf9e51b52bfc01119d8ed8ccf19f235, type: 3}
+  shotEnemy:
+    birth:
+    - {fileID: 761924673, guid: 7090291cd07d8c5f2b5530f316bb5eb9, type: 3}
+    - {fileID: -462275936, guid: 7090291cd07d8c5f2b5530f316bb5eb9, type: 3}
+    tile:
+    - {fileID: -236448951, guid: 7090291cd07d8c5f2b5530f316bb5eb9, type: 3}
+    - {fileID: 1179192616, guid: 7090291cd07d8c5f2b5530f316bb5eb9, type: 3}
+    tip:
+    - {fileID: -351399109, guid: 7090291cd07d8c5f2b5530f316bb5eb9, type: 3}
+    - {fileID: 1626532104, guid: 7090291cd07d8c5f2b5530f316bb5eb9, type: 3}

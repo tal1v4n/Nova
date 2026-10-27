@@ -1137,3 +1137,477 @@ def estratos(lz, cx, cy, ang, grosores, deltas, oid_cuerpo, ramp,
         d = deltas[k % len(deltas)]
         if d and capa.any():
             lz["col"][capa] = ramp[np.clip(idx + d, 0, 6)[capa]]
+
+
+# --- Filamento de plasma (A.4.6, 14.9) ---------------------------------------
+#
+# El unico trazo de longitud variable del pipeline. Todas las primitivas de
+# arriba dibujan dentro de una celda; esta saca tres piezas -nacimiento,
+# tramo y punta- que Unity monta entre dos puntos arbitrarios del tablero,
+# con el tramo repetido en mosaico y no estirado. La comparten la linea de
+# envio (`gen_link_v1.py`) y el arco del Magnetar (`gen_shot_v1.py`), y es la
+# candidata a servir tambien a los haces de A.4.2 (T.7 #30 y #50).
+#
+# Nacio dentro de `gen_link_v1.py` y se trajo aqui el 2026-10-27 sin cambiar
+# un pixel: los valores por defecto son los de la linea de envio, y las tres
+# hojas de ART-WLD-LINK salen identicas.
+
+def rotar_tira(lienzo, tira, ox, oy, ang, eje):
+    """Pega la tira con su origen (x 0, `eje`) en (ox, oy) y girada `ang`
+    radianes, muestreando al vecino mas cercano: lo que hace Unity con
+    Filter Mode Point al rotar el transform. Solo para las vistas."""
+    H, W = lienzo.shape[:2]
+    h, w = tira.shape[:2]
+    c, s = math.cos(ang), math.sin(ang)
+    r = w + h
+    x0, x1 = max(0, int(ox - r)), min(W, int(ox + r))
+    y0, y1 = max(0, int(oy - r)), min(H, int(oy + r))
+    yy, xx = np.mgrid[y0:y1, x0:x1] + 0.5
+    dx, dy = xx - ox, yy - oy
+    u = c * dx + s * dy
+    v = -s * dx + c * dy + eje
+    ui, vi = np.floor(u).astype(int), np.floor(v).astype(int)
+    ok = (ui >= 0) & (ui < w) & (vi >= 0) & (vi < h)
+    a = np.zeros_like(ok)
+    a[ok] = tira[vi[ok], ui[ok], 3] > 0
+    zona = lienzo[y0:y1, x0:x1]
+    zona[a] = tira[vi[a], ui[a], :3]
+
+
+class Filamento:
+    """Un filamento de plasma: hilo de 1 px que serpentea, resplandor por
+    trama Bayer, paquetes de luz que corren hacia la punta, ramitas que
+    chisporrotean y un punto de contacto en la punta.
+
+    Tres piezas en filas de una hoja, un frame por columna:
+
+        nacimiento   `nac` px       en el centro del origen, debajo de el
+        tramo        `tesela` px    se repite en mosaico, anclado en la punta
+        punta        `punta` px     el contacto en x = `contacto`
+
+    PERIODICO POR CONSTRUCCION. La onda es una suma de `armonicos`
+    (n ciclos en la tesela, amplitud, m ciclos por `periodo` frames, fase),
+    asi que la costura del tramo cierra siempre. Con `bucle` el ultimo frame
+    enlaza con el primero; sin el, el frame 0 no tiene eco del anterior ni
+    ramitas que se apagan, y `periodo` puede ser mayor que `frames`: la onda
+    avanza un trozo de su ciclo y no vuelve.
+
+    `separacion` None quita los paquetes, y entonces el contacto destella en
+    `destello_en`. Las subclases pueden cambiar `tonos` (que banda de la
+    rampa recibe cada capa en cada frame) y `contacto`.
+    """
+
+    def __init__(self, ramp, alto=16, eje=8.0, banda=4, tesela=256, nac=16,
+                 punta=32, contacto=24, frames=16, periodo=None, bucle=True,
+                 armonicos=((1, 0.55, 1, 0.3), (4, 1.90, 2, 1.1),
+                            (10, 1.15, 4, 2.4), (18, 0.55, 6, 0.7)),
+                 respira=0.12, separacion=128, fase_paq=0, ramitas=3,
+                 dist_ramitas=28, sep_ramitas=56, semilla=51, caida=1.5,
+                 trama=((0.62, 3), (0.32, 4), (0.0, 5)), brillo=0.95,
+                 estela=0.32, deriva=None, destello_en=0):
+        self.ramp = ramp
+        self.alto, self.eje, self.banda = alto, eje, banda
+        self.tesela, self.nac, self.punta, self.c_x = tesela, nac, punta, contacto
+        self.frames, self.bucle = frames, bucle
+        self.periodo = periodo or frames
+        self.armonicos, self.respira = armonicos, respira
+        self.separacion, self.fase_paq = separacion, fase_paq
+        self.velocidad = separacion // frames if separacion else 0
+        self.deriva = self.velocidad // 2 if deriva is None else deriva
+        self.n_ramitas, self.dist_ramitas = ramitas, dist_ramitas
+        self.sep_ramitas, self.semilla = sep_ramitas, semilla
+        self.caida, self.trama = caida, trama
+        self.brillo, self.estela = brillo, estela
+        self.escala = self._escala()
+        self.sitios = self._sitios()
+        self.llegada = self._llegada() if separacion else destello_en
+        self.piezas = (('nacimiento', nac), ('tramo', tesela), ('punta', punta))
+
+    # --- La onda -------------------------------------------------------------
+
+    def _t(self, f):
+        return 2.0 * math.pi * (f % self.periodo) / self.periodo
+
+    def anterior(self, f):
+        """El frame anterior, o None si f es el primero de un trazo sin bucle."""
+        if not self.bucle and f == 0:
+            return None
+        return (f - 1) % self.frames
+
+    def _onda_cruda(self, u, f):
+        t = self._t(f)
+        w = np.zeros_like(u, dtype=np.float64)
+        for n, a, m, fi in self.armonicos:
+            w += a * np.sin(2.0 * math.pi * n * u / self.tesela - m * t + fi)
+        return w * (1.0 + self.respira * math.sin(t))
+
+    def _escala(self):
+        u = np.arange(0, self.tesela, 0.25)
+        pico = max(np.abs(self._onda_cruda(u, f)).max() for f in range(self.frames))
+        return (self.banda - 0.35) / pico
+
+    def onda(self, u, f):
+        """Desplazamiento del hilo respecto al eje, en px, en la coordenada u
+        del tramo (periodica en la tesela) y el frame f."""
+        return self.escala * self._onda_cruda(np.asarray(u, np.float64), f)
+
+    # --- Rasterizado ---------------------------------------------------------
+
+    def _bayer(self, ancho):
+        """La matriz, reflejada en el eje. Tal cual, la fila de encima del eje
+        lee la ultima de Bayer -umbral medio 42/64- y la de debajo, la
+        primera -21/64-: con la misma densidad se enciende el doble de luz
+        debajo que encima, y el trazo pesa hacia un lado al girarlo."""
+        filas = list(range(8)) + list(range(7, -1, -1))
+        return np.tile(BAYER8[filas], (1, ancho // 8 + 1))[:, :ancho]
+
+    def _filas(self, y):
+        return np.clip(np.floor(y).astype(int), 0, self.alto - 1)
+
+    def _nucleo(self, u0, ancho, f, env):
+        """Fila del hilo por columna y la mascara de 1 px, 8-conexa: si dos
+        columnas vecinas saltan mas de una fila, el hueco se reparte."""
+        x = np.arange(ancho)
+        filas = self._filas(self.eje + self.onda(u0 + x + 0.5, f) * env)
+        m = np.zeros((self.alto, ancho), bool)
+        m[filas, x] = True
+        for c in range(ancho - 1):
+            a, b = filas[c], filas[c + 1]
+            if abs(a - b) > 1:
+                paso = 1 if b > a else -1
+                mitad = (a + b) // 2
+                for r in range(a + paso, b, paso):
+                    m[r, c if (r - mitad) * paso <= 0 else c + 1] = True
+        return filas, m
+
+    def _distancia(self, u0, ancho, f, env_fn):
+        """Distancia de cada pixel a la curva del hilo, muestreada a 1/4 px y
+        con 8 px de margen para que el borde de una tesela vea la siguiente."""
+        xs = np.arange(-8.0, ancho + 8.0, 0.25)
+        ys = self.eje + self.onda(u0 + xs, f) * env_fn(xs)
+        py, px = np.mgrid[0:self.alto, 0:ancho]
+        px = px + 0.5
+        py = py + 0.5
+        d = np.full((self.alto, ancho), np.inf)
+        for i in range(0, len(xs), 64):
+            cx = xs[i:i + 64][None, None, :]
+            cy = ys[i:i + 64][None, None, :]
+            d = np.minimum(d, np.sqrt((px[..., None] - cx) ** 2 +
+                                      (py[..., None] - cy) ** 2).min(axis=-1))
+        return d
+
+    def _paquetes(self, u0, ancho, f):
+        """Centros u de los paquetes que caen en [u0 - 16, u0 + ancho + 16)."""
+        if not self.separacion:
+            return []
+        base = (self.fase_paq + self.velocidad * (f % self.frames)) % self.separacion
+        k = math.floor((u0 - 16 - base) / self.separacion)
+        out = []
+        while True:
+            u = base + k * self.separacion
+            if u >= u0 + ancho + 16:
+                break
+            if u >= u0 - 16:
+                out.append(u)
+            k += 1
+        return out
+
+    def _llegada(self):
+        """Frame en que un paquete alcanza el punto de contacto."""
+        for f in range(self.frames):
+            for ub in self._paquetes(0.0, self.punta, f):
+                if self.c_x <= ub < self.c_x + self.velocidad:
+                    return f
+        raise RuntimeError('ningun paquete llega a la punta')
+
+    # --- Ramitas -------------------------------------------------------------
+
+    @staticmethod
+    def _del_frame(v, f):
+        """`ramitas`, `brillo` y `estela` admiten un valor o uno por frame."""
+        return v[f] if isinstance(v, (tuple, list)) else v
+
+    def _cuantas(self, f):
+        return self._del_frame(self.n_ramitas, f)
+
+    def _sitios(self):
+        """Sitios de las ramitas de cada frame, en u del tramo, y su lado. Se
+        sortean con semilla fija y se rechazan hasta que ninguno cae a menos
+        de `dist_ramitas` de uno del frame anterior, incluido el ultimo
+        contra el primero si hay bucle."""
+        T = self.tesela
+        rng = np.random.default_rng(self.semilla)
+
+        def lejos(a, bs, dmin):
+            return all(min(abs(a - b), T - abs(a - b)) >= dmin for b in bs)
+
+        for _ in range(2000):
+            sitios = []
+            ok = True
+            for f in range(self.frames):
+                prev = [s for s, _ in sitios[f - 1]] if f else []
+                quiero = self._cuantas(f)
+                elegidos = []
+                if quiero:
+                    for _ in range(400):
+                        s = float(rng.integers(0, T))
+                        if (lejos(s, prev, self.dist_ramitas) and
+                                lejos(s, elegidos, self.sep_ramitas)):
+                            elegidos.append(s)
+                            if len(elegidos) == quiero:
+                                break
+                if len(elegidos) < quiero:
+                    ok = False
+                    break
+                # alternan de lado dentro del frame y de un frame al siguiente
+                lado0 = 1 if f % 2 == 0 else -1
+                sitios.append([(s, lado0 * (1 if i % 2 == 0 else -1))
+                               for i, s in enumerate(sorted(elegidos))])
+            if ok and (not self.bucle or
+                       all(lejos(s, [p for p, _ in sitios[-1]], self.dist_ramitas)
+                           for s, _ in sitios[0])):
+                return sitios
+        raise RuntimeError('no hay reparto de ramitas que no repita sitio')
+
+    def _linea(self, m, x0, y0, x1, y1):
+        """Segmento de 1 px, 8-conexo, sin ImageDraw."""
+        n = int(max(abs(x1 - x0), abs(y1 - y0))) + 1
+        for i in range(n):
+            s = i / max(n - 1, 1)
+            x = int(round(x0 + (x1 - x0) * s))
+            y = int(round(y0 + (y1 - y0) * s))
+            if 0 <= y < self.alto and 0 <= x < m.shape[1]:
+                m[y, x] = True
+
+    def _ramitas(self, u0, ancho, f, filas, env, viva):
+        """Mascara de las ramitas que nacen en f (`viva`) o de las que
+        nacieron en el anterior y se apagan, arrastradas por el flujo."""
+        m = np.zeros((self.alto, ancho), bool)
+        origen = f if viva else self.anterior(f)
+        if origen is None:
+            return m
+        deriva = 0 if viva else self.deriva
+        T = self.tesela
+        for s, lado in self.sitios[origen]:
+            for rep in (-T, 0, T):
+                x = int(s + rep - u0) + deriva
+                if not (0 <= x < ancho) or env[x] < 0.6:
+                    continue
+                y = int(filas[x])
+                # un rayo quebrado: sale empinado del hilo, se dobla hacia la
+                # punta y se abre en horquilla. Al apagarse, solo el primer codo.
+                variante = (int(s) * 7 + origen) % 3
+                codo = (x + 1, y + lado * (2 + variante % 2))
+                fin = (codo[0] + 3, codo[1] + lado * (1 + (variante == 2)))
+                tramos = [((x, y), codo)]
+                if viva:
+                    tramos.append((codo, fin))
+                    if variante != 0:
+                        tramos.append((codo, (codo[0] + 1, codo[1] + lado * 2)))
+                for (xa, ya), (xb, yb) in tramos:
+                    self._linea(m, xa, ya, xb, yb)
+        m[filas, np.arange(ancho)] = False     # el hilo no es rama
+        return m
+
+    # --- Piezas --------------------------------------------------------------
+
+    def tonos(self, f):
+        """(trama, bandas) del frame f. `trama` son los cortes de densidad del
+        resplandor, de denso a tenue, con su banda; `bandas`, la de las capas
+        solidas: medio, claro, nucleo y blanco."""
+        return self.trama, (3, 2, 1, 0)
+
+    def _pintar(self, dens, medio, nucleo, claro, blanco, ancho, f):
+        """De densidad a pixeles: trama Bayer anclada a la pieza, bandas de
+        resplandor, y encima los trazos solidos de claro a mas claro.
+
+        La cola de la densidad se recorta antes de tramar: por debajo de ~0.1
+        solo se encienden las celdas mas bajas de la matriz, siempre las
+        mismas, y a la misma distancia del hilo salen como una rejilla."""
+        trama, (b_medio, b_claro, b_nucleo, b_blanco) = self.tonos(f)
+        col = np.zeros((self.alto, ancho, 3), np.uint8)
+        dens = np.clip((dens - 0.1) / 0.9, 0, 1)
+        on = dens > self._bayer(ancho)
+        idx = np.full(dens.shape, trama[-1][1])
+        for corte, banda in reversed(trama[:-1]):
+            idx = np.where(dens > corte, banda, idx)
+        col[on] = self.ramp[idx[on]]
+        for mascara, i in ((medio, b_medio), (claro, b_claro),
+                           (nucleo, b_nucleo), (blanco, b_blanco)):
+            col[mascara] = self.ramp[i]
+            on |= mascara
+        return col, on
+
+    def _envolvente(self, nombre):
+        if nombre == 'tramo':
+            return 0.0, self.tesela, lambda x: np.ones_like(np.asarray(x, np.float64))
+        if nombre == 'punta':
+            # el hilo se cierra sobre el eje en el punto de contacto
+            return 0.0, self.punta, lambda x: np.clip(
+                1.0 - np.asarray(x, np.float64) / self.c_x, 0, 1) ** 0.8
+        # nace fino: sale del eje y abre hasta la amplitud del tramo
+        return -float(self.nac), self.nac, lambda x: np.clip(
+            np.asarray(x, np.float64) / self.nac, 0, 1) ** 1.5
+
+    def pieza(self, nombre, f):
+        """Una pieza en el frame f: (rgb, alfa, filas del hilo)."""
+        u0, ancho, env_fn = self._envolvente(nombre)
+        alto, eje = self.alto, self.eje
+
+        x = np.arange(ancho) + 0.5
+        env = env_fn(x)
+        filas, nucleo = self._nucleo(u0, ancho, f, env)
+        alcance = np.ones(ancho, bool)
+        if nombre == 'punta':
+            alcance = np.arange(ancho) < self.c_x
+            nucleo &= alcance[None, :]
+
+        d = self._distancia(u0, ancho, f, env_fn)
+        brillo = self._del_frame(self.brillo, f)
+        prev = self.anterior(f)
+        if prev is None:
+            dens = brillo * np.exp(-d / self.caida)
+        else:
+            # y la estela: el hilo del frame anterior, como un eco tenue
+            d_prev = self._distancia(u0, ancho, prev, env_fn)
+            dens = (brillo * np.exp(-d / self.caida) +
+                    self._del_frame(self.estela, f) * np.exp(-d_prev / 1.2))
+
+        py, px = np.mgrid[0:alto, 0:ancho] + 0.5
+        claro = np.zeros((alto, ancho), bool)
+        blanco = np.zeros((alto, ancho), bool)
+        medio = np.zeros((alto, ancho), bool)
+
+        # paquetes: una cuenta blanca de 4 px que engorda el hilo a 3 en su
+        # centro, envuelta en luz densa, con la cola larga hacia el origen
+        for ub in self._paquetes(u0, ancho, f):
+            xb = ub - u0
+            if nombre == 'punta' and xb >= self.c_x:
+                continue          # ya ha llegado: lo absorbe el contacto
+            if nombre == 'nacimiento' and xb < 6:
+                continue
+            yb = eje + float(self.onda(ub, f)) * float(env_fn(np.array([xb]))[0])
+            detras = np.clip(xb - px, 0, None)
+            delante = np.clip(px - xb, 0, None)
+            dens += 1.1 * np.exp(-(delante / 2.5) ** 2 - (detras / 9.0) ** 2 -
+                                 ((py - yb) / 2.4) ** 2)
+            for c in range(int(xb) - 2, int(xb) + 2):
+                if 0 <= c < ancho:
+                    blanco[filas[c], c] = True
+            for c in range(int(xb) - 1, int(xb) + 1):
+                if 0 <= c < ancho:
+                    for r in (filas[c] - 1, filas[c] + 1):
+                        if 0 <= r < alto:
+                            claro[r, c] = True
+            for c in range(int(xb) - 6, int(xb) - 2):
+                if 0 <= c < ancho:
+                    for r in (filas[c] - 1, filas[c] + 1):
+                        if 0 <= r < alto:
+                            medio[r, c] = True
+
+        # ramitas: del color del hilo al nacer, en `medio` al apagarse
+        viva = self._ramitas(u0, ancho, f, filas, env, True)
+        muere = self._ramitas(u0, ancho, f, filas, env, False)
+        if nombre == 'punta':
+            viva &= alcance[None, :]
+            muere &= alcance[None, :]
+        nucleo = nucleo | viva          # la chispa brota del hilo
+        medio |= muere & ~nucleo & ~viva
+
+        if nombre == 'nacimiento':
+            # el electrodo: luz densa en el centro del origen, que este tapa
+            r = np.hypot(px - 1.0, py - eje)
+            dens += 0.9 * np.exp(-(r / 4.0) ** 2)
+            nucleo &= (np.arange(ancho) >= 5)[None, :]
+            # nace fino: los primeros pixeles del hilo, en la mitad clara baja
+            fino = nucleo & (np.arange(ancho) < 10)[None, :]
+            nucleo &= ~fino
+            claro |= fino
+
+        if nombre == 'punta':
+            dens_c, rayos, centro, anillo = self.contacto(f, px, py)
+            dens = np.maximum(dens, dens_c)
+            claro |= rayos | anillo
+            blanco |= centro
+            nucleo &= ~(anillo | centro)
+
+        # lo que el hilo tapa no se trama
+        dens = np.where(nucleo | blanco | claro | medio, 0, dens)
+        rgb, alfa = self._pintar(np.clip(dens, 0, 1), medio, nucleo, claro,
+                                 blanco, ancho, f)
+        return rgb, alfa, filas
+
+    def contacto(self, f, px, py):
+        """El punto de contacto: lo mas brillante del trazo. Respira con el
+        bucle y destella tres frames desde `llegada`.
+        Devuelve (densidad, rayos, centro, anillo)."""
+        t = self._t(f)
+        desde = (f - self.llegada) % self.frames
+        destello = (1.0, 0.55, 0.2)[desde] if desde < 3 else 0.0
+        cx, cy = float(self.c_x), self.eje
+        r = np.hypot(px - cx, py - cy)
+        radio = 3.4 + 0.7 * math.sin(t) + 2.6 * destello
+        dens = (0.95 + 0.3 * destello) * np.exp(-(r / radio) ** 1.6)
+
+        centro = (r < 1.0)                       # 2 x 2 blanco
+        anillo = (r < 2.0) & ~centro             # cruz clara alrededor
+        rayos = np.zeros_like(centro)
+        largo = (6, 4, 0)[desde] if desde < 3 else 0
+        if largo:
+            # cruz ortogonal que se encoge en tres frames
+            dx, dy = np.abs(px - cx), np.abs(py - cy)
+            rayos |= (dy < 1.0) & (dx < 2.0 + largo)
+            rayos |= (dx < 1.0) & (dy < 2.0 + min(largo, 5))
+        elif f % 4 == 1:
+            # chispa diagonal de reposo, un frame de cada cuatro
+            dx, dy = px - cx, py - cy
+            rayos |= (np.abs(np.abs(dx) - np.abs(dy)) < 0.6) & (r < 4.3)
+        rayos &= ~(anillo | centro)
+        return dens, rayos, centro, anillo
+
+    # --- Hoja y montaje ------------------------------------------------------
+
+    def hoja(self):
+        """RGBA de la hoja -una fila por pieza, celdas de `tesela` x `alto`,
+        un frame por columna- y los frames sueltos por (pieza, frame)."""
+        alto, celda = self.alto, self.tesela
+        img = np.zeros((alto * 3, celda * self.frames, 4), np.uint8)
+        frames = {}
+        for fila, (nombre, ancho) in enumerate(self.piezas):
+            for f in range(self.frames):
+                rgb, alfa, filas = self.pieza(nombre, f)
+                frames[nombre, f] = (rgb, alfa, filas)
+                y0, x0 = fila * alto, f * celda
+                img[y0:y0 + alto, x0:x0 + ancho, :3] = np.where(alfa[..., None], rgb, 0)
+                img[y0:y0 + alto, x0:x0 + ancho, 3] = np.where(alfa, 255, 0)
+        return img, frames
+
+    def linea(self, frames, largo, f):
+        """El trazo de `largo` px del centro del origen al contacto, en el
+        frame f, como lo monta Unity: nacimiento en 0, punta con el contacto
+        en `largo` y el tramo anclado en la punta, recortado del lado del
+        origen. RGBA (alto, largo + punta - contacto)."""
+        T, NAC = self.tesela, self.nac
+        ancho = int(largo) + self.punta - self.c_x
+        out = np.zeros((self.alto, ancho, 4), np.uint8)
+
+        def poner(rgb, alfa, x0):
+            for c in range(rgb.shape[1]):
+                x = x0 + c
+                if 0 <= x < ancho:
+                    m = alfa[:, c]
+                    out[m, x, :3] = rgb[m, c]
+                    out[m, x, 3] = 255
+
+        x_punta = int(largo) - self.c_x
+        rgb_t, a_t, _ = frames['tramo', f]
+        x = x_punta - T
+        while x + T > NAC:
+            lo = max(0, NAC - x)
+            poner(rgb_t[:, lo:], a_t[:, lo:], x + lo)
+            x -= T
+        rgb_n, a_n, _ = frames['nacimiento', f]
+        poner(rgb_n, a_n, 0)
+        rgb_p, a_p, _ = frames['punta', f]
+        poner(rgb_p, a_p, x_punta)
+        return out

@@ -15,12 +15,17 @@ namespace Nova.Editor
     //
     // T6-02: también las hojas de idle (<prefijo>_lvl<n>_<facción>_sheet.png, A.2.2 y A.2.3), que son
     // opcionales —el Asteroide y el Magnetar no tienen—, y los nueve overlays de A.3 en NodeStateArt.
+    //
+    // T6-05: y el arte de mundo del Magnetar en MagnetarArt —sus 15 anillos de radio y sus tres arcos de
+    // disparo, de Assets/Sprites/world/radius/ y world/shot/ (A.4.1)—.
     public static class NodeArtAssets
     {
         public const string SpritesFolder = "Assets/Sprites/nodes";
         public const string StatesFolder = "Assets/Sprites/states";
         public const string NodesFolder = "Assets/Data/Nodes";
         public const string StateArtPath = "Assets/Data/NodeStateArt.asset";
+        public const string WorldFolder = "Assets/Sprites/world";
+        public const string MagnetarArtPath = "Assets/Data/MagnetarArt.asset";
 
         // <hoja>_<n>: el nombre que SpriteImportRules da a cada frame.
         static readonly Regex FrameIndex = new Regex(@"_(\d+)$");
@@ -87,8 +92,69 @@ namespace Nova.Editor
                 return;
             }
             EditorUtility.SetDirty(states);
+
+            MagnetarArt magnetar = LoadOrCreate<MagnetarArt>(MagnetarArtPath);
+            if (!ConfigureMagnetar(magnetar, out string magnetarError))
+            {
+                Debug.LogError($"[Nova] {magnetarError}");
+                return;
+            }
+            EditorUtility.SetDirty(magnetar);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[Nova] Sprites, huellas y hojas de idle asignados a los {Nodes.Length} tipos de nodo, y los overlays de estado a {StateArtPath}.");
+            Debug.Log($"[Nova] Sprites, huellas y hojas de idle asignados a los {Nodes.Length} tipos de nodo, los overlays de estado a {StateArtPath} y el radio y el arco del Magnetar a {MagnetarArtPath}.");
+        }
+
+        static T LoadOrCreate<T>(string path) where T : ScriptableObject
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<T>(path);
+            if (asset != null)
+                return asset;
+            asset = ScriptableObject.CreateInstance<T>();
+            AssetDatabase.CreateAsset(asset, path);
+            return asset;
+        }
+
+        public static string RingPath(string faction, int level) => $"{WorldFolder}/radius/world_radius_{faction}_lvl{level}.png";
+
+        public static string ShotSheetPath(string faction) => $"{WorldFolder}/shot/world_radius_shot_{faction}_sheet.png";
+
+        // Los anillos y los arcos de A.4.1 desde Assets/Sprites/world/, con los nombres de su columna *Archivo*.
+        // Los frames de cada pieza del arco son los que corta SpriteImportRules: <hoja>_<pieza>_<n>.
+        public static bool ConfigureMagnetar(MagnetarArt magnetar, out string error)
+        {
+            error = null;
+            string missing = null;
+
+            Sprite[] Rings(string faction)
+            {
+                var rings = new Sprite[MagnetarArt.Levels];
+                for (int level = 1; level <= rings.Length; level++)
+                {
+                    rings[level - 1] = AssetDatabase.LoadAssetAtPath<Sprite>(RingPath(faction, level));
+                    if (rings[level - 1] == null)
+                        missing ??= RingPath(faction, level);
+                }
+                return rings;
+            }
+
+            MagnetarArt.ShotFrames Shot(string faction)
+            {
+                string path = ShotSheetPath(faction);
+                Sprite[] Piece(string piece) => LoadFrames(path)
+                    .Where(sprite => sprite.name.Contains($"_{piece}_")).ToArray();
+                var shot = new MagnetarArt.ShotFrames(Piece("birth"), Piece("tile"), Piece("tip"));
+                if (!shot.IsComplete)
+                    missing ??= path;
+                return shot;
+            }
+
+            magnetar.Configure(Rings("neutral"), Rings("player"), Rings("enemy"),
+                Shot("neutral"), Shot("player"), Shot("enemy"));
+
+            if (missing == null)
+                return true;
+            error = $"Falta {missing} o no está cortada: sincroniza con Nova → Arte → Sincronizar sprites desde art.";
+            return false;
         }
 
         public static NodeStateArt LoadOrCreateStateArt()

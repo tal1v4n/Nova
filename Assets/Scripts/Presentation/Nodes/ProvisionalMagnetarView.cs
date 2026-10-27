@@ -8,7 +8,8 @@ namespace Nova.Presentation
 {
     // T2-04: vista provisional del Magnetar. Un anillo fino con su radio exacto, del color de su
     // facción, y un trazo del centro al protón en cada disparo. Primitivas de la regla 4 de T.2:
-    // las sustituyen ART-WLD-RAD-* y ART-WLD-RAD-SHOT en T6-06.
+    // las sustituyen ART-WLD-RAD-* y ART-WLD-RAD-SHOT en T6-05 (MagnetarRadiusView y MagnetarShotArc).
+    // Con el arte asignado se aparta y no dibuja nada; sin él, sigue como estaba.
     //
     // A diferencia de A.8 #1, el anillo se ve siempre, también en los Magnetares propios: en las
     // escenas de prueba es lo que permite comprobar el radio a ojo. Solo lee eventos del nodo y
@@ -31,6 +32,7 @@ namespace Nova.Presentation
 
         NodeController node;
         MagnetarTurret turret;
+        MagnetarShotArc arc;
         SpriteRenderer ring;
         SpriteRenderer shot;
         float shotLeft;
@@ -68,7 +70,7 @@ namespace Nova.Presentation
         {
             EnsureBuilt();
 
-            bool visible = Node.IsInitialized && Node.Type == NodeType.Magnetar;
+            bool visible = Node.IsInitialized && Node.Type == NodeType.Magnetar && !Replaced;
             ring.enabled = visible;
             if (!visible)
             {
@@ -114,6 +116,8 @@ namespace Nova.Presentation
         void HandleShot(MagnetarTurret source, Proton target)
         {
             EnsureBuilt();
+            if (Replaced)
+                return;
             Vector2 from = transform.position;
             Vector2 to = target.transform.position;
             Vector2 delta = to - from;
@@ -142,6 +146,10 @@ namespace Nova.Presentation
             shot.sortingOrder = BoardOrder.MagnetarShot; // por encima de los protones
             shot.enabled = false;
         }
+
+        // T6-05: con el arte del Magnetar asignado, el anillo y el arco son de MagnetarRadiusView y
+        // MagnetarShotArc. Los dos salen del mismo MagnetarArt, así que basta con mirar el arco.
+        bool Replaced => (arc != null || TryGetComponent(out arc)) && arc.HasArt;
 
         NodeController Node => node != null ? node : node = GetComponent<NodeController>();
         MagnetarTurret Turret => turret != null ? turret : turret = GetComponent<MagnetarTurret>();
