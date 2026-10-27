@@ -121,8 +121,8 @@ namespace Nova.Data
         [SerializeField] double ufoSpeed = 30.0;
         [SerializeField] double ufoSway = 3.0;
         [SerializeField] double ufoSwayPeriod = 2.4;
-        [SerializeField] double ufoIntervalMin = 45.0;
-        [SerializeField] double ufoIntervalMax = 90.0;
+        [SerializeField] double ufoIntervalMin = 60.0;
+        [SerializeField] double ufoIntervalMax = 120.0;
 
         [Tooltip("La salida de referencia del generador: 1, de izquierda a derecha; -1, al revés. En partida se sortea.")]
         [SerializeField] int ufoDirection = 1;
@@ -154,6 +154,7 @@ namespace Nova.Data
         public int UfoCell => ufoCell;
         public double UfoIntervalMin => ufoIntervalMin;
         public double UfoIntervalMax => ufoIntervalMax;
+        public double UfoStartY => ufoStartY;
         public double UfoStartYMin => ufoStartYMin;
         public double UfoStartYMax => ufoStartYMax;
 

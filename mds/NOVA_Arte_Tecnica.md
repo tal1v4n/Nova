@@ -585,7 +585,7 @@ para ser un objeto que se mueve.
 a 30 px/s —cinco veces más lento que un protón y nunca en línea recta, con
 vaivén—, mide 24 × 13 px —por debajo de la huella mínima de 38—, va en la
 rampa `neutral`, se dibuja **debajo** de los nodos y sale uno como mucho, cada
-45–90 s, con un generador aleatorio propio que no toca el del Enemigo.
+60–120 s, con un generador aleatorio propio que no toca el del Enemigo.
 Cualquier otro objeto que se quiera añadir al cielo cumple las siete reglas o
 abre su propia excepción con el usuario; no hereda esta.
 

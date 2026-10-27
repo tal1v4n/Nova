@@ -14,7 +14,7 @@ namespace Nova.Tests
     // referencia. Lo generado (Nova → Arte → Generar fondos) dice lo mismo que el JSON; el material,
     // renderizado de verdad, reproduce los fotogramas de ref/ —en ≥ 99.5 % de los píxeles: lo que
     // queda son empates de coma flotante contra el umbral de Bayer— y cumple el presupuesto de
-    // contraste; la pausa congela el fondo; el ovni sale cada 45–90 s y nunca dos a la vez; y la fase
+    // contraste; la pausa congela el fondo; el ovni sale cada 60–120 s, alternando el lado, y nunca dos a la vez; y la fase
     // de una capa sigue exacta a una hora de partida.
     public class BackgroundTests
     {
@@ -239,13 +239,13 @@ namespace Nova.Tests
         }
 
         [Test]
-        public void Ufo_leaves_every_45_to_90_seconds_and_never_two_at_once([ValueSource(nameof(Maps))] int map)
+        public void Ufo_leaves_every_60_to_120_seconds_alternating_sides_and_never_two_at_once([ValueSource(nameof(Maps))] int map)
         {
             BackgroundDefinition definition = Definition(map);
             BackgroundView view = CreateView(definition, out BackgroundFlyby flyby, seed: 20261021 + map);
             const float step = 0.05f;
             var launches = new List<double>();
-            var directions = new HashSet<int>();
+            var directions = new List<int>();
             double time = 0.0;
             bool wasActive = false;
             int launched = 0;
@@ -261,6 +261,8 @@ namespace Nova.Tests
                     Assert.AreEqual(launched + 1, flyby.UfoLaunches, "Dos ovnis en el mismo paso.");
                     launches.Add(time);
                     launched = flyby.UfoLaunches;
+                    if (directions.Count > 0)
+                        Assert.AreEqual(-directions[directions.Count - 1], flyby.LaunchDirection, "Alterna el lado.");
                     directions.Add(flyby.LaunchDirection);
                     if (!definition.UfoFollowsStream)
                         Assert.That(flyby.LaunchStartY, Is.InRange(definition.UfoStartYMin, definition.UfoStartYMax), "Entra a una altura del margen.");
@@ -268,11 +270,11 @@ namespace Nova.Tests
                 wasActive = flyby.UfoActive;
             }
 
-            Assert.GreaterOrEqual(launches.Count, 18, "En media hora salen entre 20 y 40.");
-            CollectionAssert.AreEquivalent(new[] { 1, -1 }, directions, "Entra por los dos lados.");
-            Assert.That(launches[0], Is.InRange(45.0 - step, 90.0 + step), "El primero también espera.");
+            Assert.GreaterOrEqual(launches.Count, 14, "En media hora salen entre 15 y 30.");
+            CollectionAssert.AreEquivalent(new[] { 1, -1 }, directions.Distinct(), "Entra por los dos lados.");
+            Assert.That(launches[0], Is.InRange(60.0 - step, 120.0 + step), "El primero también espera.");
             for (int i = 1; i < launches.Count; i++)
-                Assert.That(launches[i] - launches[i - 1], Is.InRange(45.0 - step, 90.0 + step), $"Salida {i + 1}.");
+                Assert.That(launches[i] - launches[i - 1], Is.InRange(60.0 - step, 120.0 + step), $"Salida {i + 1}.");
         }
 
         [Test]

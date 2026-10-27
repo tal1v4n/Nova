@@ -7,10 +7,11 @@ namespace Nova.Presentation
     // regla 7): el ovni de los tres mapas y la grava del Cinturón, como sprites a píxel entero y con
     // sus hojas a 12 fps, justo encima del fondo y por debajo de todo lo demás.
     //
-    // El ovni sale uno como mucho, cada 45–90 s contados de salida a salida, con un generador
+    // El ovni sale uno como mucho, cada 60–120 s contados de salida a salida, con un generador
     // aleatorio propio: nunca el del algoritmo del Enemigo (12.7). Su ruta es la de su mapa
-    // (BackgroundDefinition.UfoAt), y en cada salida el mismo generador sortea por qué lado entra y
-    // a qué altura; siguiendo la corriente del Cinturón, solo el lado. La grava sigue el tiempo de BackgroundView, así que está donde la
+    // (BackgroundDefinition.UfoAt). El lado del primero se sortea y desde ahí se alterna, para que no
+    // salga varias veces seguidas por el mismo; la altura se sortea en cada salida, salvo siguiendo
+    // la corriente del Cinturón. La grava sigue el tiempo de BackgroundView, así que está donde la
     // pone fotograma(t). Todo avanza con el tiempo escalado: la pausa lo congela.
     //
     // Con una ventana más pequeña que el tablero (la carta estelar de 13.9), un sprite solo se
@@ -80,8 +81,13 @@ namespace Nova.Presentation
                 // momento justo, el ovni ya lo lleva recorrido.
                 ufoAge = -untilNext;
                 untilNext += NextInterval();
-                launchDirection = random.Next(2) == 0 ? 1 : -1;
-                launchStartY = shown.UfoStartYMin + random.NextDouble() * (shown.UfoStartYMax - shown.UfoStartYMin);
+                launchDirection = UfoLaunches == 0 ? (random.Next(2) == 0 ? 1 : -1) : -launchDirection;
+                // Sin margen (un asset generado con un JSON anterior a T.7 #51) se queda en la altura de
+                // referencia: con 0 y 0 saldría pegado al borde de arriba.
+                double pick = random.NextDouble();
+                launchStartY = shown.UfoStartYMax > shown.UfoStartYMin
+                    ? shown.UfoStartYMin + pick * (shown.UfoStartYMax - shown.UfoStartYMin)
+                    : shown.UfoStartY;
                 UfoLaunches++;
             }
             Place();

@@ -324,7 +324,7 @@ class Mapa:
 OVNI_CELDA = 32
 OVNI_FRAMES = 16
 OVNI = dict(sheet='bg_ufo_sheet.png', cell=OVNI_CELDA, frames=OVNI_FRAMES, fps=FPS,
-            speed=30.0, sway=3.0, swayPeriod=2.4, intervalMin=45.0, intervalMax=90.0)
+            speed=30.0, sway=3.0, swayPeriod=2.4, intervalMin=60.0, intervalMax=120.0)
 
 
 def ovni(t):

@@ -93,10 +93,12 @@ MonoBehaviour:
   ufoSpeed: 30
   ufoSway: 3
   ufoSwayPeriod: 2.4
-  ufoIntervalMin: 45
-  ufoIntervalMax: 90
+  ufoIntervalMin: 60
+  ufoIntervalMax: 120
   ufoDirection: 1
   ufoStartY: 432
+  ufoStartYMin: 326.2
+  ufoStartYMax: 521
   ufoSlope: -0.3
   ufoSurf: 0
   ufoSurfOffset: 0
