@@ -97,14 +97,14 @@ namespace Nova.Presentation
             back.transform.localScale = new Vector3(widthPixels, heightPixels, 1f);
             back.sprite = PrimitiveSprites.Rect(1, 1);
             back.color = BackColor;
-            back.sortingOrder = 2; // por encima del nodo y de su número
+            back.sortingOrder = BoardOrder.ChargeBar; // por encima del nodo y de su número
             back.enabled = false;
 
             fill = new GameObject("ProvisionalChargeFill").AddComponent<SpriteRenderer>();
             fill.transform.SetParent(transform, false);
             fill.transform.localPosition = new Vector3(0f, y, 0f);
             fill.sprite = PrimitiveSprites.Rect(1, 1);
-            fill.sortingOrder = 3;
+            fill.sortingOrder = BoardOrder.ChargeFill;
             fill.enabled = false;
         }
 

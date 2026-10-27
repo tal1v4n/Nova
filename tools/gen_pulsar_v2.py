@@ -47,6 +47,14 @@ Anatomia, en orden de dibujo:
     5. banda (delante)
     6. ojos         horizontales, siempre por encima de todo (14.7)
 
+IDLE: hoja de 16 frames. Los frentes viajan por el haz y el bucle cierra por
+construccion (ver `_frentes`). Y el cuerpo respira con la `s` del contrato
+-alto x s sobre el eje de giro, ancho / sqrt(s)-, porque el contrato da hoja
+a la Estrella y al Pulsar precisamente para que la deformacion la dibuje el
+generador y no un transform. La banda ecuatorial y los conos no respiran:
+son la maquina, y la criatura es el cuerpo con su cara. El frame 0 es el
+sprite estatico de siempre.
+
 HUELLA. El cono es luz y no cuenta para el hitbox de clic (contrato, "Huella
 del nodo"). La huella solida la ponen el cuerpo, la banda ecuatorial y los
 frentes, y se comprueba sobre los 16 frames del ciclo, no solo sobre el
@@ -57,6 +65,9 @@ estatico. Se mantiene dentro del rango de 0.6 u a 1.2 u.
 import math
 import os
 import sys
+
+import numpy as np
+from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -104,6 +115,9 @@ NIVELES = {
 SEMIANCHO = 0.42     # media anchura del cono por unidad de longitud, ~23 grados
 APLANADO  = 0.34     # escorzo de los frentes: b = a * APLANADO
 ARRANQUE  = 0.30     # posicion del primer frente dentro de su tramo, en [0,1)
+
+FRAMES  = 16         # los idle son de 16 (contrato, Animacion)
+RESPIRA = 0.07       # la `s` del contrato
 
 
 def _recorrido(cfg):
@@ -170,6 +184,8 @@ def pulsar(nivel, faccion, t=0.0):
 
     lz = lienzo(CELDA)
     fase = t
+    s = 1.0 + RESPIRA * math.sin(2 * math.pi * t)
+    rx, ry = cfg['rx'] / math.sqrt(s), cfg['ry'] * s
 
     # 1. los dos conos de luz. Arrancan cubriendo el cuerpo para que la trama
     #    no se vea pasar por encima del nucleo.
@@ -186,8 +202,7 @@ def pulsar(nivel, faccion, t=0.0):
     anillo_orbital(lz, C, C, cfg['ban'], cfg['ban'] * 0.30, ECU, 1.5,
                    cuerpo, oid=5, mitad='atras', sesgo_banda=2)
 
-    esferoide(lz, C, C, cfg['rx'], cfg['ry'], ECU, cuerpo, oid=10,
-              calor=cfg['calor'])
+    esferoide(lz, C, C, rx, ry, ECU, cuerpo, oid=10, calor=cfg['calor'])
 
     anillo_orbital(lz, C, C, cfg['ban'], cfg['ban'] * 0.30, ECU, 2.1,
                    cuerpo, oid=6, mitad='delante', sesgo_banda=0)
@@ -196,23 +211,33 @@ def pulsar(nivel, faccion, t=0.0):
     #    deja la cara volcada y el nodo parece caerse en vez de girar. La
     #    tension es deliberada: la criatura mira de frente y la maquina que
     #    la rodea esta inclinada.
+    #    Los ojos viajan con el cuerpo que respira; su tamano no cambia.
     ro = max(3.0, cfg['ry'] * 0.30)
-    sep = cfg['rx'] * 0.34
-    alt = -cfg['ry'] * 0.20
+    sep = rx * 0.34
+    alt = -ry * 0.20
     for signo in (-1, 1):
         esfera(lz, C + sep * signo, C + alt, ro, ojo, oid=20 + signo)
 
     return lz
 
 
+def hoja(nivel, faccion):
+    """Tira horizontal de FRAMES celdas: ancho = celda x n_frames (contrato)."""
+    return np.hstack([a_rgba(pulsar(nivel, faccion, t=i / FRAMES))
+                      for i in range(FRAMES)])
+
+
 def main():
     raiz = dir_nodo(NODO, VERSION)
     for nivel in NIVELES:
         for fac in ('player', 'enemy'):
+            # el estatico es el frame 0, para UI y hojas de contacto
             guardar(pulsar(nivel, fac),
                     os.path.join(raiz, f'pul_lvl{nivel}_{fac}.png'))
+            Image.fromarray(hoja(nivel, fac), 'RGBA').save(
+                os.path.join(raiz, f'pul_lvl{nivel}_{fac}_sheet.png'))
 
-    print(f"{'':4} {'solida':>9} {'con luz':>10}")
+    print(f"{'':4} {'solida':>9} {'con luz':>10} {'ciclo':>9}")
     huellas = {}
     for nivel in NIVELES:
         lz = pulsar(nivel, 'player')
@@ -221,7 +246,19 @@ def main():
         if a[0, :].any() or a[-1, :].any() or a[:, 0].any() or a[:, -1].any():
             print(f'  AVISO: N{nivel} toca el borde de la celda')
         huellas[nivel] = huella_px(solido)
-        print(f'N{nivel}: {huellas[nivel] / PPU:8.2f}u {huella_px(a) / PPU:9.2f}u')
+        # la huella se mide sobre el ciclo entero (A.2.3): los frentes viajan
+        ciclo = 0
+        for i in range(FRAMES):
+            f = pulsar(nivel, 'player', t=i / FRAMES)
+            af = a_rgba(f)[..., 3] > 0
+            if af[0, :].any() or af[-1, :].any() or af[:, 0].any() or af[:, -1].any():
+                print(f'  AVISO: N{nivel} f{i} toca el borde de la celda')
+            ciclo = max(ciclo, huella_px(f['lleno']))
+        if not np.array_equal(a_rgba(pulsar(nivel, 'player', 0.0)),
+                              a_rgba(pulsar(nivel, 'player', 1.0))):
+            print(f'  AVISO: N{nivel} el bucle no cierra')
+        print(f'N{nivel}: {huellas[nivel] / PPU:8.2f}u {huella_px(a) / PPU:9.2f}u '
+              f'{ciclo / PPU:8.2f}u')
     exporta_huellas(raiz, 'pul', huellas)
 
 

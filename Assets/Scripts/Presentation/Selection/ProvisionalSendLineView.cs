@@ -103,7 +103,7 @@ namespace Nova.Presentation
                 line.transform.SetParent(transform, false);
                 line.sprite = PrimitiveSprites.Rect(1, 1);
                 line.color = LineColor;
-                line.sortingOrder = -1; // detrás del nodo: el trazo asoma desde su borde
+                line.sortingOrder = BoardOrder.Strokes; // detrás del nodo: el trazo asoma desde su borde
                 line.enabled = false;
                 lines.Add(line);
             }

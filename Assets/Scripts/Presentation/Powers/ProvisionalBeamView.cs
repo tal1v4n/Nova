@@ -84,7 +84,7 @@ namespace Nova.Presentation
                 var line = new GameObject("ProvisionalBeam").AddComponent<SpriteRenderer>();
                 line.transform.SetParent(transform, false);
                 line.sprite = PrimitiveSprites.Rect(1, 1);
-                line.sortingOrder = 6; // por encima de protones y disparos
+                line.sortingOrder = BoardOrder.Beam; // por encima de protones y disparos
                 line.enabled = false;
                 lines.Add(line);
             }

@@ -1017,7 +1017,7 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 | Script | Responsabilidad única |
 |---|---|
 | `NodeVisual.cs` | Sprite correcto según tipo, nivel y facción |
-| `NodeAnimator.cs` | Animaciones de estado de [14.1](./NOVA_Estados_Animaciones.md#141-estados-del-nodo) |
+| `NodeAnimator.cs` | Animaciones de estado de [14.1](./NOVA_Estados_Animaciones.md#141-estados-del-nodo) y el idle de los cuatro nodos con la coreografía de [A.2.5](./NOVA_Assets_Diseno.md#a25-coreografía-del-idle). Pinta los overlays de A.3 colgados del sprite de `NodeVisual`, con los órdenes de dibujo de `BoardOrder` |
 | `ProtonVisual.cs` | Número de Carga y escala |
 | `MagnetarShotArc.cs` | Arco de plasma de cada disparo del Magnetar ([14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma)). Escucha `MagnetarTurret.OnShot` |
 | `VFXPool.cs` | Pool de efectos |

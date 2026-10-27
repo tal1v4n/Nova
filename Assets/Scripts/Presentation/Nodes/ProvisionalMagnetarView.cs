@@ -133,13 +133,13 @@ namespace Nova.Presentation
 
             ring = new GameObject("ProvisionalRadius").AddComponent<SpriteRenderer>();
             ring.transform.SetParent(transform, false);
-            ring.sortingOrder = -2; // detrás del nodo y del anillo de selección
+            ring.sortingOrder = BoardOrder.BehindNode; // detrás del nodo y del anillo de selección
 
             // Hijo del nodo pero colocado en mundo: se mueve y gira con cada disparo.
             shot = new GameObject("ProvisionalShot").AddComponent<SpriteRenderer>();
             shot.transform.SetParent(transform, false);
             shot.sprite = PrimitiveSprites.Rect(1, 1);
-            shot.sortingOrder = 5; // por encima de los protones
+            shot.sortingOrder = BoardOrder.MagnetarShot; // por encima de los protones
             shot.enabled = false;
         }
 

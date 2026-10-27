@@ -60,7 +60,7 @@ Sin espacios, sin mayúsculas, sin acentos. Las hojas de animación llevan sufij
 
 ## A.2 Nodos
 
-34 sprites base. El sprite cambia con **tipo, nivel y facción** (`NodeVisual.cs`, [15.8](./NOVA_GameDesign_Spec.md#158-presentation)).
+34 sprites base y **16 hojas de idle**, las de la Estrella y el Púlsar. El sprite cambia con **tipo, nivel y facción** (`NodeVisual.cs`, [15.8](./NOVA_GameDesign_Spec.md#158-presentation)); la hoja la reproduce `NodeAnimator.cs` en el estado `Normal` ([14.1](./NOVA_Estados_Animaciones.md#141-estados-del-nodo)), y su frame 0 es, píxel a píxel, el sprite base.
 
 ### A.2.1 Asteroide — [4.1](./NOVA_Nodos.md#41-asteroide-nivel-0)
 
@@ -125,7 +125,22 @@ Descartados, por si se reabre: corona radial simétrica (lee como engranaje), n�
 
 **Riesgo conocido:** a escala 1×, N3 y N4 se parecen más de lo deseable. Es el escalón débil de la escalera y el precio de haber resuelto el nivel solo con el sprite (A.8 #2). Si molesta en juego, la corrección barata es que el nivel cambie también el grosor de la lengua, no solo su alcance.
 
-**Idle:** hoja de 16 frames, no transform. Una corona congelada delata que el sprite es estático. Pendiente de generar: `str_lvl<n>_<faccion>_sheet.png`.
+**Idle: «la corona arde en su sitio».** Hoja de 16 frames, no transform: una corona congelada delata que el sprite es estático. Aprobada por el usuario el 2026-10-27, con la del Púlsar y la coreografía de A.2.5. Generada el 2026-10-26 por el mismo `tools/gen_estrella_v1.py`, en `art/nodes/estrella/v1/`.
+
+- **Las lenguas no giran.** Un giro rígido de una corona cizallada es un molinillo, y un molinillo es el engranaje del que esta corona se libró con la cizalla. Lo que se mueve es la **longitud**: cada armónico de la onda late con su propia frecuencia temporal entera (`K_CORONA`, `K_CROMOSFERA`), la lengua se queda donde está y la ola de largo recorre el disco. Corona y cromosfera la recorren **en sentidos opuestos**, por la misma razón por la que ya llevaban fase y cizalla distintas.
+- **El cuerpo respira** con la `s` del contrato —alto × s, ancho ÷ √s, `s = 1 + 0.07·sin 2πt`— y los ojos viajan con él. Es la primera vez que un generador la aplica: el contrato se la daba a la Estrella y al Púlsar desde el principio ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Animación*).
+
+**Lo que se arregló por el camino:** el `t` que el generador ya aceptaba **no cerraba el bucle**. Hacía girar la corona entera, y el armónico ×0.5 de `_onda` llegaba a t = 1 a media fase: entre 102 y 1080 píxeles de salto al reiniciar, según el nivel. Con frecuencias enteras cierra por construcción.
+
+**Verificado:** f0 ≡ f16 en los cinco niveles; 16 frames distintos de 16; ningún frame toca el borde; el frame 0 de cada hoja es el sprite estático **byte a byte** (los diez PNG no cambian); huella sólida sobre el ciclo 0.62 / 0.81 / 0.95 / 1.08 / 1.14 u, dentro de la banda. Vistas en `art/_preview/idle/` (`estrella_x4.gif` y el tablero, ver A.2.5).
+
+| ID | Nivel | Archivos en `art/nodes/estrella/v1/` | Frames | Estado | Vista previa |
+|---|---|---|---|---|---|
+| `ART-NOD-STR-IDLE-01` | 1 | `str_lvl1_player_sheet.png` · `str_lvl1_enemy_sheet.png` | 16, bucle | ✅ | ![](../art/nodes/estrella/v1/str_lvl1_player_sheet.png) |
+| `ART-NOD-STR-IDLE-02` | 2 | `str_lvl2_player_sheet.png` · `str_lvl2_enemy_sheet.png` | 16, bucle | ✅ | ![](../art/nodes/estrella/v1/str_lvl2_player_sheet.png) |
+| `ART-NOD-STR-IDLE-03` | 3 | `str_lvl3_player_sheet.png` · `str_lvl3_enemy_sheet.png` | 16, bucle | ✅ | ![](../art/nodes/estrella/v1/str_lvl3_player_sheet.png) |
+| `ART-NOD-STR-IDLE-04` | 4 | `str_lvl4_player_sheet.png` · `str_lvl4_enemy_sheet.png` | 16, bucle | ✅ | ![](../art/nodes/estrella/v1/str_lvl4_player_sheet.png) |
+| `ART-NOD-STR-IDLE-05` | 5 | `str_lvl5_player_sheet.png` · `str_lvl5_enemy_sheet.png` | 16, bucle | ✅ | ![](../art/nodes/estrella/v1/str_lvl5_player_sheet.png) |
 
 ### A.2.3 Púlsar — [4.3](./NOVA_Nodos.md#43-púlsar)
 
@@ -162,7 +177,17 @@ Hoja de contacto de los tres juntos a 1× y 3×: `art/_preview/contraste.png`. L
 
 **La huella se mide sobre el ciclo entero, no sobre el frame 0.** Los frentes viajan, así que el máximo no cae en el sprite estático: 1.06 / 1.12 / 1.19 u a lo largo de los 16 frames, contra 0.69 / 0.94 / 1.06 u en reposo. Es la cota que obligó a separar `alcance` (materia, cuenta para el hitbox) de `largo` (luz, no cuenta). Ningún nivel toca el borde de la celda de 96.
 
-**Idle:** hoja de 16 frames, no transform. Los frentes nacen en el cuerpo, viajan y se extinguen adelgazando. Las posiciones **no se escriben a mano**: se reparten el recorrido en N tramos iguales, así que en un ciclo cada frente ocupa el sitio del siguiente y el bucle cierra por construcción, sea cual sea el número de frames (verificado: frame 0 ≡ frame 16 píxel a píxel en los tres niveles). Con posiciones a mano el avance y el recorrido no eran conmensurables y el ciclo saltaba al reiniciarse. Pendiente de generar: `pul_lvl<n>_<faccion>_sheet.png`.
+**Idle:** hoja de 16 frames, no transform. Los frentes nacen en el cuerpo, viajan y se extinguen adelgazando. Las posiciones **no se escriben a mano**: se reparten el recorrido en N tramos iguales, así que en un ciclo cada frente ocupa el sitio del siguiente y el bucle cierra por construcción, sea cual sea el número de frames (verificado: frame 0 ≡ frame 16 píxel a píxel en los tres niveles). Con posiciones a mano el avance y el recorrido no eran conmensurables y el ciclo saltaba al reiniciarse. Generada el 2026-10-26 por el mismo `tools/gen_pulsar_v2.py`, en `art/nodes/pulsar/v2/`.
+
+**Y el cuerpo respira**, con la misma `s` del contrato que la Estrella, sobre su eje de giro: alto × s a lo largo del eje, ancho ÷ √s. La banda ecuatorial y los conos **no respiran**: son la máquina, y la criatura es el cuerpo con su cara. Los ojos viajan con el cuerpo.
+
+**Verificado:** f0 ≡ f16; 16 frames distintos de 16; ningún frame toca el borde; frame 0 = sprite estático byte a byte; huella sólida del ciclo 1.06 / 1.12 / 1.19 u, la misma que ya medía esta sección. Vista en `art/_preview/idle/pulsar_x4.gif`.
+
+| ID | Nivel | Archivos en `art/nodes/pulsar/v2/` | Frames | Estado | Vista previa |
+|---|---|---|---|---|---|
+| `ART-NOD-PUL-IDLE-01` | 1 | `pul_lvl1_player_sheet.png` · `pul_lvl1_enemy_sheet.png` | 16, bucle | ✅ | ![](../art/nodes/pulsar/v2/pul_lvl1_player_sheet.png) |
+| `ART-NOD-PUL-IDLE-02` | 2 | `pul_lvl2_player_sheet.png` · `pul_lvl2_enemy_sheet.png` | 16, bucle | ✅ | ![](../art/nodes/pulsar/v2/pul_lvl2_player_sheet.png) |
+| `ART-NOD-PUL-IDLE-03` | 3 | `pul_lvl3_player_sheet.png` · `pul_lvl3_enemy_sheet.png` | 16, bucle | ✅ | ![](../art/nodes/pulsar/v2/pul_lvl3_player_sheet.png) |
 
 **Ningún frente se salta**, ni siquiera el más lejano y tenue: si se dejaran de dibujar, en parte del ciclo se verían dos donde el nivel dice tres y el contador de nivel dejaría de ser fiable, que es lo único que este sprite no se puede permitir.
 
@@ -226,6 +251,23 @@ Un magnetar es una estrella de neutrones con el campo magnético más intenso de
 3. Se pierde el **calado**: el eje «espacio interior» vuelve a quedar sin ocupar y los cuatro nodos son macizos.
 
 **La tercera razón del descarte anterior ya no aplica.** Se descartó la v1 en su día también por «pétrea», porque le ponía condiciones al Asteroide, que entonces estaba sin diseñar. El Asteroide cerró con `bulto` —contorno suave, sombreado curvo, mate, sin luz propia— y la v1 es `poliedro` —contorno recto, caras planas, especular, vetas incandescentes—: en `contraste.png` a 1× son una roca gris redonda y un cristal azul facetado con satélites. Lo que sí queda compartido son dos ejes —**simetría** («ninguna» en los dos) e **idle** (transform en los dos)—, más una composición no centrada en ambos. Es el peor par de la tabla de ejes de A.8, y aun así se separan en las otras seis casillas; queda anotado aquí porque un solape conocido no se reabre solo.
+
+### A.2.5 Coreografía del idle
+
+Añadida el **2026-10-26** con las hojas de A.2.2 y A.2.3. No es un asset: es **cómo se reproducen** los idle de los cuatro nodos a la vez, y la cumple `NodeAnimator` (`T6-02`). Catorce sprites bien animados uno a uno pueden seguir pareciendo un salvapantallas si laten todos juntos.
+
+| Regla | Valor | Por qué |
+|---|---|---|
+| Cadencia | **12 fps para todo**, también el cabeceo | El contrato fija 12 fps para las hojas. Un cabeceo que se moviera a 60 fps entre dos frames de hoja sería el único objeto del tablero fuera de esa rejilla de tiempo, y se notaría como un deslizamiento |
+| Estrella, Púlsar | Hoja de 16 frames en bucle | A.2.2, A.2.3 |
+| Asteroide, Magnetar | **Cabeceo** vertical, **1 px** y **2 px**, en un ciclo de **32 frames** (2.67 s): `round(A · sin 2π f/32)` | El doble de lento que una hoja: una roca y un yunque pesan. Píxeles enteros, nunca escala ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Animación*) |
+| Desfase | Cada nodo arranca en el frame que sale de **su posición**: `h = (px · 73856093) xor (py · 19349663)` en 32 bits, y su ciclo toma `h mod 16` o `h mod 32` | Ocho estrellas al unísono son una estrella copiada ocho veces: la misma regla que [14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma) da a las líneas de envío. Por posición y no al azar: la misma partida se ve igual dos veces y los tests pueden fijarlo |
+| Pausa | Tiempo **escalado** | En pausa el tablero se queda quieto ([15.8](./NOVA_GameDesign_Spec.md#158-presentation)) |
+| Qué cabecea | **El sprite y sus overlays**, nunca el nodo | El collider, el número y la barra no se mueven: un hitbox que cabecea es un clic que falla |
+
+El idle solo corre en `Normal` ([14.1](./NOVA_Estados_Animaciones.md#141-estados-del-nodo)) y con `Dormido`/`SinEncender`, que son el reposo del Asteroide. **`Congelado` lo detiene en el frame en que estaba**, cabeceo incluido: «idle detenido» es literal. Mientras dura `Reconvirtiendo` el sprite lo pone la reconversión (A.3.6).
+
+**La referencia es `tools/preview_idle.py`**, como `fotograma(t)` lo es de los fondos: calcula `desfase` y `cabeceo` con las mismas constantes que `NodeAnimator.IdlePhase` y `BobPixels`, y escribe `art/_preview/idle/tablero_x2.gif` —diez nodos de los cuatro tipos con el `zzz` de las rocas— y su tira `tablero_frames.png`. Si cambia una, cambia la otra.
 
 
 ---
@@ -1033,7 +1075,7 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 
 | Grupo | Total | ✅ | Bloquea |
 |---|---|---|---|
-| A.2 Nodos | 34 | **34** ✅ | — (ya no bloquea `T6-01`) |
+| A.2 Nodos | **50** | **50** ✅ | — (ya no bloquea `T6-01` ni el idle de `T6-02`) |
 | A.3 Estados | **9** | **9** ✅ | — (ya no bloquea `T6-02` ni `T6-03`) |
 | A.4.1 Radio del Magnetar | **18** | 0 | Legibilidad del Magnetar (fase 2 visual) |
 | A.4.2 Protón y haces de poder | 9 | 0 | `ProtonVisual`, `PowerBeam`, fase 6 |
@@ -1042,7 +1084,9 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
 | A.5 VFX | 15 | 0 | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **105** | **51** | — |
+| **Total** | **121** | **67** | — |
+
+**Y los ✅ suben de 51 a 67 el 2026-10-26**, con el total de 105 a 121: entran las **16 hojas de idle** de la Estrella (10) y el Púlsar (6), `ART-NOD-STR-IDLE-01…05` y `ART-NOD-PUL-IDLE-01…03` (A.2.2, A.2.3). Existían diseñadas y sin ID ([NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #6), y la columna *Arte* de `T6-02` no las recogía: sin ellas `T6-02` solo podía animar dos de los cuatro nodos.
 
 **Y los ✅ suben de 50 a 51 el 2026-10-26** con la línea de envío, `ART-WLD-LINK` v2 (A.4.3, A.4.6), que bloqueaba `T5-06`. El total no cambia.
 
@@ -1062,7 +1106,7 @@ Lo que sigue bloqueando la fase 6 son los otros nueve grupos de este inventario,
 
 **Pendiente de verificación, no de diseño:** `ART-ST-FROZEN` y `ART-ST-DECAY` se midieron con `verifica_tinte` sobre los trece congelables en sus rampas de Jugador y Enemigo. Desde que el Magnetar neutral es objetivo de poder ([7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido)), los dos tintes pueden caer también sobre la rampa **neutral**, que es la más apagada de las tres. La geometría es la misma y los assets no cambian; lo que falta es **pasar la vara otra vez** sobre `mag_lvl1..5_neutral.png`. Los dos siguen ✅ mientras no se demuestre lo contrario, y el riesgo está acotado a cinco sprites. Ver [NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #29.
 
-**Pendiente aparte del inventario:** las hojas de idle de Estrella y Púlsar (16 frames cada una) no tienen ID propio todavía. Su idle está diseñado y los dos generadores animan por `t`; falta volcarlas a `_sheet.png`. El Magnetar no aporta hojas: resuelve su idle por transform (A.2.4). Las 15 que hay generadas son de la v2 descartada y se quedan en `v2/`.
+**Las hojas de idle ya tienen ID** (2026-10-26): `ART-NOD-STR-IDLE-*` y `ART-NOD-PUL-IDLE-*`, 16 archivos ✅ en A.2.2 y A.2.3. El Magnetar no aporta hojas: resuelve su idle por transform (A.2.4). Las 15 que hay generadas son de la v2 descartada y se quedan en `v2/`.
 
 **Infraestructura lista y reutilizable para todo lo demás:** paleta completa de **22 rampas** (`tools/nova_paleta.py`), **18 primitivas de nodo** en `tools/nova_core.py` y **7 primitivas de fondo** en `tools/nova_fondo.py`. Estado de uso real:
 

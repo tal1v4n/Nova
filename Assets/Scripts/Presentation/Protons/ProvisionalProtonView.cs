@@ -87,7 +87,7 @@ namespace Nova.Presentation
 
             var body = root.AddComponent<SpriteRenderer>();
             body.sprite = ProvisionalNodeView.CircleSprite(diameterPixels);
-            body.sortingOrder = 2;
+            body.sortingOrder = BoardOrder.Proton;
 
             var labelObject = new GameObject("Charge");
             labelObject.transform.SetParent(root.transform, false);
@@ -99,7 +99,7 @@ namespace Nova.Presentation
             label.textWrappingMode = TextWrappingModes.NoWrap;
             label.color = new Color32(0x0B, 0x0E, 0x1A, 0xFF); // fondo profundo (14.4)
             label.rectTransform.sizeDelta = new Vector2(diameterPixels, diameterPixels) / PixelsPerUnit;
-            label.sortingOrder = 3;
+            label.sortingOrder = BoardOrder.ProtonCharge;
 
             return new Visual { Body = body, Label = label };
         }

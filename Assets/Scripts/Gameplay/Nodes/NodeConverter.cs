@@ -41,6 +41,10 @@ namespace Nova.Gameplay
         // Tipo al que se está reconvirtiendo. Solo tiene sentido con IsConverting.
         public NodeType TargetType => pending != null ? pending.Type : Node.Type;
 
+        // Definición del tipo de destino, o null sin reconversión en curso. La lee NodeAnimator (T6-02),
+        // que cambia al sprite nuevo a mitad del efecto, cuando la celda está tapada (A.3.6).
+        public NodeDefinition TargetDefinition => pending;
+
         // Segundos que llevan corridos de los 3, para la presentación y los tests.
         public float Elapsed => (float)(elapsedMicros / MicrosPerSecond);
 

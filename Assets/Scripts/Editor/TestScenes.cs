@@ -609,6 +609,9 @@ namespace Nova.Editor
             serialized.ApplyModifiedPropertiesWithoutUndo();
             go.AddComponent<ProvisionalMagnetarView>();
             go.AddComponent<ProvisionalPulsarView>();
+            // T6-02: los estados de 14.1 y el idle. Sin NodeStateArt asignado, los estados siguen provisionales.
+            go.AddComponent<NodeAnimator>().Configure(balance,
+                AssetDatabase.LoadAssetAtPath<NodeStateArt>(NodeArtAssets.StateArtPath));
             return go;
         }
 

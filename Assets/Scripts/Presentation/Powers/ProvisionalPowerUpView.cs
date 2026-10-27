@@ -101,7 +101,7 @@ namespace Nova.Presentation
             go.transform.SetParent(transform, false);
             halo = go.AddComponent<SpriteRenderer>();
             halo.sprite = PrimitiveSprites.Disc(haloPixels);
-            halo.sortingOrder = -2; // Detrás del cuerpo (0) y del halo de Infectado (-1)
+            halo.sortingOrder = BoardOrder.BehindNode; // Detrás del cuerpo y del halo de Infectado
             halo.enabled = false;
         }
     }

@@ -24,7 +24,7 @@ namespace Nova.Presentation
     public sealed class NodeVisual : MonoBehaviour
     {
         // Capa 1 de 14.7: por encima de la línea de envío y del arco (capa 0, −1) y por debajo del número.
-        public const int SortingOrder = 0;
+        public const int SortingOrder = BoardOrder.Body;
 
         NodeController node;
         SpriteRenderer body;

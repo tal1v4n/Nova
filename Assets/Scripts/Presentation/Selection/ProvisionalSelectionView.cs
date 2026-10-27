@@ -111,7 +111,7 @@ namespace Nova.Presentation
             var renderer = ring.AddComponent<SpriteRenderer>();
             renderer.sprite = RingSprite(diameterPixels, thicknessPixels);
             renderer.color = RingColor;
-            renderer.sortingOrder = -1; // detrás del nodo: el anillo asoma por fuera
+            renderer.sortingOrder = BoardOrder.Strokes; // detrás del nodo: el anillo asoma por fuera
             return ring;
         }
 

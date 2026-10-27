@@ -88,7 +88,7 @@ namespace Nova.Presentation
                 var veil = go.AddComponent<SpriteRenderer>();
                 veil.sprite = PrimitiveSprites.Disc(diameterPixels);
                 veil.color = VeilColor;
-                veil.sortingOrder = 2; // por encima del círculo (0) y de la Energía (1) del nodo
+                veil.sortingOrder = BoardOrder.AimVeil; // por encima del nodo y de su Energía
                 veils.Add(veil);
             }
             return veils[index];

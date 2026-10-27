@@ -1,0 +1,48 @@
+namespace Nova.Presentation
+{
+    // Orden de dibujo del tablero (SpriteRenderer.sortingOrder), en un solo sitio desde T6-02. Hasta
+    // entonces cada vista llevaba su número suelto, y el sprite del nodo (0) y su Energía (1) iban
+    // seguidos: no quedaba hueco para las capas 2–4 de 14.7. Del número de Energía hacia arriba todo sube
+    // 5, sin cambiar el orden relativo, y las capas del nodo coinciden con la numeración de 14.7.
+    //
+    // El fondo (BackgroundView, −100) y la UI de partida (20 y 30) quedan fuera: no se cruzan con esto.
+    public static class BoardOrder
+    {
+        // Detrás del nodo: el radio del Magnetar y el halo del drop, y la selección y la línea de envío
+        // (capa 0 de 14.7), que asoman por fuera del sprite.
+        public const int BehindNode = -2;
+        public const int Strokes = -1;
+
+        // 14.7, capa 1: el sprite base.
+        public const int Body = 0;
+
+        // 14.7, capa 2: los tintes. Congelado por encima de Reconvirtiendo («Congelado > Reconvirtiendo»).
+        public const int ConvertTint = 1;
+        public const int FrozenTint = 2;
+
+        // 14.7, capa 3: el aura de Infectado.
+        public const int InfectedAura = 3;
+
+        // 14.7, capa 4: los glifos, fuera del cuerpo (zzz, brasa, galón del buff).
+        public const int Glyph = 4;
+
+        // 14.7, capa 6: la Energía, y encima la barra de carga del Púlsar.
+        public const int Energy = 6;
+        public const int ChargeBar = 7;
+        public const int ChargeFill = 8;
+
+        // El velo del apuntado tapa nodo y número, como la barra.
+        public const int AimVeil = 7;
+
+        // Los protones pasan por encima de los nodos y su número de Carga por encima del protón.
+        public const int Proton = 7;
+        public const int ProtonCharge = 8;
+
+        // 14.7, capa 7: los efectos puntuales. Capturado es el primero que tiene arte (ART-ST-CAP).
+        public const int NodeEffect = 9;
+
+        // Por encima de los protones: el disparo del Magnetar y el haz de poder.
+        public const int MagnetarShot = 10;
+        public const int Beam = 11;
+    }
+}

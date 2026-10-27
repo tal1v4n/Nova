@@ -18,6 +18,10 @@ namespace Nova.Presentation
     // no tiene arte: el número de Energía, bajo el sprite y en claro sobre el cielo (NodeLayout;
     // NodeHUD, ART-UI-HUD-ENERGY), y el tinte, el halo y el temblor de los estados, que se aplican al
     // sprite hasta T6-02 y T6-03. Sin sprite, todo sigue como antes.
+    //
+    // T6-02: con NodeAnimator y el arte de A.3, los estados los dibuja él: aquí ya no se tiñe el sprite
+    // ni se pinta el halo. Y el sprite lo mueve él (cabeceo más este temblor, que lee de CurrentShake),
+    // porque dos componentes escribiendo la misma posición se pisan. El número sigue temblando aquí.
     [DefaultExecutionOrder(100)] // Presentation, 15.10
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NodeController))]
@@ -63,6 +67,8 @@ namespace Nova.Presentation
         NodeController node;
         NodeVisual visual;
         bool visualLooked;
+        NodeAnimator animator;
+        bool animatorLooked;
         Vector3 labelPosition; // el número sin temblor: bajo el sprite, o en el centro del círculo
         SpriteRenderer body;
         SpriteRenderer aura;
@@ -73,6 +79,9 @@ namespace Nova.Presentation
         internal TextMeshPro Label { get { EnsureBuilt(); return label; } }
         internal int TextScale => textScale;
         internal SpriteRenderer Aura { get { EnsureBuilt(); return aura; } }
+
+        // Temblor provisional del susto en este momento, o cero. Lo suma NodeAnimator al sprite.
+        internal Vector3 CurrentShake => IsScared ? ShakeOffset(Mathf.FloorToInt(Time.time * ShakeStepsPerSecond)) : Vector3.zero;
 
         void OnEnable()
         {
@@ -106,7 +115,7 @@ namespace Nova.Presentation
             bool visible = Node.IsInitialized;
             body.enabled = visible;
             label.enabled = visible;
-            aura.enabled = visible && Node.HasState(NodeStateFlags.Infected);
+            aura.enabled = visible && Node.HasState(NodeStateFlags.Infected) && !AnimatorDrawsStates;
             if (!visible)
                 return;
 
@@ -120,7 +129,9 @@ namespace Nova.Presentation
             // T3-04: congelado, el círculo va a medio camino del hielo, y el dueño se sigue leyendo.
             // Congelado gana a Reconvirtiendo, como en el orden de tintes de 14.7.
             Color32 color = art ? White : ColorOf(Node.Faction);
-            if (Node.HasState(NodeStateFlags.Frozen))
+            if (art && AnimatorDrawsStates)
+                tinted.color = White;
+            else if (Node.HasState(NodeStateFlags.Frozen))
                 tinted.color = Iced(color);
             else
                 tinted.color = Node.HasState(NodeStateFlags.Converting) ? Dimmed(color) : color;
@@ -140,6 +151,22 @@ namespace Nova.Presentation
         }
 
         bool HasArt => Visual != null && NodeVisual.SpriteOf(Node) != null;
+
+        bool AnimatorDrawsStates => Animator != null && Animator.DrawsStates;
+
+        // NodeAnimator es opcional, como NodeVisual.
+        NodeAnimator Animator
+        {
+            get
+            {
+                if (!animatorLooked)
+                {
+                    animator = GetComponent<NodeAnimator>();
+                    animatorLooked = true;
+                }
+                return animator;
+            }
+        }
 
         // NodeVisual es opcional: las escenas de prueba de las fases 1–5 no lo llevan.
         NodeVisual Visual
@@ -169,7 +196,7 @@ namespace Nova.Presentation
             body.transform.localPosition = offset;
             aura.transform.localPosition = offset;
             label.transform.localPosition = labelPosition + offset;
-            if (HasArt)
+            if (HasArt && Animator == null)
                 Visual.Body.transform.localPosition = offset;
         }
 
@@ -241,14 +268,14 @@ namespace Nova.Presentation
             aura = auraObject.AddComponent<SpriteRenderer>();
             aura.sprite = CircleSprite(diameterPixels + 2 * AuraMarginPixels);
             aura.color = InfectedColor;
-            aura.sortingOrder = -1;
+            aura.sortingOrder = BoardOrder.Strokes;
             aura.enabled = false;
 
             var bodyObject = new GameObject("ProvisionalBody");
             bodyObject.transform.SetParent(transform, false);
             body = bodyObject.AddComponent<SpriteRenderer>();
             body.sprite = CircleSprite(diameterPixels);
-            body.sortingOrder = 0;
+            body.sortingOrder = BoardOrder.Body;
 
             var labelObject = new GameObject("ProvisionalEnergy");
             labelObject.transform.SetParent(transform, false);
@@ -262,7 +289,7 @@ namespace Nova.Presentation
             label.textWrappingMode = TextWrappingModes.NoWrap;
             label.color = LabelColor;
             label.rectTransform.sizeDelta = new Vector2(diameterPixels, diameterPixels) / PixelsPerUnit;
-            label.sortingOrder = 1;
+            label.sortingOrder = BoardOrder.Energy;
         }
 
         // Disco blanco de alfa binario y filtro Point, teñido por SpriteRenderer.color.
