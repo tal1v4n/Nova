@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Nova.Data::Nova.Data.EnemyProfile
   decisionInterval: 3
   actionThreshold: 40
-  aggressionMultiplier: 0.5
+  aggressionMultiplier: 0.7
   usesEvacuation: 0
   usesConversion: 0
-  prioritizesPowerUps: 1
+  prioritizesPowerUps: 0
   fullSendMargin: 0
   decisionNoise: 0.25
   gracePeriod: 45

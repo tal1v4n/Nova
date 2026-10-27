@@ -306,7 +306,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: d326ab9f887d49ecaf643726db6c660c, type: 2}
   registry: {fileID: 1280199455}
   buffs: {fileID: 1280199453}
-  startLevel: {fileID: 11400000, guid: e4b45980e1434374fb10014c33db47d2, type: 2}
+  startLevel: {fileID: 11400000, guid: 67ccc2c4040ad824eb29b9c25e99cf1e, type: 2}
 --- !u!4 &610417078
 Transform:
   m_ObjectHideFlags: 0
