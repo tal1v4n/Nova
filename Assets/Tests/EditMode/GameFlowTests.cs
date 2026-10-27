@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using NUnit.Framework;
 using Nova.Core;
 using Nova.Data;
@@ -234,6 +235,18 @@ namespace Nova.Tests
             CollectionAssert.AreEqual(new[] { GameManager.GameScene }, loadedScenes);
             Assert.AreSame(levels[1], GameManager.Requested);
             Assert.AreEqual(1f, scaleAtLoad[0]);
+        }
+
+        [Test]
+        public void TheLoaderDoesNotLoadItsOwnLevelOverTheOneGameManagerLoaded()
+        {
+            // En Game, GameManager (-95) carga en su Awake antes que LevelLoader (-90). Con un nivel
+            // inicial puesto en LevelLoader, su Awake cargaba encima y Siguiente no cambiaba de nivel.
+            loader.Configure(Balance, template.GetComponent<NodeController>(), Definitions, Powers, registry, levels[0]);
+            game.Begin(levels[3]);
+            typeof(LevelLoader).GetMethod("Awake", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(loader, null);
+            Assert.AreSame(levels[3], loader.Current);
+            Assert.AreSame(levels[4], game.NextLevel);
         }
 
         [Test]

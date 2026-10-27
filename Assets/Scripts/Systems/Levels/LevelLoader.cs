@@ -38,7 +38,7 @@ namespace Nova.Systems
         [Tooltip("Opcional: los buffs de facción que consultan los nodos (9, T5-04). Sin ellos, ningún nodo va acelerado.")]
         [SerializeField] FactionBuffs buffs;
 
-        [Tooltip("Opcional: el nivel que se carga al empezar. Para las escenas de prueba; en el juego lo pide GameManager (T5-05).")]
+        [Tooltip("Opcional: el nivel que se carga al empezar. Solo para las escenas de prueba: en Game se ignora y el nivel inicial es el de GameManager (T5-05).")]
         [SerializeField] LevelDefinition startLevel;
 
         readonly List<NodeController> spawned = new List<NodeController>();
@@ -52,10 +52,19 @@ namespace Nova.Systems
         // Al terminar de cargar un nivel, con sus nodos ya registrados.
         public event Action<LevelDefinition> OnLoaded;
 
+        // Con GameManager en escena el nivel ya está cargado: va antes (-95) y es quien lo elige. Cargar
+        // aquí encima dejaba el tablero en este nivel mientras GameManager creía estar en otro, y
+        // Siguiente nunca cambiaba de nivel.
         void Awake()
         {
-            if (startLevel != null)
-                Load(startLevel);
+            if (startLevel == null)
+                return;
+            if (Current != null)
+            {
+                Debug.LogWarning($"[Nova] LevelLoader: se ignora su nivel inicial ({startLevel.name}); el nivel lo elige GameManager.", this);
+                return;
+            }
+            Load(startLevel);
         }
 
         public void Load(LevelDefinition level)
