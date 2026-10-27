@@ -84,8 +84,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from nova_core import (L, a_rgba, dir_nodo, esfera, guardar, lienzo,
-                       poliedro, rampa, veta)
+from nova_core import (L, a_rgba, dir_nodo, esfera, exporta_huellas, guardar,
+                       huella_px, lienzo, poliedro, rampa, veta)
 
 NODO = 'magnetar'
 VERSION = 1
@@ -254,18 +254,14 @@ def magnetar(nivel, faccion, t=0.0):
 
 
 def main():
-    import numpy as np
     raiz = dir_nodo(NODO, VERSION)
     for nivel in NIVELES:
         for fac in ('neutral', 'player', 'enemy'):
             guardar(magnetar(nivel, fac),
                     os.path.join(raiz, f'mag_lvl{nivel}_{fac}.png'))
 
-    def _ext(m):
-        ys, xs = np.where(m)
-        return max(ys.max() - ys.min(), xs.max() - xs.min()) + 1
-
     print(f"{'':4} {'huella':>9}  (el Magnetar no tiene glow: solida = total)")
+    huellas = {}
     for nivel in NIVELES:
         lz = magnetar(nivel, 'player')
         a = a_rgba(lz)[..., 3] > 0
@@ -273,7 +269,9 @@ def main():
             print(f'  AVISO: N{nivel} ha ensuciado la capa glow')
         if a[0, :].any() or a[-1, :].any() or a[:, 0].any() or a[:, -1].any():
             print(f'  AVISO: N{nivel} toca el borde de la celda')
-        print(f'N{nivel}: {_ext(a) / PPU:8.2f}u')
+        huellas[nivel] = huella_px(a)
+        print(f'N{nivel}: {huellas[nivel] / PPU:8.2f}u')
+    exporta_huellas(raiz, 'mag', huellas)
 
 
 if __name__ == '__main__':

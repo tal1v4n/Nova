@@ -458,6 +458,13 @@ El resplandor de `halo_trama` **no cuenta** para esa huella: es luz, no
 superficie, y no debe ampliar el área clicable. Los generadores reportan las
 dos medidas por separado y avisan si algún nivel toca el borde de la celda.
 
+**Y la exportan.** Desde el PNG la luz tramada ya no se distingue de la
+materia, así que solo el generador sabe medir la huella. Cada generador de
+nodo escribe con `exporta_huellas` un `<prefijo>_huella.json` junto a sus PNG
+—la huella en píxeles de cada nivel, una sola por nivel porque la silueta es
+la misma en las tres facciones—, `ArtBridge` lo copia con la carpeta de la
+versión y Unity hace de su mitad el radio del collider de clic (`T6-01`).
+
 ### Familias exentas de la celda
 
 Cuatro familias de asset no caben en 96×96 y tienen resolución propia. No

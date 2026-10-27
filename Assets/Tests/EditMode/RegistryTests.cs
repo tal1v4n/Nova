@@ -315,6 +315,7 @@ namespace Nova.Tests
         [TestCase(typeof(NodeConverter), 0)]
         [TestCase(typeof(Proton), 10)]
         [TestCase(typeof(ProvisionalNodeView), 100)]
+        [TestCase(typeof(NodeVisual), 100)]
         public void ExecutionOrderFollows15_10(Type type, int expected)
         {
             Assert.AreEqual(expected, OrderOf(type));

@@ -510,6 +510,35 @@ def guardar(lz, ruta):
     Image.fromarray(a_rgba(lz), "RGBA").save(ruta)
 
 
+# --- Huella de clic ----------------------------------------------------------
+#
+# La huella solida de un nodo (contrato, "Huella del nodo") es el lado mayor de
+# la caja que encierra su materia: lo que hace silueta y cuenta para el clic.
+# La luz tramada no cuenta, y desde el PNG ya no se distingue de la materia:
+# solo el generador, que tiene las capas separadas, sabe medirla. Por eso la
+# exporta, y Unity saca de ahi el radio del collider (18 #23, T6-01).
+
+def huella_px(mascara):
+    """Lado mayor, en pixeles, de la caja que encierra la mascara."""
+    ys, xs = np.where(mascara)
+    return int(max(ys.max() - ys.min(), xs.max() - xs.min()) + 1)
+
+
+def exporta_huellas(raiz, prefijo, huellas):
+    """Escribe <prefijo>_huella.json junto a los PNG, con la huella en px de cada nivel.
+
+    La silueta es la misma en las tres facciones (14.0 #3), asi que la huella
+    va por nivel. ArtBridge copia el JSON con la carpeta de la version. Dos
+    listas paralelas y no un diccionario, porque JsonUtility no lee diccionarios.
+    """
+    import json
+    niveles = sorted(huellas)
+    datos = {"ppu": 64, "levels": niveles, "footprintPixels": [huellas[n] for n in niveles]}
+    with open(os.path.join(raiz, f"{prefijo}_huella.json"), "w", encoding="utf-8", newline="\n") as f:
+        json.dump(datos, f, indent=2)
+        f.write("\n")
+
+
 # --- Materia facetada ------------------------------------------------------
 #
 # Todo lo anterior describe superficies curvas y continuas: la normal fingida

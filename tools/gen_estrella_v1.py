@@ -32,8 +32,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from nova_core import (a_rgba, dir_nodo, corona_radial, esfera, guardar, halo_trama,
-                       lienzo, rampa)
+from nova_core import (a_rgba, dir_nodo, corona_radial, esfera, exporta_huellas, guardar,
+                       halo_trama, huella_px, lienzo, rampa)
 
 NODO = 'estrella'
 VERSION = 1
@@ -107,25 +107,23 @@ def estrella(nivel, faccion, t=0.0):
 
 
 def main():
-    import numpy as np
     raiz = dir_nodo(NODO, VERSION)
     for nivel in NIVELES:
         for fac in ('player', 'enemy'):
             guardar(estrella(nivel, fac),
                     os.path.join(raiz, f'str_lvl{nivel}_{fac}.png'))
 
-    def _ext(m):
-        ys, xs = np.where(m)
-        return max(ys.max() - ys.min(), xs.max() - xs.min()) + 1
-
     print(f"{'':4} {'solida':>9} {'con halo':>10}")
+    huellas = {}
     for nivel in NIVELES:
         lz = estrella(nivel, 'player')
         solido = lz['lleno'].copy()
         a = a_rgba(lz)[..., 3] > 0
         if a[0, :].any() or a[-1, :].any() or a[:, 0].any() or a[:, -1].any():
             print(f'  AVISO: N{nivel} toca el borde de la celda')
-        print(f'N{nivel}: {_ext(solido) / PPU:8.2f}u {_ext(a) / PPU:9.2f}u')
+        huellas[nivel] = huella_px(solido)
+        print(f'N{nivel}: {huellas[nivel] / PPU:8.2f}u {huella_px(a) / PPU:9.2f}u')
+    exporta_huellas(raiz, 'str', huellas)
 
 
 if __name__ == '__main__':

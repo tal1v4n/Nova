@@ -10,6 +10,9 @@ namespace Nova.Presentation
     // en los Púlsares de los dos bandos: la barra del enemigo es el contrajuego entero (7.5).
     // Pausada, el relleno baja a la mitad de opacidad. Primitiva de la regla 4 de T.2: la sustituye
     // ART-UI-CHARGE en T6. Solo lee PulsarCaster.
+    //
+    // T6-01: con sprite, la barra va bajo el número de Energía, que a su vez va bajo la huella
+    // (NodeLayout). Sin sprite, a offsetPixels del centro, por fuera del círculo.
     [DefaultExecutionOrder(100)] // Presentation, 15.10
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NodeController), typeof(PulsarCaster))]
@@ -25,7 +28,7 @@ namespace Nova.Presentation
         [Tooltip("Alto de la barra en píxeles.")]
         [SerializeField, Range(2, 8)] int heightPixels = 4;
 
-        [Tooltip("Centro de la barra bajo el centro del nodo, en píxeles: por fuera del círculo de 64.")]
+        [Tooltip("Sin sprite: centro de la barra bajo el centro del nodo, en píxeles, por fuera del círculo de 64.")]
         [SerializeField, Range(32, 64)] int offsetPixels = 40;
 
         NodeController node;
@@ -51,6 +54,9 @@ namespace Nova.Presentation
             if (!visible)
                 return;
 
+            float y = -CenterPixels() / (float)PixelsPerUnit;
+            back.transform.localPosition = new Vector3(0f, y, 0f);
+
             float width = widthPixels / (float)PixelsPerUnit;
             float filled = FilledPixels(Caster.Progress, widthPixels) / (float)PixelsPerUnit;
             fill.transform.localPosition = new Vector3(-width / 2f + filled / 2f, back.transform.localPosition.y, 0f);
@@ -59,6 +65,17 @@ namespace Nova.Presentation
             Color color = Caster.Power.BeamColor;
             color.a = Caster.IsPaused ? 0.5f : 1f;
             fill.color = color;
+        }
+
+        // Centro de la barra bajo el centro del nodo, en píxeles enteros.
+        int CenterPixels()
+        {
+            int footprint = NodeVisual.FootprintPixelsOf(Node);
+            if (footprint == 0 || GetComponent<NodeVisual>() == null)
+                return offsetPixels;
+            var view = GetComponent<ProvisionalNodeView>();
+            int textScale = view != null ? view.TextScale : 2;
+            return NodeLayout.ChargeBarTopPixels(footprint, textScale) + heightPixels / 2;
         }
 
         // Píxeles enteros de relleno: la barra no se interpola dentro de un píxel.

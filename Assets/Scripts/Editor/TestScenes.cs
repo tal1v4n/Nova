@@ -48,7 +48,8 @@ namespace Nova.Editor
         const string NodesLayer = InputRouter.NodesLayer; // 18 #23
 
         // Radio del trigger de clic: el del círculo provisional de un nodo encendido, 64 px = 1 u
-        // (desviación 138). El Asteroide provisional es más pequeño, pero conserva el mismo blanco.
+        // (desviación 138). Desde T6-01 es solo el de partida: NodeCollider2D lo cambia por la media
+        // huella del sprite en cuanto el nodo se inicializa con su arte asignado.
         const float ColliderRadius = 0.5f;
 
         static readonly string[] IgnitionTargets = { "Star", "Pulsar", "Magnetar" };
@@ -599,7 +600,9 @@ namespace Nova.Editor
             var trigger = go.AddComponent<CircleCollider2D>();
             trigger.isTrigger = true;
             trigger.radius = ColliderRadius;
+            go.AddComponent<NodeCollider2D>(); // T6-01: el radio pasa a ser la huella del sprite (18 #23)
 
+            go.AddComponent<NodeVisual>(); // T6-01: el sprite de tipo, nivel y facción
             var view = go.AddComponent<ProvisionalNodeView>();
             var serialized = new SerializedObject(view);
             serialized.FindProperty("font").objectReferenceValue = font;

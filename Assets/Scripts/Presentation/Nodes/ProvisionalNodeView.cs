@@ -12,7 +12,12 @@ namespace Nova.Presentation
     // y la sustituye NodeVisual en T6-01. Solo lee eventos de NodeController, nunca escribe en él.
     //
     // T2-08: asustado (14.2), el círculo y el número tiemblan 1 px a los lados. Se mueven los hijos
-    // y no el nodo, para que el collider no tiemble. Los ojos de ART-ST-SCARE llegan con T6-01.
+    // y no el nodo, para que el collider no tiemble. Los ojos de ART-ST-SCARE llegan con T6-03.
+    //
+    // T6-01: con NodeVisual enseñando su sprite, el círculo no se dibuja. Lo que queda es lo que aún
+    // no tiene arte: el número de Energía, bajo el sprite y en claro sobre el cielo (NodeLayout;
+    // NodeHUD, ART-UI-HUD-ENERGY), y el tinte, el halo y el temblor de los estados, que se aplican al
+    // sprite hasta T6-02 y T6-03. Sin sprite, todo sigue como antes.
     [DefaultExecutionOrder(100)] // Presentation, 15.10
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NodeController))]
@@ -25,6 +30,8 @@ namespace Nova.Presentation
         static readonly Color32 FrozenColor = new Color32(0xB8, 0xF0, 0xFF, 0xFF); // Congelado
         static readonly Color32 InfectedColor = new Color32(0x7C, 0xF2, 0x3F, 0xFF); // Infectado
         static readonly Color32 LabelColor = new Color32(0x0B, 0x0E, 0x1A, 0xFF); // fondo profundo
+        static readonly Color32 SkyLabelColor = new Color32(0xE6, 0xEC, 0xF5, 0xFF); // texto de la UI, sobre el cielo
+        static readonly Color32 White = new Color32(0xFF, 0xFF, 0xFF, 0xFF); // el sprite sin teñir
 
         const int PixelsPerUnit = 64; // T0-04
 
@@ -54,6 +61,9 @@ namespace Nova.Presentation
         [SerializeField, Range(1, 4)] int textScale = 2;
 
         NodeController node;
+        NodeVisual visual;
+        bool visualLooked;
+        Vector3 labelPosition; // el número sin temblor: bajo el sprite, o en el centro del círculo
         SpriteRenderer body;
         SpriteRenderer aura;
         TextMeshPro label;
@@ -61,6 +71,7 @@ namespace Nova.Presentation
 
         internal SpriteRenderer Body { get { EnsureBuilt(); return body; } }
         internal TextMeshPro Label { get { EnsureBuilt(); return label; } }
+        internal int TextScale => textScale;
         internal SpriteRenderer Aura { get { EnsureBuilt(); return aura; } }
 
         void OnEnable()
@@ -99,24 +110,49 @@ namespace Nova.Presentation
             if (!visible)
                 return;
 
+            // T6-01: con sprite, el círculo se apaga y el tinte va al sprite, que parte de blanco.
+            bool art = HasArt;
+            body.enabled = !art;
+            SpriteRenderer tinted = art ? Visual.Body : body;
+
             // T2-07: reconvirtiéndose, el círculo baja a la mitad de brillo. Sigue siendo del color
             // de su dueño, porque durante los 3 s el nodo es suyo (8.1, «sin tipo, no sin bando»).
             // T3-04: congelado, el círculo va a medio camino del hielo, y el dueño se sigue leyendo.
             // Congelado gana a Reconvirtiendo, como en el orden de tintes de 14.7.
-            Color32 color = ColorOf(Node.Faction);
+            Color32 color = art ? White : ColorOf(Node.Faction);
             if (Node.HasState(NodeStateFlags.Frozen))
-                body.color = Iced(color);
+                tinted.color = Iced(color);
             else
-                body.color = Node.HasState(NodeStateFlags.Converting) ? Dimmed(color) : color;
-            int diameter = Node.Type == NodeType.Asteroid ? asteroidDiameterPixels : diameterPixels;
+                tinted.color = Node.HasState(NodeStateFlags.Converting) ? Dimmed(color) : color;
+            int diameter = art ? NodeVisual.FootprintPixelsOf(Node)
+                : Node.Type == NodeType.Asteroid ? asteroidDiameterPixels : diameterPixels;
             body.sprite = CircleSprite(diameter);
             // T3-05: infectado, un halo verde por detrás del círculo (la capa 3 de 14.7, por debajo del
             // tinte). Convive con el hielo, que tiñe el círculo y no el halo.
             aura.sprite = CircleSprite(diameter + 2 * AuraMarginPixels);
             label.text = Node.Energy.ToString();
+            label.color = art ? SkyLabelColor : LabelColor;
+            labelPosition = art
+                ? new Vector3(0f, -NodeLayout.LabelCenterPixels(diameter, textScale) / (float)PixelsPerUnit, 0f)
+                : Vector3.zero;
 
-            if (!IsScared)
-                ApplyOffset(Vector3.zero);
+            ApplyOffset(IsScared ? ShakeOffset(Mathf.FloorToInt(Time.time * ShakeStepsPerSecond)) : Vector3.zero);
+        }
+
+        bool HasArt => Visual != null && NodeVisual.SpriteOf(Node) != null;
+
+        // NodeVisual es opcional: las escenas de prueba de las fases 1–5 no lo llevan.
+        NodeVisual Visual
+        {
+            get
+            {
+                if (!visualLooked)
+                {
+                    visual = GetComponent<NodeVisual>();
+                    visualLooked = true;
+                }
+                return visual;
+            }
         }
 
         // Paso del temblor: un píxel a la derecha en los pares y uno a la izquierda en los impares.
@@ -132,7 +168,9 @@ namespace Nova.Presentation
         {
             body.transform.localPosition = offset;
             aura.transform.localPosition = offset;
-            label.transform.localPosition = offset;
+            label.transform.localPosition = labelPosition + offset;
+            if (HasArt)
+                Visual.Body.transform.localPosition = offset;
         }
 
         internal static Color32 ColorOf(Faction faction)
@@ -166,6 +204,7 @@ namespace Nova.Presentation
                 return;
             Node.OnFactionChanged += HandleFactionChanged;
             Node.OnEnergyChanged += HandleEnergyChanged;
+            Node.OnLevelChanged += HandleLevelChanged;
             Node.OnTypeChanged += HandleTypeChanged;
             Node.OnStateFlagsChanged += HandleFlagsChanged;
             subscribed = true;
@@ -177,6 +216,7 @@ namespace Nova.Presentation
                 return;
             Node.OnFactionChanged -= HandleFactionChanged;
             Node.OnEnergyChanged -= HandleEnergyChanged;
+            Node.OnLevelChanged -= HandleLevelChanged;
             Node.OnTypeChanged -= HandleTypeChanged;
             Node.OnStateFlagsChanged -= HandleFlagsChanged;
             subscribed = false;
@@ -184,6 +224,7 @@ namespace Nova.Presentation
 
         void HandleFactionChanged(Faction previous, Faction current) => Refresh();
         void HandleEnergyChanged(int previous, int current) => Refresh();
+        void HandleLevelChanged(int previous, int current) => Refresh();
         void HandleTypeChanged(NodeType previous, NodeType current) => Refresh();
         void HandleFlagsChanged(NodeStateFlags previous, NodeStateFlags current) => Refresh();
 

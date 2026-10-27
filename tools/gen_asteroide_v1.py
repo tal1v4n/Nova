@@ -60,8 +60,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from nova_core import (a_rgba, bulto, crater, dir_nodo, esferoide, guardar,
-                       lienzo, rampa, veta)
+from nova_core import (a_rgba, bulto, crater, dir_nodo, esferoide, exporta_huellas,
+                       guardar, huella_px, lienzo, rampa, veta)
 
 NODO = 'asteroide'
 VERSION = 1
@@ -164,20 +164,19 @@ def asteroide(nivel=0, faccion='neutral', t=0.0):
 
 
 def main():
-    import numpy as np
     raiz = dir_nodo(NODO, VERSION)
     for fac in FACCIONES:
         guardar(asteroide(0, fac), os.path.join(raiz, f'ast_lvl0_{fac}.png'))
 
     lz = asteroide(0, 'neutral')
     a = a_rgba(lz)[..., 3] > 0
-    ys, xs = np.where(a)
-    ext = max(ys.max() - ys.min(), xs.max() - xs.min()) + 1
+    ext = huella_px(a)
     if lz['glow'].any():
         print('  AVISO: ha ensuciado la capa glow')
     if a[0, :].any() or a[-1, :].any() or a[:, 0].any() or a[:, -1].any():
         print('  AVISO: toca el borde de la celda')
     print(f'huella: {ext / PPU:.2f}u   (sin glow: solida = total)')
+    exporta_huellas(raiz, 'ast', {0: ext})
 
 
 if __name__ == '__main__':
