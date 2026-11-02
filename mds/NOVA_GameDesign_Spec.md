@@ -1018,7 +1018,7 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 |---|---|
 | `NodeVisual.cs` | Sprite correcto según tipo, nivel y facción |
 | `NodeAnimator.cs` | Animaciones de estado de [14.1](./NOVA_Estados_Animaciones.md#141-estados-del-nodo) y el idle de los cuatro nodos con la coreografía de [A.2.5](./NOVA_Assets_Diseno.md#a25-coreografía-del-idle). Pinta los overlays de A.3 colgados del sprite de `NodeVisual`, con los órdenes de dibujo de `BoardOrder` |
-| `ProtonVisual.cs` | Número de Carga y escala |
+| `ProtonVisual.cs` | El protón en vuelo con su arte ([A.4.2](./NOVA_Assets_Diseno.md#a42-protón-y-haces-de-poder--143)): talla por Carga, bucle de 16 frames, la Carga con las cifras propias y la estela de gotas en píxel entero, que sobrevive al protón. Vive en `Systems`, no en cada protón. Lee `ProtonArt` (Data) |
 | `MagnetarShotArc.cs` | Arco de plasma de cada disparo del Magnetar ([14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma)). Escucha `MagnetarTurret.OnShot`. Dos frames a 12 fps en la rampa de su facción, la punta siguiendo al protón y en la capa 0 de 14.7 |
 | `MagnetarRadiusView.cs` | El anillo de radio de cada Magnetar del tablero ([A.4.1](./NOVA_Assets_Diseno.md#a41-radio-de-alcance-del-magnetar)): siempre visible, en las tres facciones (A.8 #1). Una sola vista para el tablero, que recorre `NodeRegistry` (`T6-05`) |
 | `VFXPool.cs` | Pool de efectos |

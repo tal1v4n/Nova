@@ -564,6 +564,9 @@ namespace Nova.Editor
                 AssetDatabase.LoadAssetAtPath<MagnetarArt>(NodeArtAssets.MagnetarArtPath), registry);
             go.AddComponent<ProvisionalSendLineView>().Configure(sendLine);
             go.AddComponent<ProvisionalProtonView>().Configure(protons, font);
+            // T6-04: el protón con su arte. Sin ProtonArt asignado, el disco provisional sigue al mando.
+            go.AddComponent<ProtonVisual>().Configure(
+                AssetDatabase.LoadAssetAtPath<ProtonArt>(NodeArtAssets.ProtonArtPath), protons);
             go.AddComponent<ProvisionalBeamView>().Configure(beams);
             go.AddComponent<ProvisionalAimView>().Configure(aim, registry); // T3-07
             go.AddComponent<IgnitionMenu>().Configure(menu, font, text);

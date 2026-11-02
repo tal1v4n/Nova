@@ -14,6 +14,9 @@ namespace Nova.Editor
     // filamentos de plasma no —la línea de envío y los tres arcos del Magnetar—: son tres piezas de un
     // trazo en filas (A.4.6), y tienen su propio corte.
     //
+    // T6-04: las hojas del protón y las cifras de la Carga tampoco son tiras de frames cuadrados, y no
+    // llevan el sufijo _sheet porque A.4.2 las nombra sin él. Se cortan por su nombre (ver abajo).
+    //
     // T5-05b: las texturas de datos de los fondos con movimiento no son sprites. Los campos y los
     // puntos son números —densidades y fracciones a 8 bits— y se leen en lineal; lo fijo es color y
     // se lee en sRGB, como un sprite. Ninguna se filtra ni se comprime, y el alfa es dato: no se trata
@@ -32,8 +35,9 @@ namespace Nova.Editor
         // defecto de 2048 Unity la reduciría y rompería la rejilla.
         const int MaxTextureSize = 8192;
 
-        // Subirla reimporta todo lo que pasa por aquí. 1: las texturas de datos (T5-05b); 2: todo en 2D.
-        public override uint GetVersion() => 2;
+        // Subirla reimporta todo lo que pasa por aquí. 1: las texturas de datos (T5-05b); 2: todo en 2D;
+        // 3: el protón y las cifras (T6-04); 4: el protón en diez tallas.
+        public override uint GetVersion() => 4;
 
         void OnPreprocessTexture()
         {
@@ -51,7 +55,8 @@ namespace Nova.Editor
                 return;
             }
 
-            bool isSheet = System.IO.Path.GetFileNameWithoutExtension(assetPath).EndsWith(SheetSuffix);
+            string fileName = System.IO.Path.GetFileNameWithoutExtension(assetPath);
+            bool isSheet = fileName.EndsWith(SheetSuffix) || ProtonSheetPattern.IsMatch(fileName) || fileName == DigitsName;
 
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = isSheet ? SpriteImportMode.Multiple : SpriteImportMode.Single;
@@ -119,12 +124,51 @@ namespace Nova.Editor
             new StrokePiece("tip", 32, 24f / 32f),
         };
 
+        // ART-WLD-PRO-P y -E (A.4.2, tools/gen_proton_v2.py): una hoja por bando y talla, de la 1 a la 10, en
+        // celdas de 48 y dos filas. La de arriba, los 16 frames del cuerpo; la de abajo, los 4 pasos de la gota
+        // y el resto vacío, que no se corta.
+        static readonly Regex ProtonSheetPattern = new Regex(@"^world_proton_(player|enemy)_\d+$");
+        const int ProtonCell = 48;
+        const int ProtonDropSteps = 4;
+
+        // Las cifras de la Carga: diez celdas de 7 × 9, de 0 a 9, con la cifra pegada a la izquierda y su
+        // contorno dentro. Pivote abajo a la izquierda: ProtonVisual las coloca en píxeles enteros.
+        const string DigitsName = "world_charge_digits";
+        const int DigitWidth = 7;
+        const int DigitCount = 10;
+
         static void SliceSheet(TextureImporter importer)
         {
             importer.GetSourceTextureWidthAndHeight(out int width, out int height);
             string baseName = System.IO.Path.GetFileNameWithoutExtension(importer.assetPath);
             SpriteRect[] rects;
-            if (StrokeSheetPattern.IsMatch(baseName))
+            if (ProtonSheetPattern.IsMatch(baseName))
+            {
+                if (height != ProtonCell * 2 || width % ProtonCell != 0 || width / ProtonCell < ProtonDropSteps)
+                {
+                    Debug.LogError($"[Nova] {importer.assetPath}: {width}x{height} no son dos filas de celdas de {ProtonCell}.");
+                    return;
+                }
+                int bodyFrames = width / ProtonCell;
+                var center = new Vector2(0.5f, 0.5f);
+                rects = Enumerable.Range(0, bodyFrames)
+                    .Select(i => Frame($"{baseName}_body_{i}", new Rect(i * ProtonCell, ProtonCell, ProtonCell, ProtonCell), center))
+                    .Concat(Enumerable.Range(0, ProtonDropSteps)
+                        .Select(i => Frame($"{baseName}_drop_{i}", new Rect(i * ProtonCell, 0, ProtonCell, ProtonCell), center)))
+                    .ToArray();
+            }
+            else if (baseName == DigitsName)
+            {
+                if (width != DigitWidth * DigitCount)
+                {
+                    Debug.LogError($"[Nova] {importer.assetPath}: {width}x{height} no son {DigitCount} celdas de {DigitWidth} de ancho.");
+                    return;
+                }
+                rects = Enumerable.Range(0, DigitCount)
+                    .Select(i => Frame($"{baseName}_{i}", new Rect(i * DigitWidth, 0, DigitWidth, height), Vector2.zero))
+                    .ToArray();
+            }
+            else if (StrokeSheetPattern.IsMatch(baseName))
             {
                 if (width % LinkCell != 0 || height != LinkHeight * LinkPieces.Length)
                 {

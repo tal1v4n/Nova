@@ -18,6 +18,9 @@ namespace Nova.Editor
     //
     // T6-05: y el arte de mundo del Magnetar en MagnetarArt —sus 15 anillos de radio y sus tres arcos de
     // disparo, de Assets/Sprites/world/radius/ y world/shot/ (A.4.1)—.
+    //
+    // T6-04: y el del protón en ProtonArt —las veinte hojas de A.4.2, diez tallas por bando, y las cifras
+    // de la Carga, de Assets/Sprites/world/proton/—.
     public static class NodeArtAssets
     {
         public const string SpritesFolder = "Assets/Sprites/nodes";
@@ -26,6 +29,7 @@ namespace Nova.Editor
         public const string StateArtPath = "Assets/Data/NodeStateArt.asset";
         public const string WorldFolder = "Assets/Sprites/world";
         public const string MagnetarArtPath = "Assets/Data/MagnetarArt.asset";
+        public const string ProtonArtPath = "Assets/Data/ProtonArt.asset";
 
         // <hoja>_<n>: el nombre que SpriteImportRules da a cada frame.
         static readonly Regex FrameIndex = new Regex(@"_(\d+)$");
@@ -100,8 +104,16 @@ namespace Nova.Editor
                 return;
             }
             EditorUtility.SetDirty(magnetar);
+
+            ProtonArt proton = LoadOrCreate<ProtonArt>(ProtonArtPath);
+            if (!ConfigureProton(proton, out string protonError))
+            {
+                Debug.LogError($"[Nova] {protonError}");
+                return;
+            }
+            EditorUtility.SetDirty(proton);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[Nova] Sprites, huellas y hojas de idle asignados a los {Nodes.Length} tipos de nodo, los overlays de estado a {StateArtPath} y el radio y el arco del Magnetar a {MagnetarArtPath}.");
+            Debug.Log($"[Nova] Sprites, huellas y hojas de idle asignados a los {Nodes.Length} tipos de nodo, los overlays de estado a {StateArtPath}, el radio y el arco del Magnetar a {MagnetarArtPath} y el protón a {ProtonArtPath}.");
         }
 
         static T LoadOrCreate<T>(string path) where T : ScriptableObject
@@ -155,6 +167,80 @@ namespace Nova.Editor
                 return true;
             error = $"Falta {missing} o no está cortada: sincroniza con Nova → Arte → Sincronizar sprites desde art.";
             return false;
+        }
+
+        // La talla va de 1 a N en el nombre del archivo, y de 0 a N − 1 en ProtonArt.
+        public static string ProtonSheetPath(string faction, int size) => $"{WorldFolder}/proton/world_proton_{faction}_{size}.png";
+
+        public const string SizesJsonPath = WorldFolder + "/proton/world_proton_tallas.json";
+        public const string DigitsPath = WorldFolder + "/proton/world_charge_digits.png";
+        public const string DigitsJsonPath = WorldFolder + "/proton/world_charge_digits.json";
+
+        // Las hojas y las cifras de A.4.2 desde Assets/Sprites/world/proton/. Los frames son los que corta
+        // SpriteImportRules: <hoja>_body_<n>, <hoja>_drop_<n> y world_charge_digits_<n>. Cuántas tallas hay,
+        // su escalón de Carga y el radio de cada bolsa vienen de world_proton_tallas.json.
+        public static bool ConfigureProton(ProtonArt proton, out string error)
+        {
+            error = null;
+            string missing = null;
+
+            var sizesJson = AssetDatabase.LoadAssetAtPath<TextAsset>(SizesJsonPath);
+            SizesExport tallas = sizesJson != null ? JsonUtility.FromJson<SizesExport>(sizesJson.text) : null;
+            if (tallas == null || tallas.sizes < 1 || tallas.chargePerSize < 1 ||
+                tallas.bagRadiusPixels == null || tallas.bagRadiusPixels.Length != tallas.sizes)
+            {
+                error = $"Falta {SizesJsonPath} o no está completo: sincroniza con Nova → Arte → Sincronizar sprites desde art.";
+                return false;
+            }
+
+            ProtonArt.SizeFrames[] Sizes(string faction)
+            {
+                var sizes = new ProtonArt.SizeFrames[tallas.sizes];
+                for (int i = 0; i < sizes.Length; i++)
+                {
+                    string path = ProtonSheetPath(faction, i + 1);
+                    Sprite[] frames = LoadFrames(path);
+                    sizes[i] = new ProtonArt.SizeFrames(
+                        frames.Where(sprite => sprite.name.Contains("_body_")).ToArray(),
+                        frames.Where(sprite => sprite.name.Contains("_drop_")).ToArray());
+                    if (!sizes[i].IsComplete)
+                        missing ??= path;
+                }
+                return sizes;
+            }
+
+            Sprite[] digits = LoadFrames(DigitsPath);
+            if (digits.Length != ProtonArt.Digits)
+                missing ??= DigitsPath;
+            var json = AssetDatabase.LoadAssetAtPath<TextAsset>(DigitsJsonPath);
+            DigitsExport export = json != null ? JsonUtility.FromJson<DigitsExport>(json.text) : null;
+            if (export?.advance == null || export.advance.Length != ProtonArt.Digits)
+                missing ??= DigitsJsonPath;
+
+            proton.Configure(Sizes("player"), Sizes("enemy"), digits, export?.advance,
+                tallas.chargePerSize, tallas.bagRadiusPixels);
+
+            if (missing == null)
+                return true;
+            error = $"Falta {missing} o no está cortada: sincroniza con Nova → Arte → Sincronizar sprites desde art.";
+            return false;
+        }
+
+        // Los JSON de tools/gen_proton_v2.py: exporta_tallas y hoja_cifras.
+        [Serializable]
+        sealed class SizesExport
+        {
+            public int sizes;
+            public int chargePerSize;
+            public int[] bagRadiusPixels;
+        }
+
+        [Serializable]
+        sealed class DigitsExport
+        {
+            public int cellWidth;
+            public int cellHeight;
+            public int[] advance;
         }
 
         public static NodeStateArt LoadOrCreateStateArt()

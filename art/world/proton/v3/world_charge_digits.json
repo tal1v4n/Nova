@@ -1,0 +1,17 @@
+{
+ "cellWidth": 7,
+ "cellHeight": 9,
+ "advance": [
+  6,
+  4,
+  6,
+  6,
+  6,
+  6,
+  6,
+  6,
+  6,
+  6
+ ],
+ "note": "avance de 0 a 9; contorno de 1 px incluido en la celda, y dos cifras seguidas comparten la columna de contorno"
+}

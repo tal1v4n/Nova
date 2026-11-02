@@ -357,7 +357,7 @@ después.
   71.9 px y 62.5 px sobre un sprite de 67 px, y con `Filter Mode: Point` eso
   remuestrea el sprite en cada frame duplicando y soltando filas distintas:
   no es un nodo respirando, es un nodo hirviendo. Es la misma prohibición que
-  convirtió el protón en tres sprites discretos y con la que T.8 descarta
+  convirtió el protón en sprites discretos y con la que T.8 descarta
   arreglar la escala del tablero desde Unity, aplicada al último sitio donde
   faltaba. **Todo movimiento por transform de un nodo es una traslación de
   píxeles enteros**, y eso incluye la sacudida de `Asustado`
@@ -482,8 +482,9 @@ los nodos:
 **El protón no escala de forma continua.** [14.3](./NOVA_Estados_Animaciones.md#143-protón)
 pedía escala `0.6`–`1.4`, pero con `Filter Mode: Point` una escala no entera
 rompe el pixel-perfect y produce filas de píxeles de distinto grosor dentro
-del mismo sprite. Se sustituye por **tres sprites discretos** de 48×48
-—pequeño, medio, grande— seleccionados por umbral de Carga.
+del mismo sprite. Se sustituye por **sprites discretos** de 48×48
+seleccionados por umbral de Carga: diez, uno por cada 5 de Carga hasta 50
+(A.4.2).
 
 ---
 

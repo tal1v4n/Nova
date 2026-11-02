@@ -7,7 +7,8 @@ namespace Nova.Presentation
 {
     // T1-12: vista provisional de los protones en vuelo. Un disco pequeño del color de la facción
     // emisora (6.1, 14.3) con su Carga en Jersey 10. Primitiva de la regla 4 de T.2: desechable,
-    // la sustituye ProtonVisual en T6-04 con los tres sprites de A.4.2.
+    // la sustituye ProtonVisual en T6-04 con los tres sprites de A.4.2. Con ProtonArt completo en un
+    // ProtonVisual del mismo objeto, se aparta y no dibuja nada.
     //
     // Solo lee: recorre ProtonRegistry.InFlight en LateUpdate y cuelga un hijo visual de cada
     // protón la primera vez que lo ve. El pool reutiliza el GameObject y su hijo con él.
@@ -28,6 +29,7 @@ namespace Nova.Presentation
         [SerializeField, Range(8, 48)] int diameterPixels = 24;
 
         readonly Dictionary<Proton, Visual> visuals = new Dictionary<Proton, Visual>();
+        ProtonVisual replacement;
 
         sealed class Visual
         {
@@ -42,6 +44,13 @@ namespace Nova.Presentation
 
         public void Refresh()
         {
+            if ((replacement != null || TryGetComponent(out replacement)) && replacement.HasArt)
+            {
+                foreach (Visual visual in visuals.Values)
+                    visual.Body.gameObject.SetActive(false);
+                return;
+            }
+
             ProtonRegistry source = registry != null ? registry : ProtonRegistry.Instance;
             if (source == null)
                 return;

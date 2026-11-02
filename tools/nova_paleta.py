@@ -49,6 +49,12 @@ RAMPAS = {
     # 236-247 grados, lejos del morado de `gusano` (~263).
     'plasma_p':   ('#FFFFFF','#F4F0FF','#A9EEFF','#3FD7F5','#5B6BF5','#5A48D6','#2A1F66'),
 
+    # ---- Proton del Enemigo (ART-WLD-PRO-E, A.4.2): su plasma -------------
+    # Espejo de `plasma_p`: nucleo blanco, el ancla del Enemigo y la vaina
+    # que se enfria hacia el carmin y la ciruela de `str_e[6]`. Se queda en
+    # 290-345 grados, lejos del morado de `gusano` (~263).
+    'plasma_e':   ('#FFFFFF','#FFF0F3','#FFB3C6','#F2456B','#D8336F','#8E2160','#3D1440'),
+
     # ---- Corona de la Estrella: misma familia, un punto mas luminosa -----
     'cor_p':      ('#FFFFFF','#DBFBFF','#7FE8FC','#35C2EE','#2288C8','#23569C','#1E2C60'),
     'cor_e':      ('#FFFFFF','#FFDFE6','#FF8FA8','#EE3A66','#C02458','#851C4E','#45143E'),

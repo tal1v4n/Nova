@@ -32,6 +32,9 @@ namespace Nova.Systems
 
         public NodeController Target => target;
 
+        // Desde dónde se lanzó. Lo lee ProtonVisual para soltar la estela a lo largo del camino (T6-04).
+        public Vector2 Origin => origin;
+
         // Nodo del que salió, si lo lanzó ProtonLauncher. Lo lee la defensa del Enemigo para congelar
         // el origen del ataque (12.4, T4-05). Puede haber cambiado de bando desde el lanzamiento.
         public NodeController Source { get; internal set; }

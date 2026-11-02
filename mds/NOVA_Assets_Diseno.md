@@ -894,10 +894,29 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 
 | ID | Elemento | Requisito | Archivo | Estado | Vista previa |
 |---|---|---|---|---|---|
-| `ART-WLD-PRO-P` | Protón del Jugador | Círculo + estela, hueco central legible para el número. **Tres tamaños discretos** de 48×48: `_s`, `_m`, `_l` | `art/world/world_proton_player_{s,m,l}.png` | ⬜ | `![](../art/world/world_proton_player_m.png)` |
-| `ART-WLD-PRO-E` | Protón del Enemigo | Ídem con la rampa del Enemigo | `art/world/world_proton_enemy_{s,m,l}.png` | ⬜ | `![](../art/world/world_proton_enemy_m.png)` |
+| `ART-WLD-PRO-P` | Protón del Jugador | Círculo + estela, número legible encima. **Diez tallas discretas** de 48×48, una por cada 5 de Carga: `_1` (1–5) … `_10` (46–50 y más) | `art/world/proton/v2/world_proton_player_{1..10}.png` | ✅ | ![](../art/world/proton/v2/world_proton_player_10.png) |
+| `ART-WLD-PRO-E` | Protón del Enemigo | Ídem con la rampa del Enemigo | `art/world/proton/v2/world_proton_enemy_{1..10}.png` | ✅ | ![](../art/world/proton/v2/world_proton_enemy_10.png) |
 
-> **Cambio respecto a [14.3](./NOVA_Estados_Animaciones.md#143-protón):** la escala continua `0.6 + (carga/100)*0.6` queda anulada. Con `Filter Mode: Point`, una escala no entera rompe el pixel-perfect y produce filas de píxeles de distinto grosor dentro del mismo sprite. Se sustituye por tres sprites seleccionados por umbral de Carga. Son 6 archivos, no 2; el conteo de A.7 lo refleja.
+> **Cambio respecto a [14.3](./NOVA_Estados_Animaciones.md#143-protón):** la escala continua `0.6 + (carga/100)*0.6` queda anulada. Con `Filter Mode: Point`, una escala no entera rompe el pixel-perfect y produce filas de píxeles de distinto grosor dentro del mismo sprite. Se sustituye por sprites discretos seleccionados por umbral de Carga: eran tres, y desde el 2026-11-01 son **diez, uno por cada 5 de Carga**. Son 20 archivos, no 2; el conteo de A.7 lo refleja.
+
+**Propuesta v1 del protón, «El vórtice»** (2026-11-01, pendiente de aprobación). Generador: `tools/gen_proton_v1.py` → `art/world/proton/v1/world_proton_<faccion>_<talla>.png`; vistas en `art/_preview/proton/v1/` (`--gif` para las animadas).
+
+- **El número hace el hueco.** La Carga es TextMeshPro a 1× en Jersey 10: 10 px de alto y 7, 15 o 17 de ancho con una, dos o tres cifras. Cada talla es el anillo más pequeño que rodea su número más ancho, así que **la talla queda atada a las cifras**. Umbrales propuestos: **`_s` 1–9, `_m` 10–49, `_l` 50–100**, para que `T6-04` los lleve a un ScriptableObject. El ojo sale más ancho que alto porque los números lo son, y eso es justo lo que se ve de un anillo inclinado.
+- **Un toro de plasma visto de tres cuartos, no una esfera.** Ningún nodo tiene agujero, así que no se confunde con ninguno. El tubo adelgaza hacia atrás hasta el 60 % y esa mitad va una banda más oscura (*Profundidad* del contrato). Cuerpos de 25×27, 39×31 y 43×33 px con su resplandor.
+- **Los nudos son la Carga.** Uno, dos o tres puntos de calor recorren el anillo con cola, en un **bucle de 16 frames**. El resplandor tramado se enciende detrás de cada nudo, con cizalla (regla 6). Cada nudo acaba en el sitio del siguiente, así que el bucle cierra por construcción.
+- **La estela son gotas, no una cola pegada.** El cuerpo nunca gira, porque girarlo giraría su luz y rompería la `L` global. `ProtonVisual` suelta en píxel entero una gota cada ~7 px recorridos, y cada gota baja un paso de trama cada 2 frames hasta desaparecer: 4 pasos, 0.67 s. La estela apunta siempre hacia atrás sin rotar nada. Decidido con el usuario el 2026-11-01.
+- **Hoja por archivo:** fila 0, los 16 frames del cuerpo; fila 1, los 4 pasos de la gota. Son celdas de 48 y siguen siendo 6 archivos.
+- **Rampa:** `plasma_p`, la de la línea de envío, porque el protón es la Energía que esa línea anunciaba, y su espejo nuevo **`plasma_e`** en `tools/nova_paleta.py`.
+- **El generador falla** si el alfa no es binario, si sale un color fuera de la rampa, si toca el borde de la celda, si el anillo tapa un píxel del número más ancho de su talla en cualquiera de las dos paridades de centrado, si los 16 frames no son distintos, si el bucle no cierra o si la gota no se apaga en orden.
+
+**Diseño cerrado: «La bolsa», v2** (elegida por el usuario el 2026-11-01, con sus cifras; se descartan la v1 «El vórtice» y la v3 «El engaste», que siguen en sus carpetas). **Diez tallas, una por cada 5 de Carga** (pedido del usuario el mismo día, sobre las tres `_s`, `_m` y `_l` de la primera entrega): `_1` para 1–5, `_2` para 6–10 … `_10` para 46–50, y de 51 a 100 la `_10`. **La 10 es la `l` de antes, ni un píxel más** (43 px): el usuario no quiere un 50 exagerado. La 1 mide 23 px, y entre las dos cada parámetro se interpola en línea recta. Para que las tallas de dos cifras puedan encoger, **los quarks y los muelles pasan por detrás del número**: las cifras van encima, con contorno, y se siguen leyendo. Cuántas tallas hay, su escalón y el radio de cada bolsa van en `world_proton_tallas.json`, que lee `ProtonArt`. Pedida por el usuario: la v1 no se leía como un protón y Jersey 10 no le convencía en la Carga. Generador: `tools/gen_proton_v2.py` → `art/world/proton/v2/`; vistas en `art/_preview/proton/v2/`.
+
+- **Un protón, no un átomo.** Tres quarks, **u u d**, dentro de una bolsa (el modelo de bolsa del nucleón). Los dos u van encendidos y el d una banda más apagado. No hay órbitas ni núcleo, que es lo que dibuja un átomo.
+- **Los gluones son muelles**, como en un diagrama de Feynman: un zigzag de 1 px en `glow` entre cada par de quarks, que vibra hacia delante. Siguen la circunferencia y nunca cruzan el número.
+- **Gira el contenido, no el sprite:** los quarks dan una vuelta por bucle de 16 frames y cada uno se ilumina con la `L` global donde está. La bolsa es una membrana tramada, densa en el borde y vacía por dentro; es luz, no da contorno ni hitbox.
+- **Cifras propias** en vez de Jersey 10: 5×7 px de trazo 1, el «1» estrecho de 3 px, `neutral[1]` con las dos filas de abajo en `neutral[2]`, y contorno de 1 px. Van en `world_charge_digits.png` con el avance de cada cifra en `.json`, y `ProtonVisual` las compondría por sprites, sin TextMeshPro. **Contradice dos reglas del contrato**: la Carga va en TextMeshPro y hay una sola familia tipográfica. Si se aprueban, lo coherente es usarlas también para la Energía de los nodos.
+- **Propuesta v3, «El engaste»** (2026-11-01, pendiente de aprobación). Pedida por el usuario: conservar las cifras de la v2 y algo más sencillo. `tools/gen_proton_v3.py` → `art/world/proton/v3/`, vistas en `art/_preview/proton/v3/`. Es un **aro de plasma redondo**, una banda más oscuro que los quarks, con los **tres quarks u u d engarzados** como piedras de un anillo. Dan una vuelta por bucle de 16 frames y se iluminan con la `L` global donde están. El resplandor de fuera **late**. Son dos materiales y una sola lectura, sin muelles ni bolsa. El aro es el círculo más pequeño que deja libre el número, así que mide **26, 32 y 38 px** con el resplandor, más pequeño que la v2. Las tallas, los umbrales, las gotas y las comprobaciones son las de la v1 y la v2.
+- **Mismas tallas, umbrales y gotas que la v1.** Como la bolsa es hueca, una gota solo se ve cuando ya ha salido de ella. Cuerpos de 33, 39 y 43 px: más grandes que en la v1, porque los quarks tienen que dejar libre el número en cualquier ángulo de giro.
 | `ART-WLD-BEAM-ZER` | Haz de Cero Absoluto | Trazo **estirable** Púlsar→objetivo, rampa `hielo` con `#B8F0FF` literal en su índice 3 | `art/world/world_beam_zero.png` | ⬜ | `![](art/world/world_beam_zero.png)` |
 | `ART-WLD-BEAM-DEC` | Haz de Decaimiento | Ídem, rampa `decaimiento` con `#7CF23F` | `art/world/world_beam_decay.png` | ⬜ | `![](art/world/world_beam_decay.png)` |
 | `ART-WLD-BEAM-WRM` | Haz de Agujero de Gusano | Ídem, rampa `gusano` con `#9B5CF6` | `art/world/world_beam_wormhole.png` | ⬜ | `![](art/world/world_beam_wormhole.png)` |
@@ -1102,13 +1121,17 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.2 Nodos | **50** | **50** ✅ | — (ya no bloquea `T6-01` ni el idle de `T6-02`) |
 | A.3 Estados | **9** | **9** ✅ | — (ya no bloquea `T6-02` ni `T6-03`) |
 | A.4.1 Radio del Magnetar | **18** | **18** ✅ | — (ya no bloquea `T6-05`) |
-| A.4.2 Protón y haces de poder | 9 | 0 | `ProtonVisual`, `PowerBeam`, fase 6 |
+| A.4.2 Protón y haces de poder | **23** | **20** | `PowerBeam` (`T6-11`). El protón ✅: ya no bloquea `T6-04` |
 | A.4.3 Selección y apuntado | **4** | **1** | Pulido de input (fase 6). `ART-WLD-LINK` ✅: ya no bloquea `T5-06` |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
 | A.5 VFX | 15 | 0 | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **121** | **85** | — |
+| **Total** | **135** | **105** | — |
+
+**Y los ✅ suben de 91 a 105 el 2026-11-01, con el total de 121 a 135:** el protón pasa de tres tallas a diez, una por cada 5 de Carga, y sus archivos de 6 a 20 (A.4.2). A.4.2 queda en 20 de 23; faltan los tres haces.
+
+**Y los ✅ suben de 85 a 91 el 2026-11-01** con los seis protones, `ART-WLD-PRO-P` y `-E` v2, «La bolsa» (A.4.2), y con ellos las cifras propias de la Carga (`world_charge_digits`). `T6-04` deja de estar bloqueada por arte. El total no cambia; A.4.2 queda en 6 de 9, faltan los tres haces.
 
 **Y los ✅ suben de 82 a 85 el 2026-10-27** con los tres arcos de disparo del Magnetar, `ART-WLD-RAD-SHOT` v1, «El chispazo» (A.4.1). **A.4.1 queda cerrado, 18 de 18**, y `T6-05` deja de estar bloqueada por arte. El total no cambia.
 
@@ -1192,7 +1215,7 @@ Ninguna decisión de art design queda abierta. Se conservan aquí con su motivo,
 | Contradicción de frames | **12 fps fijo**, `frames = ceil(duración × 12)`; bucles a 16 | A.3, A.5 y el contrato |
 | Idle de los nodos | Híbrido: **cabeceo por transform** en píxeles enteros para Asteroide y Magnetar, hoja de 16 frames para Estrella y Púlsar. **Un transform nunca escala un nodo** | Contrato, sección Animación |
 | Tipografía | Una única pixel font libre, en TextMeshPro | Contrato, Importación en Unity |
-| Escala del protón | Tres sprites discretos de 48 px, no escala continua | A.4.2 |
+| Escala del protón | Diez sprites discretos de 48 px, uno por cada 5 de Carga, no escala continua | A.4.2 |
 | Geometría del haz de poder | **Tres piezas y estiramiento**, no un sprite por longitud: nacimiento, tramo repetible y punta, con rotación por `transform` | A.4.2 |
 | Color del haz de poder | **Por poder, no por facción.** Reutiliza `hielo`, `decaimiento` y `gusano`; la autoría se lee por el Púlsar del que sale | A.4.2, [14.4](./NOVA_Estados_Animaciones.md#144-paleta-funcional) |
 | Línea de envío y disparo del Magnetar | **Filamento de plasma**, como en un globo de plasma: serpentea, chisporrotea y fluye hacia la punta. Color de facción, nunca el violeta de `gusano`. Tesela repetida, no estirada | A.4.6, [14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma) |

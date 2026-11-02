@@ -94,7 +94,7 @@ Y el asset **no es un par de ojos, es un ojo**: se instancia dos veces con el de
 |---|---|
 | Sprite | Circular con estela, color de la facción emisora ([6.1](./NOVA_GameDesign_Spec.md#61-el-protón)) |
 | Número de Carga | Siempre visible en el centro, actualizado en tiempo real |
-| Escala | **Tres sprites discretos**, no escala continua. La fórmula anterior `0.6 + (carga/100)*0.6` queda anulada: con `Filter Mode: Point` una escala no entera rompe el pixel-perfect. Umbrales en [A.4.2](./NOVA_Assets_Diseno.md#a42-protón-y-haces-de-poder--143). |
+| Escala | **Diez sprites discretos**, uno por cada 5 de Carga hasta 50 (de 50 para arriba, el mayor), no escala continua: el protón crece y encoge con su Carga. La fórmula anterior `0.6 + (carga/100)*0.6` queda anulada: con `Filter Mode: Point` una escala no entera rompe el pixel-perfect. Umbrales en [A.4.2](./NOVA_Assets_Diseno.md#a42-protón-y-haces-de-poder--143). |
 | Al ser alcanzado por un Magnetar | Le llega el **arco de plasma** del Magnetar (14.9); destello, sacudida, el número baja de 2 en 2 |
 | Al ser destruido | Implosión corta, no deja nada |
 | Al impactar | Ver 14.5: absorción, daño o captura |

@@ -34,6 +34,10 @@ namespace Nova.Presentation
         // El velo del apuntado tapa nodo y número, como la barra.
         public const int AimVeil = 7;
 
+        // La estela del protón (T6-04) es un trazo de mundo de la capa 0: cerca de su origen pasa por
+        // debajo del nodo que lo lanzó, como la línea de envío, y nunca tapa un número de Energía.
+        public const int ProtonTrail = Strokes;
+
         // Los protones pasan por encima de los nodos y su número de Carga por encima del protón.
         public const int Proton = 7;
         public const int ProtonCharge = 8;
