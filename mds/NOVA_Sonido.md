@@ -35,6 +35,7 @@
 |---|---|
 | ⬜ | Inventariado, sin diseñar |
 | 🟡 | Hay versión generada, falta la aprobación del usuario |
+| 🟢 | Aprobado por el usuario, falta integrarlo en Unity (`T6-10`) |
 | ✅ | Aprobado e integrado en Unity |
 
 ---
@@ -74,7 +75,7 @@ Encaja con el pipeline que ya existe ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica
 | `numpy` | Osciladores, ruido, envolventes, mezclas: el sonido como un array | 2.5.4, la misma del arte |
 | `scipy` (`scipy.signal`) | Filtros paso bajo, paso alto y paso banda, barridos de frecuencia | 1.18.1 |
 | `soundfile` | Escribir y leer WAV con la profundidad de bits exacta | 0.14.0 (libsndfile 1.2.2) |
-| `pedalboard` (Spotify) | Reverb, delay, chorus, distorsión y compresor de calidad de estudio; también carga plugins VST3 | 0.9.26. Comprobado: instala e importa en Python 3.14 |
+| `pedalboard` (Spotify) | Reverb, delay, chorus, distorsión y compresor de calidad de estudio; también carga plugins VST3 | 0.9.26. Comprobado: instala e importa en Python 3.14. **Su `Reverb` no se usa con transitorios secos**: es un Freeverb y sobre las grietas deja un aleteo metálico regular; la sala la hace `nova_audio.sala`, por convolución con ruido que decae |
 | `pyloudnorm` | Medir y normalizar la sonoridad (LUFS) para que todos los SFX convivan | 0.2.0 |
 
 **Todo vive en el entorno virtual del proyecto, nada en la máquina**, con la misma regla que el arte ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Principio*). Python 3.14 es lo único instalado fuera; las versiones están fijadas en `requirements.txt`, uno solo para arte y sonido:
@@ -191,10 +192,10 @@ Como en el arte, **varias versiones pueden convivir**; la elegida la marca la co
 
 | ID | Qué suena | Cuándo | Evento en el código | Duración | Arte que acompaña | Archivo | Estado |
 |---|---|---|---|---|---|---|---|
-| `SND-WLD-BEAM-ZER` | Haz de Cero Absoluto | Al lanzar | `PowerBeamSystem.OnLaunched`, `Type == AbsoluteZero` | ~0.3 s | `ART-WLD-BEAM-ZER` | — | ⬜ |
+| `SND-WLD-BEAM-ZER` | Haz de Cero Absoluto | Al lanzar | `PowerBeamSystem.OnLaunched`, `Type == AbsoluteZero` | 0.32 s | `ART-WLD-BEAM-ZER` | `audio/sfx/beam_zero/v1/snd_wld_beam_zer.wav` | 🟢 |
 | `SND-WLD-BEAM-DEC` | Haz de Decaimiento | Al lanzar | `PowerBeamSystem.OnLaunched`, `Type == Decay` | ~0.3 s | `ART-WLD-BEAM-DEC` | — | ⬜ |
 | `SND-WLD-BEAM-WRM` | Haz de Agujero de Gusano | Al lanzar | `PowerBeamSystem.OnLaunched`, `Type == Wormhole` | ~0.3 s | `ART-WLD-BEAM-WRM` | — | ⬜ |
-| `SND-PWR-ZER` | Congelamiento del nodo | Al terminar el haz | `PowerBeamSystem.OnLanded`, `Type == AbsoluteZero` | ~0.7 s | `FX-PWR-ZER` → `Congelado` | — | ⬜ |
+| `SND-PWR-ZER` | Congelamiento del nodo | Al terminar el haz | `PowerBeamSystem.OnLanded`, `Type == AbsoluteZero` | 0.70 s | `FX-PWR-ZER` → `Congelado` | `audio/sfx/pwr_zero/v1/snd_pwr_zer.wav` | 🟢 |
 | `SND-PWR-DEC` | Infección del nodo | Al terminar el haz | `PowerBeamSystem.OnLanded`, `Type == Decay` | ~0.7 s | `FX-PWR-DEC` → `Infectado` | — | ⬜ |
 | `SND-PWR-WRM` | Robo del nodo | Al terminar el haz | `PowerBeamSystem.OnLanded`, `Type == Wormhole` | ~1.0 s | `FX-PWR-WRM` → `Capturado` | — | ⬜ |
 
@@ -213,10 +214,13 @@ El sonido del haz puede pasarse unos milisegundos de los 0.25 s para fundirse co
 **`SND-WLD-BEAM-ZER` — Haz de Cero Absoluto**
 - *Idea:* un rayo de frío que cruza el tablero.
 - *Receta:* barrido descendente de seno agudo (~3 kHz → 1.2 kHz) con un brillo de ruido filtrado paso alto; ataque instantáneo y corte limpio.
+- *v1, «El aliento polar»* (`tools/gen_snd_beam_zero_v1.py`, 🟢 aprobada el 2026-11-01). Sigue los tres frames del haz: **nucleación** (un soplo de aire helado y el primer chasquido), **escarcha** (una cascada de celesta de cristal, F#7 E7 C#7 A6 G#6 E6 D6, que baja por dentro del silbido junto al chisporroteo de la cristalización) y **quiebra** (tres grietas pequeñas donde estaban los copos). El silbido es viento por un filtro estrecho que cae de 3 kHz a 1.2 kHz, con un hilo de seno dentro. Ningún tono tiembla: el haz es el único trazo rígido del tablero.
 
 **`SND-PWR-ZER` — Congelamiento**
 - *Idea:* el nodo se cristaliza: la red de grietas de `ART-ST-FROZEN`.
 - *Receta:* crujido de hielo (ráfagas cortas de ruido filtrado paso banda, aleatorias) sobre un tono metálico que se apaga; final seco, sin cola. Puede rimar con las grietas: varios «cracks» encadenados en los primeros 0.3 s.
+- *v1, «El vidrio que se calla»* (`tools/gen_snd_pwr_zero_v1.py`, 🟢 aprobada el 2026-11-01). Las grietas son las trece de `ART-ST-FROZEN` en su orden: **cuatro del tronco** (0, 52, 118 y 205 ms, cada vez menores, con el «piu» dispersivo de un lago helado), **cinco ramas** entre ellas y **dos astillas** que caen con el nodo ya quieto (A7 y D7). Debajo, un acorde de copas de vidrio en Re lidio (D5 A5 E6 G#6 D7) que nace temblando —cada nota es una pareja desafinada— y cuyo batido cae a cero en unos 0.4 s: el sonido deja de moverse, como el idle detenido de `Congelado`, y a los 0.6 s se corta en seco. Un golpe grave de 110 → 42 Hz le da peso sin salir de la familia del poder.
+- *Escucha de revisión:* `audio/sfx/_preview/zer_lanzamiento.wav`, el haz y el impacto en `OnLanded` (0.25 s), como suenan en juego. Cada generador deja junto al WAV un `*_espectro.png`.
 
 **`SND-WLD-BEAM-DEC` — Haz de Decaimiento**
 - *Idea:* un chorro de radiación inestable.
@@ -272,9 +276,9 @@ Todo pasa por **`AudioDirector`** (Presentation, [15.8](./NOVA_GameDesign_Spec.m
 
 ## S.8 Resumen de progreso
 
-| Bloque | Sonidos | ⬜ | 🟡 | ✅ |
-|---|---|---|---|---|
-| [S.5.1 Poderes del Púlsar](#s51-poderes-del-púlsar--7) | 6 | 6 | 0 | 0 |
-| **Total** | **6** | **6** | **0** | **0** |
+| Bloque | Sonidos | ⬜ | 🟡 | 🟢 | ✅ |
+|---|---|---|---|---|---|
+| [S.5.1 Poderes del Púlsar](#s51-poderes-del-púlsar--7) | 6 | 4 | 0 | 2 | 0 |
+| **Total** | **6** | **4** | **0** | **2** | **0** |
 
 **Bloques por añadir**, a medida que se definan con el usuario: protones y capturas, Magnetar, nodos (encendido, mejora, reconversión), power-ups, interfaz, fin de nivel, ambiente y música por mapa.
