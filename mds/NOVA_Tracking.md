@@ -27,7 +27,9 @@ los archivos adjuntos:
 El historial esta en mds/registro/NOVA_Registro_F<n>.md, un archivo por fase.
 No lo leas para elegir la tarea; solo para escribir en el de la fase en curso.
 
-El arte se genera con Python (NumPy + Pillow). Las primitivas estan en
+El arte se genera con Python (NumPy + Pillow) desde el entorno virtual
+.venv del proyecto (requirements.txt; .venv\Scripts\python tools\gen_...py).
+Nada se instala en la maquina. Las primitivas estan en
 tools/nova_core.py, la paleta en tools/nova_paleta.py y un generador por
 propuesta en tools/gen_<nodo>_v<n>.py. Los PNG viven en
 art/nodes/<nodo>/v<n>/ y son salida derivada: no se editan a mano. Un nodo

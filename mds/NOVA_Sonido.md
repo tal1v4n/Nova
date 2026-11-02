@@ -48,7 +48,7 @@ La idea es la misma que con el arte: **los efectos de sonido se generan con Pyth
 | Capa | Herramienta | Para qué |
 |---|---|---|
 | **Motor de audio** | **Unity Audio nativo** (Unity 6.6): `AudioSource`, `AudioMixer`, `Audio Random Container` | Reproducir, mezclar y variar los sonidos en el juego |
-| **Generación de SFX** | **Python 3.14** + `numpy` + `scipy` + `soundfile` + `pedalboard` + `pyloudnorm` | Sintetizar cada efecto desde un script, con semilla fija |
+| **Generación de SFX** | **Python 3.14** (en `.venv`) + `numpy` + `scipy` + `soundfile` + `pedalboard` + `pyloudnorm` | Sintetizar cada efecto desde un script, con semilla fija |
 | **Música** | **REAPER** + sintetizadores **Vital** y **Surge XT** | Componer y producir los temas |
 | **Revisión y retoque** | **Audacity** | Escuchar, ver el espectro y medir antes de aprobar |
 | **Entorno de desarrollo** | **VS Code** con la extensión de Python | Escribir los generadores, igual que los de arte |
@@ -71,16 +71,18 @@ Encaja con el pipeline que ya existe ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica
 
 | Librería | Para qué | Nota |
 |---|---|---|
-| `numpy` | Osciladores, ruido, envolventes, mezclas: el sonido como un array | **Ya instalada** (2.5.4) |
-| `scipy` (`scipy.signal`) | Filtros paso bajo, paso alto y paso banda, barridos de frecuencia | Por instalar |
-| `soundfile` | Escribir y leer WAV con la profundidad de bits exacta | Por instalar |
-| `pedalboard` (Spotify) | Reverb, delay, chorus, distorsión y compresor de calidad de estudio; también carga plugins VST3 | Por instalar. Comprobar que publica rueda para Python 3.14; si no, el módulo común aísla los efectos y se sustituyen por `scipy` |
-| `pyloudnorm` | Medir y normalizar la sonoridad (LUFS) para que todos los SFX convivan | Por instalar |
+| `numpy` | Osciladores, ruido, envolventes, mezclas: el sonido como un array | 2.5.4, la misma del arte |
+| `scipy` (`scipy.signal`) | Filtros paso bajo, paso alto y paso banda, barridos de frecuencia | 1.18.1 |
+| `soundfile` | Escribir y leer WAV con la profundidad de bits exacta | 0.14.0 (libsndfile 1.2.2) |
+| `pedalboard` (Spotify) | Reverb, delay, chorus, distorsión y compresor de calidad de estudio; también carga plugins VST3 | 0.9.26. Comprobado: instala e importa en Python 3.14 |
+| `pyloudnorm` | Medir y normalizar la sonoridad (LUFS) para que todos los SFX convivan | 0.2.0 |
 
-Instalación, con la misma regla que los generadores de arte (Python 3.14, paquetes en `--user`, sin entorno virtual):
+**Todo vive en el entorno virtual del proyecto, nada en la máquina**, con la misma regla que el arte ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Principio*). Python 3.14 es lo único instalado fuera; las versiones están fijadas en `requirements.txt`, uno solo para arte y sonido:
 
 ```
-py -3.14 -m pip install --user scipy soundfile pedalboard pyloudnorm
+py -3.14 -m venv .venv
+.venv\Scripts\python -m pip install -r requirements.txt
+.venv\Scripts\python tools\gen_snd_<sujeto>_v<n>.py
 ```
 
 **Para explorar antes de escribir el generador** vale cualquier sintetizador de efectos al estilo *sfxr* (jsfxr, ChipTone): sirven para encontrar el carácter de un sonido en minutos. Lo que sale de ahí es referencia, no asset: el sonido final lo produce el script.

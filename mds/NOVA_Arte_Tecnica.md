@@ -28,6 +28,20 @@ derivada, nunca la fuente de verdad.
 - **Pillow** solo convierte el array final a PNG. Aparece en dos líneas:
   el import y el `save`.
 
+**Entorno: todo en el `.venv` del proyecto, nada en la máquina.** Python
+3.14 es lo único instalado fuera; las librerías viven en `.venv/` (ignorado
+por git) con las versiones fijadas en `requirements.txt`, que comparte con
+el sonido ([NOVA_Sonido.md](./NOVA_Sonido.md), S.1.3). Se crea una vez y los
+generadores se ejecutan con su intérprete:
+
+```
+py -3.14 -m venv .venv
+.venv\Scripts\python -m pip install -r requirements.txt
+.venv\Scripts\python tools\gen_<nodo>_v<n>.py
+```
+
+Nunca `pip install` fuera del `.venv`, ni con `--user`.
+
 **Regla dura: `ImageDraw` no se usa nunca.** Sus primitivas dibujan formas
 con relleno uniforme y borde duro, sin control del sombreado. Toda la
 geometría se resuelve con máscaras booleanas de NumPy.

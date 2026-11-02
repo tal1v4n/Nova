@@ -1,0 +1,18 @@
+# Dependencias de Python de NOVA. Todo vive en el entorno virtual .venv del
+# proyecto; nada se instala en la maquina (ver mds/NOVA_Arte_Tecnica.md y
+# mds/NOVA_Sonido.md, S.1.3).
+#
+#   py -3.14 -m venv .venv
+#   .venv\Scripts\python -m pip install -r requirements.txt
+#
+# Los generadores se ejecutan con .venv\Scripts\python tools\gen_<...>.py
+
+# Arte (tools/gen_*.py)
+numpy==2.5.4
+pillow==13.0.0
+
+# Sonido (mds/NOVA_Sonido.md, S.1.3)
+scipy==1.18.1
+soundfile==0.14.0
+pedalboard==0.9.26
+pyloudnorm==0.2.0
