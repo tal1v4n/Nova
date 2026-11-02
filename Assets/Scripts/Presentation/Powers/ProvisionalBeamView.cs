@@ -7,7 +7,8 @@ namespace Nova.Presentation
 {
     // T3-03: haz de poder provisional. Un trazo recto del Púlsar al objetivo, en el color del poder
     // y no de la facción (7.2.2, 14.4), mientras duran sus 0.25 s. Primitiva de la regla 4 de T.2:
-    // la sustituyen los ART-WLD-BEAM-* en T6-11. Solo lee PowerBeamSystem.
+    // la sustituyen los ART-WLD-BEAM-* en T6-11. Solo lee PowerBeamSystem. Con PowerBeamArt completo en
+    // un PowerBeamVisual del mismo objeto, se aparta y no dibuja nada.
     [DefaultExecutionOrder(100)] // Presentation, 15.10
     [DisallowMultipleComponent]
     public sealed class ProvisionalBeamView : MonoBehaviour
@@ -21,6 +22,7 @@ namespace Nova.Presentation
         [SerializeField, Range(1, 6)] int thicknessPixels = 3;
 
         readonly List<SpriteRenderer> lines = new List<SpriteRenderer>();
+        PowerBeamVisual replacement;
 
         internal IReadOnlyList<SpriteRenderer> Lines => lines;
 
@@ -51,8 +53,9 @@ namespace Nova.Presentation
 
         public void Refresh()
         {
+            bool replaced = (replacement != null || TryGetComponent(out replacement)) && replacement.HasArt;
             PowerBeamSystem system = beams != null ? beams : PowerBeamSystem.Instance;
-            IReadOnlyList<PowerBeam> active = system != null ? system.Active : null;
+            IReadOnlyList<PowerBeam> active = !replaced && system != null ? system.Active : null;
             int count = active != null ? active.Count : 0;
 
             for (int i = 0; i < count; i++)

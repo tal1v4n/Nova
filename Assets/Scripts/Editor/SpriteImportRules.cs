@@ -12,7 +12,8 @@ namespace Nova.Editor
     // aplicados a todo lo que entra en Assets/Sprites/.
     // Las hojas (_sheet) son una tira horizontal de frames cuadrados: la celda mide el alto. Las de los
     // filamentos de plasma no —la línea de envío y los tres arcos del Magnetar—: son tres piezas de un
-    // trazo en filas (A.4.6), y tienen su propio corte.
+    // trazo en filas (A.4.6), y tienen su propio corte. T6-11: los tres haces de poder (A.4.2) tienen esa
+    // misma hoja y se cortan igual.
     //
     // T6-04: las hojas del protón y las cifras de la Carga tampoco son tiras de frames cuadrados, y no
     // llevan el sufijo _sheet porque A.4.2 las nombra sin él. Se cortan por su nombre (ver abajo).
@@ -109,12 +110,13 @@ namespace Nova.Editor
             }
         }
 
-        // ART-WLD-LINK y ART-WLD-RAD-SHOT: tres filas de frames en celdas de 256 × 16, de arriba abajo
+        // ART-WLD-LINK, ART-WLD-RAD-SHOT y ART-WLD-BEAM-*: tres filas de frames en celdas de 256 × 16, de arriba abajo
         // nacimiento, tramo y punta, cada una pegada al lado izquierdo de su celda (nova_core.Filamento).
         // Pivotes: el nacimiento en el centro del nodo, el tramo en el lado de la punta —se ancla allí y
         // se recorta del lado del nodo— y la punta en el punto de contacto, x = 24, que es el cursor o el
-        // protón. La línea tiene 16 frames y el arco 2: salen del ancho de la hoja.
-        static readonly Regex StrokeSheetPattern = new Regex(@"^world_(link|radius_shot_(player|enemy|neutral))_sheet$");
+        // protón o el objetivo del haz. La línea tiene 16 frames, el arco 2 y el haz 3: salen del ancho de la hoja.
+        static readonly Regex StrokeSheetPattern =
+            new Regex(@"^world_(link|radius_shot_(player|enemy|neutral)|beam_(zero|decay|wormhole))_sheet$");
         const int LinkCell = 256;
         const int LinkHeight = 16;
         static readonly StrokePiece[] LinkPieces =

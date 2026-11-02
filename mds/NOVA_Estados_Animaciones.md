@@ -80,7 +80,7 @@ EstaAsustado(nodo):
 
 Un nodo puede pasar de `Asustado` a `Normal` sin ser capturado. Es deliberado: enseña al jugador que el refuerzo funcionó.
 
-**En código** (`T2-08`): la condición es `ThreatCalculator.IsScared` y la bandera la pone `NodeScare`, que corre a 0 en el tick fijo. Por eso el susto empieza y termina **un tick (20 ms) después** del hecho que lo provoca ([T.5](./NOVA_Tracking.md#t5-registro), desviación 177). Varios protones que solo **juntos** capturarían no asustan: 14.2 pregunta protón a protón, mientras que la amenaza del algoritmo ([12.4](./NOVA_Algoritmo_Enemigo.md#124-detección-de-amenaza-y-defensa)) sí suma (desviación 179).
+**En código** (`T2-08`): la condición es `ThreatCalculator.IsScared` y la bandera la pone `NodeScare`, que corre a 0 en el tick fijo. Por eso el susto empieza y termina **un tick (20 ms) después** del hecho que lo provoca ([registro de la fase 2](./registro/NOVA_Registro_F2.md#desviaciones), desviación 177). Varios protones que solo **juntos** capturarían no asustan: 14.2 pregunta protón a protón, mientras que la amenaza del algoritmo ([12.4](./NOVA_Algoritmo_Enemigo.md#124-detección-de-amenaza-y-defensa)) sí suma (desviación 179).
 
 **La sacudida va en píxeles enteros**, como todo movimiento por transform de un nodo ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Animación*): un temblor de 1.5 px produce el mismo hervor que el squash que esa regla prohíbe.
 
@@ -193,7 +193,7 @@ Efectos que se reproducen y terminan. No bloquean nada.
 Cuando varios estados coexisten, este es el orden de capas de abajo a arriba:
 
 ```
-0. Trazos de mundo           línea de envío, arco del Magnetar (14.9)
+0. Trazos de mundo           línea de envío, arco del Magnetar (14.9), haz de poder (7.2.2)
 1. Sprite base del nodo (tipo + nivel + facción)
 2. Tinte de estado           Congelado > Reconvirtiendo > Normal
 3. Aura de estado            Infectado

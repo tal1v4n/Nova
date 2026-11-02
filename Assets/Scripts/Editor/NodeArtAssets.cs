@@ -21,6 +21,9 @@ namespace Nova.Editor
     //
     // T6-04: y el del protón en ProtonArt —las veinte hojas de A.4.2, diez tallas por bando, y las cifras
     // de la Carga, de Assets/Sprites/world/proton/—.
+    //
+    // T6-11: y el de los haces de poder en PowerBeamArt —las tres hojas de A.4.2, una por poder, de
+    // Assets/Sprites/world/beam_zero/, beam_decay/ y beam_wormhole/—.
     public static class NodeArtAssets
     {
         public const string SpritesFolder = "Assets/Sprites/nodes";
@@ -30,6 +33,7 @@ namespace Nova.Editor
         public const string WorldFolder = "Assets/Sprites/world";
         public const string MagnetarArtPath = "Assets/Data/MagnetarArt.asset";
         public const string ProtonArtPath = "Assets/Data/ProtonArt.asset";
+        public const string PowerBeamArtPath = "Assets/Data/PowerBeamArt.asset";
 
         // <hoja>_<n>: el nombre que SpriteImportRules da a cada frame.
         static readonly Regex FrameIndex = new Regex(@"_(\d+)$");
@@ -112,8 +116,16 @@ namespace Nova.Editor
                 return;
             }
             EditorUtility.SetDirty(proton);
+
+            PowerBeamArt beams = LoadOrCreate<PowerBeamArt>(PowerBeamArtPath);
+            if (!ConfigureBeams(beams, out string beamError))
+            {
+                Debug.LogError($"[Nova] {beamError}");
+                return;
+            }
+            EditorUtility.SetDirty(beams);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[Nova] Sprites, huellas y hojas de idle asignados a los {Nodes.Length} tipos de nodo, los overlays de estado a {StateArtPath}, el radio y el arco del Magnetar a {MagnetarArtPath} y el protón a {ProtonArtPath}.");
+            Debug.Log($"[Nova] Sprites, huellas y hojas de idle asignados a los {Nodes.Length} tipos de nodo, los overlays de estado a {StateArtPath}, el radio y el arco del Magnetar a {MagnetarArtPath}, el protón a {ProtonArtPath} y los haces de poder a {PowerBeamArtPath}.");
         }
 
         static T LoadOrCreate<T>(string path) where T : ScriptableObject
@@ -162,6 +174,35 @@ namespace Nova.Editor
 
             magnetar.Configure(Rings("neutral"), Rings("player"), Rings("enemy"),
                 Shot("neutral"), Shot("player"), Shot("enemy"));
+
+            if (missing == null)
+                return true;
+            error = $"Falta {missing} o no está cortada: sincroniza con Nova → Arte → Sincronizar sprites desde art.";
+            return false;
+        }
+
+        // La carpeta y el nombre de cada haz, tal como los copia ArtBridge (A.4.2, columna *Archivo*).
+        public static string BeamSheetPath(string name) => $"{WorldFolder}/beam_{name}/world_beam_{name}_sheet.png";
+
+        // Los tres haces de A.4.2. Los frames de cada pieza son los que corta SpriteImportRules, con la hoja
+        // de la línea de envío: <hoja>_<pieza>_<n>.
+        public static bool ConfigureBeams(PowerBeamArt beams, out string error)
+        {
+            error = null;
+            string missing = null;
+
+            PowerBeamArt.BeamFrames Beam(string name)
+            {
+                string path = BeamSheetPath(name);
+                Sprite[] frames = LoadFrames(path);
+                Sprite[] Piece(string piece) => frames.Where(sprite => sprite.name.Contains($"_{piece}_")).ToArray();
+                var beam = new PowerBeamArt.BeamFrames(Piece("birth"), Piece("tile"), Piece("tip"));
+                if (!beam.IsComplete)
+                    missing ??= path;
+                return beam;
+            }
+
+            beams.Configure(Beam("zero"), Beam("decay"), Beam("wormhole"));
 
             if (missing == null)
                 return true;

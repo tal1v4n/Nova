@@ -568,6 +568,9 @@ namespace Nova.Editor
             go.AddComponent<ProtonVisual>().Configure(
                 AssetDatabase.LoadAssetAtPath<ProtonArt>(NodeArtAssets.ProtonArtPath), protons);
             go.AddComponent<ProvisionalBeamView>().Configure(beams);
+            // T6-11: el haz con su arte. Sin PowerBeamArt asignado, el trazo provisional sigue al mando.
+            go.AddComponent<PowerBeamVisual>().Configure(
+                AssetDatabase.LoadAssetAtPath<PowerBeamArt>(NodeArtAssets.PowerBeamArtPath), beams);
             go.AddComponent<ProvisionalAimView>().Configure(aim, registry); // T3-07
             go.AddComponent<IgnitionMenu>().Configure(menu, font, text);
             go.AddComponent<NodeInfoPanel>().Configure(panel, font, text);

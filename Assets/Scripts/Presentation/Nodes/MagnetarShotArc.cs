@@ -34,10 +34,6 @@ namespace Nova.Presentation
         const int TilePixels = 256;
         const int ContactPixels = 24;
 
-        // Un tramo recortado por (sprite, ancho visible): un sprite nuevo sobre la misma textura, sin
-        // copiar píxeles. Los anchos son enteros y no pasan de 256, así que la caché es pequeña.
-        static readonly Dictionary<(Sprite, int), Sprite> Cropped = new Dictionary<(Sprite, int), Sprite>();
-
         [SerializeField] MagnetarArt art;
 
         NodeController node;
@@ -192,25 +188,12 @@ namespace Nova.Presentation
             {
                 int width = Mathf.Min(TilePixels, right - BirthPixels);
                 SpriteRenderer piece = TileRenderer(used++);
-                piece.sprite = width == TilePixels ? tile : Crop(tile, width);
+                piece.sprite = width == TilePixels ? tile : StrokeSprites.Crop(tile, width);
                 piece.transform.localPosition = new Vector3(right / PixelsPerUnit, 0f, 0f);
                 piece.enabled = true;
             }
             for (int i = used; i < tiles.Count; i++)
                 tiles[i].enabled = false;
-        }
-
-        // Las `width` columnas del lado de la punta, con el pivote en ese mismo lado, como el tramo entero.
-        internal static Sprite Crop(Sprite tile, int width)
-        {
-            if (Cropped.TryGetValue((tile, width), out Sprite cached) && cached != null)
-                return cached;
-            Rect rect = tile.rect;
-            var cropped = Sprite.Create(tile.texture, new Rect(rect.xMax - width, rect.y, width, rect.height),
-                new Vector2(1f, tile.pivot.y / rect.height), tile.pixelsPerUnit, 0, SpriteMeshType.FullRect);
-            cropped.name = $"{tile.name}_crop{width}";
-            Cropped[(tile, width)] = cropped;
-            return cropped;
         }
 
         SpriteRenderer TileRenderer(int index)

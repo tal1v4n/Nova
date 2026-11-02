@@ -45,7 +45,8 @@ namespace Nova.Presentation
         // 14.7, capa 7: los efectos puntuales. Capturado es el primero que tiene arte (ART-ST-CAP).
         public const int NodeEffect = 9;
 
-        // Por encima de los protones: el disparo del Magnetar y el haz de poder.
+        // Por encima de los protones: el disparo y el haz provisionales, rectas de color liso. Con arte, el
+        // arco del Magnetar (T6-05) y el haz de poder (T6-11) son trazos de la capa 0 (Strokes).
         public const int MagnetarShot = 10;
         public const int Beam = 11;
     }
