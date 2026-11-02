@@ -15,6 +15,7 @@
 | [NOVA_Algoritmo_Enemigo.md](./NOVA_Algoritmo_Enemigo.md) | El algoritmo que controla al Enemigo: ciclo de decisión, puntuación, amenaza, perfiles. | Sección 12 |
 | [NOVA_Estados_Animaciones.md](./NOVA_Estados_Animaciones.md) | Estados y animaciones: qué las dispara, sobre quién, cuánto duran, cómo salen. | Sección 14 |
 | [NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md) | Inventario de arte: cada sprite/VFX/UI con su ID, archivo esperado y estado. | Sección A |
+| [NOVA_Sonido.md](./NOVA_Sonido.md) | Inventario de audio: cada sonido con su ID, evento que lo dispara y estado; stack de sonido y música. | Sección S |
 | [NOVA_Tracking.md](./NOVA_Tracking.md) | Seguimiento de desarrollo y prompt de continuación para el **asistente de IA** con el que se trabaja. | Sección T |
 
 Las secciones extraídas **conservan su número original**. Una referencia a «ver 4.4» o «ver 12.5» sigue siendo válida; solo cambia el archivo.
@@ -1023,7 +1024,7 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 | `PowerBeamVisual.cs` | El haz de poder con su arte ([7.2.2](#722-el-haz), [A.4.2](./NOVA_Assets_Diseno.md#a42-protón-y-haces-de-poder--143)): una hoja por poder, montada como la línea de envío —nacimiento en el Púlsar, tramo en mosaico y punta en el objetivo—, girada con el `transform`. 3 frames a 12 fps tomados del reloj del propio haz, en la capa 0 de 14.7. Una sola vista para el tablero, en `Systems`, que recorre `PowerBeamSystem.Active`. Lee `PowerBeamArt` (Data) (`T6-11`) |
 | `MagnetarRadiusView.cs` | El anillo de radio de cada Magnetar del tablero ([A.4.1](./NOVA_Assets_Diseno.md#a41-radio-de-alcance-del-magnetar)): siempre visible, en las tres facciones (A.8 #1). Una sola vista para el tablero, que recorre `NodeRegistry` (`T6-05`) |
 | `VFXPool.cs` | Pool de efectos |
-| `AudioDirector.cs` | Reacción sonora a eventos |
+| `AudioDirector.cs` | Reacción sonora a eventos. Escucha los eventos de juego y reproduce los sonidos de [NOVA_Sonido.md](./NOVA_Sonido.md) desde un pool de `AudioSource`, con el `SoundBank` (Data) y el `AudioMixer`; detalle en [S.6](./NOVA_Sonido.md#s6-integración-en-unity) (`T6-10`) |
 | `CameraShake.cs` | Sacudida en capturas grandes |
 | `BackgroundView.cs` | El fondo con movimiento de un mapa: un sprite de 15 × 8.4375 u por debajo de todo, con el material de su `BackgroundDefinition`. Lleva el tiempo del fondo en `double`, reduce la fase de cada capa y se la pasa al material. En `Game` toma el fondo del nivel que cargó `LevelLoader`; en los menús, el que se le asigne, y admite una **ventana** —la franja del fondo que enseña— para la carta estelar de 13.9 (`T5-05b`) |
 | `BackgroundFlyby.cs` | El ovni del fondo: cuándo y por qué lado sale (60–120 s, alternando el lado, generador aleatorio propio, nunca el del Enemigo), su ruta de mapa y su hoja de 16 frames a 12 fps, a píxel entero y bajo los nodos (`T5-05b`) |
