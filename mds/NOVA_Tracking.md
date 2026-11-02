@@ -49,8 +49,43 @@ Tu tarea:
    desbloqueada. Nunca sustituyas arte pendiente por arte improvisado.
 3. Implementa esa tarea completa: los scripts de C# que pide, respetando la
    arquitectura de la sección 15 y el glosario de la sección 2.
-4. Al terminar, dame la línea actualizada de T.4 y la del registro de la fase
-   en curso (mds/registro/NOVA_Registro_F<n>.md) para que yo la pegue.
+4. Al terminar el código, deja la tarea en 🟨 en T.3 y T.4 y dime qué tengo
+   que comprobar en Unity (menús que ejecutar, tests, qué mirar en Play).
+5. Cuando yo dé el visto bueno ("pasan los tests", "en Play va bien", "lo
+   apruebo"...), ciérrala TÚ, sin pedirme que pegue ni edite nada: actualiza
+   todos los .md que el cambio toque, según esta tabla, y después haz el
+   commit en main (sin push; el push lo hago yo).
+
+   Qué cambió                                   Dónde se escribe
+   -------------------------------------------  ------------------------------------------
+   Estado de la tarea                           NOVA_Tracking.md: su fila de T.4; en T.3 el
+                                                recuento de la fase y del total, el estado
+                                                de la fase y el párrafo "Tarea en curso /
+                                                Siguiente"
+   Historial de la tarea                        mds/registro/NOVA_Registro_F<n>.md de la
+                                                fase en curso: una línea ARRIBA de la tabla
+                                                y sus desviaciones ARRIBA de "Desviaciones",
+                                                numeradas tras la última (T.5 dice cuál es;
+                                                actualiza ese número)
+   Decisión abierta o cerrada                   NOVA_Tracking.md, T.7
+   Fase que cumple su criterio de salida        NOVA_Tracking.md, T.3 y T.6; al abrir la
+                                                siguiente, crea su NOVA_Registro_F<n>.md y
+                                                añádelo a la tabla de T.5
+   Reglas, economía, poderes, niveles, UI,      NOVA_GameDesign_Spec.md: la sección de la
+   scripts y arquitectura                       regla; los scripts nuevos en su tabla de la
+                                                sección 15, los nombres en el glosario (2),
+                                                las decisiones en la 18 y los casos borde
+                                                en la 17
+   Un tipo de nodo                              NOVA_Nodos.md
+   El algoritmo del Enemigo                     NOVA_Algoritmo_Enemigo.md
+   Estados, animaciones, capas de dibujo (14.7) NOVA_Estados_Animaciones.md
+   Arte: estado de un ART-*, versión elegida,   NOVA_Assets_Diseno.md: su fila y su
+   recuento, decisiones de diseño               sección, A.7 y A.8
+   Pipeline, primitivas, importación en Unity   NOVA_Arte_Tecnica.md
+
+   Si el .md y el código se contradicen, corrige el que esté mal (T.2, regla 6)
+   y anótalo como desviación. Al acabar, dime en pocas líneas qué archivos
+   tocaste y el hash del commit.
 
 Reglas:
 - Una sola tarea por respuesta. No adelantes trabajo de tareas posteriores.
@@ -250,7 +285,7 @@ El registro vive en **`mds/registro/`**, un archivo por fase. Es historial para 
 | [NOVA_Registro_F0.md](./registro/NOVA_Registro_F0.md) | Fase 0 — Proyecto |
 | [NOVA_Registro_Previa.md](./registro/NOVA_Registro_Previa.md) | Antes de la fase 0: especificación, arte y decisiones de plataforma (2026-09-18 a 2026-09-28) |
 
-**Cómo se escribe.** Cada tarea, decisión o asset nuevo añade su línea **arriba** de la tabla del archivo de la fase en curso, y sus desviaciones, **arriba** de la sección *Desviaciones* de ese mismo archivo, con su bloque `**<qué> (<fecha>).**`. La numeración de las desviaciones es **única para todo el proyecto** y sigue donde la dejó la anterior (la última es la 307, en F6). Lo que pasa entre dos fases —arte, revisiones de spec— va al archivo de la fase que se está trabajando. Al empezar una fase nueva se crea su `NOVA_Registro_F<n>.md` con la misma estructura y se añade a esta tabla.
+**Lo escribe el asistente, no el usuario**, al recibir el visto bueno de la tarea (T.1, paso 5). **Cómo se escribe.** Cada tarea, decisión o asset nuevo añade su línea **arriba** de la tabla del archivo de la fase en curso, y sus desviaciones, **arriba** de la sección *Desviaciones* de ese mismo archivo, con su bloque `**<qué> (<fecha>).**`. La numeración de las desviaciones es **única para todo el proyecto** y sigue donde la dejó la anterior (la última es la 311, en F6). Lo que pasa entre dos fases —arte, revisiones de spec— va al archivo de la fase que se está trabajando. Al empezar una fase nueva se crea su `NOVA_Registro_F<n>.md` con la misma estructura y se añade a esta tabla.
 
 ---
 
