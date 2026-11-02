@@ -298,7 +298,7 @@ Se aplican **sobre cualquier sprite de nodo**, así que deben ser independientes
 | `ART-ST-SLEEP` | `Dormido` | `zzz` flotante, tres glifos que cabecean en su sitio (A.3.1) | `art/states/sleep/v2/state_sleep_sheet.png` | 16 | bucle | ✅ | ![](../art/states/sleep/v2/state_sleep.png) |
 | `ART-ST-IGN` | `SinEncender`, `energy < 10` | Brasa quieta: es tuyo, aún no se puede encender (A.3.2) | `art/states/ign/v2/state_unlit_<faccion>.png` | 1 | estático | ✅ | ![](../art/states/ign/v2/state_unlit_player.png) ![](../art/states/ign/v2/state_unlit_enemy.png) |
 | `ART-ST-READY` | `SinEncender`, `energy >= 10` | La brasa se abre en cinco trazos que crepitan: se puede encender ya (A.3.2) | `art/states/ign/v2/state_ready_<faccion>_sheet.png` | 16 | bucle | ✅ | ![](../art/states/ign/v2/state_ready_player.png) ![](../art/states/ign/v2/state_ready_enemy.png) |
-| `ART-ST-SCARE` | `Asustado` | **Un ojo** muy abierto, en dos tallas. Se instancia dos veces por nodo con el anclaje de A.3.3 | `art/states/scare/v1/state_scared_<talla>.png` | 1 | estático | ✅ | ![](../art/states/scare/v1/state_scared_chico.png) ![](../art/states/scare/v1/state_scared_grande.png) |
+| `ART-ST-SCARE` | `Asustado` | **Un ojo** muy abierto, en dos tallas. Se instancia dos veces por nodo con el anclaje de A.3.3 | `art/states/scare/v1/state_scared_<talla>.png` | 1 | estático | ~~✅~~ **Fuera del inventario** el 2026-11-01: los nodos pierden los ojos (A.8 #5) | ![](../art/states/scare/v1/state_scared_chico.png) ![](../art/states/scare/v1/state_scared_grande.png) |
 | `ART-ST-FROZEN` | `Congelado` | Red de grietas que cruza el nodo, rampa `hielo` (A.3.4) | `art/states/frozen/v3/state_frozen_overlay.png` | 1 | estático | ✅ | ![](../art/states/frozen/v3/state_frozen_overlay.png) |
 | `ART-ST-DECAY` | `Infectado` | Nube tramada sesgada hacia abajo + gotas que caen, rampa `decaimiento` (A.3.5) | `art/states/decay/v2/state_decay_sheet.png` | 16 | bucle | ✅ | ![](../art/states/decay/v2/state_decay.png) |
 | `ART-ST-CONV` | `Reconvirtiendo` | Un frente que barre el nodo, tapa el corte y lo descubre siendo otro (A.3.6) | `art/states/conv/v2/state_convert_<faccion>_sheet.png` | **36** | 3.0 s × 12 | ✅ | ![](../art/states/conv/v2/state_convert_player.png) ![](../art/states/conv/v2/state_convert_enemy.png) |
@@ -917,9 +917,9 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 - **Cifras propias** en vez de Jersey 10: 5×7 px de trazo 1, el «1» estrecho de 3 px, `neutral[1]` con las dos filas de abajo en `neutral[2]`, y contorno de 1 px. Van en `world_charge_digits.png` con el avance de cada cifra en `.json`, y `ProtonVisual` las compondría por sprites, sin TextMeshPro. **Contradice dos reglas del contrato**: la Carga va en TextMeshPro y hay una sola familia tipográfica. Si se aprueban, lo coherente es usarlas también para la Energía de los nodos.
 - **Propuesta v3, «El engaste»** (2026-11-01, pendiente de aprobación). Pedida por el usuario: conservar las cifras de la v2 y algo más sencillo. `tools/gen_proton_v3.py` → `art/world/proton/v3/`, vistas en `art/_preview/proton/v3/`. Es un **aro de plasma redondo**, una banda más oscuro que los quarks, con los **tres quarks u u d engarzados** como piedras de un anillo. Dan una vuelta por bucle de 16 frames y se iluminan con la `L` global donde están. El resplandor de fuera **late**. Son dos materiales y una sola lectura, sin muelles ni bolsa. El aro es el círculo más pequeño que deja libre el número, así que mide **26, 32 y 38 px** con el resplandor, más pequeño que la v2. Las tallas, los umbrales, las gotas y las comprobaciones son las de la v1 y la v2.
 - **Mismas tallas, umbrales y gotas que la v1.** Como la bolsa es hueca, una gota solo se ve cuando ya ha salido de ella. Cuerpos de 33, 39 y 43 px: más grandes que en la v1, porque los quarks tienen que dejar libre el número en cualquier ángulo de giro.
-| `ART-WLD-BEAM-ZER` | Haz de Cero Absoluto | Trazo **estirable** Púlsar→objetivo, rampa `hielo` con `#B8F0FF` literal en su índice 3 | `art/world/world_beam_zero.png` | ⬜ | `![](art/world/world_beam_zero.png)` |
-| `ART-WLD-BEAM-DEC` | Haz de Decaimiento | Ídem, rampa `decaimiento` con `#7CF23F` | `art/world/world_beam_decay.png` | ⬜ | `![](art/world/world_beam_decay.png)` |
-| `ART-WLD-BEAM-WRM` | Haz de Agujero de Gusano | Ídem, rampa `gusano` con `#9B5CF6` | `art/world/world_beam_wormhole.png` | ⬜ | `![](art/world/world_beam_wormhole.png)` |
+| `ART-WLD-BEAM-ZER` | Haz de Cero Absoluto | Trazo Púlsar→objetivo en tres piezas, con el tramo **repetido en mosaico**; rampa `hielo` con `#B8F0FF` literal en su índice 2. v1, «El rosario de escarcha» | `art/world/beam_zero/v1/world_beam_zero_sheet.png` | ✅ | ![](../art/world/beam_zero/v1/world_beam_zero_sheet.png) |
+| `ART-WLD-BEAM-DEC` | Haz de Decaimiento | Ídem, rampa `decaimiento` con `#7CF23F` literal en su índice 3. v1, «La cadena de desintegración» | `art/world/beam_decay/v1/world_beam_decay_sheet.png` | ✅ | ![](../art/world/beam_decay/v1/world_beam_decay_sheet.png) |
+| `ART-WLD-BEAM-WRM` | Haz de Agujero de Gusano | Ídem, rampa `gusano` con `#9B5CF6` literal en su índice 3. v1, «El desgarro» | `art/world/beam_wormhole/v1/world_beam_wormhole_sheet.png` | ✅ | ![](../art/world/beam_wormhole/v1/world_beam_wormhole_sheet.png) |
 
 **Sustituyen a los tres `ART-WLD-PWR-*`, que eran proyectiles.** El poder dejó de viajar: [7.2.2](./NOVA_GameDesign_Spec.md#722-el-haz) lo entrega por un haz de 0.25 s entre dos nodos. Son tres archivos igual que antes, así que el total de A.4.2 sigue en 9, pero el asset es otra cosa y se construye al revés.
 
@@ -931,6 +931,34 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 - **Tres frames**, uno por cada frame de los 0.25 s a 12 fps: el trazo entra, está y se apaga. No hay bucle: el haz nunca se repite.
 
 **Y el color es del poder, no de la facción** ([14.4](./NOVA_Estados_Animaciones.md#144-paleta-funcional)). Son los únicos assets de mundo que usan las rampas `hielo`, `decaimiento` y `gusano` en el tablero, que es exactamente para lo que el contrato las reservó y por lo que prohíbe usarlas en los fondos.
+
+**Diseño cerrado del haz de Cero Absoluto: «El rosario de escarcha», v1** (aprobado por el usuario el 2026-11-01). Generador: `tools/gen_beam_zero_v1.py` → `art/world/beam_zero/v1/world_beam_zero_sheet.png`, una hoja de 768 × 48 con la forma de `world_link_sheet`: nacimiento (16), tramo (256) y punta (32, contacto en x 24) en filas, y los 3 frames en columnas. Vistas en `art/_preview/beam_zero/v1/` (`--gif` para las animadas).
+
+- **El cero absoluto es la ausencia de movimiento.** Todo el plasma del juego serpentea; este es el único trazo del tablero **recto y rígido**. Eso resuelve además su riesgo mayor: `hielo` es primo del cian del Jugador y de `plasma_p`, y un Cero Absoluto del Jugador podía leerse como su línea de envío. Por la forma no se confunden: una onda viva frente a una aguja. La vista del tablero los pone uno al lado del otro.
+- **Copos ensartados en la espina, como las cuentas de un rosario.** Una espina de 2 px exactos sobre el eje y, cada 16–28 px, un cristal de seis brazos de radio 3 o 4, con el centro en `hielo[1]`. El hexágono es la forma del hielo y es también la respuesta a la **rotación libre**: un copo se lee igual a cualquier ángulo, y un dibujo con dirección propia se rompe al girar. Se probaron antes plumas de escarcha a 60° (se perdían a 1× en ruido) y una vaina continua (lo volvía un láser genérico).
+- **Tres frames que cuentan una congelación:** nucleación (la espina en tono medio y la semilla de cada copo), escarcha (los copos enteros, el vaho y el polvo de diamante encendidos) y **quiebra**: la espina se parte justo donde estaban los copos y de cada uno quedan las puntas sueltas, como el vidrio de `ART-ST-FROZEN` (A.3.4), el estado que el haz provoca.
+- **Nada llega al blanco.** `hielo[0]` es `#FFFFFF` y el blanco puro es de `FX-CAP` (14.5). El ancla `#B8F0FF` está en `hielo[2]`, no en el índice 3 que dice la fila: lo fija la regla 1 de la paleta del contrato.
+- **Lo que cambia en esta sección:** el tramo **se repite en mosaico, no se estira**, como el filamento (T.7 #30 y #50). La hoja reutiliza el montaje de `nova_core.Filamento` (`linea`), no su dibujo. El sólido cabe en los 8 px de trazo; solo el polvo de diamante sale al aire del halo.
+- **El generador falla** si el alfa no es binario, si sale un color fuera de `hielo[1..6]`, si una pieza no es simétrica al píxel respecto al eje, si un copo sale del trazo, si la costura no envuelve, si la espina tiene huecos antes de la quiebra o no se parte en ella, o si el frame 1 no es el de más luz.
+
+**Diseño cerrado del haz de Decaimiento: «La cadena de desintegración», v1** (aprobado por el usuario el 2026-11-01). Generador: `tools/gen_beam_decay_v1.py` → `art/world/beam_decay/v1/world_beam_decay_sheet.png`, misma hoja y mismo montaje que el Cero Absoluto (768 × 48, tramo en mosaico). Vistas en `art/_preview/beam_decay/v1/`, con el Cero Absoluto y la línea de envío al lado para comparar.
+
+- **La desintegración tiene una ley exacta, y el haz la cumple al píxel.** En cada vida media se desintegra la mitad de los núcleos, al azar y sin memoria. Cada píxel de la cadena es un átomo con su número sembrado, y en el frame f sigue vivo si ese número es menor que 1/2^f: **entra entera, en el frame 1 queda la mitad y en el 2 la cuarta parte** (320, 166 y 90 átomos por tesela).
+- **La cadena.** «Cadena de desintegración» es el nombre físico de la serie de núcleos que se convierten unos en otros, y aquí es literal: dos hebras en contrafase, espejo una de otra respecto al eje (la simetría que pide la rotación), que se cruzan cada 16 px y dibujan eslabones. En cada cruce, un **núcleo** en `decaimiento[1]`, lo más claro del haz; las hebras, en el ancla `#7CF23F`. El interior de los eslabones queda sin vaho: el hueco es lo que hace cadena.
+- **La emisión.** Cada átomo que se desintegra suelta una partícula hacia fuera, con su propio salto (1–3 px hacia fuera, 0–2 hacia delante), y en el frame siguiente se aleja otros 2 y se apaga una banda. Un salto común movía en bloque los tramos planos de hebra y dibujaba rayas; con salto propio se lee radiación.
+- **Los tres trazos largos se separan por la forma, no solo por el color:** el plasma es una onda viva, el hielo una aguja rígida y el decaimiento una cadena que se deshace mientras la miras. Conecta con «El miasma» (A.3.5), el estado que provoca.
+- **Sin el blanco de `FX-CAP`.** La cadena cabe en los 8 px del trazo; solo las partículas salen al aire del halo.
+- **El generador falla** si el alfa no es binario, si sale un color fuera de `decaimiento[1..6]`, si una pieza no es simétrica al píxel, si la cadena sale del trazo, si en algún frame no queda la mitad de los átomos (±15 %), si el periodo no divide la tesela o si la luz no baja de frame en frame.
+
+**Diseño cerrado del haz de Agujero de Gusano: «El desgarro», v1** (aprobado por el usuario el 2026-11-01). Generador: `tools/gen_beam_wormhole_v1.py` → `art/world/beam_wormhole/v1/world_beam_wormhole_sheet.png`, misma hoja y mismo montaje que los otros dos (768 × 48, tramo en mosaico). Vistas en `art/_preview/beam_wormhole/v1/`, con la línea de envío y los dos haces elegidos debajo para comparar.
+
+- **El Agujero de Gusano no manda nada por el espacio: se lo salta.** Así que su haz no es luz que viaja sino una **rasgadura**: el espacio entre el Púlsar y el objetivo se abre como una tela y por la grieta se ve el otro lado.
+- **El centro oscuro.** Los otros dos haces, y todo el plasma, tienen el alma clara. Este la tiene oscura, en `gusano[6]`, entre dos **labios** en el ancla `#9B5CF6`. Es el único trazo del juego con el centro en negativo, y eso lo separa de la línea de envío aunque el halo índigo de `plasma_p` sea primo de este morado.
+- **Otro cielo dentro.** En la garganta abierta brillan estrellas que no son las del fondo, sobre una nebulosa rala: el atajo por el que el nodo cambia de bando entero ([7.5](./NOVA_GameDesign_Spec.md#75-agujero-de-gusano)).
+- **Borde roto.** La garganta cambia de ancho a saltos, entre 2 y 3 px por lado en tramos de 2 a 6 px, con hilachas sueltas fuera del labio: una tela rasgada, no un tubo. La primera prueba, con el ancho como suma de senos, salía recta y se leía como una cinta; y la nebulosa por umbral de Bayer salía en rejilla, así que va al azar.
+- **Tres frames:** desgarro (una ranura de 1 px entre labios en `gusano[1]`, con chispas que saltan del corte), garganta (abierta, con el otro cielo; el frame de más luz) y cierre (vuelve a 1 px con los labios apagados y de las estrellas solo quedan unos puntos sobre el eje).
+- **Sin el blanco de `FX-CAP`.** Los labios caben en los 8 px del trazo.
+- **El generador falla** si el alfa no es binario, si sale un color fuera de `gusano[1..6]`, si una pieza no es simétrica al píxel, si el eje del tramo no es oscuro en al menos un 80 %, si un labio sale del trazo, si la garganta no se abre a 2 px en todo el tramo o si el frame 1 no es el de más luz.
 
 ### A.4.3 Selección y apuntado — [13.1](./NOVA_GameDesign_Spec.md#131-ratón)
 
@@ -1119,15 +1147,23 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | Grupo | Total | ✅ | Bloquea |
 |---|---|---|---|
 | A.2 Nodos | **50** | **50** ✅ | — (ya no bloquea `T6-01` ni el idle de `T6-02`) |
-| A.3 Estados | **9** | **9** ✅ | — (ya no bloquea `T6-02` ni `T6-03`) |
+| A.3 Estados | **8** | **8** ✅ | — (ya no bloquea `T6-02` ni `T6-03`) |
 | A.4.1 Radio del Magnetar | **18** | **18** ✅ | — (ya no bloquea `T6-05`) |
-| A.4.2 Protón y haces de poder | **23** | **20** | `PowerBeam` (`T6-11`). El protón ✅: ya no bloquea `T6-04` |
+| A.4.2 Protón y haces de poder | **23** | **23** ✅ | — (ya no bloquea `T6-04` ni `T6-11`) |
 | A.4.3 Selección y apuntado | **4** | **1** | Pulido de input (fase 6). `ART-WLD-LINK` ✅: ya no bloquea `T5-06` |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
 | A.5 VFX | 15 | 0 | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **135** | **105** | — |
+| **Total** | **134** | **107** | — |
+
+**Y los ✅ suben de 106 a 107 el 2026-11-01** con el haz de Agujero de Gusano, `ART-WLD-BEAM-WRM` v1, «El desgarro» (A.4.2). **A.4.2 queda cerrado, 23 de 23**, y `T6-11` deja de estar bloqueada por arte. Los tres haces comparten hoja y montaje: tres piezas en filas, 3 frames en columnas, tramo de 256 px en mosaico.
+
+**Y los ✅ suben de 105 a 106 el 2026-11-01** con el haz de Decaimiento, `ART-WLD-BEAM-DEC` v1, «La cadena de desintegración» (A.4.2). A.4.2 queda en 22 de 23: falta el Agujero de Gusano.
+
+**Y los ✅ suben de 104 a 105 el 2026-11-01** con el haz de Cero Absoluto, `ART-WLD-BEAM-ZER` v1, «El rosario de escarcha» (A.4.2). A.4.2 queda en 21 de 23: faltan los haces de Decaimiento y Agujero de Gusano.
+
+**Y los ✅ bajan de 105 a 104 el 2026-11-01, con el total de 135 a 134:** los nodos pierden los ojos (A.8 #5) y `ART-ST-SCARE`, que era un ojo, sale del inventario. A.3 queda en 8 de 8. Los 34 sprites de A.2 y las 16 hojas de idle siguen ✅ con ojos hasta que `T6-12` los regenere sin ellos; la señal del susto que los sustituya está por decidir ([NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #55).
 
 **Y los ✅ suben de 91 a 105 el 2026-11-01, con el total de 121 a 135:** el protón pasa de tres tallas a diez, una por cada 5 de Carga, y sus archivos de 6 a 20 (A.4.2). A.4.2 queda en 20 de 23; faltan los tres haces.
 
@@ -1206,7 +1242,7 @@ Ninguna decisión de art design queda abierta. Se conservan aquí con su motivo,
 | 2 | ¿El nivel se indica solo por el sprite, o con pips/números? | **Solo sprite** | Cero UI extra. Se sostiene con señales redundantes: tamaño, temperatura del núcleo, densidad de atmósfera y halo. Coste asumido: el escalón N3→N4 es el más débil. |
 | 3 | ¿El Magnetar neutral usa gris o una tercera paleta? | Rampa `mag_n`, gris acerado derivado de `neutral` | Una tercera paleta propia lo convertiría en un tercer bando a ojos del jugador, y no lo es. |
 | 4 | ¿Tamaño de sprite por tipo en unidades de mundo? | Huella de **0.6 u a 1.2 u**; celda 96 px = 1.5 u, **PPU 64** | Con nodos más pequeños el clic se vuelve incómodo; con nodos más grandes, un Magnetar N1 (radio 2.0 u) apenas sobresaldría de su propio sprite y su anillo dejaría de informar. |
-| 5 | ¿Los nodos tienen cara/ojos? | **Sí, en todos.** **Reabierta el 2026-10-27** por el usuario: conservarlos o quitarlos por completo, sin decidir ([NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #53) | [14.2](./NOVA_Estados_Animaciones.md#142-animación-de-susto) pide "ojos muy abiertos" para el susto. Sin cara habría que inventar otra señal para la lectura más importante del juego. |
+| 5 | ¿Los nodos tienen cara/ojos? | **No.** **Cerrada el 2026-11-01** por el usuario: se quitan por completo, y lo ejecuta `T6-12` ([NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #53). Hasta entonces el arte con ojos sigue en uso. Antes: «Sí, en todos», reabierta el 2026-10-27 | [14.2](./NOVA_Estados_Animaciones.md#142-animación-de-susto) pide "ojos muy abiertos" para el susto. Sin cara habría que inventar otra señal para la lectura más importante del juego. La señal del susto sin cara queda abierta en T.7 #55. |
 
 ### Cerradas fuera de A.8
 

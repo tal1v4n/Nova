@@ -50,6 +50,8 @@ En código son dos piezas ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #43,
 
 ## 14.2 Animación de susto
 
+> **Los nodos pierden los ojos** (decidido el 2026-11-01, [NOVA_GameDesign_Spec.md](./NOVA_GameDesign_Spec.md), 18 #49). Lo que esta sección dice de los ojos y de `ART-ST-SCARE` queda anulado; lo reescribe `T6-12`, y la señal que sustituya a la cara está por decidir ([NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #55). La condición, el temblor y el salto no cambian.
+
 Es la señal de lectura más importante del juego: indica de un vistazo qué está a punto de caer.
 
 **Sobre quién:** todos los nodos, **incluidos los neutrales y los del Enemigo**. Sin excepciones.
@@ -206,6 +208,8 @@ El número de Energía **nunca se oculta**, en ningún estado. Es la informació
 **La capa 0 va por debajo de los nodos y por encima del fondo y de los anillos de radio.** La línea de envío y el arco del Magnetar salen del **centro** de un nodo, así que dibujados encima le cruzarían la cara. Por debajo, el sprite tapa el tramo inicial y el filamento parece nacer del borde del cuerpo, como sale de la esfera en un globo de plasma. El protón va por encima del arco que le llega: la punta del arco se ve **tocándolo**, no tachándolo.
 
 **Los glifos de estado de la capa 4 no se dibujan sobre el cuerpo, sino fuera de él.** El `zzz` de `Dormido`, la brasa de `SinEncender` y el galón de `FX-BUFF` son símbolos, no tintes: van en el hueco que deja el nodo dentro de su celda y **no pisan un solo píxel del sprite** ([A.3.1](./NOVA_Assets_Diseno.md#a31-art-st-sleep--dormido), [A.3.2](./NOVA_Assets_Diseno.md#a32-art-st-ign-y-art-st-ready--sinencender)). Por eso no necesitan trama —la capa 4 no tiene que dejar ver nada de debajo— y por eso la capa 6 los tapa sin conflicto: no comparten sitio. **Los dos ocupan exactamente el mismo hueco**, así que al capturar una roca neutral el símbolo se releva sin saltar de posición.
+
+> **Los nodos pierden los ojos** (decidido el 2026-11-01, [NOVA_GameDesign_Spec.md](./NOVA_GameDesign_Spec.md), 18 #49). Lo que dicen los tres párrafos siguientes de los ojos y de `ART-ST-SCARE` queda anulado; lo reescribe `T6-12`, y la señal que sustituya a la cara está por decidir ([NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #55). El orden de capas no cambia.
 
 Por la misma razón, **los ojos se dibujan los últimos** dentro del sprite del nodo, por encima de cualquier elemento de la capa 1. La cara es la que comunica el estado `Asustado` (14.2) y ningún adorno puede taparla, aunque geométricamente le tocara.
 
