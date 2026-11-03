@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using Nova.Core;
 using Nova.Data;
 using Nova.Enemy;
@@ -393,8 +394,10 @@ namespace Nova.Editor
             sky.AddComponent<BackgroundFlyby>();
             var menu = new GameObject("MainMenu");
             menu.AddComponent<MainMenuScreen>().Configure(font, text, levels, sprites, sheet);
+            CreateMusic();
             CreateEventSystem();
             EditorSceneManager.SaveScene(scene, MainMenuScenePath);
+            VerifyMusic(MainMenuScenePath);
 
             // Carta estelar: una franja de cada mapa debajo de su tercio de pantalla.
             scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -408,11 +411,40 @@ namespace Nova.Editor
             }
             var chart = new GameObject("LevelSelect");
             chart.AddComponent<LevelSelectScreen>().Configure(font, text, levels, sprites, sheet);
+            CreateMusic();
             CreateEventSystem();
             EditorSceneManager.SaveScene(scene, LevelSelectScenePath);
+            VerifyMusic(LevelSelectScenePath);
 
             AssetDatabase.Refresh();
             Debug.Log("[Nova] Escenas Boot, MainMenu y LevelSelect generadas. Para el progreso de 13.9, ProgressSaver guarda el máximo en PlayerPrefs (Nova.MaxUnlocked).");
+        }
+
+        // T6-13: la música de los menús va en las dos pantallas para que suene se entre por la que se entre; la
+        // primera instancia sobrevive a los cambios de escena y la otra se destruye al nacer.
+        //
+        // MusicSettings se carga aquí, escena a escena, y no al principio con el resto: NewScene descarga los
+        // assets que ninguna escena abierta usa, y MusicSettings, que aún no lo usaba ninguna, llegaba descargado.
+        const string MusicSettingsPath = AudioAssets.MusicSettingsPath;
+
+        static void CreateMusic()
+        {
+            var music = AssetDatabase.LoadAssetAtPath<MusicSettings>(MusicSettingsPath);
+            if (music == null)
+            {
+                Debug.LogWarning($"[Nova] No existe {MusicSettingsPath}: importa la música con Nova → Audio → Importar audio y crear el mezclador. {SceneManager.GetActiveScene().name} sale sin música.");
+                return;
+            }
+            new GameObject("MusicDirector").AddComponent<MusicDirector>().Configure(music);
+        }
+
+        // Tras guardar, comprueba en el archivo que el MusicDirector está dentro.
+        static void VerifyMusic(string scenePath)
+        {
+            string guid = AssetDatabase.FindAssets("MusicDirector t:MonoScript")
+                .FirstOrDefault(g => AssetDatabase.GUIDToAssetPath(g).EndsWith("/MusicDirector.cs"));
+            if (guid == null || !File.ReadAllText(scenePath).Contains(guid))
+                Debug.LogError($"[Nova] {scenePath}: el MusicDirector no se ha guardado y los menús saldrán sin música.");
         }
 
         // El centro de la franja de un mapa en el mundo: el lienzo de 1920 x 1080 es el tablero de
@@ -530,6 +562,7 @@ namespace Nova.Editor
             go.transform.position = new Vector3(0f, 0f, -10f);
             var camera = go.AddComponent<Camera>();
             go.AddComponent<UniversalAdditionalCameraData>();
+            go.AddComponent<AudioListener>(); // T6-13: sin él no se oye nada, tampoco el fundido al entrar en Game
             ProjectSetup.ConfigureCamera(camera);
             return camera;
         }
@@ -571,6 +604,12 @@ namespace Nova.Editor
             // T6-11: el haz con su arte. Sin PowerBeamArt asignado, el trazo provisional sigue al mando.
             go.AddComponent<PowerBeamVisual>().Configure(
                 AssetDatabase.LoadAssetAtPath<PowerBeamArt>(NodeArtAssets.PowerBeamArtPath), beams);
+            // T6-14: los sonidos de los poderes. Se carga aquí, ya con la escena nueva abierta: NewScene descarga
+            // los assets que no usa ninguna escena (ver CreateMusic).
+            var sounds = AssetDatabase.LoadAssetAtPath<SoundBank>(AudioAssets.SoundBankPath);
+            if (sounds == null)
+                Debug.LogWarning($"[Nova] No existe {AudioAssets.SoundBankPath}: importa el audio con Nova → Audio → Importar audio y crear el mezclador. La partida saldrá sin sonido.");
+            go.AddComponent<AudioDirector>().Configure(sounds, beams);
             go.AddComponent<ProvisionalAimView>().Configure(aim, registry); // T3-07
             go.AddComponent<IgnitionMenu>().Configure(menu, font, text);
             go.AddComponent<NodeInfoPanel>().Configure(panel, font, text);

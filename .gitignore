@@ -64,3 +64,8 @@ art/_preview/**/*.gif
 # (NOVA_Sonido.md, S.5.2)
 !/audio/music/main/ciclo/mus_main_intro.wav
 !/audio/music/main/ciclo/mus_main_ciclo.wav
+# T6-13 y T6-14: copia de audio/ que hace Nova → Audio → Importar audio (salida derivada, como Assets/Sprites/)
+/Assets/Audio/Music/
+/Assets/Audio/Music.meta
+/Assets/Audio/SFX/
+/Assets/Audio/SFX.meta

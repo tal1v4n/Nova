@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 490a2c405129a4a409cea0798f4c3d89, type: 3}
+  m_Name: MusicSettings
+  m_EditorClassIdentifier: Nova.Data::Nova.Data.MusicSettings
+  intro: {fileID: 8300000, guid: 3494424a1aa1d6f79dc89f0ca8b1e7cc, type: 3}
+  cycle: {fileID: 8300000, guid: 0bad25e9ce9b2acab4da8be603a78f7e, type: 3}
+  output: {fileID: -5317734456518379532, guid: d4459dcb6bb922746b7fae650796f403, type: 2}
+  volume: 1
+  cycleStartInIntro: 12
+  versionLength: 120
+  versionCount: 3
+  fadeOutSeconds: 1
+  fadeInSeconds: 1.5
+  scheduleLead: 0.1

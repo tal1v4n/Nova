@@ -103,6 +103,8 @@ Estos términos son los que deben usarse en el código, sin sinónimos. Cualquie
 | **Velocidad de ataque** | Término visible en la UI. Se traduce distinto según tipo (ver 13.4). | `AttackSpeed` |
 | **Algoritmo del Enemigo** | El código que decide las acciones del Enemigo. Es un algoritmo determinista con ruido sembrado ([12.7](./NOVA_Algoritmo_Enemigo.md#127-contrato-de-implementación)), **no un modelo entrenado**: no aprende, no infiere y no cambia entre partidas. En prosa se abrevia «el algoritmo». **No se le llama «la IA»**, que en este proyecto designa al asistente con el que se escribe el código ([T.1](./NOVA_Tracking.md#t1-prompt-de-continuación)). | `EnemyController` |
 | **Barra de poder** | Barra inferior, comparativa e informativa. | `PowerBar` |
+| **Ciclo (de la música)** | La música de los menús en bucle: las tres versiones del tema, v3 «Señal» → v1 «Órbitas» → v2 «Carta estelar», 120 s cada una, tras la intro de la v3 ([NOVA_Sonido.md](./NOVA_Sonido.md), S.5.2). Al volver de una partida entra la versión siguiente a la que sonaba. | `MusicFlow` |
+| **Voz** | Cada `AudioSource` del pool con el que suenan los sonidos de la partida. Como mucho dos voces por ID de sonido; la tercera corta a la más antigua ([NOVA_Sonido.md](./NOVA_Sonido.md), S.6). | `VoicePool` |
 
 **Unidad de distancia:** unidad de mundo de Unity (u). El área jugable mide **15 × 8.4375 u** y coincide con una cámara ortográfica de `size = 4.21875` en 16:9.
 
@@ -896,11 +898,12 @@ Assets/
 │   ├── Nodes/
 │   ├── Powers/
 │   ├── Levels/
+│   ├── Audio/                # MusicSettings y SoundBank (T6-13, T6-14)
 │   ├── Backgrounds/          # Un BackgroundDefinition por mapa, generado (T5-05b)
 │   └── EnemyProfiles/
 ├── Prefabs/
 ├── Art/                      # Fuentes y Shaders/ (el material de los fondos, T5-05b)
-├── Audio/
+├── Audio/                    # NovaMixer.mixer; Music/ y SFX/, copia de audio/ (T6-13, T6-14)
 └── Scenes/
     ├── Boot.unity
     ├── MainMenu.unity
@@ -941,6 +944,8 @@ Assets/
 | `DropSchedule.cs` | `[Serializable] struct`, la config de drops de `LevelDefinition`: primer drop, intervalo mínimo y máximo, y máximo por nivel. Los tres niveles de un mapa llevan la fila de [9.3](#93-calendario-de-drops) (`T5-04`) |
 | `EnemyProfile.cs` | Los 8 parámetros de la tabla [12.5](./NOVA_Algoritmo_Enemigo.md#125-perfiles-por-mapa) |
 | `EnemyScoring.cs` | Los pesos de las funciones de puntuación del Enemigo ([12.3](./NOVA_Algoritmo_Enemigo.md#123-función-de-puntuación-atacar), 12.3.1 y 12.3.2): `ValorTipo`, bonus, penalizaciones, afinidades, necesidades de encendido y bases de mejora. Uno solo, igual para los tres mapas; lo que cambia por mapa está en `EnemyProfile` (`T4-02`) |
+| `MusicSettings.cs` | La música de los menús ([NOVA_Sonido.md](./NOVA_Sonido.md), S.5.2): los dos archivos del juego, el bus Music, el arranque del ciclo a los 12 s, las versiones (3 de 120 s) y los fundidos (1.0 s y 1.5 s). Un solo asset, `Assets/Data/Audio/MusicSettings.asset`, que rellena *Nova → Audio → Importar audio y crear el mezclador* (`T6-13`) |
+| `SoundBank.cs` | Los sonidos de la partida (S.6): cada ID `SND-*` con su clip, su bus y su volumen base, y el ancho del tablero, el panorama máximo, las voces por ID y el tamaño del pool. Un solo asset, `Assets/Data/Audio/SoundBank.asset`, del mismo menú (`T6-14`) |
 | `UiText.cs` | **Todos los textos de la UI**, en español: nombres de tipo, formatos del panel, `DORMIDO`, `NIVEL MÁXIMO`… Una instancia, `Assets/Data/UiText.asset`. El juego es solo en español, pero ningún texto se escribe en un script o un prefab ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #39) |
 
 ### 15.5 Gameplay — componentes de nodo
@@ -1024,8 +1029,8 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 | `PowerBeamVisual.cs` | El haz de poder con su arte ([7.2.2](#722-el-haz), [A.4.2](./NOVA_Assets_Diseno.md#a42-protón-y-haces-de-poder--143)): una hoja por poder, montada como la línea de envío —nacimiento en el Púlsar, tramo en mosaico y punta en el objetivo—, girada con el `transform`. 3 frames a 12 fps tomados del reloj del propio haz, en la capa 0 de 14.7. Una sola vista para el tablero, en `Systems`, que recorre `PowerBeamSystem.Active`. Lee `PowerBeamArt` (Data) (`T6-11`) |
 | `MagnetarRadiusView.cs` | El anillo de radio de cada Magnetar del tablero ([A.4.1](./NOVA_Assets_Diseno.md#a41-radio-de-alcance-del-magnetar)): siempre visible, en las tres facciones (A.8 #1). Una sola vista para el tablero, que recorre `NodeRegistry` (`T6-05`) |
 | `VFXPool.cs` | Pool de efectos |
-| `AudioDirector.cs` | Reacción sonora a eventos. Escucha los eventos de juego y reproduce los sonidos de [NOVA_Sonido.md](./NOVA_Sonido.md) desde un pool de `AudioSource`, con el `SoundBank` (Data) y el `AudioMixer`; detalle en [S.6](./NOVA_Sonido.md#s6-integración-en-unity). Vive en `Game`. Los poderes, en `T6-14`; el resto, en `T6-10` |
-| `MusicDirector.cs` | La música de los menús ([S.5.2](./NOVA_Sonido.md#s52-música-el-tema-de-nova--138-139)): sobrevive al cambio de escena, encadena la intro y el ciclo con `PlayScheduled` y se funde al entrar en `Game` y al volver de ella. Escucha `SceneManager.activeSceneChanged`. Tiempo no escalado (`T6-13`) |
+| `AudioDirector.cs` | Reacción sonora a eventos. Escucha los eventos de juego y reproduce los sonidos de [NOVA_Sonido.md](./NOVA_Sonido.md) desde un pool de `AudioSource`, con el `SoundBank` (Data) y el `AudioMixer`; detalle en [S.6](./NOVA_Sonido.md#s6-integración-en-unity). Vive en el objeto `Systems` de `Game`. Los poderes (`T6-14`): el haz en `OnLaunched`, el impacto en `OnLanded`, nada en `OnDissipated`. El ID y el panorama los da `SoundRules`, y el límite de voces `VoicePool`, los dos lógica pura. Con la partida congelada, sus voces se pausan y siguen al reanudar ([18](#18-decisiones-tomadas-por-defecto) #50). El resto, en `T6-10` |
+| `MusicDirector.cs` | La música de los menús ([S.5.2](./NOVA_Sonido.md#s52-música-el-tema-de-nova--138-139)): va en `MainMenu` y `LevelSelect`, la primera instancia sobrevive al cambio de escena y las demás se destruyen al nacer. Encadena la intro y el ciclo con `PlayScheduled` y se funde al entrar en `Game` y al volver de ella. Escucha `SceneManager.activeSceneChanged`; qué hacer en cada cambio lo decide `MusicFlow`, lógica pura. Tiempo no escalado. Lee `MusicSettings` (Data) (`T6-13`) |
 | `CameraShake.cs` | Sacudida en capturas grandes |
 | `BackgroundView.cs` | El fondo con movimiento de un mapa: un sprite de 15 × 8.4375 u por debajo de todo, con el material de su `BackgroundDefinition`. Lleva el tiempo del fondo en `double`, reduce la fase de cada capa y se la pasa al material. En `Game` toma el fondo del nivel que cargó `LevelLoader`; en los menús, el que se le asigne, y admite una **ventana** —la franja del fondo que enseña— para la carta estelar de 13.9 (`T5-05b`) |
 | `BackgroundFlyby.cs` | El ovni del fondo: cuándo y por qué lado sale (60–120 s, alternando el lado, generador aleatorio propio, nunca el del Enemigo), su ruta de mapa y su hoja de 16 frames a 12 fps, a píxel entero y bajo los nodos (`T5-05b`) |
@@ -1255,6 +1260,7 @@ Reglas que no estaban en el diseño original y que se añadieron para cerrar hue
 | 47 | **Los fondos de los tres mapas se mueven**, sin estorbar a la partida: se mueve la trama, no el dibujo; lento, sin destellos, sin gestos del juego, en tiempo de juego y sin bucle, con un gesto por mapa —luz que barre, materia que fluye, vacío que deriva— y un ovni de tarde en tarde como única excepción a la regla de velocidad ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Fondos con movimiento*; [NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md), A.4.5) | Pedido por el usuario el 2026-10-20 al regenerar los fondos para el tablero de T.8, tras ver lo que el movimiento hizo por las pantallas de pausa y fin. Rompe a propósito el fondo estático de la v1; las reglas de composición —presupuesto, rampas, tamaño, viñeta— se conservan y se miden en cada fotograma. Aprobado sobre las vistas previas de `gen_fondos_v2.py` |
 | 48 | **El número de Energía va bajo el sprite del nodo**, centrado bajo su huella, y la barra de carga del Púlsar bajo el número ([NOVA_Estados_Animaciones.md](./NOVA_Estados_Animaciones.md), 14.7) | Decidido con el usuario el 2026-10-26 en `T6-01`. Centrado, como en la vista provisional, caía sobre la cara del sprite, y la cara es la que avisa del susto (14.2): 14.7 no deja que nada la tape. Encima habría chocado con el glifo `zzz` o la brasa del Asteroide, que van en el hueco de la celda. Vale para el número provisional y es la posición que hereda `NodeHUD` con `ART-UI-HUD-ENERGY` |
 | 49 | **Los nodos no tienen ojos.** Se quitan de los cuatro tipos, en todos los niveles y facciones, y con ellos `ART-ST-SCARE`. El susto ([NOVA_Estados_Animaciones.md](./NOVA_Estados_Animaciones.md), 14.2) conserva su condición, su temblor y su salto; la señal que sustituya a la cara está por decidir ([NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #55) | Decidido por el usuario el 2026-11-01, cerrando T.7 #53 y A.8 #5 ([NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md)). Lo ejecuta `T6-12`, al final de la fase 6, para no frenar el seguimiento: hasta entonces el arte con ojos sigue en uso |
+| 50 | **Con la partida congelada, los sonidos de la partida se quedan quietos** —pausa o fin de nivel, `Time.timeScale = 0`— y siguen donde iban al reanudar. La música de los menús no se ve afectada: en `Game` no suena ([NOVA_Sonido.md](./NOVA_Sonido.md), S.6) | Es la regla del tablero en [15.8](#158-presentation), *Tiempo de la UI y pausa*: en pausa nada corre. Un sonido que siguiera diría que el juego corre. Decidido con el usuario el 2026-11-02 (`T6-14`) |
 
 ---
 

@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f415637c3713f948a86a5fda9a6957e, type: 3}
+  m_Name: SoundBank
+  m_EditorClassIdentifier: Nova.Data::Nova.Data.SoundBank
+  entries:
+  - id: SND-WLD-BEAM-ZER
+    clip: {fileID: 8300000, guid: 3e78138cdf73100c025b051e397f5ca1, type: 3}
+    output: {fileID: -2136937655051717269, guid: d4459dcb6bb922746b7fae650796f403, type: 2}
+    volume: 1
+  - id: SND-PWR-ZER
+    clip: {fileID: 8300000, guid: 45228bfd62a23b5e904f1828803dbd57, type: 3}
+    output: {fileID: -2136937655051717269, guid: d4459dcb6bb922746b7fae650796f403, type: 2}
+    volume: 1
+  - id: SND-WLD-BEAM-DEC
+    clip: {fileID: 8300000, guid: 0e16624a90d89a8fe817cdd95ca3e620, type: 3}
+    output: {fileID: -2136937655051717269, guid: d4459dcb6bb922746b7fae650796f403, type: 2}
+    volume: 1
+  - id: SND-PWR-DEC
+    clip: {fileID: 8300000, guid: 205653ff1fc747894a9f725cd0230a65, type: 3}
+    output: {fileID: -2136937655051717269, guid: d4459dcb6bb922746b7fae650796f403, type: 2}
+    volume: 1
+  - id: SND-WLD-BEAM-WRM
+    clip: {fileID: 8300000, guid: 86d99621a3aa485053d29b2c1a975606, type: 3}
+    output: {fileID: -2136937655051717269, guid: d4459dcb6bb922746b7fae650796f403, type: 2}
+    volume: 1
+  - id: SND-PWR-WRM
+    clip: {fileID: 8300000, guid: 043e16f7d5847933c7e656ccdeaad113, type: 3}
+    output: {fileID: -2136937655051717269, guid: d4459dcb6bb922746b7fae650796f403, type: 2}
+    volume: 1
+  boardWidth: 15
+  maxPan: 0.6
+  maxVoicesPerId: 2
+  poolSize: 12

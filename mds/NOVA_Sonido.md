@@ -36,7 +36,7 @@
 |---|---|
 | ⬜ | Inventariado, sin diseñar |
 | 🟡 | Hay versión generada, falta la aprobación del usuario |
-| 🟢 | Aprobado por el usuario, falta integrarlo en Unity (`T6-10`) |
+| 🟢 | Aprobado por el usuario, falta integrarlo en Unity |
 | ✅ | Aprobado e integrado en Unity |
 
 ---
@@ -219,12 +219,12 @@ Como en el arte, **varias versiones pueden convivir**; la elegida la marca la co
 
 | ID | Qué suena | Cuándo | Evento en el código | Duración | Arte que acompaña | Archivo | Estado |
 |---|---|---|---|---|---|---|---|
-| `SND-WLD-BEAM-ZER` | Haz de Cero Absoluto | Al lanzar | `PowerBeamSystem.OnLaunched`, `Type == AbsoluteZero` | 0.32 s | `ART-WLD-BEAM-ZER` | `audio/sfx/beam_zero/v1/snd_wld_beam_zer.wav` | 🟢 |
-| `SND-WLD-BEAM-DEC` | Haz de Decaimiento | Al lanzar | `PowerBeamSystem.OnLaunched`, `Type == Decay` | 0.32 s | `ART-WLD-BEAM-DEC` | `audio/sfx/beam_decay/v1/snd_wld_beam_dec.wav` | 🟢 |
-| `SND-WLD-BEAM-WRM` | Haz de Agujero de Gusano | Al lanzar | `PowerBeamSystem.OnLaunched`, `Type == Wormhole` | 0.33 s | `ART-WLD-BEAM-WRM` | `audio/sfx/beam_wormhole/v1/snd_wld_beam_wrm.wav` | 🟢 |
-| `SND-PWR-ZER` | Congelamiento del nodo | Al terminar el haz | `PowerBeamSystem.OnLanded`, `Type == AbsoluteZero` | 0.70 s | `FX-PWR-ZER` → `Congelado` | `audio/sfx/pwr_zero/v1/snd_pwr_zer.wav` | 🟢 |
-| `SND-PWR-DEC` | Infección del nodo | Al terminar el haz | `PowerBeamSystem.OnLanded`, `Type == Decay` | 0.70 s | `FX-PWR-DEC` → `Infectado` | `audio/sfx/pwr_decay/v1/snd_pwr_dec.wav` | 🟢 |
-| `SND-PWR-WRM` | Robo del nodo | Al terminar el haz | `PowerBeamSystem.OnLanded`, `Type == Wormhole` | 1.00 s | `FX-PWR-WRM` → `Capturado` | `audio/sfx/pwr_wormhole/v1/snd_pwr_wrm.wav` | 🟢 |
+| `SND-WLD-BEAM-ZER` | Haz de Cero Absoluto | Al lanzar | `PowerBeamSystem.OnLaunched`, `Type == AbsoluteZero` | 0.32 s | `ART-WLD-BEAM-ZER` | `audio/sfx/beam_zero/v1/snd_wld_beam_zer.wav` | ✅ |
+| `SND-WLD-BEAM-DEC` | Haz de Decaimiento | Al lanzar | `PowerBeamSystem.OnLaunched`, `Type == Decay` | 0.32 s | `ART-WLD-BEAM-DEC` | `audio/sfx/beam_decay/v1/snd_wld_beam_dec.wav` | ✅ |
+| `SND-WLD-BEAM-WRM` | Haz de Agujero de Gusano | Al lanzar | `PowerBeamSystem.OnLaunched`, `Type == Wormhole` | 0.33 s | `ART-WLD-BEAM-WRM` | `audio/sfx/beam_wormhole/v1/snd_wld_beam_wrm.wav` | ✅ |
+| `SND-PWR-ZER` | Congelamiento del nodo | Al terminar el haz | `PowerBeamSystem.OnLanded`, `Type == AbsoluteZero` | 0.70 s | `FX-PWR-ZER` → `Congelado` | `audio/sfx/pwr_zero/v1/snd_pwr_zer.wav` | ✅ |
+| `SND-PWR-DEC` | Infección del nodo | Al terminar el haz | `PowerBeamSystem.OnLanded`, `Type == Decay` | 0.70 s | `FX-PWR-DEC` → `Infectado` | `audio/sfx/pwr_decay/v1/snd_pwr_dec.wav` | ✅ |
+| `SND-PWR-WRM` | Robo del nodo | Al terminar el haz | `PowerBeamSystem.OnLanded`, `Type == Wormhole` | 1.00 s | `FX-PWR-WRM` → `Capturado` | `audio/sfx/pwr_wormhole/v1/snd_pwr_wrm.wav` | ✅ |
 
 **Línea de tiempo de un lanzamiento:**
 
@@ -279,7 +279,7 @@ El sonido del haz puede pasarse unos milisegundos de los 0.25 s para fundirse co
 
 | ID | Qué suena | Dónde | Cuándo empieza y cuándo para | Duración | Archivo | Estado |
 |---|---|---|---|---|---|---|
-| `SND-MUS-MAIN` | Tema principal de NOVA | `MainMenu` y `LevelSelect` | Empieza al abrir el juego. **Sigue sin cortarse** entre `MainMenu` y `LevelSelect`. Se funde al **lanzar un nivel** (Continuar/Jugar en el menú, Lanzar en la carta) y **vuelve** al regresar de `Game` a cualquiera de las dos pantallas | Intro 12 s + ciclo de 360 s: **v3 → v1 → v2**, 120 s cada una | `audio/music/main/ciclo/mus_main_intro.wav` y `mus_main_ciclo.wav` | 🟢 |
+| `SND-MUS-MAIN` | Tema principal de NOVA | `MainMenu` y `LevelSelect` | Empieza al abrir el juego. **Sigue sin cortarse** entre `MainMenu` y `LevelSelect`. Se funde al **lanzar un nivel** (Continuar/Jugar en el menú, Lanzar en la carta) y **vuelve** al regresar de `Game` a cualquiera de las dos pantallas | Intro 12 s + ciclo de 360 s: **v3 → v1 → v2**, 120 s cada una | `audio/music/main/ciclo/mus_main_intro.wav` y `mus_main_ciclo.wav` | ✅ |
 
 **Suenan las tres versiones, en cadena: v3 «Señal», luego v1 «Órbitas», luego v2 «Carta estelar»**, y el ciclo vuelve a empezar. Lo decidió el usuario el 2026-11-02, después de escucharlas. La intro es la de la v3: su Morse «NOVA» es lo primero que se oye. El conjunto sigue el arco del juego a mayor escala: la señal de la cabina, la luz serena y, por último, la orquesta.
 
@@ -388,12 +388,18 @@ Con el motor de [S.1.4](#s14-música). Cada versión es un generador, `tools/gen
 
 ## S.6 Integración en Unity
 
-Todo pasa por **`AudioDirector`** (Presentation, [15.8](./NOVA_GameDesign_Spec.md#158-presentation)), que se construye en **`T6-14`** con los sonidos de los poderes, y la música por **`MusicDirector`**, en **`T6-13`**. El resto del audio se suma en `T6-10`. Ningún script de Gameplay ni de Systems reproduce sonido: solo emiten eventos, igual que con las animaciones ([15.9](./NOVA_GameDesign_Spec.md#159-comunicación-entre-capas)).
+Todo pasa por **`AudioDirector`** (Presentation, [15.8](./NOVA_GameDesign_Spec.md#158-presentation)), construido en **`T6-14`** con los sonidos de los poderes, y la música por **`MusicDirector`**, en **`T6-13`**. Las dos ✅ el 2026-11-02. El resto del audio se suma en `T6-10`. Ningún script de Gameplay ni de Systems reproduce sonido: solo emiten eventos, igual que con las animaciones ([15.9](./NOVA_GameDesign_Spec.md#159-comunicación-entre-capas)).
 
 | Pieza | Capa | Qué hace |
 |---|---|---|
-| `SoundBank` (ScriptableObject) | Data | Asocia cada ID `SND-*` a su clip o a su `Audio Random Container`, su bus y su volumen base |
-| `AudioDirector` | Presentation | Escucha los eventos, pide el clip a `SoundBank` y lo reproduce desde un pool de `AudioSource` |
+| `SoundBank` (ScriptableObject) | Data | Asocia cada ID `SND-*` a su clip o a su `Audio Random Container`, su bus y su volumen base. Guarda también el ancho del tablero, el panorama máximo (0.6), las voces por ID (2) y el pool (12). `Assets/Data/Audio/SoundBank.asset` |
+| `AudioDirector` | Presentation | Escucha los eventos, pide el clip a `SoundBank` y lo reproduce desde un pool de `AudioSource`. Vive en el objeto `Systems` de `Game` |
+| `SoundRules`, `VoicePool` | Presentation | Lógica pura, para los tests: el ID de cada evento, el panorama y qué voz suena cada sonido |
+| `MusicSettings` (ScriptableObject) | Data | Los dos archivos de la música, el bus Music, los tiempos del ciclo y los fundidos. `Assets/Data/Audio/MusicSettings.asset` |
+| `MusicDirector`, `MusicFlow` | Presentation | La música de los menús; `MusicFlow` decide, sin `AudioSource`, qué hace en cada cambio de escena |
+| `NovaMixer` (`Assets/Audio/NovaMixer.mixer`) | — | El mezclador de [S.2.3](#s23-mezcla). Volúmenes expuestos para el menú de opciones: `MasterVolume`, `MusicVolume`, `SfxVolume`, `SfxWorldVolume`, `SfxUiVolume` y `AmbienceVolume` |
+
+**Importación.** *Nova → Audio → Importar audio y crear el mezclador* copia los archivos elegidos de `audio/` a `Assets/Audio/Music/` y `Assets/Audio/SFX/`, que no se versionan (son salida derivada, como `Assets/Sprites/`); crea el mezclador si falta y rellena `MusicSettings` y `SoundBank`. Escribe el `.meta` de cada WAV entero, con los ajustes de [S.2.1](#s21-formato) y **sin normalizar**: Unity normaliza cada clip por defecto, y la intro y el ciclo saltarían de volumen al encadenarse. Después se regeneran las escenas (*Generar escenas de menú* y *Generar escena Game*).
 
 **Para los poderes, dos suscripciones bastan**, porque `PowerBeam` ya trae el tipo de poder, la facción y las posiciones:
 
@@ -405,7 +411,9 @@ Todo pasa por **`AudioDirector`** (Presentation, [15.8](./NOVA_GameDesign_Spec.m
 
 **Posición estéreo:** el *panning* se calcula con la `x` del punto sobre el ancho del tablero (15 u), suavizado para que nada suene solo en un oído. Así un poder enemigo que sale de la derecha se oye a la derecha: es como se distingue **quién** lanza sin cambiar el sonido.
 
-**Límite de voces:** como mucho dos instancias del mismo ID a la vez; la tercera corta a la más antigua.
+**Límite de voces:** como mucho dos instancias del mismo ID a la vez; la tercera corta a la más antigua. Si el pool entero está ocupado, se corta la más antigua de todas.
+
+**Pausa y fin de nivel.** Con la partida congelada (`Time.timeScale = 0`), los sonidos que estén sonando se quedan quietos como el tablero y siguen donde iban al reanudar ([18](./NOVA_GameDesign_Spec.md#18-decisiones-tomadas-por-defecto) #50, decidido con el usuario el 2026-11-02).
 
 **La música no vive en una escena.** `SND-MUS-MAIN` suena en `MainMenu` y en `LevelSelect` sin cortarse entre las dos, así que la reproduce una pieza que sobrevive a los cambios de escena (`DontDestroyOnLoad`) y escucha `SceneManager.activeSceneChanged`, que ya existe: no hace falta ningún evento nuevo.
 
@@ -413,8 +421,8 @@ Todo pasa por **`AudioDirector`** (Presentation, [15.8](./NOVA_GameDesign_Spec.m
 |---|---|
 | `MainMenu` o `LevelSelect`, al abrir el juego | La intro de la v3 (18 s con su cola) y, en otra `AudioSource` con `PlayScheduled` a los 12 s exactos, el ciclo en bucle |
 | `MainMenu` ↔ `LevelSelect` | Nada: sigue sonando |
-| `Game` | Fundido de salida de **1.0 s** (propuesta, [S.7](#s7-decisiones-abiertas) #6) |
-| `MainMenu` o `LevelSelect`, al volver de `Game` | Entra en el principio de la **versión siguiente** a la que sonaba al lanzar, con un fundido de entrada de 1.5 s (propuesta, [S.7](#s7-decisiones-abiertas) #6). Las versiones empiezan a 0, 120 y 240 s del ciclo |
+| `Game` | Fundido de salida de **1.0 s** ([S.7](#s7-decisiones-abiertas) #6) |
+| `MainMenu` o `LevelSelect`, al volver de `Game` | Entra en el principio de la **versión siguiente** a la que sonaba al lanzar, con un fundido de entrada de 1.5 s ([S.7](#s7-decisiones-abiertas) #6). Las versiones empiezan a 0, 120 y 240 s del ciclo. Si se lanzó durante la intro, sonaba la v3 y entra la v1 |
 
 ---
 
@@ -427,7 +435,7 @@ Todo pasa por **`AudioDirector`** (Presentation, [15.8](./NOVA_GameDesign_Spec.m
 | 3 | **¿Suena el haz disipado?** Hoy suena el haz y nada más | Mantenerlo: el silencio es el aviso, como en el arte |
 | 4 | **Motor de audio.** Unity nativo frente a FMOD ([S.1.2](#s12-motor-unity-audio-nativo-no-middleware)) | Unity nativo; se reabre si la música se vuelve adaptativa |
 | 5 | ~~**Cómo se produce el tema**~~ | ✅ **Cerrada el 2026-11-02** con el usuario: partitura en Python, Surge XT y VSCO 2 CE por sfizz, todo portable en `audio/_libs/` desde el `.venv` ([S.1.4](#s14-música)). Se entrega el MIDI; las pistas sueltas quedan en la caché y no se publican |
-| 6 | **Fundidos de la música, y qué versión suena al volver** | Salida en 1.0 s al cargar `Game`. Al volver, sin la intro y con 1.5 s de fundido, entrar en el principio de la versión siguiente a la que sonaba al lanzar (v3 → v1 → v2 → v3), para que cada vuelta al menú traiga una versión distinta. La alternativa es retomar el ciclo desde el principio de la v3 |
+| 6 | ~~**Fundidos de la música, y qué versión suena al volver**~~ | ✅ **Cerrada el 2026-11-02** con el usuario, al empezar `T6-13`: salida en 1.0 s al cargar `Game`; al volver, sin la intro y con 1.5 s de fundido, entra el principio de la versión siguiente a la que sonaba al lanzar (v3 → v1 → v2 → v3), para que cada vuelta al menú traiga una versión distinta ([S.6](#s6-integración-en-unity)) |
 
 ---
 
@@ -435,9 +443,9 @@ Todo pasa por **`AudioDirector`** (Presentation, [15.8](./NOVA_GameDesign_Spec.m
 
 | Bloque | Sonidos | ⬜ | 🟡 | 🟢 | ✅ |
 |---|---|---|---|---|---|
-| [S.5.1 Poderes del Púlsar](#s51-poderes-del-púlsar--7) | 6 | 0 | 0 | 6 | 0 |
-| [S.5.2 Música: el tema de NOVA](#s52-música-el-tema-de-nova--138-139) | 1 | 0 | 0 | 1 | 0 |
-| **Total** | **7** | **0** | **0** | **7** | **0** |
+| [S.5.1 Poderes del Púlsar](#s51-poderes-del-púlsar--7) | 6 | 0 | 0 | 0 | 6 |
+| [S.5.2 Música: el tema de NOVA](#s52-música-el-tema-de-nova--138-139) | 1 | 0 | 0 | 0 | 1 |
+| **Total** | **7** | **0** | **0** | **0** | **7** |
 
 **S.5.1 está completo** (2026-11-02): los seis sonidos de los poderes están aprobados y esperan su integración en **`T6-14`**, desbloqueada.
 
