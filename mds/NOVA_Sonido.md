@@ -388,7 +388,7 @@ Con el motor de [S.1.4](#s14-música). Cada versión es un generador, `tools/gen
 
 ## S.6 Integración en Unity
 
-Todo pasa por **`AudioDirector`** (Presentation, [15.8](./NOVA_GameDesign_Spec.md#158-presentation)), que se construye en **`T6-10`**. Ningún script de Gameplay ni de Systems reproduce sonido: solo emiten eventos, igual que con las animaciones ([15.9](./NOVA_GameDesign_Spec.md#159-comunicación-entre-capas)).
+Todo pasa por **`AudioDirector`** (Presentation, [15.8](./NOVA_GameDesign_Spec.md#158-presentation)), que se construye en **`T6-14`** con los sonidos de los poderes, y la música por **`MusicDirector`**, en **`T6-13`**. El resto del audio se suma en `T6-10`. Ningún script de Gameplay ni de Systems reproduce sonido: solo emiten eventos, igual que con las animaciones ([15.9](./NOVA_GameDesign_Spec.md#159-comunicación-entre-capas)).
 
 | Pieza | Capa | Qué hace |
 |---|---|---|
@@ -439,8 +439,8 @@ Todo pasa por **`AudioDirector`** (Presentation, [15.8](./NOVA_GameDesign_Spec.m
 | [S.5.2 Música: el tema de NOVA](#s52-música-el-tema-de-nova--138-139) | 1 | 0 | 0 | 1 | 0 |
 | **Total** | **7** | **0** | **0** | **7** | **0** |
 
-**S.5.1 está completo** (2026-11-02): los seis sonidos de los poderes están aprobados y esperan su integración en `T6-10`, que sigue 🔴 por su dependencia `T6-07`.
+**S.5.1 está completo** (2026-11-02): los seis sonidos de los poderes están aprobados y esperan su integración en **`T6-14`**, desbloqueada.
 
-**S.5.2 está aprobado** (2026-11-02): `SND-MUS-MAIN` es el ciclo de las tres versiones, v3 → v1 → v2, con la intro de la v3. Falta integrarlo en Unity según [S.6](#s6-integración-en-unity): importar los dos WAV de `audio/music/main/ciclo/` en `Assets/Audio/Music/` (*Streaming*, Vorbis) y la pieza que sobrevive al cambio de escena y encadena intro y ciclo. La música no depende de `T6-07`: sus escenas y su evento (`SceneManager.activeSceneChanged`) ya existen.
+**S.5.2 está aprobado** (2026-11-02): `SND-MUS-MAIN` es el ciclo de las tres versiones, v3 → v1 → v2, con la intro de la v3. Falta integrarlo en Unity según [S.6](#s6-integración-en-unity): importar los dos WAV de `audio/music/main/ciclo/` en `Assets/Audio/Music/` (*Streaming*, Vorbis) y la pieza que sobrevive al cambio de escena y encadena intro y ciclo. Es la tarea **`T6-13`** de [NOVA_Tracking.md](./NOVA_Tracking.md), abierta el 2026-11-02; los sonidos de S.5.1 van en **`T6-14`**.
 
 **Bloques por añadir**, a medida que se definan con el usuario: protones y capturas, Magnetar, nodos (encendido, mejora, reconversión), power-ups, interfaz, fin de nivel, ambiente, música por mapa y los temas cortos de victoria y derrota, que saldrán del motivo de `SND-MUS-MAIN`.
