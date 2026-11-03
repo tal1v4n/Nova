@@ -306,6 +306,109 @@ def sala(x, rng, cola=0.08, mezcla=0.18, brillo=9000):
 
 
 # --------------------------------------------------------------------------
+# Decaimiento: radiacion, liquido, podredumbre
+# --------------------------------------------------------------------------
+
+def sierra(fase, fmax, techo=9000):
+    """Diente de sierra limitado en banda a partir de una fase acumulada.
+
+    fase: array en radianes (np.cumsum(2*pi*f/SR)). fmax: la frecuencia mas
+    alta que alcanza f, para saber cuantos armonicos caben bajo `techo`."""
+    y = np.zeros_like(fase)
+    for k in range(1, max(1, int(techo // fmax)) + 1):
+        y += np.sin(k * fase) / k
+    return y * (2 / np.pi)
+
+
+def deriva(rng, dur, cents, velocidad=6.0):
+    """Wow de cinta: una desviacion de tono lenta y aleatoria, en razon.
+
+    Ruido suavizado a `velocidad` Hz, de amplitud +-`cents`. Es lo que hace
+    que un acorde suene enfermo y no afinado."""
+    r = lp(ruido(rng, dur + 0.2), velocidad, orden=2)[n(0.2):]
+    r /= np.max(np.abs(r)) + 1e-12
+    return 2 ** (cents * r / 1200)
+
+
+def geiger_clic(rng):
+    """Un clic de contador Geiger: la descarga del tubo por el altavoz.
+
+    Un pulso brillante de un cuarto de ms, la membrana del altavoz que
+    resuena hacia 3 kHz y un golpecito de caja grave."""
+    k = n(0.006)
+    t = np.arange(k) / SR
+    y = bp(rng.standard_normal(k) * np.exp(-t / 0.00022), 1500, 7000)
+    f = rng.uniform(2600, 3700)
+    y += 0.55 * np.sin(2 * np.pi * f * t) * np.exp(-t / 0.0011)
+    y += 0.30 * np.sin(2 * np.pi * rng.uniform(700, 950) * t) * np.exp(-t / 0.0022)
+    return y / (np.max(np.abs(y)) + 1e-12)
+
+
+def vidas(rng, atomos, semivida, t0=0.0):
+    """Instantes de desintegracion de `atomos` nucleos (ley exponencial).
+
+    Es la misma ley que cumple ART-WLD-BEAM-DEC al pixel: a cada `semivida`
+    queda la mitad. Devuelve los instantes ordenados."""
+    return np.sort(t0 + rng.exponential(semivida / np.log(2), atomos))
+
+
+def geiger(rng, dur, instantes, muerto=0.00018, ganancia=(0.55, 1.0)):
+    """Un clic por desintegracion. `muerto` es el tiempo muerto del tubo:
+    dos atomos demasiado juntos dan un solo clic, como en un contador real."""
+    buf = lienzo(dur)
+    ultimo = -1.0
+    for ti in instantes:
+        if ti >= dur:
+            break
+        if ti - ultimo < muerto:
+            continue
+        place(buf, geiger_clic(rng), ti, rng.uniform(*ganancia))
+        ultimo = ti
+    return buf
+
+
+def burbuja(f0, rng, dur=0.12, xi=0.1):
+    """Una burbuja que se forma y resuena (modelo de Minnaert / van den Doel).
+
+    La burbuja es un oscilador de aire: su tono depende del radio y sube un
+    poco mientras sale a la superficie (xi). El amortiguamiento crece con la
+    frecuencia: las pequenas hacen "tic", las grandes hacen "blop"."""
+    t = tiempo(dur)
+    d = 0.043 * f0 + 0.0014 * f0 ** 1.5
+    f = f0 * (1 + xi * d * t)
+    y = np.sin(2 * np.pi * np.cumsum(f) / SR + rng.uniform(0, 6.3))
+    return y * np.exp(-d * t) * np.clip(t / 0.0004, 0, 1)
+
+
+def gota(f0, rng, dur=0.12, subida=9.0):
+    """Una gota que cae en un liquido: un chasquido de impacto y la burbuja
+    que atrapa, cuyo tono sube rapido (el "plink")."""
+    t = tiempo(dur)
+    d = 0.043 * f0 + 0.0014 * f0 ** 1.5
+    f = f0 * (1 + subida * t)
+    y = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-d * 0.8 * t)
+    imp = hp(rng.standard_normal(len(t)) * np.exp(-t / 0.0006), 900)
+    return 0.8 * y * np.clip(t / 0.002, 0, 1) + 0.35 * imp
+
+
+def desintegra(x, rng, semivida, grano=0.005, t0=0.0, suave=0.0012):
+    """El sonido mismo se desintegra: se parte en granos y cada grano es un
+    atomo que sigue vivo con probabilidad 2^-(t/semivida).
+
+    Al principio suena entero, a la primera semivida queda la mitad de los
+    granos y el sonido empieza a chisporrotear; al final son esquirlas."""
+    k = n(grano)
+    puerta = np.ones(len(x))
+    for i in range(0, len(x), k):
+        tt = max(0.0, i / SR - t0)
+        if rng.random() > 2 ** (-tt / semivida):
+            puerta[i:i + k] = 0
+    v = np.hanning(max(3, n(suave)))
+    puerta = np.convolve(puerta, v / v.sum(), mode="same")
+    return x * puerta
+
+
+# --------------------------------------------------------------------------
 # Mezcla y salida
 # --------------------------------------------------------------------------
 
@@ -367,8 +470,18 @@ def export(x, path):
     return {"dur": len(x) / SR, "lufs": lufs(x), "dbtp": pico_real(x)}
 
 
-def espectrograma(x, path, fmax=16000, alto=320, px_por_seg=900):
-    """PNG del espectrograma (frecuencia lineal, dB), para revisar a ojo."""
+RAMPAS_ESPECTRO = {
+    # (r, g, b): pendiente y desplazamiento por canal; color de la onda
+    "hielo": (((2.2, -1.2), (1.6, -0.4), (1.4, 0.0)), (184, 240, 255)),
+    "decaimiento": (((2.4, -1.5), (1.7, -0.55), (2.4, -1.6)), (124, 242, 63)),
+}
+
+
+def espectrograma(x, path, fmax=16000, alto=320, px_por_seg=900, rampa="hielo"):
+    """PNG del espectrograma (frecuencia lineal, dB), para revisar a ojo.
+
+    `rampa`: los colores del poder (RAMPAS_ESPECTRO)."""
+    (cr, cg, cb), c_onda = RAMPAS_ESPECTRO[rampa]
     f, t, Z = signal.stft(x, SR, nperseg=1024, noverlap=1024 - 96)
     m = 20 * np.log10(np.abs(Z) + 1e-9)
     m = m[f <= fmax]
@@ -377,10 +490,9 @@ def espectrograma(x, path, fmax=16000, alto=320, px_por_seg=900):
     img = Image.fromarray((m[::-1] * 255).astype(np.uint8))
     img = img.resize((ancho, alto), Image.BILINEAR)
     a = np.asarray(img, float) / 255
-    # rampa hielo: negro -> azul -> cian -> blanco
-    r = np.clip(a * 2.2 - 1.2, 0, 1)
-    g = np.clip(a * 1.6 - 0.4, 0, 1)
-    b = np.clip(a * 1.4, 0, 1)
+    r = np.clip(a * cr[0] + cr[1], 0, 1)
+    g = np.clip(a * cg[0] + cg[1], 0, 1)
+    b = np.clip(a * cb[0] + cb[1], 0, 1)
     rgb = (np.stack([r, g, b], -1) * 255).astype(np.uint8)
     # forma de onda debajo
     onda = np.zeros((90, ancho, 3), np.uint8)
@@ -389,5 +501,5 @@ def espectrograma(x, path, fmax=16000, alto=320, px_por_seg=900):
     pk = pk / (pk.max() + 1e-12)
     for i, v in enumerate(pk):
         h = int(v * 44)
-        onda[45 - h:45 + h + 1, i] = (184, 240, 255)
+        onda[45 - h:45 + h + 1, i] = c_onda
     Image.fromarray(np.vstack([rgb, onda])).save(path)

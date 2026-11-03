@@ -193,10 +193,10 @@ Como en el arte, **varias versiones pueden convivir**; la elegida la marca la co
 | ID | Qué suena | Cuándo | Evento en el código | Duración | Arte que acompaña | Archivo | Estado |
 |---|---|---|---|---|---|---|---|
 | `SND-WLD-BEAM-ZER` | Haz de Cero Absoluto | Al lanzar | `PowerBeamSystem.OnLaunched`, `Type == AbsoluteZero` | 0.32 s | `ART-WLD-BEAM-ZER` | `audio/sfx/beam_zero/v1/snd_wld_beam_zer.wav` | 🟢 |
-| `SND-WLD-BEAM-DEC` | Haz de Decaimiento | Al lanzar | `PowerBeamSystem.OnLaunched`, `Type == Decay` | ~0.3 s | `ART-WLD-BEAM-DEC` | — | ⬜ |
+| `SND-WLD-BEAM-DEC` | Haz de Decaimiento | Al lanzar | `PowerBeamSystem.OnLaunched`, `Type == Decay` | 0.32 s | `ART-WLD-BEAM-DEC` | `audio/sfx/beam_decay/v1/snd_wld_beam_dec.wav` | 🟢 |
 | `SND-WLD-BEAM-WRM` | Haz de Agujero de Gusano | Al lanzar | `PowerBeamSystem.OnLaunched`, `Type == Wormhole` | ~0.3 s | `ART-WLD-BEAM-WRM` | — | ⬜ |
 | `SND-PWR-ZER` | Congelamiento del nodo | Al terminar el haz | `PowerBeamSystem.OnLanded`, `Type == AbsoluteZero` | 0.70 s | `FX-PWR-ZER` → `Congelado` | `audio/sfx/pwr_zero/v1/snd_pwr_zer.wav` | 🟢 |
-| `SND-PWR-DEC` | Infección del nodo | Al terminar el haz | `PowerBeamSystem.OnLanded`, `Type == Decay` | ~0.7 s | `FX-PWR-DEC` → `Infectado` | — | ⬜ |
+| `SND-PWR-DEC` | Infección del nodo | Al terminar el haz | `PowerBeamSystem.OnLanded`, `Type == Decay` | 0.70 s | `FX-PWR-DEC` → `Infectado` | `audio/sfx/pwr_decay/v1/snd_pwr_dec.wav` | 🟢 |
 | `SND-PWR-WRM` | Robo del nodo | Al terminar el haz | `PowerBeamSystem.OnLanded`, `Type == Wormhole` | ~1.0 s | `FX-PWR-WRM` → `Capturado` | — | ⬜ |
 
 **Línea de tiempo de un lanzamiento:**
@@ -225,10 +225,13 @@ El sonido del haz puede pasarse unos milisegundos de los 0.25 s para fundirse co
 **`SND-WLD-BEAM-DEC` — Haz de Decaimiento**
 - *Idea:* un chorro de radiación inestable.
 - *Receta:* zumbido en la banda media con modulación rápida de amplitud (tipo contador Geiger) y ruido granuloso.
+- *v1, «La vida media»* (`tools/gen_snd_beam_decay_v1.py`, 🟢 aprobada el 2026-11-02). **Cumple la misma ley que el haz** de `ART-WLD-BEAM-DEC`: la mitad de lo que hay se desintegra en cada frame (1, 1/2, 1/4), con una vida media de un frame (83 ms). **320 átomos**, los de una tesela del haz, y **un clic de contador Geiger por cada uno que se desintegra**: al lanzar, el contador fríe a casi tres mil clics por segundo y al final del haz quedan clics sueltos. **La cadena** es un zumbido de dos hebras a distancia de tritón, con su modulación en anillo y el zumbido de 47 Hz de un balastro, y **ese zumbido también se desintegra**: va en granos de 5 ms y cada grano es un átomo con la misma vida media, así que entra entero y acaba en esquirlas. **Cada frame es un núcleo de la cadena** y baja un semitono: Sol# → Sol → Fa#, un lamento cromático. El Sol# es el tritón del Re del Cero Absoluto. Una de cada ocho desintegraciones suelta su partícula beta, un silbido de 7 a 2 kHz. Abre con una rociada tóxica en banda media y un golpe moderado; el grave se reserva para el Agujero de Gusano.
 
 **`SND-PWR-DEC` — Infección**
 - *Idea:* la nube verde se posa sobre el nodo y empieza a corroerlo.
 - *Receta:* burbujeo descendente (pulsos de ruido filtrado con tono que baja), chasquidos tipo Geiger que se espacian al final.
+- *v1, «El coro que se pudre»* (`tools/gen_snd_pwr_decay_v1.py`, 🟢 aprobada el 2026-11-02). **Es el espejo de `SND-PWR-ZER`.** Allí un acorde nace temblando y se queda quieto; aquí un **coro nace afinado y se pudre**. Cada voz es una pareja que empieza al unísono y se desafina cada vez más, con un batido que crece de 0.3 a 11 Hz. El acorde entero se hunde semitono y medio con el temblor irregular de una cinta que se muere. Las voces son Sol#, Re, La y Mib, con una novena menor y dos tritones, y pasan por formantes de «o» a «u»: no suena a sintetizador, gime. Encima va lo que se ve en el nodo: **la salpicadura** (un golpe húmedo de 140 a 55 Hz, un paso bajo resonante que se cierra y seis chapoteos), **la corrosión** (un chisporroteo de ácido que fríe y efervesce), **el burbujeo que baja** (burbujas de Minnaert cada vez más grandes y lentas, de 1.5 kHz a 250 Hz: el nodo se vuelve viscoso), **el recuento** (70 átomos con una vida media de 100 ms; los clics Geiger se espacian igual que la Energía se escapa sola, 7.4) y **las cinco gotas de «El miasma»** (A.3.5), cinco «plinks» que bajan por las notas del coro hasta Sol#. Debajo, el miasma respira. No acaba en seco como el hielo: se apaga, porque la infección se queda.
+- *Escucha de revisión:* `audio/sfx/_preview/dec_lanzamiento.wav`.
 
 **`SND-WLD-BEAM-WRM` — Haz de Agujero de Gusano**
 - *Idea:* el espacio se dobla entre los dos nodos.
@@ -278,7 +281,7 @@ Todo pasa por **`AudioDirector`** (Presentation, [15.8](./NOVA_GameDesign_Spec.m
 
 | Bloque | Sonidos | ⬜ | 🟡 | 🟢 | ✅ |
 |---|---|---|---|---|---|
-| [S.5.1 Poderes del Púlsar](#s51-poderes-del-púlsar--7) | 6 | 4 | 0 | 2 | 0 |
-| **Total** | **6** | **4** | **0** | **2** | **0** |
+| [S.5.1 Poderes del Púlsar](#s51-poderes-del-púlsar--7) | 6 | 2 | 0 | 4 | 0 |
+| **Total** | **6** | **2** | **0** | **4** | **0** |
 
 **Bloques por añadir**, a medida que se definan con el usuario: protones y capturas, Magnetar, nodos (encendido, mejora, reconversión), power-ups, interfaz, fin de nivel, ambiente y música por mapa.
