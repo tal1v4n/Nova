@@ -194,10 +194,10 @@ Como en el arte, **varias versiones pueden convivir**; la elegida la marca la co
 |---|---|---|---|---|---|---|---|
 | `SND-WLD-BEAM-ZER` | Haz de Cero Absoluto | Al lanzar | `PowerBeamSystem.OnLaunched`, `Type == AbsoluteZero` | 0.32 s | `ART-WLD-BEAM-ZER` | `audio/sfx/beam_zero/v1/snd_wld_beam_zer.wav` | 🟢 |
 | `SND-WLD-BEAM-DEC` | Haz de Decaimiento | Al lanzar | `PowerBeamSystem.OnLaunched`, `Type == Decay` | 0.32 s | `ART-WLD-BEAM-DEC` | `audio/sfx/beam_decay/v1/snd_wld_beam_dec.wav` | 🟢 |
-| `SND-WLD-BEAM-WRM` | Haz de Agujero de Gusano | Al lanzar | `PowerBeamSystem.OnLaunched`, `Type == Wormhole` | ~0.3 s | `ART-WLD-BEAM-WRM` | — | ⬜ |
+| `SND-WLD-BEAM-WRM` | Haz de Agujero de Gusano | Al lanzar | `PowerBeamSystem.OnLaunched`, `Type == Wormhole` | 0.33 s | `ART-WLD-BEAM-WRM` | `audio/sfx/beam_wormhole/v1/snd_wld_beam_wrm.wav` | 🟢 |
 | `SND-PWR-ZER` | Congelamiento del nodo | Al terminar el haz | `PowerBeamSystem.OnLanded`, `Type == AbsoluteZero` | 0.70 s | `FX-PWR-ZER` → `Congelado` | `audio/sfx/pwr_zero/v1/snd_pwr_zer.wav` | 🟢 |
 | `SND-PWR-DEC` | Infección del nodo | Al terminar el haz | `PowerBeamSystem.OnLanded`, `Type == Decay` | 0.70 s | `FX-PWR-DEC` → `Infectado` | `audio/sfx/pwr_decay/v1/snd_pwr_dec.wav` | 🟢 |
-| `SND-PWR-WRM` | Robo del nodo | Al terminar el haz | `PowerBeamSystem.OnLanded`, `Type == Wormhole` | ~1.0 s | `FX-PWR-WRM` → `Capturado` | — | ⬜ |
+| `SND-PWR-WRM` | Robo del nodo | Al terminar el haz | `PowerBeamSystem.OnLanded`, `Type == Wormhole` | 1.00 s | `FX-PWR-WRM` → `Capturado` | `audio/sfx/pwr_wormhole/v1/snd_pwr_wrm.wav` | 🟢 |
 
 **Línea de tiempo de un lanzamiento:**
 
@@ -236,10 +236,13 @@ El sonido del haz puede pasarse unos milisegundos de los 0.25 s para fundirse co
 **`SND-WLD-BEAM-WRM` — Haz de Agujero de Gusano**
 - *Idea:* el espacio se dobla entre los dos nodos.
 - *Receta:* grave que sube de tono (~60 → 180 Hz) con *flanger* o *chorus* intenso; sensación de succión.
+- *v1, «La garganta»* (`tools/gen_snd_beam_wormhole_v1.py`, 🟢 aprobada el 2026-11-02). Sigue los tres frames de «El desgarro». **Desgarro:** la tela del espacio se rasga, con fibras que se rompen en ráfagas sobre un golpe de presión, y del corte saltan chispas. **Garganta:** por la rasgadura se oye **otro cielo**, un acorde lejano de estrellas (Si, Fa#, Do#, Re#) que no es del tablero y llega a través del mismo peine que el grave, como por dos caminos de largo distinto. **Cierre:** el aire se aspira hacia dentro en un barrido al revés que desemboca en `OnLanded`, y de las estrellas quedan tres destellos. Debajo, durante todo el haz, **el tirón** de la receta: un grave de 60 a 180 Hz, con su suboctava y saturado, por un flanger cuyo peine sube con él.
 
 **`SND-PWR-WRM` — Robo del nodo**
 - *Idea:* el nodo es arrastrado al otro bando; es el poder más caro y debe sonar el más grande.
 - *Receta:* implosión: barrido de tono hacia abajo y luego un golpe grave con reverb corta, como algo que se cierra. Es el único de los seis que llega a 1.0 s.
+- *v1, «La fusión»* (`tools/gen_snd_pwr_wormhole_v1.py`, 🟢 aprobada el 2026-11-02). **El robo ya ha pasado en el primer sample**: `ChangeFaction()` se aplica en `OnLanded`. El sonido cuenta lo que dibuja «El relevo» (A.3.7): un anillo que se cierra, otro que sale y su cruce a los 0.2 s. **La física es la de LIGO**, la onda gravitacional de dos agujeros negros que se funden. **Contacto** (0 ms): el último desgarro y la presión. **Espiral** (0–200 ms): el *chirp* de 35 a 280 Hz con la ley real, f ∝ (t_c − t)^(−3/8), y el aire aspirado hacia el nodo. **Fusión** (200 ms, el cruce de los anillos): el golpe más grande del juego, con un sub de 75 a 26 Hz, cuerpo, chasquido, un destello agudo que es el blanco de `FX-CAP` y el *ringdown* del agujero nuevo. **Implosión** (200–850 ms, la receta): un tono que se hunde de 320 a 40 Hz por un peine que baja, y dentro vuelve el otro cielo del haz, **cayendo al rojo**: el corrimiento al rojo gravitacional baja las estrellas una cuarta mientras se apagan. **Cierre** (800 ms): la boca se cierra con una última aspiración y un golpe sordo en una sala corta. Va a −14.3 LUFS, el más fuerte de los seis: el limitador no deja llegar a −14 sin pasar de −1 dBTP.
+- *Escucha de revisión:* `audio/sfx/_preview/wrm_lanzamiento.wav`.
 
 ---
 
@@ -281,7 +284,9 @@ Todo pasa por **`AudioDirector`** (Presentation, [15.8](./NOVA_GameDesign_Spec.m
 
 | Bloque | Sonidos | ⬜ | 🟡 | 🟢 | ✅ |
 |---|---|---|---|---|---|
-| [S.5.1 Poderes del Púlsar](#s51-poderes-del-púlsar--7) | 6 | 2 | 0 | 4 | 0 |
-| **Total** | **6** | **2** | **0** | **4** | **0** |
+| [S.5.1 Poderes del Púlsar](#s51-poderes-del-púlsar--7) | 6 | 0 | 0 | 6 | 0 |
+| **Total** | **6** | **0** | **0** | **6** | **0** |
+
+**S.5.1 está completo** (2026-11-02): los seis sonidos de los poderes están aprobados y esperan su integración en `T6-10`, que sigue 🔴 por su dependencia `T6-07`.
 
 **Bloques por añadir**, a medida que se definan con el usuario: protones y capturas, Magnetar, nodos (encendido, mejora, reconversión), power-ups, interfaz, fin de nivel, ambiente y música por mapa.

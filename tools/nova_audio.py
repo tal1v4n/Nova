@@ -409,6 +409,71 @@ def desintegra(x, rng, semivida, grano=0.005, t0=0.0, suave=0.0012):
 
 
 # --------------------------------------------------------------------------
+# Gravedad: espacio que se dobla, se rasga y se cierra
+# --------------------------------------------------------------------------
+
+def retardo(x, d):
+    """`x` retrasado `d` muestras (array, fraccionario, interpolado)."""
+    i = np.arange(len(x)) - np.asarray(d, float)
+    return np.interp(i, np.arange(len(x)), x, left=0.0)
+
+
+def flanger(x, ms, profundidad=0.8, etapas=2):
+    """Flanger por suma con una copia retrasada `ms` (array: el retardo se
+    mueve). El filtro de peine que barre es el sonido del espacio doblado:
+    la misma senal llega por dos caminos de largo distinto. `etapas` en
+    serie lo hacen mas intenso sin realimentacion."""
+    d = np.asarray(ms, float) * SR / 1000
+    y = x
+    for _ in range(etapas):
+        y = 0.5 * (y + profundidad * retardo(y, d))
+    return y / (np.max(np.abs(y)) + 1e-12) * np.max(np.abs(x))
+
+
+def chirp_gravitacional(dur, t_fusion, f0=35.0, f_fusion=280.0):
+    """La onda de una fusion de dos agujeros negros, la que oyo LIGO.
+
+    Espiral: la frecuencia sube como (t_c - t)^(-3/8) y la amplitud como
+    f^(2/3), hasta f_fusion en `t_fusion`. Devuelve (frecuencia, amplitud),
+    arrays del largo de `dur`; despues de la fusion valen f_fusion y 0, y la
+    vibracion final (ringdown) la pone el generador."""
+    t = tiempo(dur)
+    # t_c tal que f(0) = f0 y f(t_fusion) = f_fusion
+    r = (f0 / f_fusion) ** (8 / 3)
+    tc = t_fusion / (1 - r)
+    tau = np.maximum(tc - t, tc - t_fusion)
+    f = f0 * (tau / tc) ** (-3 / 8)
+    a = (f / f_fusion) ** (2 / 3)
+    a[t > t_fusion] = 0
+    return f, a
+
+
+def rasgado(rng, dur, densidad, banda=(700, 6000)):
+    """Tela que se rasga: fibras que se rompen de una en una.
+
+    Impulsos irregulares, en rafagas (las fibras ceden en grupos), por un
+    banco de resonancias de la tela. `densidad`: funcion t -> roturas por
+    segundo (array)."""
+    k = n(dur)
+    p = np.clip(densidad / SR, 0, 1)
+    rafaga = lp(rng.standard_normal(k), 60)
+    rafaga = np.clip(rafaga / (np.std(rafaga) + 1e-12) + 0.6, 0, None)
+    marcas = rng.random(k) < p * rafaga
+    y = np.zeros(k)
+    y[marcas] = rng.choice([-1, 1], marcas.sum()) * rng.uniform(0.3, 1.0, marcas.sum())
+    y = bp(y, *banda)
+    for f in rng.uniform(banda[0] * 1.3, banda[1] * 0.7, 3):
+        y += 0.5 * svf(y, f, 8.0)
+    return y / (np.max(np.abs(y)) + 1e-12)
+
+
+def satura(x, empuje=2.0):
+    """Saturacion suave: le da armonicos al grave para que se oiga tambien
+    en altavoces pequenos, sin subir el pico."""
+    return np.tanh(empuje * x) / np.tanh(empuje)
+
+
+# --------------------------------------------------------------------------
 # Mezcla y salida
 # --------------------------------------------------------------------------
 
@@ -474,6 +539,7 @@ RAMPAS_ESPECTRO = {
     # (r, g, b): pendiente y desplazamiento por canal; color de la onda
     "hielo": (((2.2, -1.2), (1.6, -0.4), (1.4, 0.0)), (184, 240, 255)),
     "decaimiento": (((2.4, -1.5), (1.7, -0.55), (2.4, -1.6)), (124, 242, 63)),
+    "gusano": (((1.8, -0.75), (2.2, -1.4), (1.5, -0.25)), (155, 92, 246)),
 }
 
 
