@@ -16,3 +16,8 @@ scipy==1.18.1
 soundfile==0.14.0
 pedalboard==0.9.26
 pyloudnorm==0.2.0
+
+# Musica (mds/NOVA_Sonido.md, S.5.2): la partitura se escribe en MIDI. Los
+# instrumentos (VST3 portables y muestras) van en audio/_libs/, fuera de git:
+#   .venv\Scripts\python tools\instala_audio_libs.py
+mido==1.3.3

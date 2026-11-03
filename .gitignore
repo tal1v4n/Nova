@@ -50,3 +50,16 @@ crashlynx/
 
 # Vistas en movimiento de art/_preview: salida derivada y pesada (tracking, desviacion 264)
 art/_preview/**/*.gif
+
+# Instrumentos de la musica (NOVA_Sonido.md, S.1.4): plugins VST3 portables y
+# librerias de muestras. Se descargan con tools/instala_audio_libs.py, pesan
+# cientos de MB y no se versionan.
+/audio/_libs/
+# Pistas renderizadas de la musica (nova_musica._cacheado): se regeneran solas
+/audio/_cache/
+# WAV de la musica: salida derivada y pesada (~90 MB por version). Se versionan
+# el generador, el MIDI y el espectro; el WAV elegido entra en Assets/Audio/Music/
+/audio/music/**/*.wav
+# ...salvo la version elegida del tema (NOVA_Sonido.md, S.5.2)
+!/audio/music/main/v1/mus_main_intro.wav
+!/audio/music/main/v1/mus_main_loop.wav
