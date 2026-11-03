@@ -60,6 +60,7 @@ art/_preview/**/*.gif
 # WAV de la musica: salida derivada y pesada (~90 MB por version). Se versionan
 # el generador, el MIDI y el espectro; el WAV elegido entra en Assets/Audio/Music/
 /audio/music/**/*.wav
-# ...salvo la version elegida del tema (NOVA_Sonido.md, S.5.2)
-!/audio/music/main/v1/mus_main_intro.wav
-!/audio/music/main/v1/mus_main_loop.wav
+# ...salvo los dos archivos del juego: la intro y el ciclo v3 -> v1 -> v2
+# (NOVA_Sonido.md, S.5.2)
+!/audio/music/main/ciclo/mus_main_intro.wav
+!/audio/music/main/ciclo/mus_main_ciclo.wav

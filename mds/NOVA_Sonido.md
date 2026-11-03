@@ -279,7 +279,11 @@ El sonido del haz puede pasarse unos milisegundos de los 0.25 s para fundirse co
 
 | ID | Qué suena | Dónde | Cuándo empieza y cuándo para | Duración | Archivo | Estado |
 |---|---|---|---|---|---|---|
-| `SND-MUS-MAIN` | Tema principal de NOVA | `MainMenu` y `LevelSelect` | Empieza al abrir el juego. **Sigue sin cortarse** entre `MainMenu` y `LevelSelect`. Se funde al **lanzar un nivel** (Continuar/Jugar en el menú, Lanzar en la carta) y **vuelve** al regresar de `Game` a cualquiera de las dos pantallas | Intro 12 s + bucle 120 s | `audio/music/main/v1/mus_main_intro.wav` y `mus_main_loop.wav` (v1 «Órbitas») | 🟢 |
+| `SND-MUS-MAIN` | Tema principal de NOVA | `MainMenu` y `LevelSelect` | Empieza al abrir el juego. **Sigue sin cortarse** entre `MainMenu` y `LevelSelect`. Se funde al **lanzar un nivel** (Continuar/Jugar en el menú, Lanzar en la carta) y **vuelve** al regresar de `Game` a cualquiera de las dos pantallas | Intro 12 s + ciclo de 360 s: **v3 → v1 → v2**, 120 s cada una | `audio/music/main/ciclo/mus_main_intro.wav` y `mus_main_ciclo.wav` | 🟢 |
+
+**Suenan las tres versiones, en cadena: v3 «Señal», luego v1 «Órbitas», luego v2 «Carta estelar»**, y el ciclo vuelve a empezar. Lo decidió el usuario el 2026-11-02, después de escucharlas. La intro es la de la v3: su Morse «NOVA» es lo primero que se oye. El conjunto sigue el arco del juego a mayor escala: la señal de la cabina, la luz serena y, por último, la orquesta.
+
+**Se pueden encadenar porque comparten tempo, tonalidad y forma**: cada bucle acaba en Mi/Re y empieza en Re maj9, igual que cuando se repite a sí mismo. El empalme se hace al generar y no en Unity, porque Unity no funde dos archivos con precisión de muestra. `tools/gen_mus_main_ciclo.py` une los tres bucles en un solo archivo de 360.000 s, y el principio de cada versión se funde durante 0.5 s desde el principio de la anterior. Como cada bucle cierra sobre sí mismo sin costura, su principio es justo lo que seguiría a su final: la señal continúa y pasa de una versión a otra. Medido, cada empalme salta entre 0.11 y 0.18 veces el salto normal entre dos muestras, lo mismo que la costura de un bucle.
 
 **Qué cuenta como «lanzar» y «volver».** Lanzar es cualquier carga de la escena `Game`. Volver es cualquier carga de `MainMenu` o `LevelSelect` desde `Game`: **Volver al mapa** en la pausa, la victoria o la derrota (13.10, 13.11). **Reiniciar**, **Reintentar**, **Repetir** y **Siguiente** van de `Game` a `Game` y no la hacen sonar. Dentro de la partida no hay música por ahora: la «música por mapa» es otro bloque (S.8).
 
@@ -288,12 +292,12 @@ El sonido del haz puede pasarse unos milisegundos de los 0.25 s para fundirse co
 | Parte | Compases (4/4) | A 80 BPM | Muestras a 48 kHz | Para qué |
 |---|---|---|---|---|
 | **Intro** | 4 | 12.0 s | 576 000 | Solo la **primera vez** que se abre el juego. Es la primera impresión: tiene que enganchar antes de que el jugador lea el menú |
-| **Bucle** | 40 | 120.0 s | 5 760 000 | Lo que suena después, sin fin. Al volver de una partida se entra aquí, no en la intro |
+| **Bucle** | 40 | 120.0 s | 5 760 000 | Una versión. El **ciclo** son tres bucles seguidos: 120 compases, 360.0 s, 17 280 000 muestras. Al volver de una partida se entra en el ciclo, no en la intro |
 
 - **El tempo se elige para que el bucle cierre en muestras enteras.** Un compás dura 48000 × 240 / BPM muestras, y eso solo es entero con ciertos tempos: 60, 64, 72, 75, **80**, 90, 96, 100 o 120. Con 84, por ejemplo, el bucle se desplazaría una fracción de muestra en cada vuelta. La propuesta es **80 BPM**, que da compases de 3 s exactos. Cada versión puede usar otro tempo de esa lista, siempre que el bucle mida unos 120 s.
 - **¿Por qué 120 s?** El jugador pasa por estas pantallas entre unos segundos y un par de minutos: lee el informe del nivel (13.9) y piensa. Un bucle más corto se nota al segundo paso; uno más largo no se llega a oír entero. A 120 s, quien se quede verá volver el tema como una vuelta y no como un corte.
 - **Costura sin clic.** La cola de reverb y de delay del último compás se pliega sobre el principio del bucle: el archivo del bucle ya lleva dentro la cola de su propia vuelta anterior. Se comprueba antes de aprobar, uniendo el final con el principio y midiendo el salto en la costura.
-- **Dos archivos y no uno:** `mus_main_intro.wav` y `mus_main_loop.wav`. **La intro dura 18 s**: sus 12 s más 6 s de cola. El bucle arranca a los 12 s exactos en otra `AudioSource` con `PlayScheduled` (precisión de muestra), mientras la cola de la intro se apaga encima (S.6).
+- **Dos archivos en el juego:** `ciclo/mus_main_intro.wav` (la intro de la v3) y `ciclo/mus_main_ciclo.wav`. **La intro dura 18 s**: sus 12 s más 6 s de cola. El ciclo arranca a los 12 s exactos en otra `AudioSource` con `PlayScheduled` (precisión de muestra), en bucle, mientras la cola de la intro se apaga encima (S.6). Cada versión deja además su propio `mus_main_intro.wav` y `mus_main_loop.wav` en su carpeta, que son la materia del ciclo.
 - **La intro va con la misma ganancia de master que el bucle**, para que no haya salto de volumen al encadenarse.
 - **Formato** (S.2): WAV estéreo, 48 kHz y 24 bits, a **−18 LUFS** integrados y pico ≤ −1 dBTP. En Unity va en *Streaming* con Vorbis.
 
@@ -331,7 +335,9 @@ Con el motor de [S.1.4](#s14-música). Cada versión es un generador, `tools/gen
 
 | Archivo | Qué es | En git |
 |---|---|---|
-| `mus_main_intro.wav`, `mus_main_loop.wav` | Los dos archivos del juego: 48 kHz, 24 bits, estéreo | **Solo los de la v1, la elegida**, porque volver a generarlos exige `audio/_libs/` y no sale idéntico bit a bit. Los de las otras versiones, no (unos 40 MB cada una) |
+| `mus_main_intro.wav`, `mus_main_loop.wav` | La intro y el bucle de la versión: 48 kHz, 24 bits, estéreo | No (unos 40 MB por versión): son la materia del ciclo |
+| `ciclo/mus_main_intro.wav`, `ciclo/mus_main_ciclo.wav` | **Los dos archivos del juego**, de `gen_mus_main_ciclo.py` | **Sí**, porque volver a generarlos exige `audio/_libs/` y no sale idéntico bit a bit (unos 110 MB) |
+| `ciclo/mus_main_escucha.wav` | La intro y el ciclo entero, para oír los empalmes | No |
 | `mus_main_escucha.wav` | **Para escuchar como en el juego**: la intro y el bucle dos veces seguidas, con la costura a la vista | No |
 | `mus_main.mid` | La partitura, una pista por voz, para retocar en un DAW | Sí |
 | `mus_main_espectro.png` | El espectrograma de la escucha | Sí |
@@ -357,13 +363,13 @@ Con el motor de [S.1.4](#s14-música). Cada versión es un generador, `tools/gen
 
 #### Fichas de las versiones
 
-**v1 «Órbitas»** (`tools/gen_mus_main_v1.py`, 🟢 **elegida por el usuario el 2026-11-02**; las v2 y v3 quedan descartadas en sus carpetas, con su generador y su MIDI). Solo Surge XT, con doce parches de fábrica.
+**v1 «Órbitas»** (`tools/gen_mus_main_v1.py`, 🟢 aprobada el 2026-11-02, **segunda del ciclo**). Solo Surge XT, con doce parches de fábrica.
 - **Las órbitas** son el corazón: Diamonds arriba, Nice Pluck 1 en medio y Soft Space Oboe Pops abajo. Entran por capas: Ganímedes en A, Europa desde la segunda frase, las tres en el Cinturón y solo la lenta en el Espacio Profundo.
 - **El motivo** va en una campana de cristal (Fantasy Bell), que en C pasa a un seno lejano (Sine Lead) y en A' se dobla una octava arriba con una caja de música.
 - **Pads:** uno cálido y ancho (MKS-70 Warm Pad), otro con chispas en la luz (Sparkly) y uno distante para C (Distant).
 - **Coro y bajo:** en A' un coro (Ooh) canta el contracanto. El bajo es blando en la luz, en pulso en el Cinturón y un sub profundo en C.
 
-**v2 «Carta estelar»** (`tools/gen_mus_main_v2.py`, descartada). Una pequeña orquesta real de VSCO, con un pad y un sub de Surge debajo, apenas.
+**v2 «Carta estelar»** (`tools/gen_mus_main_v2.py`, 🟢 aprobada el 2026-11-02, **tercera del ciclo**). Una pequeña orquesta real de VSCO, con un pad y un sub de Surge debajo, apenas.
 - **El motivo pasa de mano en mano.** En la intro, el órgano abre un pedal de Re, los violines entran en trémolo lejano y la flauta lanza la llamada.
 - **A:** el **piano** dice el motivo, solo y cerca, mientras el arpa hace las órbitas.
 - **B:** la materia fluye en **pizzicato**, con las tres órbitas en violines, violas y chelos, y la flauta canta los envíos.
@@ -371,7 +377,7 @@ Con el motor de [S.1.4](#s14-música). Cada versión es un generador, `tools/gen
 - **A':** toda la orquesta. Los violines llevan el motivo, el glockenspiel lo dobla, el **órgano pleno** sostiene y las violas cantan el contracanto. El timbal marca la llegada a Re.
 - **D:** vuelve el piano.
 
-**v3 «Señal»** (`tools/gen_mus_main_v3.py`, descartada). Surge XT más síntesis propia: la cabina que escucha el espacio.
+**v3 «Señal»** (`tools/gen_mus_main_v3.py`, 🟢 aprobada el 2026-11-02, **primera del ciclo, con su intro**). Surge XT más síntesis propia: la cabina que escucha el espacio.
 - **El pulso es un púlsar:** cada negra es un latido que cruza el gas interestelar y se **dispersa**, con el agudo llegando antes que el grave. Es la misma física que el «piu» de las grietas del Cero Absoluto, a escala galáctica.
 - **«NOVA» en código Morse** (`-. --- ...- .-`), con un tono de telegrafía, abre la intro, cruza el Espacio Profundo y vuelve en la calma.
 - **Bajo:** un ostinato de semicorcheas (Square Bass) en el Cinturón y en la vuelta.
@@ -405,10 +411,10 @@ Todo pasa por **`AudioDirector`** (Presentation, [15.8](./NOVA_GameDesign_Spec.m
 
 | Escena que se activa | Qué hace la música |
 |---|---|
-| `MainMenu` o `LevelSelect`, al abrir el juego | La intro (18 s con su cola) y, en otra `AudioSource` con `PlayScheduled` a los 12 s exactos, el bucle |
+| `MainMenu` o `LevelSelect`, al abrir el juego | La intro de la v3 (18 s con su cola) y, en otra `AudioSource` con `PlayScheduled` a los 12 s exactos, el ciclo en bucle |
 | `MainMenu` ↔ `LevelSelect` | Nada: sigue sonando |
 | `Game` | Fundido de salida de **1.0 s** (propuesta, [S.7](#s7-decisiones-abiertas) #6) |
-| `MainMenu` o `LevelSelect`, al volver de `Game` | Entra en el principio del bucle, con un fundido de entrada de 1.5 s (propuesta, [S.7](#s7-decisiones-abiertas) #6) |
+| `MainMenu` o `LevelSelect`, al volver de `Game` | Entra en el principio de la **versión siguiente** a la que sonaba al lanzar, con un fundido de entrada de 1.5 s (propuesta, [S.7](#s7-decisiones-abiertas) #6). Las versiones empiezan a 0, 120 y 240 s del ciclo |
 
 ---
 
@@ -421,7 +427,7 @@ Todo pasa por **`AudioDirector`** (Presentation, [15.8](./NOVA_GameDesign_Spec.m
 | 3 | **¿Suena el haz disipado?** Hoy suena el haz y nada más | Mantenerlo: el silencio es el aviso, como en el arte |
 | 4 | **Motor de audio.** Unity nativo frente a FMOD ([S.1.2](#s12-motor-unity-audio-nativo-no-middleware)) | Unity nativo; se reabre si la música se vuelve adaptativa |
 | 5 | ~~**Cómo se produce el tema**~~ | ✅ **Cerrada el 2026-11-02** con el usuario: partitura en Python, Surge XT y VSCO 2 CE por sfizz, todo portable en `audio/_libs/` desde el `.venv` ([S.1.4](#s14-música)). Se entrega el MIDI; las pistas sueltas quedan en la caché y no se publican |
-| 6 | **Fundidos de la música** al lanzar y al volver | Salida en 1.0 s al cargar `Game`; al volver, entrada en el principio del bucle con 1.5 s de fundido, sin la intro |
+| 6 | **Fundidos de la música, y qué versión suena al volver** | Salida en 1.0 s al cargar `Game`. Al volver, sin la intro y con 1.5 s de fundido, entrar en el principio de la versión siguiente a la que sonaba al lanzar (v3 → v1 → v2 → v3), para que cada vuelta al menú traiga una versión distinta. La alternativa es retomar el ciclo desde el principio de la v3 |
 
 ---
 
@@ -435,6 +441,6 @@ Todo pasa por **`AudioDirector`** (Presentation, [15.8](./NOVA_GameDesign_Spec.m
 
 **S.5.1 está completo** (2026-11-02): los seis sonidos de los poderes están aprobados y esperan su integración en `T6-10`, que sigue 🔴 por su dependencia `T6-07`.
 
-**S.5.2 está aprobado** (2026-11-02): `SND-MUS-MAIN` es la v1 «Órbitas». Falta integrarla en Unity según [S.6](#s6-integración-en-unity): importar los dos WAV en `Assets/Audio/Music/` (*Streaming*, Vorbis) y la pieza que sobrevive al cambio de escena y encadena intro y bucle. La música no depende de `T6-07`: sus escenas y su evento (`SceneManager.activeSceneChanged`) ya existen.
+**S.5.2 está aprobado** (2026-11-02): `SND-MUS-MAIN` es el ciclo de las tres versiones, v3 → v1 → v2, con la intro de la v3. Falta integrarlo en Unity según [S.6](#s6-integración-en-unity): importar los dos WAV de `audio/music/main/ciclo/` en `Assets/Audio/Music/` (*Streaming*, Vorbis) y la pieza que sobrevive al cambio de escena y encadena intro y ciclo. La música no depende de `T6-07`: sus escenas y su evento (`SceneManager.activeSceneChanged`) ya existen.
 
 **Bloques por añadir**, a medida que se definan con el usuario: protones y capturas, Magnetar, nodos (encendido, mejora, reconversión), power-ups, interfaz, fin de nivel, ambiente, música por mapa y los temas cortos de victoria y derrota, que saldrán del motivo de `SND-MUS-MAIN`.
