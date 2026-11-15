@@ -977,7 +977,7 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 | ID | Elemento | Requisito | Archivo | Estado | Vista previa |
 |---|---|---|---|---|---|
 | `ART-WLD-SEL` | Anillo de selección | Sobre nodo propio seleccionado, detrás de él (capa 0). **Cinco tallas**, una hoja de 16 frames cada una; la talla la elige la huella del nodo | `art/world/select/v1/world_select_{24,28,32,36,40}_sheet.png` + `world_select_tallas.json` | ✅ | ![](../art/world/select/v1/world_select_32_sheet.png) |
-| `ART-WLD-LASSO` | Lazo de selección múltiple | Rectángulo punteado | `art/world/world_lasso.png` | ⬜ | `![](art/world/world_lasso.png)` |
+| `ART-WLD-LASSO` | Lazo de selección múltiple | Rectángulo punteado que marcha, **montado con dos piezas**: esquina de 8×8 (reflejada para las cuatro) y tramo de 8×1 en mosaico (girado para los lados), 8 frames | `art/world/lasso/v1/world_lasso_corner.png` + `world_lasso_edge_sheet.png` | ✅ | ![](../art/world/lasso/v1/world_lasso_corner.png) |
 | `ART-WLD-AIM` | Cursor de apuntado de poder | **Sin anillo de alcance.** Retícula que se posa sobre el objetivo bajo el cursor y solo sobre objetivos válidos ([7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido)) | `art/world/world_aim_cursor.png` | ⬜ | `![](art/world/world_aim_cursor.png)` |
 | `ART-WLD-LINK` | Línea de envío origen→cursor | Filamento de plasma en la rampa del Jugador que sigue al cursor durante el arrastre derecho y desde cada nodo de una selección activa ([13.1](./NOVA_GameDesign_Spec.md#131-ratón), [14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma)). Trazo estirable de tres piezas ([A.4.6](#a46-filamento-de-plasma--149)), **bucle de 16 frames**. Un solo archivo: solo el Jugador tiene cursor | `art/world/link/v2/world_link_sheet.png` | ✅ | ![](../art/world/link/v2/world_link_sheet.png) |
 
@@ -990,6 +990,19 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 - **No se confunde** con el anillo del Magnetar propio (`mag_p`, a medio tono, quieto y de 96 a 160 px de radio) ni con `ART-ST-CAP` (blanco, 0.4 s). **No pisa el galón del buff**: 0 px compartidos en las cinco tallas, así que un nodo seleccionado y con buff enseña los dos.
 - **El generador falla si no se cumple:** alfa binario, nada dentro del radio libre ni en la franja del número, sin tocar el borde de la celda, el bucle cerrado (el frame 16 es el 0, por la simetría de los tres cometas) y 16 frames distintos por talla.
 - **Para `T6-06`:** como el idle, cada nodo debería arrancar el ciclo con el desfase de su posición (`NodeAnimator.IdlePhase`), o seis nodos de un lazo girarían en bloque.
+
+**El lazo, cerrado: «El marco»**, v1 (elegida por el usuario el 2026-11-15). Generador: `tools/gen_lasso_v1.py` → `art/world/lasso/v1/`; vistas con `--vista` en `art/_preview/lasso/v1/` (`lasso_tablero.png` y `_x2`, `lasso_gesto_x2.gif`, `lasso_piezas_x8.png`).
+
+- **Sin tamaño, así que son piezas.** El rectángulo va del punto donde se pulsó al cursor. Se monta como la línea de envío con dos piezas:
+  - una **esquina** de 8×8, la de arriba a la izquierda, que se refleja para las otras tres;
+  - un **tramo** de 8×1 en mosaico, que se gira 90° para los lados verticales.
+
+  Reflejar y girar son exactos al píxel. `monta(ancho, alto, frame)` en el generador es la referencia del montaje para `T6-06`.
+- **Lenguaje de la interfaz** (13.12): cian `STR_P[3]` y la esquina en escalera de los marcos, que a la escala del arte son 2 + 2 px y a 1 px de grueso quedan en chaflán. Las esquinas van una banda más claras (`STR_P[2]`) y no se mueven: fijan el rectángulo aunque el cursor vaya rápido.
+- **Los lados marchan en sentido horario.** Trazos de 5 px y huecos de 3, un píxel por frame a 12 fps (8 frames), con la punta de cada trazo una banda más clara: «en curso, todavía no has soltado». Cada lado arranca su mosaico en la esquina de la que sale la marcha, así que los trazos salen enteros de una esquina y el recorte cae en la otra.
+- **El generador falla si no se cumple:** alfa binario, bucle cerrado, 8 frames distintos y, en cualquier lazo de 12 px de lado o más, los cuatro lados visibles en todos los frames. Por debajo de 12 px el lazo es más pequeño que el umbral de arrastre.
+
+**Propuesta v2 del lazo: «El velo»** (2026-11-15, **descartada por el usuario**; se conserva por A.1). Generador: `tools/gen_lasso_v2.py` → `art/world/lasso/v2/`. Línea continua y fija con las mismas esquinas, y un velo de trama al 10 % por dentro, detrás de los nodos.
 
 **Propuesta v2: «El arco»** (2026-11-15, **descartada por el usuario**; se conserva por A.1). Generador: `tools/gen_select_v2.py` → `art/world/select/v2/`. Es el mismo aro fijo de 2 px, abierto por abajo y con las puntas apagándose, con las mismas tallas. Se lee más fuerte a 1×, pero un aro quieto es lo que más se parece al anillo del Magnetar.
 
@@ -1174,12 +1187,14 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.3 Estados | **8** | **8** ✅ | — (ya no bloquea `T6-02` ni `T6-03`) |
 | A.4.1 Radio del Magnetar | **18** | **18** ✅ | — (ya no bloquea `T6-05`) |
 | A.4.2 Protón y haces de poder | **23** | **23** ✅ | — (ya no bloquea `T6-04` ni `T6-11`) |
-| A.4.3 Selección y apuntado | **4** | **2** | `T6-06`. `ART-WLD-LINK` ✅ (ya no bloquea `T5-06`) y `ART-WLD-SEL` ✅; faltan el lazo y el apuntado |
+| A.4.3 Selección y apuntado | **4** | **3** | `T6-06`. `ART-WLD-LINK` ✅ (ya no bloquea `T5-06`), `ART-WLD-SEL` ✅ y `ART-WLD-LASSO` ✅; falta el apuntado |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
 | A.5 VFX | 15 | 0 | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **134** | **108** | — |
+| **Total** | **134** | **109** | — |
+
+**Y los ✅ suben de 108 a 109 el 2026-11-15** con el lazo, `ART-WLD-LASSO` v1, «El marco» (A.4.3): dos piezas que Unity monta a cualquier tamaño. A.4.3 queda en 3 de 4: falta el apuntado.
 
 **Y los ✅ suben de 107 a 108 el 2026-11-15** con el anillo de selección, `ART-WLD-SEL` v1, «La órbita» (A.4.3): una sola ID con cinco tallas, como el protón contaba una ID por bando antes de crecer a diez archivos. A.4.3 queda en 2 de 4: faltan el lazo y el apuntado, y `T6-06` sigue bloqueada.
 

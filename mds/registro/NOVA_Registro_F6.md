@@ -8,6 +8,7 @@ Una línea por tarea completada. La más reciente arriba.
 
 | Fecha | Tarea | Resultado | Notas / desviaciones de la spec |
 |---|---|---|---|
+| 2026-11-15 | Arte: **`ART-WLD-LASSO` ✅**, v1 «El marco» (elegida por el usuario) | Se propusieron dos: `tools/gen_lasso_v1.py`, trazos cian que marchan en sentido horario (8 frames), y `tools/gen_lasso_v2.py`, «El velo», línea fija con una trama rala por dentro. Las dos con la esquina en escalera de 13.12 y montadas con dos piezas. La v2 queda descartada en su carpeta. A.7: 108 → 109 de 134; A.4.3, 3 de 4. `T6-06` sigue 🔴 por el apuntado | Desviación 331 |
 | 2026-11-15 | Arte: **`ART-WLD-SEL` ✅**, v1 «La órbita» (elegida por el usuario) | Se propusieron dos: `tools/gen_select_v1.py`, una órbita con tres cometas girando (16 frames), y `tools/gen_select_v2.py`, «El arco», fijo. Las dos con cinco tallas (radio libre de 24 a 40 px, la media huella más 4) y abiertas por abajo en la franja del número de Energía. La v2 queda descartada en su carpeta. A.7: 107 → 108 de 134; A.4.3, 2 de 4. `T6-06` sigue 🔴 por el lazo y el apuntado | Desviaciones 329–330 |
 | 2026-11-15 | **T6-12** ✅ | Cerrada: el usuario sincronizó y asignó el arte, pasó la suite de EditMode en verde (con ella queda confirmada también la de `T6-03`) y vio en Play los cuatro tipos sin ojos, con sus estados y el susto | Fase 6: 9 de 14 |
 | 2026-11-15 | **T6-12** 🟨: los nodos sin ojos | Adelantada a petición del usuario. **Arte:** `gen_asteroide_v1.py`, `gen_estrella_v1.py`, `gen_pulsar_v2.py` y `gen_magnetar_v1.py` dejan de dibujar los ojos, y se regeneran los 34 sprites y las 16 hojas. Comparado píxel a píxel con los de antes: cambian 30 020 píxeles, todos de la rampa `ojo`, con el alfa idéntico; las huellas no cambian, el frame 0 de cada hoja es el sprite estático y las 16 hojas cierran con 16 frames distintos. **Herramientas:** `nova_estados.py` cambia `OJOS` por `NODOS` y quita *cara libre* y *frames ciegos* de `verifica_tinte`; la tabla de anclaje y `verifica_ojos` pasan a `nova_ojos.py`. Los siete overlays elegidos vuelven a pasar sobre los sprites nuevos y sus PNG no cambian. Se regeneran las vistas de `art/_preview`. **Código:** fuera los comentarios de la cara en `NodeVisual`, `ProvisionalNodeView` y `NodeVisualTests`; no había aserciones que dependieran de ella. **Docs:** 14.1, 14.2, 14.6, 14.7, A.2, A.3, A.7, A.8, el contrato y 18 #48–#49. Compila con `dotnet build`; **sin pasar todavía por Unity** | Desviaciones 323–328. Fase 6: 8 de 14 |
@@ -48,6 +49,10 @@ Una línea por tarea completada. La más reciente arriba.
 ## Desviaciones
 
 > **Cómo leer esta lista.** Una línea por desviación: **qué cambió** y **dónde vive ahora**. El razonamiento completo está en el documento que se cita, que es el que manda; aquí solo está el rastro de cuándo y por qué se movió. Los números no se reutilizan nunca, ni siquiera cuando una desviación queda revertida.
+
+**`ART-WLD-LASSO` (2026-11-15).**
+
+331. **El lazo son dos piezas y no un PNG**: una esquina de 8×8 y un tramo de 8×1 en hoja de 8 frames, en `art/world/lasso/v1/`. A.4.3 decía `art/world/world_lasso.png`, pero el rectángulo no tiene tamaño. Se monta como la línea de envío, y `monta()` en el generador es la referencia para `T6-06`. → A.4.3.
 
 **`ART-WLD-SEL` (2026-11-15).**
 
