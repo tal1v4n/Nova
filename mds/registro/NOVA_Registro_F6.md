@@ -8,6 +8,7 @@ Una línea por tarea completada. La más reciente arriba.
 
 | Fecha | Tarea | Resultado | Notas / desviaciones de la spec |
 |---|---|---|---|
+| 2026-11-15 | Arte: **`ART-WLD-AIM` ✅**, v1 «El cepo» (aprobada por el usuario) | `tools/gen_aim_v1.py`: tres puntas de flecha que entran desde fuera y se clavan, en el color del poder y con contorno, sin punta abajo (el número) ni en diagonal (el buff). Quince hojas de 4 frames (tres poderes por las cinco tallas de `ART-WLD-SEL`) en celda de 112. En la primera prueba las puntas medían 5 px y a 1× no se veían: pasaron a 7 de alto y 10 de base, una banda más claras. **A.4.3 cerrado, 4 de 4**; A.7: 109 → 110 de 134. **`T6-06` se desbloquea** (🔴 → ⬜) | Desviación 332 |
 | 2026-11-15 | Arte: **`ART-WLD-LASSO` ✅**, v1 «El marco» (elegida por el usuario) | Se propusieron dos: `tools/gen_lasso_v1.py`, trazos cian que marchan en sentido horario (8 frames), y `tools/gen_lasso_v2.py`, «El velo», línea fija con una trama rala por dentro. Las dos con la esquina en escalera de 13.12 y montadas con dos piezas. La v2 queda descartada en su carpeta. A.7: 108 → 109 de 134; A.4.3, 3 de 4. `T6-06` sigue 🔴 por el apuntado | Desviación 331 |
 | 2026-11-15 | Arte: **`ART-WLD-SEL` ✅**, v1 «La órbita» (elegida por el usuario) | Se propusieron dos: `tools/gen_select_v1.py`, una órbita con tres cometas girando (16 frames), y `tools/gen_select_v2.py`, «El arco», fijo. Las dos con cinco tallas (radio libre de 24 a 40 px, la media huella más 4) y abiertas por abajo en la franja del número de Energía. La v2 queda descartada en su carpeta. A.7: 107 → 108 de 134; A.4.3, 2 de 4. `T6-06` sigue 🔴 por el lazo y el apuntado | Desviaciones 329–330 |
 | 2026-11-15 | **T6-12** ✅ | Cerrada: el usuario sincronizó y asignó el arte, pasó la suite de EditMode en verde (con ella queda confirmada también la de `T6-03`) y vio en Play los cuatro tipos sin ojos, con sus estados y el susto | Fase 6: 9 de 14 |
@@ -49,6 +50,10 @@ Una línea por tarea completada. La más reciente arriba.
 ## Desviaciones
 
 > **Cómo leer esta lista.** Una línea por desviación: **qué cambió** y **dónde vive ahora**. El razonamiento completo está en el documento que se cita, que es el que manda; aquí solo está el rastro de cuándo y por qué se movió. Los números no se reutilizan nunca, ni siquiera cuando una desviación queda revertida.
+
+**`ART-WLD-AIM` (2026-11-15).**
+
+332. **La retícula son quince hojas, una por poder y talla, en celda de 112.** A.4.3 decía un solo PNG, `art/world/world_aim_cursor.png`. Va en el color del poder porque dice qué va a caer (14.4). Usa las tallas de `ART-WLD-SEL` porque se posa sobre nodos de cualquier tamaño. La celda crece porque la entrada desde fuera no cabe en 96 con la talla mayor. → A.4.3, *Familias exentas de la celda* del contrato.
 
 **`ART-WLD-LASSO` (2026-11-15).**
 

@@ -482,7 +482,7 @@ versión y Unity hace de su mitad el radio del collider de clic (`T6-01`).
 
 ### Familias exentas de la celda
 
-Cuatro familias de asset no caben en 96×96 y tienen resolución propia. No
+Cinco familias de asset no caben en 96×96 y tienen resolución propia. No
 violan la regla de no mezclar escalas porque **no comparten familia** con
 los nodos:
 
@@ -491,6 +491,7 @@ los nodos:
 | `art/bg/*` | **960×540**; el ovni, celda de **32** | Ver *Fondos*. Son 15 × 8.4375 u a PPU 64: el tablero entero ([T.8](./NOVA_Tracking.md#t8-escala-del-tablero--cerrada), cerrada el 2026-09-28). Eran 2048×1152 cuando el tablero medía 32 × 18 u, y llegaron a pedirse a 1280×720 durante unas horas, con el tablero de 20 u. El ovni (`bg_ufo_sheet`) mide 24 × 13 px y va en celdas de 32: es parte del fondo, no un nodo, y en 96 sería tres cuartas partes de aire. |
 | `art/world/world_radius_*` | Hasta 384×384 | El radio del Magnetar mide 1.5–2.5 u, y 2.5 u a PPU 64 son 160 px **de radio**: 320 px de lado ([A.4.1](./NOVA_Assets_Diseno.md#a41-radio-de-alcance-del-magnetar)). **Un archivo por nivel**, porque escalar uno solo daría factores no enteros. |
 | `art/world/world_proton_*` | 48×48 | Ver abajo. |
+| `art/world/aim/*` | **112×112** | La retícula de apuntado entra desde fuera del nodo (5 px de más) y, sobre la talla mayor de 40 px de radio libre, sus puntas llegan a 53 px del centro: en 96 tocaría el borde ([NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md), A.4.3). |
 | Trazos estirables: `world_beam_*`, `world_link_sheet`, `world_radius_shot_*` | **16 px de alto**, largo variable | Unen dos puntos arbitrarios del tablero, de 1 u a 17.2 u, así que se dibujan por piezas (nacimiento, tramo y punta) y no por longitud. El tramo **se repite en mosaico**, también en los haces desde `ART-WLD-BEAM-ZER` (2026-11-01): estirado, un trazo con `Filter Mode: Point` pierde la rejilla ([NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md), A.4.2 y A.4.6). |
 
 **El protón no escala de forma continua.** [14.3](./NOVA_Estados_Animaciones.md#143-protón)

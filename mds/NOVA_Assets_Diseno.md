@@ -978,7 +978,7 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 |---|---|---|---|---|---|
 | `ART-WLD-SEL` | Anillo de selección | Sobre nodo propio seleccionado, detrás de él (capa 0). **Cinco tallas**, una hoja de 16 frames cada una; la talla la elige la huella del nodo | `art/world/select/v1/world_select_{24,28,32,36,40}_sheet.png` + `world_select_tallas.json` | ✅ | ![](../art/world/select/v1/world_select_32_sheet.png) |
 | `ART-WLD-LASSO` | Lazo de selección múltiple | Rectángulo punteado que marcha, **montado con dos piezas**: esquina de 8×8 (reflejada para las cuatro) y tramo de 8×1 en mosaico (girado para los lados), 8 frames | `art/world/lasso/v1/world_lasso_corner.png` + `world_lasso_edge_sheet.png` | ✅ | ![](../art/world/lasso/v1/world_lasso_corner.png) |
-| `ART-WLD-AIM` | Cursor de apuntado de poder | **Sin anillo de alcance.** Retícula que se posa sobre el objetivo bajo el cursor y solo sobre objetivos válidos ([7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido)) | `art/world/world_aim_cursor.png` | ⬜ | `![](art/world/world_aim_cursor.png)` |
+| `ART-WLD-AIM` | Cursor de apuntado de poder | **Sin anillo de alcance.** Retícula que se posa sobre el objetivo bajo el cursor y solo sobre objetivos válidos ([7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido)). **Quince hojas**, una por poder y talla, de 4 frames en celda de 112 | `art/world/aim/v1/world_aim_{zero,decay,wormhole}_{24,28,32,36,40}_sheet.png` | ✅ | ![](../art/world/aim/v1/world_aim_decay_36_sheet.png) |
 | `ART-WLD-LINK` | Línea de envío origen→cursor | Filamento de plasma en la rampa del Jugador que sigue al cursor durante el arrastre derecho y desde cada nodo de una selección activa ([13.1](./NOVA_GameDesign_Spec.md#131-ratón), [14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma)). Trazo estirable de tres piezas ([A.4.6](#a46-filamento-de-plasma--149)), **bucle de 16 frames**. Un solo archivo: solo el Jugador tiene cursor | `art/world/link/v2/world_link_sheet.png` | ✅ | ![](../art/world/link/v2/world_link_sheet.png) |
 
 **El anillo de selección, cerrado: «La órbita»**, v1 (elegida por el usuario el 2026-11-15). Generador: `tools/gen_select_v1.py` → `art/world/select/v1/`; vistas con `--vista` en `art/_preview/select/v1/` (`select_tablero.png` y `_x2`, `select_tablero_x2.gif`, `select_tallas_x3.png`).
@@ -990,6 +990,17 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 - **No se confunde** con el anillo del Magnetar propio (`mag_p`, a medio tono, quieto y de 96 a 160 px de radio) ni con `ART-ST-CAP` (blanco, 0.4 s). **No pisa el galón del buff**: 0 px compartidos en las cinco tallas, así que un nodo seleccionado y con buff enseña los dos.
 - **El generador falla si no se cumple:** alfa binario, nada dentro del radio libre ni en la franja del número, sin tocar el borde de la celda, el bucle cerrado (el frame 16 es el 0, por la simetría de los tres cometas) y 16 frames distintos por talla.
 - **Para `T6-06`:** como el idle, cada nodo debería arrancar el ciclo con el desfase de su posición (`NodeAnimator.IdlePhase`), o seis nodos de un lazo girarían en bloque.
+
+**El cursor de apuntado, cerrado: «El cepo»**, v1 (aprobada por el usuario el 2026-11-15). Generador: `tools/gen_aim_v1.py` → `art/world/aim/v1/`; vistas con `--vista` en `art/_preview/aim/v1/` (`aim_tablero.png` y `_x2`, `aim_objetivos_x3.png`, `aim_entrada_x4.png`).
+
+- **Tres puntas de flecha** que apuntan al nodo desde arriba, la izquierda y la derecha, por fuera del cuerpo (a 1 px del radio libre) y **por encima** del nodo. Miden 7 px de alto y 10 de base.
+  - Abajo no hay punta porque va el número de Energía (18 #48); es la misma abertura que «La órbita».
+  - No hay puntas en diagonal porque la esquina de abajo a la derecha es del galón del buff (A.3.8), y el Enemigo también recoge power-ups.
+- **Color del poder**, no del Jugador: `hielo`, `decaimiento` o `gusano`, el mismo que su haz (14.4). Cuerpo en la banda 2 y la franja que mira al nodo en la 1. **Contorno de 1 px** de `CONTORNO`, como los glifos, para leerse sobre el magenta enemigo, el gris neutral y el cielo.
+- **Entrada y reposo.** Al posarse en un objetivo, las puntas llegan desde fuera en tres pasos (5, 2 y 1 px) y en el cuarto frame se quedan clavadas: es la curva orbital de 13.12 hecha a pasos de píxel entero. Unity reproduce la entrada cada vez que la retícula cambia de objetivo y se queda en el último frame. Después no se mueve, porque el cursor ya se está moviendo.
+- **Tallas:** las cinco de `ART-WLD-SEL`, elegidas con la misma huella y el mismo `world_select_tallas.json`. Son tres poderes por cinco tallas, quince hojas. Por la entrada desde fuera, la talla 40 no cabe en 96: esta familia va en **celda de 112**, centrada (*Familias exentas de la celda* del contrato).
+- **El generador falla si no se cumple:** alfa binario, sin tocar el borde de la celda, nada dentro del radio libre ni en la franja del número, y los cuatro frames distintos.
+- **La atenuación de lo no válido sigue siendo código** (`ProvisionalAimView` hasta `T6-06`), no arte.
 
 **El lazo, cerrado: «El marco»**, v1 (elegida por el usuario el 2026-11-15). Generador: `tools/gen_lasso_v1.py` → `art/world/lasso/v1/`; vistas con `--vista` en `art/_preview/lasso/v1/` (`lasso_tablero.png` y `_x2`, `lasso_gesto_x2.gif`, `lasso_piezas_x8.png`).
 
@@ -1187,12 +1198,14 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.3 Estados | **8** | **8** ✅ | — (ya no bloquea `T6-02` ni `T6-03`) |
 | A.4.1 Radio del Magnetar | **18** | **18** ✅ | — (ya no bloquea `T6-05`) |
 | A.4.2 Protón y haces de poder | **23** | **23** ✅ | — (ya no bloquea `T6-04` ni `T6-11`) |
-| A.4.3 Selección y apuntado | **4** | **3** | `T6-06`. `ART-WLD-LINK` ✅ (ya no bloquea `T5-06`), `ART-WLD-SEL` ✅ y `ART-WLD-LASSO` ✅; falta el apuntado |
+| A.4.3 Selección y apuntado | **4** | **4** ✅ | — (ya no bloquea `T6-06`) |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
 | A.5 VFX | 15 | 0 | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **134** | **109** | — |
+| **Total** | **134** | **110** | — |
+
+**Y los ✅ suben de 109 a 110 el 2026-11-15** con el cursor de apuntado, `ART-WLD-AIM` v1, «El cepo» (A.4.3). **A.4.3 queda cerrado, 4 de 4**, y `T6-06` deja de estar bloqueada por arte.
 
 **Y los ✅ suben de 108 a 109 el 2026-11-15** con el lazo, `ART-WLD-LASSO` v1, «El marco» (A.4.3): dos piezas que Unity monta a cualquier tamaño. A.4.3 queda en 3 de 4: falta el apuntado.
 
