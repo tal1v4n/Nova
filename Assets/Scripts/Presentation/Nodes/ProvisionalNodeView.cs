@@ -12,7 +12,7 @@ namespace Nova.Presentation
     // y la sustituye NodeVisual en T6-01. Solo lee eventos de NodeController, nunca escribe en él.
     //
     // T2-08: asustado (14.2), el círculo y el número tiemblan 1 px a los lados. Se mueven los hijos
-    // y no el nodo, para que el collider no tiemble. Los ojos de ART-ST-SCARE llegan con T6-03.
+    // y no el nodo, para que el collider no tiemble.
     //
     // T6-01: con NodeVisual enseñando su sprite, el círculo no se dibuja. Lo que queda es lo que aún
     // no tiene arte: el número de Energía, bajo el sprite y en claro sobre el cielo (NodeLayout;

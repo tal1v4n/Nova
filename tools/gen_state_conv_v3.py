@@ -132,7 +132,7 @@ def main():
           f'{len(RECONVERTIBLES)} nodos reconvertibles')
     if not verifica_tinte(conv, FRAMES, nodos=RECONVERTIBLES,
                           sprite=SPRITE_PROPIO, bucle=False,
-                          exige_contador=False, max_frames_ciego=8):
+                          exige_contador=False):
         raise SystemExit('alguna comprobacion ha fallado')
 
 

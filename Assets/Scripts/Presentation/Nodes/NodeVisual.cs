@@ -119,8 +119,9 @@ namespace Nova.Presentation
 
     // Lo que cuelga bajo un nodo con sprite, de arriba abajo: la huella, el número de Energía y la barra
     // de carga del Púlsar. Decidido con el usuario el 2026-10-26: el número va bajo el sprite y no
-    // encima, porque centrado tapaba la cara, y la cara es la que avisa del susto (14.7). Todo en
-    // píxeles enteros desde el centro del nodo.
+    // encima (18 #48). Entonces era porque centrado tapaba la cara; los nodos ya no la tienen (T6-12),
+    // y sigue debajo porque centrado taparía el cuerpo y los overlays de estado que van sobre él
+    // (14.7). Todo en píxeles enteros desde el centro del nodo.
     internal static class NodeLayout
     {
         // Aire entre la huella y el número, y entre el número y la barra.

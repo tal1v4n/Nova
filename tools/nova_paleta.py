@@ -87,7 +87,8 @@ RAMPAS = {
     # ---- Agujero de gusano (7.5): violeta, el unico acento morado puro ---
     'gusano':     ('#FFFFFF','#F0E2FF','#C9A2FF','#9B5CF6','#6C31C4','#452088','#241247'),
 
-    # ---- Ojo: casi negro violaceo. El brillo lo pone el especular --------
+    # ---- Ojo: casi negro violaceo. Los nodos ya no tienen ojos (T6-12): solo
+    #      la usan las propuestas descartadas (A.1), por eso se conserva ----
     'ojo':        ('#FFFFFF','#C9CBE8','#7C7FB4','#4A4A84','#2E2B5C','#1E1A42','#141021'),
 
     # ---- Fondos (A.4.5): las UNICAS rampas que no significan nada --------

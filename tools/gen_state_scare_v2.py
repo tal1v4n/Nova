@@ -54,7 +54,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from PIL import Image
 
 from nova_core import a_rgba, dir_estado, esferoide, lienzo, rampa
-from nova_estados import OJOS, TALLAS, verifica_ojos
+from nova_ojos import OJOS, TALLAS, verifica_ojos  # descartado: T6-12
 
 ESTADO = 'scare'
 VERSION = 2

@@ -42,12 +42,10 @@ el objeto le prometa nada. Asi que aqui no hay veta incandescente, ni nucleo
 que se transparente, ni chispa. Hay una piedra apaleada. La promesa la hace
 el menu de encendido, no el sprite.
 
-LOS OJOS ESTAN CERRADOS. Dos rendijas, y una mas cerrada que la otra. A.8 #5
-exige cara en todos los nodos y 14.2 exige que pueda abrirlos de golpe; los
-abre `ART-ST-SCARE`, que es asset aparte. En reposo, este es el unico del
-reparto que no te mira. Duerme tanto si es Neutral -estado `Dormido`- como
-si es propio -estado `SinEncender`-: en los dos casos es capital inerte, y
-por eso la misma cara sirve para las tres facciones.
+SIN CARA. Los nodos no tienen ojos (A.8 #5, cerrada el 2026-11-01; T6-12):
+hasta entonces este llevaba dos rendijas cerradas, y se quitaron sin tocar
+nada mas. Es la misma roca tanto si es Neutral -estado `Dormido`- como si es
+propia -estado `SinEncender`-: en los dos casos es capital inerte.
 
 UN SOLO NIVEL. Es el unico nodo sin escalera, asi que no necesita contador y
 todo el trabajo de lectura se va a la faccion. La geometria es identica en
@@ -60,7 +58,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from nova_core import (a_rgba, bulto, crater, dir_nodo, esferoide, exporta_huellas,
+from nova_core import (a_rgba, bulto, crater, dir_nodo, exporta_huellas,
                        guardar, huella_px, lienzo, rampa, veta)
 
 NODO = 'asteroide'
@@ -88,8 +86,9 @@ PERFIL = ((2, 0.085, 0.72), (3, 0.055, 2.15), (5, 0.030, 4.05))
 # COLOCADOS A MANO Y A PROPOSITO. Un reparto regular devuelve simetria, y uno
 # aleatorio reparte mal en cuatro intentos de cada cinco: deja dos pegados y
 # media roca vacia. Las reglas que siguen son tres:
-#   - ninguno centrado NI a la altura de los ojos: un hoyo redondo a la
-#     misma altura que una rendija se lee como un tercer ojo
+#   - ninguno centrado: un hoyo redondo en el centro convierte la roca en
+#     una diana. (La franja que dejaban libre a la altura de los ojos se
+#     conserva: el reparto no se movio al quitarlos, T6-12)
 #   - dos muerden el limbo, que es lo que convierte el contorno en corteza
 #     en vez de en recorte
 #   - tamanos escalonados, no dos iguales, para que se lean como historia y
@@ -114,24 +113,12 @@ GRIETAS = (
     (-28.0, 0.44, 0.94),
 )
 
-OJO_SEP  = 0.36     # separacion, en multiplos de RADIO
-OJO_ALT  = -0.10    # altura
-OJO_RX   = 0.185    # semiejes de la rendija
-OJO_RY   = 0.062
-OJO_CIERRE = 0.62   # el ojo derecho, mas cerrado: la asimetria es la gracia
-OJO_GIRO = 11.0     # los extremos exteriores caidos. Dos rendijas planas se
-                    # leen como dos grietas mas; inclinadas en espejo se leen
-                    # como parpados, y eso es todo lo que separa una cara de
-                    # una piedra picada.
-
 NIVELES = {0: dict()}   # un solo nivel, por firma uniforme con el resto
 
 
 def asteroide(nivel=0, faccion='neutral', t=0.0):
     """Devuelve el lienzo de un Asteroide v1. `t` no se usa: idle por transform."""
     ramp = rampa({'player': 'roca_p', 'enemy': 'roca_e'}.get(faccion, 'roca_n'))
-    ojo = rampa('ojo')
-
     lz = lienzo(CELDA)
 
     # 1. la roca. Apagada y MATE: sin especular. Un punto de brillo la
@@ -151,14 +138,6 @@ def asteroide(nivel=0, faccion='neutral', t=0.0):
         veta(lz, (C + math.cos(a) * RADIO * r0, C + math.sin(a) * RADIO * r0),
              (C + math.cos(a) * RADIO * r1, C + math.sin(a) * RADIO * r1),
              0.80, ramp, 5, oid=10)
-
-    # 4. ojos cerrados, los ultimos por encima de todo (14.7). Rendijas
-    #    achatadas: parpados, no pupilas.
-    for signo in (-1, 1):
-        cierre = OJO_CIERRE if signo > 0 else 1.0
-        esferoide(lz, C + signo * OJO_SEP * RADIO, C + OJO_ALT * RADIO,
-                  OJO_RX * RADIO, OJO_RY * RADIO * cierre,
-                  math.radians(OJO_GIRO * signo), ojo, oid=30 + signo)
 
     return lz
 

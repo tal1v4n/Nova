@@ -14,7 +14,8 @@ Anatomia, en orden de dibujo:
     2. corona        pocas lenguas, largas, oscuras, muy cizalladas
     3. cromosfera    muchas lenguas, cortas, claras, poco cizalladas
     4. cuerpo        esfera de faccion; `calor` blanquea el nucleo
-    5. ojos          dos esferas oscuras, siempre por encima de todo
+
+Sin cara: los nodos no tienen ojos (A.8 #5, T6-12).
 
 Las dos capas llevan fase y cizalla distintas a proposito: si coincidieran
 se sumarian en las mismas lenguas y volveria el engranaje, solo que mas
@@ -33,7 +34,7 @@ dos cerrados por construccion (contrato, Animacion):
                 por la misma razon por la que llevan fase y cizalla distintas.
     cuerpo      respira con la `s` del contrato: alto x s, ancho / sqrt(s),
                 volumen conservado. Lo dibuja el generador frame a frame, asi
-                que no hay remuestreo; los ojos viajan con el cuerpo.
+                que no hay remuestreo.
 
 Frecuencias enteras y `s` periodica: el frame 16 es el 0 pixel a pixel, para
 cualquier numero de frames. El frame 0 es el sprite estatico de siempre.
@@ -53,7 +54,7 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from nova_core import (ARMONICOS, a_rgba, dir_nodo, corona_radial, esfera, esferoide,
+from nova_core import (ARMONICOS, a_rgba, dir_nodo, corona_radial, esferoide,
                        exporta_huellas, guardar, halo_trama, huella_px, lienzo, rampa)
 
 NODO = 'estrella'
@@ -107,7 +108,6 @@ def estrella(nivel, faccion, t=0.0):
     suf = 'p' if faccion == 'player' else 'e'
     cuerpo = rampa(f'str_{suf}')
     fuego  = rampa(f'cor_{suf}')
-    ojo    = rampa('ojo')
 
     lz = lienzo(CELDA)
     r = cfg['r']
@@ -140,12 +140,6 @@ def estrella(nivel, faccion, t=0.0):
     # cuerpo que respira: con s = 1 es la esfera de siempre
     esferoide(lz, C, C, r / math.sqrt(s), r * s, 0.0, cuerpo, oid=10,
               calor=cfg['calor'], apagado=cfg['apagado'])
-
-    ro = max(3.2, r * 0.215)
-    dx = r * 0.335 / math.sqrt(s)
-    dy = -r * 0.24 * s
-    esfera(lz, C - dx, C + dy, ro, ojo, oid=20)
-    esfera(lz, C + dx, C + dy, ro, ojo, oid=21)
 
     return lz
 

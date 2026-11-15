@@ -194,7 +194,7 @@ PNG. `a_rgba(lz)` devuelve el array sin escribir a disco, para previsualizar.
 | Primitiva | Para qué | Notas |
 |---|---|---|
 | `esferoide(lz, cx, cy, rx, ry, phi, ramp, oid, calor=0, apagado=0)` | Cuerpos que no son bolas | Elipsoide inclinado. **No duplica el modelo de luz:** calcula la normal en el espacio local de la esfera unidad y la rota de vuelta a pantalla, así que sigue iluminándose con la `L` global de la regla 1. Un cuerpo que gira rápido se achata por su ecuador; el achatamiento y la inclinación son dos ejes de diseño gratis para separar nodos que si no comparten silueta circular. |
-| `esfera(lz, cx, cy, r, ramp, oid, calor=0, apagado=0)` | Cuerpos, cabezas, ojos, bulbos | Caso particular de `esferoide` con los dos semiejes iguales, y **delega en ella**. `calor` aclara las bandas hacia el centro con caída radial; `apagado` oscurece de forma uniforme. Con esos dos escalares, un nodo apagado y uno de núcleo blanco son **la misma llamada con la misma rampa**. El especular se aplica después del `calor`, para que un cuerpo apagado conserve brillo. |
+| `esfera(lz, cx, cy, r, ramp, oid, calor=0, apagado=0)` | Cuerpos, cabezas, bulbos | Caso particular de `esferoide` con los dos semiejes iguales, y **delega en ella**. `calor` aclara las bandas hacia el centro con caída radial; `apagado` oscurece de forma uniforme. Con esos dos escalares, un nodo apagado y uno de núcleo blanco son **la misma llamada con la misma rampa**. El especular se aplica después del `calor`, para que un cuerpo apagado conserve brillo. |
 | `elipse_base_plana(lz, cx, cy_base, rx, ry, ramp, oid, filete)` | Cuerpo tipo gota o gelatina | Cúpula redonda con base asentada. Pivote `Bottom`. ⚠️ **Documentada pero no implementada.** Ningún asset de NOVA la ha necesitado todavía: aquí nada se apoya en un suelo. Ver T.7 en [NOVA_Tracking.md](./NOVA_Tracking.md). |
 | `tubo_gota(lz, p, r0, r1, ramp, oid, muestras, sesgo_banda)` | Apéndices, llamaradas, colas | Bézier cúbica con punta bulbosa. El radio crece hasta el 80 % del recorrido y luego se redondea. |
 | `tubo_curva(lz, p, grosor, ramp, oid, ...)` | Anillos, cables, arcos cerrados | Grosor constante, **sin afilado**. Un anillo hecho con `tubo_gota` se lee como un collar de cuentas. Lleva contorno interno propio. |
@@ -690,17 +690,19 @@ exactos, y los textos usan tamaños múltiplos de 18.67.
 - **Una hoja cuyos frames no son distintos no es una animación.** Antes de
   hornear un bucle hay que contar cuántas imágenes distintas produce de verdad
   a su tamaño: un elemento de pocos píxeles se come el movimiento por
-  cuantización. `ART-ST-SCARE` mide 6×8 px y los tres canales que este
+  cuantización. `ART-ST-SCARE` —un ojo, hoy fuera del inventario porque los
+  nodos ya no tienen cara— medía 6×8 px y los tres canales que este
   proyecto usa a tamaño pequeño —desplazar, escalar y cambiar de banda— se
-  quedaban entre 2 y 9 frames distintos de 16, así que es de un frame
+  quedaban entre 2 y 9 frames distintos de 16, así que fue de un frame
   ([NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md), A.3.3). Se mide antes de
   decidir, no después de dibujar.
 - **Lo que no cabe en una escala, cabe en tallas discretas más desplazamiento
   entero.** `Filter Mode: Point` prohíbe escalar por un factor no entero, así
   que un asset que tiene que encajar en varios sitios de distinto tamaño se
   resuelve con unas pocas tallas fijas y un offset en píxeles enteros. Lo
-  estrenó el protón (A.4.2) y lo reutiliza el overlay de susto para aterrizar
-  en los ojos de los cuatro nodos (A.3.3). Es la alternativa barata a
+  estrenó el protón (A.4.2) y lo reutilizó el overlay de susto, ya
+  descartado, para aterrizar en los ojos que tenían entonces los cuatro nodos
+  (A.3.3). Es la alternativa barata a
   multiplicar variantes del sprite.
 - **Un asset se comprueba contra lo que va a tener al lado, no contra sí
   mismo.** Un sprite de nodo se valida solo —borde de celda, capa `glow`,
@@ -720,7 +722,8 @@ exactos, y los textos usan tamaños múltiplos de 18.67.
   inventario puede escribir «16 frames, bucle» en una fila antes de que el
   asset exista, pero la rejilla decide después: de los nueve overlays de
   A.3, **dos llegaron con bucle planificado y salieron estáticos** —el ojo
-  de `Asustado`, que a 6×8 px da entre 2 y 9 frames distintos de 16, y el
+  de `Asustado`, hoy descartado, que a 6×8 px daba entre 2 y 9 frames
+  distintos de 16, y el
   galón del buff, que en 23 px de esquina da 7—. Y hay un caso más sutil:
   **doblar la frecuencia de un latido divide por dos los frames distintos**,
   porque un seno de periodo 1/2 sobre 16 frames repite a los 8; se
@@ -729,14 +732,16 @@ exactos, y los textos usan tamaños múltiplos de 18.67.
 - **Un overlay se mide por lo que deja ver, no por lo que dibuja.** Un
   sprite de nodo se valida contra sí mismo y un glifo contra el hueco que
   ocupa, pero un **tinte** —lo que cubre el cuerpo entero— se valida contra
-  las dos lecturas que no puede tapar: la **cara**, porque la matriz de
-  [14.6](./NOVA_Estados_Animaciones.md#146-matriz-de-compatibilidad) lo hace
-  convivir con `Asustado` y el susto «siempre debe poder avisar», y el
-  **contador de nivel**, porque el nivel se lee solo en el sprite. Y por una
-  tercera cosa, que no es tapar sino verse: su **contraste** contra el nodo
-  que tiene debajo, porque un tinte del color de la criatura no se ve, y un
-  estado que no se ve es un bug (14.0 #5). Las tres viven en
-  `verifica_tinte`, en `tools/nova_estados.py`.
+  la lectura que no puede tapar: el **contador de nivel**, porque el nivel se
+  lee solo en el sprite. Y por otra cosa, que no es tapar sino verse: su
+  **contraste** contra el nodo que tiene debajo, porque un tinte del color de
+  la criatura no se ve, y un estado que no se ve es un bug (14.0 #5). Las dos
+  viven en `verifica_tinte`, en `tools/nova_estados.py`. Hasta `T6-12` había
+  una tercera, la **cara**, porque el susto avisaba con los ojos y 14.6 lo
+  hace convivir con todo; los nodos ya no tienen ojos, el susto es una
+  sacudida del transform que ningún tinte tapa, y esa medida se quitó. La
+  tabla de anclaje de los ojos y su vara viven ahora en `tools/nova_ojos.py`,
+  solo para que los generadores descartados del susto sigan corriendo (A.1).
 - **Un ciclo de aura es radial, no giratorio.** Hacer viajar la fase de la
   onda angular es lo que hace fluir a una atmósfera, pero en un bucle no
   cierra: con armónicos distintos, un desfase devuelve el mismo dibujo solo

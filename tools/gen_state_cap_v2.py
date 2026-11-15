@@ -98,8 +98,7 @@ def main():
     print(f'  1 hoja de {FRAMES} frames {CELDA * FRAMES}x{CELDA} '
           f'(0.4 s x 12 fps), {len(CAPTURABLES)} nodos capturables')
     if not verifica_tinte(cap, FRAMES, nodos=CAPTURABLES, bucle=False,
-                          entra_de_nada=False, exige_contador=False,
-                          max_frames_ciego=2):
+                          entra_de_nada=False, exige_contador=False):
         raise SystemExit('alguna comprobacion ha fallado')
 
 

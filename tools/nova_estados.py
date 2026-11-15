@@ -91,138 +91,28 @@ def verifica(fn_lienzo, frames, fn_piezas=None, bases=None, args=()):
             and all(v == 0 for v in pisa.values()) and pegados == 0)
 
 
-# --- Anclaje de ojos --------------------------------------------------------
+# --- Los catorce nodos -----------------------------------------------------
 #
-# `Asustado` (14.2) es el unico overlay de A.3 que va SOBRE el cuerpo y sobre
-# los CUATRO tipos de nodo. Eso lo convierte en un problema distinto: el `zzz`
-# y la brasa solo tenian que caber en un hueco, y este tiene que ATERRIZAR
-# encima de unos ojos que cada nodo coloca donde le conviene.
+# (tipo, nivel) de cada sprite de nodo distinto: el Asteroide, cinco
+# Estrellas, tres Pulsares y cinco Magnetares, en orden alfabetico. Las
+# listas de abajo -quien se congela, quien se reconvierte, quien se captura-
+# se sacan de aqui.
 #
-# Medido sobre los 34 sprites (los tonos exclusivos de la rampa `ojo`):
-#
-#     centro en x     47.0 - 47.5  en TODOS.  Practicamente registrado.
-#     centro en y     41.1 - 45.5  la Estrella sube con el nivel.
-#     separacion       9.5 - 16.0  factor 1.7 entre el Pulsar N1 y la
-#                                  Estrella N5.
-#     ojo mas grande  10 x 10 px   (Estrella N5)
-#
-# Un overlay de geometria fija NO puede registrar en los 34, y escalarlo esta
-# prohibido: con `Filter Mode: Point` una escala no entera rompe el
-# pixel-perfect (contrato, Resolucion; es la misma razon por la que el proton
-# tiene tres sprites discretos y no escala continua, A.4.2).
-#
-# La salida es la misma que la del proton: TAMANOS DISCRETOS mas
-# DESPLAZAMIENTO ENTERO. El overlay es un OJO, no un par: se instancia dos
-# veces por nodo, cada una en su ancla, y asi la separacion y la deriva
-# vertical se resuelven con enteros sin tocar el sprite.
-#
-# Y la forma no es redonda. Un ojo asustado es MAS ALTO, no mas ancho, y eso
-# no es una licencia: el ancho lo raciona la separacion -dos ojos que se tocan
-# se leen como uno- y la altura no la raciona nada. Con ojos redondos hacian
-# falta dos tallas y en el Pulsar N1 la mayor no agrandaba nada; con elipses
-# altas, dos formas cubren los catorce abriendo el ojo al menos 2 px en todos.
-#
-# (tipo, nivel) -> (talla, ancla izquierda, ancla derecha) desde el centro de
-# celda, en pixeles enteros.
-OJOS = {
-    ('ast', 0): ('chico',  (-8, -2), (+6, -2)),
-    ('str', 1): ('chico',  (-6, -4), (+5, -4)),
-    ('str', 2): ('grande', (-7, -5), (+6, -5)),
-    ('str', 3): ('grande', (-8, -6), (+6, -6)),
-    ('str', 4): ('grande', (-8, -6), (+7, -6)),
-    ('str', 5): ('grande', (-8, -6), (+8, -6)),
-    ('pul', 1): ('chico',  (-6, -2), (+4, -2)),
-    ('pul', 2): ('chico',  (-6, -2), (+4, -2)),
-    ('pul', 3): ('chico',  (-6, -3), (+5, -3)),
-    ('mag', 1): ('chico',  (-6, -2), (+6, -2)),
-    ('mag', 2): ('grande', (-7, -3), (+6, -3)),
-    ('mag', 3): ('grande', (-7, -3), (+6, -3)),
-    ('mag', 4): ('grande', (-8, -2), (+6, -2)),
-    ('mag', 5): ('grande', (-8, -2), (+6, -2)),
-}
+# Hasta `T6-12` esta lista era la tabla de anclaje de los ojos, `OJOS`, que
+# servia a `ART-ST-SCARE`. Los nodos ya no tienen cara (A.8 #5): la tabla y
+# su verificacion se conservan en `nova_ojos.py` solo para que los dos
+# generadores descartados del susto sigan corriendo (A.1).
+NODOS = sorted([('ast', 0)] + [('str', n) for n in range(1, 6)]
+               + [('pul', n) for n in range(1, 4)] + [('mag', n) for n in range(1, 6)])
 
-TALLAS = {'chico': (6, 8), 'grande': (8, 12)}   # ancho x alto, en pixeles
-
-# El sprite de cada entrada. La faccion no importa: los cuatro generadores
-# dibujan los ojos con la rampa `ojo`, que es la misma para los tres bandos.
+# El sprite de cada nodo para las medidas por defecto: el Neutral cuando
+# existe (Asteroide y Magnetar) y el del Jugador cuando no.
 SPRITE = {
     'ast': 'nodes/asteroide/v1/ast_lvl0_neutral.png',
     'str': 'nodes/estrella/v1/str_lvl{n}_player.png',
     'pul': 'nodes/pulsar/v2/pul_lvl{n}_player.png',
     'mag': 'nodes/magnetar/v1/mag_lvl{n}_neutral.png',
 }
-
-
-def _tonos_ojo():
-    """Tonos que SOLO aparecen en la rampa `ojo`, para localizarla sin dudas."""
-    from nova_paleta import CONTORNO, RAMPAS
-    otros = set()
-    for k, v in RAMPAS.items():
-        if k != 'ojo':
-            otros.update(x.upper() for x in v)
-    otros.add(CONTORNO.upper())
-    return np.array([[int(h[i:i + 2], 16) for i in (1, 3, 5)]
-                     for h in RAMPAS['ojo'] if h.upper() not in otros], np.int16)
-
-
-def mascara_ojos(ruta):
-    """Los pixeles de ojo de un sprite de nodo."""
-    a = np.array(Image.open(ruta).convert('RGBA'))
-    rgb = a[..., :3].astype(np.int16)
-    m = np.zeros(a.shape[:2], bool)
-    for c in _tonos_ojo():
-        m |= (np.abs(rgb - c).sum(2) == 0) & (a[..., 3] > 0)
-    return m
-
-
-def _islas(m):
-    from collections import deque
-    visto = np.zeros(m.shape, bool)
-    n = 0
-    for y, x in zip(*np.where(m)):
-        if visto[y, x]:
-            continue
-        n += 1
-        q = deque([(y, x)])
-        visto[y, x] = True
-        while q:
-            cy, cx = q.popleft()
-            for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                ny, nx = cy + dy, cx + dx
-                if (0 <= ny < m.shape[0] and 0 <= nx < m.shape[1]
-                        and m[ny, nx] and not visto[ny, nx]):
-                    visto[ny, nx] = True
-                    q.append((ny, nx))
-    return n
-
-
-def verifica_ojos(fn_par, frames):
-    """Las dos condiciones que definen este asset, sobre los 14 nodos reales.
-
-    `fn_par(talla, ancla_izq, ancla_der, t)` devuelve el lienzo del par de
-    ojos ya colocado.
-
-    1. TAPA. Ni un pixel del ojo viejo puede asomar por debajo del nuevo: dos
-       ojos concentricos de distinto tamano se leen como cuatro.
-    2. SEPARA. El par tiene que dejar DOS islas conexas. Dos ojos que se tocan
-       son un visor, y un visor no tiene expresion.
-    """
-    fallos = 0
-    for (tipo, nivel), (talla, ai, ad) in sorted(OJOS.items()):
-        ruta = os.path.join(RAIZ, 'art', SPRITE[tipo].format(n=nivel))
-        viejo = mascara_ojos(ruta)
-        peor_asoman = peor_islas = 0
-        for i in range(frames):
-            m = a_rgba(fn_par(talla, ai, ad, i / frames))[..., 3] > 0
-            peor_asoman = max(peor_asoman, int((viejo & ~m).sum()))
-            peor_islas = max(peor_islas, abs(_islas(m) - 2))
-        mal = peor_asoman or peor_islas
-        fallos += bool(mal)
-        marca = '  <-- FALLA' if mal else ''
-        print(f'  {tipo}{nivel} {talla:>6}: asoman {peor_asoman:2} px, '
-              f'islas {"2" if not peor_islas else "!=2"}{marca}')
-    print(f'  nodos que fallan: {fallos} de {len(OJOS)}')
-    return fallos == 0
 
 
 # --- Tintes que cubren el cuerpo -------------------------------------------
@@ -237,9 +127,9 @@ def verifica_ojos(fn_par, frames):
 # Lo que hay que medir en un tinte es lo que NO puede tapar. Son dos cosas, y
 # las dos estan escritas en otro sitio del documento, no aqui:
 #
-#   1. LA CARA. 14.6 hace `Congelado` compatible con `Asustado`, y 14.2 dice
-#      que el susto «siempre debe poder avisar». Un tinte que entierra los
-#      ojos convierte esa casilla de la matriz en mentira.
+#   1. LA CARA. Ya no: los nodos no tienen ojos (A.8 #5, `T6-12`), y la
+#      comprobacion de «cara libre» se quito con ellos. El susto es solo una
+#      sacudida del transform (14.2), que ningun tinte puede tapar.
 #   2. EL CONTADOR DE NIVEL. A.8 #2 cerro que el nivel se lee SOLO en el
 #      sprite. En los tres nodos congelables el contador vive en la periferia
 #      y en piezas sueltas -las esquirlas del Magnetar, los frentes del
@@ -250,7 +140,7 @@ def verifica_ojos(fn_par, frames):
 # `Congelado` se aplica a «cualquier nodo encendido» (14.1). El Asteroide
 # nunca lo esta: encenderlo lo convierte en otro tipo (4.1), asi que sale de
 # la lista. Son 13 sprites, no 14.
-CONGELABLES = [k for k in sorted(OJOS) if k[0] != 'ast']
+CONGELABLES = [k for k in NODOS if k[0] != 'ast']
 
 # `Reconvirtiendo` es mas estrecho todavia: 14.1 lo limita a «Estrella,
 # Pulsar o Magnetar PROPIO», y 8.1 confirma por que -se paga con la Energia
@@ -262,7 +152,7 @@ RECONVERTIBLES = list(CONGELABLES)
 # `Capturado` es el mas ancho de todos: 14.1 lo aplica a «cualquier nodo» y
 # `ChangeFaction()` puede caerle a un Asteroide dormido igual que a una
 # Estrella N5. Son los CATORCE.
-CAPTURABLES = sorted(OJOS)
+CAPTURABLES = NODOS
 
 # `FX-BUFF` dice «toda la faccion» (9.1, 14.5), pero el efecto solo le HACE
 # algo a unos tipos: el Rayo Cosmico sube la cadencia del Magnetar y la carga
@@ -275,8 +165,8 @@ CAPTURABLES = sorted(OJOS)
 # 9.1 permita que los dos power-ups esten activos. Un tipo o es de Rayo o es
 # de Hidrogeno. Asi que el overlay nunca tiene que apilarse consigo mismo.
 BUFEABLES = {
-    'rayo':      [k for k in sorted(OJOS) if k[0] in ('mag', 'pul')],
-    'hidrogeno': [k for k in sorted(OJOS) if k[0] == 'str'],
+    'rayo':      [k for k in NODOS if k[0] in ('mag', 'pul')],
+    'hidrogeno': [k for k in NODOS if k[0] == 'str'],
 }
 
 # Los buffs se miden sobre el sprite del Jugador -van sobre nodos de una
@@ -338,16 +228,16 @@ def satelites(alfa, minimo=40):
             if i != principal and tam[i - 1] >= minimo]
 
 
-def verifica_tinte(fn_lienzo, frames=1, nodos=None, min_ojo=0.55,
+def verifica_tinte(fn_lienzo, frames=1, nodos=None,
                    min_satelite=0.50, min_distintos=None, convive_con=None,
-                   bucle=True, exige_contador=True, max_frames_ciego=0,
+                   bucle=True, exige_contador=True,
                    entra_de_nada=True, sprite=None, args=()):
     """Lo que hay que medirle a un tinte de estado, sobre los nodos reales.
 
     `fn_lienzo(t, *args)` devuelve el lienzo del overlay en la fase `t`.
 
-    Mide tres cosas por nodo -cuanta CARA sobrevive, cuanto CONTADOR DE NIVEL
-    sobrevive y cuanto CONTRASTE tiene el tinte contra el nodo de debajo- y,
+    Mide dos cosas por nodo -cuanto CONTADOR DE NIVEL sobrevive y cuanto
+    CONTRASTE tiene el tinte contra el nodo de debajo- y,
     si el tinte se mueve, tres mas sobre el ciclo:
 
       - que CIERRE, f0 identico a fN;
@@ -367,14 +257,11 @@ def verifica_tinte(fn_lienzo, frames=1, nodos=None, min_ojo=0.55,
 
     CON `bucle=False` el asset no es un estado que dura: es un EFECTO CON
     DURACION, como `Reconvirtiendo`, que son 3.0 s exactos y se acaba. Eso
-    cambia tres cosas:
+    cambia dos cosas:
 
       - no se le exige cerrar, se le exige ENTRAR DESDE NADA Y SALIR A NADA.
         Un efecto cuyo primer o ultimo frame ya tiene pixeles aparece o
         desaparece de golpe y hace un salto contra el estado que lo rodea;
-      - la union de los frames deja de servir para medir la cara. Un efecto
-        que tapa el nodo un instante no «tapa la cara»: la tapa DURANTE N
-        FRAMES, y lo que hay que acotar es N. Eso es `max_frames_ciego`;
       - `exige_contador=False` lo exime del contador de nivel. No es un
         favor: durante una reconversion el nivel del nodo esta cambiando
         -acaba en N1 del tipo nuevo (8.1)-, asi que no hay nada fiable que
@@ -459,8 +346,6 @@ def verifica_tinte(fn_lienzo, frames=1, nodos=None, min_ojo=0.55,
     for (tipo, nivel) in nodos:
         ruta = os.path.join(RAIZ, 'art', mapa[tipo].format(n=nivel))
         a = np.array(Image.open(ruta).convert('RGBA'))[..., 3] > 0
-        ojos = mascara_ojos(ruta)
-        vive_ojo = 1.0 - (ojos & tapa).sum() / max(int(ojos.sum()), 1)
         sats = satelites(a)
         peor_sat = 1.0
         for s in sats:
@@ -483,27 +368,19 @@ def verifica_tinte(fn_lienzo, frames=1, nodos=None, min_ojo=0.55,
             dlum = 0.0
 
         if bucle:
-            mal = vive_ojo < min_ojo or (
-                exige_contador and sats and peor_sat < min_satelite)
+            mal = exige_contador and sats and peor_sat < min_satelite
             fallos += bool(mal)
             print(f'  {tipo}{nivel}: cubre {cubre:5.1%} · '
-                  f'cara libre {vive_ojo:5.1%} · '
                   f'{len(sats)} sat, el peor conserva {peor_sat:5.1%} · '
                   f'contraste {dlum:5.1f}'
                   f'{"   <-- FALLA" if mal else ""}')
         else:
-            # En un efecto con duracion la union no sirve: lo que importa no
-            # es SI tapa la cara, es CUANTOS FRAMES la tapa. Un frame ciego
-            # es un parpadeo; diez son medio segundo sin poder avisar, y 14.6
-            # hace `Asustado` compatible con este estado.
-            ciegos = sum(1 for c in capas
-                         if (ojos & (c[..., 3] > 0)).sum() > 0.45 * ojos.sum())
+            # En un efecto con duracion importa el PICO: cuanto del sprite
+            # llega a tapar en su frame mas lleno.
             pico = max((a & (c[..., 3] > 0)).sum() for c in capas) / max(int(a.sum()), 1)
-            mal = ciegos > max_frames_ciego or (
-                exige_contador and sats and peor_sat < min_satelite)
+            mal = exige_contador and sats and peor_sat < min_satelite
             fallos += bool(mal)
             print(f'  {tipo}{nivel}: pico de tapado {pico:5.1%} del sprite · '
-                  f'frames con la cara ciega: {ciegos:2} de {frames} · '
                   f'contraste {dlum:5.1f}'
                   f'{"   <-- FALLA" if mal else ""}')
     print(f'  nodos que fallan: {fallos} de {len(nodos)}'

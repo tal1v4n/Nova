@@ -62,6 +62,8 @@ Sin espacios, sin mayúsculas, sin acentos. Las hojas de animación llevan sufij
 
 34 sprites base y **16 hojas de idle**, las de la Estrella y el Púlsar. El sprite cambia con **tipo, nivel y facción** (`NodeVisual.cs`, [15.8](./NOVA_GameDesign_Spec.md#158-presentation)); la hoja la reproduce `NodeAnimator.cs` en el estado `Normal` ([14.1](./NOVA_Estados_Animaciones.md#141-estados-del-nodo)), y su frame 0 es, píxel a píxel, el sprite base.
 
+**Sin cara desde el 2026-11-15** (`T6-12`, A.8 #5). Los cuatro generadores elegidos dejaron de dibujar los ojos y se regeneraron los 34 sprites y las 16 hojas. Los ojos iban dentro del cuerpo y eran lo último que se pintaba, así que **solo cambiaron los píxeles de la rampa `ojo`**, 30 020 en los 50 archivos, y ninguno de otra rampa. El alfa, la silueta y la huella son idénticos (los `_huella.json` no cambian), el frame 0 de cada hoja sigue siendo el sprite estático y las 16 hojas cierran con 16 frames distintos. Los ✅ no se mueven: es el mismo asset sin una pieza.
+
 ### A.2.1 Asteroide — [4.1](./NOVA_Nodos.md#41-asteroide-nivel-0)
 
 **Diseño cerrado: «El Durmiente».** Generador: `tools/gen_asteroide_v1.py` → `art/nodes/asteroide/v1/`.
@@ -76,7 +78,7 @@ Sin espacios, sin mayúsculas, sin acentos. Las hojas de animación llevan sufij
 - **Superficie:** `crater`, el eje que estaba libre. **Todo el reparto es convexo; nada en el juego se hunde.** Un cráter es una esfera con la normal invertida —misma `L`, mismas bandas, un signo— y por eso se ilumina la pared del fondo en vez de la de delante. Es lo mismo que hace que una foto de la Luna girada 180° convierta los cráteres en cúpulas.
 - **Acabado mate, sin especular.** El especular es lo que hace que una superficie se lea como material pulido, y una roca lijada por mil millones de años de micrometeoritos no lo es: un punto blanco encima la convierte en canica. Es el único sitio del proyecto donde saltarse la regla 3 del contrato es lo correcto.
 - **Hendiduras:** `veta` en banda oscura, nunca clara. Son sombra en una grieta, no luz que sale.
-- **Ojos cerrados.** Dos rendijas, una más cerrada que la otra, inclinadas en espejo — planas se leen como dos grietas más; inclinadas, como párpados, y eso es todo lo que separa una cara de una piedra picada. En reposo es el único del reparto que no te mira. Los abre `ART-ST-SCARE` ([14.2](./NOVA_Estados_Animaciones.md#142-animación-de-susto)), que es asset aparte. La misma cara sirve para `Dormido` (Neutral) y para `SinEncender` (propio): en los dos casos es capital inerte.
+- **Sin cara.** Hasta `T6-12` llevaba dos rendijas cerradas, inclinadas en espejo; se quitaron sin tocar nada más (A.8 #5). Los cráteres siguen dejando libre la franja donde estaban: el reparto no se movió. La misma roca sirve para `Dormido` (Neutral) y para `SinEncender` (propio): en los dos casos es capital inerte.
 
 **Sin valor aparente, literalmente.** [4.1](./NOVA_Nodos.md#41-asteroide-nivel-0) dice «sin valor *aparente*», y esa palabra manda: la partida se apoya en que el jugador pague 10 por capturarlo y otros 10 por encenderlo **sin que el objeto le prometa nada**. Así que aquí no hay veta incandescente, ni núcleo que se transparente, ni chispa. Hay una piedra apaleada. La promesa la hace el menú de encendido, no el sprite.
 
@@ -111,7 +113,7 @@ El nivel debe leerse de un vistazo: **la estrella crece y arde más**. Es el gen
 - **Cromosfera:** 15 lenguas cortas, casi rectas, una banda más clara.
 - **Corona:** 6 lenguas largas y barridas, por debajo de la cromosfera, con fase desplazada media longitud de onda para que no se alineen.
 - **Núcleo:** el parámetro `calor` de `esfera()` blanquea el centro al subir de nivel. Es lo que cumple "núcleo blanco" sin cambiar de rampa.
-- **Ojos:** dos esferas de la rampa `ojo`, dibujadas las últimas para que nada las tape ([14.7](./NOVA_Estados_Animaciones.md#147-prioridad-visual)).
+- **Sin cara.** Hasta `T6-12` llevaba dos esferas de la rampa `ojo`, dibujadas las últimas; sin ellas se ve el núcleo blanco entero (A.8 #5).
 
 Descartados, por si se reabre: corona radial simétrica (lee como engranaje), núcleo liso con tres anillos orbitales (lee como símbolo de átomo y el núcleo pierde el protagonismo), cizalla por encima de 1.0 (lee como pelaje).
 
@@ -128,7 +130,7 @@ Descartados, por si se reabre: corona radial simétrica (lee como engranaje), n�
 **Idle: «la corona arde en su sitio».** Hoja de 16 frames, no transform: una corona congelada delata que el sprite es estático. Aprobada por el usuario el 2026-10-27, con la del Púlsar y la coreografía de A.2.5. Generada el 2026-10-26 por el mismo `tools/gen_estrella_v1.py`, en `art/nodes/estrella/v1/`.
 
 - **Las lenguas no giran.** Un giro rígido de una corona cizallada es un molinillo, y un molinillo es el engranaje del que esta corona se libró con la cizalla. Lo que se mueve es la **longitud**: cada armónico de la onda late con su propia frecuencia temporal entera (`K_CORONA`, `K_CROMOSFERA`), la lengua se queda donde está y la ola de largo recorre el disco. Corona y cromosfera la recorren **en sentidos opuestos**, por la misma razón por la que ya llevaban fase y cizalla distintas.
-- **El cuerpo respira** con la `s` del contrato —alto × s, ancho ÷ √s, `s = 1 + 0.07·sin 2πt`— y los ojos viajan con él. Es la primera vez que un generador la aplica: el contrato se la daba a la Estrella y al Púlsar desde el principio ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Animación*).
+- **El cuerpo respira** con la `s` del contrato —alto × s, ancho ÷ √s, `s = 1 + 0.07·sin 2πt`—. Es la primera vez que un generador la aplica: el contrato se la daba a la Estrella y al Púlsar desde el principio ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Animación*).
 
 **Lo que se arregló por el camino:** el `t` que el generador ya aceptaba **no cerraba el bucle**. Hacía girar la corona entera, y el armónico ×0.5 de `_onda` llegaba a t = 1 a media fase: entre 102 y 1080 píxeles de salto al reiniciar, según el nivel. Con frecuencias enteras cierra por construcción.
 
@@ -154,7 +156,7 @@ Un púlsar no es una bola que irradia: es un faro. Gira tan rápido que se achat
 - **Conos de luz:** `cono_trama`, dither Bayer sobre la capa `glow`. **Es luz, no materia**: no hace silueta, no lleva contorno y no cuenta para el hitbox de clic.
 - **Frentes de onda:** N arcos abiertos hacia fuera, N = nivel. Es el contador. Un arco abierto es el dibujo universal de «esto se aleja del emisor»; el mismo elemento que cuenta el nivel es el que mueve el idle.
 - **Banda ecuatorial:** `anillo_orbital` en dos mitades, trasera antes del cuerpo y delantera después. Dice que el objeto gira y aporta huella sólida.
-- **Ojos horizontales**, no rodados con el cuerpo. La criatura mira de frente y la máquina que la rodea está inclinada; rodarlos 58° dejaba la cara volcada y el nodo parecía caerse en vez de girar.
+- **Sin cara.** Hasta `T6-12` llevaba dos ojos horizontales, no rodados con el cuerpo; se quitaron sin tocar nada más (A.8 #5).
 
 **Por qué esta versión y no la primera.** La v1 (`tools/gen_pulsar_v1.py` → `art/nodes/pulsar/v1/`, conservada) resolvía el nivel con 1, 2 o 3 haces radiales barridos. Funcionaba y era contable, pero compartía con la Estrella los cinco ejes que deciden la lectura de un sprite, y a tamaño de juego un Púlsar N2 y una Estrella N3 eran casi el mismo objeto. **Repintar no arregla eso: dos nodos construidos igual se parecen aunque cambie la paleta.** La v2 voltea los cinco:
 
@@ -203,7 +205,7 @@ Un magnetar es una estrella de neutrones con el campo magnético más intenso de
 - **Mesa grande** (0.58 del cuerpo). Con mesa pequeña las caras del talle son enormes y el especular se come media cara; grande, el talle queda como un anillo de facetas estrechas —una piedra tallada— y el brillo cae en una sola faceta.
 - **Vetas:** `veta` incandescente, **sobre el pliegue y en el lado en sombra**. Una grieta que recorre la arista entre dos caras se lee como corteza partida por donde debía partirse; una que cruza una cara plana por el medio se lee como una raya pintada encima. Y una línea clara sobre cara clara no se ve: el lado lo elige la `L` global, así que si algún día cambiara el vector de luz las grietas se mudarían solas. De una a tres vetas, con el tono subiendo de templado (N1–N2) a incandescente (N3–N5).
 - **Esquirlas:** el mismo `poliedro` en pequeño, y **alargadas** (1.34 × 0.72 de su radio). Una esquirla redonda es un cascote y su giro no se ve; una alargada tiene dirección, y aquí la dirección es toda la información.
-- **Ojos:** sobre la mesa —la cara plana del frente es literalmente la cara del bicho—, dibujados los últimos ([14.7](./NOVA_Estados_Animaciones.md#147-prioridad-visual)).
+- **Sin cara.** Hasta `T6-12` la mesa llevaba los dos ojos; sin ellos enseña su veta y su banda clara (A.8 #5).
 - **Ni un píxel de `glow`.** Ver A.8, partición de materiales. **Verificado:** la capa `glow` sale vacía en los cinco niveles. Silueta y hitbox son la misma figura: este nodo no promete área que no se pueda clicar.
 
 **El campo se dibuja con materia, no con luz.** Cada esquirla se orienta según la dirección real del campo de un dipolo en el punto donde flota: en la base (radial, tangencial), `B = (2·cos f, sin f)` con `f` el ángulo al eje, o sea `giro = ángulo_de_posición + atan2(sin f, 2·cos f)`. No es una fórmula decorativa: lo que sale dibujado son las limaduras de hierro sobre un imán, que es la imagen universal del magnetismo. Sin esto el nodo es una piedra con cascotes alrededor y se pisa con el Asteroide; con esto, **la posición de la materia dibuja el campo que la sujeta**.
@@ -241,7 +243,7 @@ Un magnetar es una estrella de neutrones con el campo magnético más intenso de
 | Idle | transform | hoja de 16 frames (15 hojas) |
 
 1. **Es el nodo de resistencia ×2 y solo uno de los dos lo enseña.** Un cuerpo macizo, facetado y agrietado se lee como denso; una jaula calada se lee como recinto. Para el nodo que absorbe el doble de Carga ([4.4](./NOVA_Nodos.md#44-magnetar)), densidad es la lectura correcta.
-2. **La cara.** La v2 topaba en una desigualdad: cinco lazos anidados necesitan ~4 px de separación —16 px de radio para los cuatro huecos—, y con el lazo exterior topado en 38 px el interior no puede pasar de 22 px, lo que dejaba el cuerpo en ≤ 14 px de semieje. *O cara grande, o cinco lazos anidados: no las dos.* La v1 no paga ese peaje y el cuerpo pasa de 9.5–11.5 px de semieje horizontal a **14.1–17.5**. Con A.8 #5 («cara en todos») y con el susto de [14.2](./NOVA_Estados_Animaciones.md#142-animación-de-susto) como la lectura más importante del juego, tener la cara más pequeña de los cuatro era un coste caro.
+2. **La cara.** La v2 topaba en una desigualdad: cinco lazos anidados necesitan ~4 px de separación —16 px de radio para los cuatro huecos—, y con el lazo exterior topado en 38 px el interior no puede pasar de 22 px, lo que dejaba el cuerpo en ≤ 14 px de semieje. *O cara grande, o cinco lazos anidados: no las dos.* La v1 no paga ese peaje y el cuerpo pasa de 9.5–11.5 px de semieje horizontal a **14.1–17.5**. Con A.8 #5 («cara en todos», como estaba entonces) y con el susto de [14.2](./NOVA_Estados_Animaciones.md#142-animación-de-susto) como la lectura más importante del juego, tener la cara más pequeña de los cuatro era un coste caro. *Desde `T6-12` los nodos no tienen cara y este argumento ya no pesa; los otros dos siguen en pie.*
 3. **Coste de producción.** La v2 necesita 15 hojas de 16 frames a 1536×96 y un bucle que cerrar; la v1, ninguna.
 
 **Lo que se paga.** Las dos objeciones que ganaron el turno anterior siguen siendo ciertas y se asumen, y el cambio añade una tercera pérdida:
@@ -279,8 +281,8 @@ Se aplican **sobre cualquier sprite de nodo**, así que deben ser independientes
 | Caso | Quién | Cómo se resuelve |
 |---|---|---|
 | Solo van sobre el Asteroide | `Dormido`, `SinEncender` | Se colocan **al lado** del cuerpo, contra la silueta de esa roca. La unión de los cuatro nodos no deja hueco legible para un glifo, pero estos dos nunca van sobre los otros tres (A.3.1, A.3.2). Comparten hueco: uno sustituye al otro, no coexisten |
-| Va sobre los cuatro y **aterriza en la cara** | `Asustado` | El asset es de geometría fija, pero **no de posición fija**: tallas discretas más desplazamiento entero por nodo, igual que el protón (A.3.3, A.4.2) |
-| **Cubre el cuerpo** | `Congelado` ✅, `Infectado` ✅, `Reconvirtiendo` ✅, `Capturado` ✅ | Son tintes y tránsitos. La regla les vale entera en cuanto a **independencia del tipo**, pero «no registran con nada» resultó falso: un tinte tiene que dejar ver la **cara** —14.6 lo hace compatible con `Asustado`— y el **contador de nivel**, que A.8 #2 dejó solo en el sprite (A.3.4). Y además tiene que convivir con los otros tintes, porque 14.6 los hace coexistir (A.3.5) |
+| ~~Va sobre los cuatro y **aterriza en la cara**~~ | ~~`Asustado`~~ | **Ya no es un caso**: los nodos no tienen ojos (A.8 #5) y el susto es una sacudida del transform sin asset (14.2). Lo resolvía un asset de geometría fija con tallas discretas más desplazamiento entero por nodo, igual que el protón (A.3.3, descartado) |
+| **Cubre el cuerpo** | `Congelado` ✅, `Infectado` ✅, `Reconvirtiendo` ✅, `Capturado` ✅ | Son tintes y tránsitos. La regla les vale entera en cuanto a **independencia del tipo**, pero «no registran con nada» resultó falso: un tinte tiene que dejar ver el **contador de nivel**, que A.8 #2 dejó solo en el sprite (A.3.4). Hasta `T6-12` tenía que dejar ver también la **cara**, porque 14.6 lo hace compatible con `Asustado`. Y además tiene que convivir con los otros tintes, porque 14.6 los hace coexistir (A.3.5) |
 | **Va en la esquina de la celda** | buff ✅ | El cuarto caso, y no estaba previsto: esta tabla tenía el buff entre los tintes y **14.7 lo tenía en la capa 4, con los glifos**. Gana 14.7. No cubre el cuerpo de nadie: es una marca en el cuadrado libre de la esquina, que mide **23 px** en los catorce (A.3.8) |
 
 **Ni un overlay va sobre los cuatro nodos, y conviene saber sobre cuántos va cada uno antes de dibujarlo.** «Se aplican sobre cualquier sprite de nodo» es la regla de partida, no un hecho: 14.1 le pone a cada estado su propio dominio y algunos son bastante más estrechos. `Dormido` y `SinEncender` son solo del Asteroide. `Congelado`, `Infectado` y el buff van sobre **cualquier nodo encendido**, y el Asteroide nunca lo está —encenderlo lo convierte en otro tipo ([4.1](./NOVA_Nodos.md#41-asteroide-nivel-0))—, así que son **trece sprites y no catorce**. `Reconvirtiendo` es aún más estrecho: solo Estrella, Púlsar o Magnetar **propio** ([8.1](./NOVA_GameDesign_Spec.md#81-reglas)). Los únicos que sí van sobre los catorce son `Asustado` y `Capturado`. La lista de congelables vive en `tools/nova_estados.py` (`CONGELABLES`) y es la que recorren la verificación y la hoja de contacto.
@@ -307,7 +309,7 @@ Se aplican **sobre cualquier sprite de nodo**, así que deben ser independientes
 
 **Un overlay por carpeta, una propuesta por subcarpeta.** Misma forma que los nodos y por el mismo motivo: `art/states/<estado>/v<n>/`, con los mismos nombres de archivo dentro de cada propuesta, y la columna *Archivo* marcando cuál es la buena. Sin el nivel `<estado>` la v1 de `sleep` y la v1 de `ign` caerían en la misma carpeta y «v1» dejaría de querer decir nada. Los generadores declaran `ESTADO` y `VERSION` en vez de `NODO` y `VERSION`, y escriben con `dir_estado(estado, version)`.
 
-**Hay tres varas, no una, y es porque hay tres casos.** `verifica()` sirve a los dos glifos del Asteroide: exige **cero** píxeles sobre el cuerpo y la capa `glow` limpia. `verifica_ojos()` sirve a `ART-ST-SCARE`: exige que tape el ojo viejo y que el par deje dos islas. `verifica_tinte()` sirve a los que cubren el cuerpo, y pide lo contrario que la primera —va encima del cuerpo por definición y es trama por obligación—: mide cuánta **cara** sobrevive, cuánto **contador de nivel** sobrevive y cuánto **contraste** tiene el tinte contra el nodo que hay debajo. Aplicarle a un tinte la vara de un glifo sería suspenderlo por hacer su trabajo.
+**Hubo tres varas, no una, porque había tres casos; desde `T6-12` quedan dos.** `verifica()` sirve a los dos glifos del Asteroide: exige **cero** píxeles sobre el cuerpo y la capa `glow` limpia. `verifica_ojos()` servía a `ART-ST-SCARE`, descartado: exigía que tapara el ojo viejo y que el par dejara dos islas, y vive ahora en `tools/nova_ojos.py`, solo para los generadores descartados. `verifica_tinte()` sirve a los que cubren el cuerpo, y pide lo contrario que la primera —va encima del cuerpo por definición y es trama por obligación—: mide cuánto **contador de nivel** sobrevive y cuánto **contraste** tiene el tinte contra el nodo que hay debajo. Aplicarle a un tinte la vara de un glifo sería suspenderlo por hacer su trabajo.
 
 **Las comprobaciones de un overlay viven en `tools/nova_estados.py`**, no en cada generador. Un sprite de nodo se valida contra sí mismo; un overlay se valida además contra **otro asset** —el sprite sobre el que se aplica— y, si es un glifo contable, contra sus propias piezas. Medir cada propuesta a su manera sería no compararlas, así que la vara es una sola y el generador **falla** si algo no pasa, en vez de imprimir un aviso que nadie lee.
 
@@ -389,6 +391,8 @@ Una brasa sobre la roca. Quieta mientras no hay con qué encender; abierta en ci
 
 ### A.3.3 `ART-ST-SCARE` — `Asustado`
 
+> **Descartado: fuera del inventario desde el 2026-11-01.** Los nodos no tienen ojos (A.8 #5; se quitaron en `T6-12`, el 2026-11-15) y el susto es solo el temblor y el salto de la capa 5, sin asset ([14.2](./NOVA_Estados_Animaciones.md#142-animación-de-susto); [NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #55). Esta sección se conserva como historia del diseño, igual que cualquier propuesta descartada (A.1). Sus dos generadores siguen corriendo con la tabla de anclaje, que se mudó a `tools/nova_ojos.py`, pero sus medidas solo valen contra los sprites con cara, anteriores a `T6-12`.
+
 **Diseño cerrado: «Los ojos como platos».** Generador: `tools/gen_state_scare_v1.py` → `art/states/scare/v1/`.
 
 ![](../art/states/scare/v1/state_scared_chico.png) ![](../art/states/scare/v1/state_scared_grande.png)
@@ -461,6 +465,8 @@ Un ojo de 6×8 px tiene una pupila de 3 px y unos 2 px de juego; subir el recorr
 **Verificado sobre los 14 nodos** —los cuatro tipos, todos sus niveles—: **cero píxeles del ojo viejo asomando** y **dos islas conexas** en todos. La comprobación vive en `tools/nova_estados.py` (`verifica_ojos`) y abre los PNG de los nodos para medir, en vez de dar el anclaje por bueno.
 
 ### A.3.4 `ART-ST-FROZEN` — `Congelado`
+
+> **Sin cara desde `T6-12` (2026-11-15).** Lo que esta sección dice de la cara —la caja de los ojos, el pasillo de 4 px entre ellos, la columna *cara libre*— es cómo se diseñó la geometría, y se conserva. Ya no es una obligación: el asset sigue ✅, no se regenera, y su tronco ahora cruza un cuerpo limpio. **Vuelto a medir sobre los sprites sin ojos**, sin la columna de cara: los trece nodos pasan, el contador conserva al menos el 68.3 % (Magnetar, igual que antes) y el contraste va de 73.2 a 125.2 (antes 73.4–128.0: donde el hielo pisaba los ojos, ahora pisa el cuerpo).
 
 **Diseño cerrado: «El vidrio».** Generador: `tools/gen_state_frozen_v3.py` → `art/states/frozen/v3/`.
 
@@ -546,6 +552,8 @@ Si en juego pasa lo primero sobre un Magnetar, o lo segundo sobre una Estrella g
 
 ### A.3.5 `ART-ST-DECAY` — `Infectado`
 
+> **Sin cara desde `T6-12` (2026-11-15).** La caja de la cara y la franja de 228 px bajo los ojos son cómo se decidió dónde vive la nube, y se conservan. Ya no son una obligación: el asset sigue ✅ y no se regenera. **Vuelto a medir sobre los sprites sin ojos**, sin la columna de cara: los trece nodos pasan, el bucle cierra con 16 frames distintos y el contador conserva al menos el 75.0 %, igual que antes. El contraste va de 25.8 a 78.4.
+
 **Diseño cerrado: «El miasma».** Generador: `tools/gen_state_decay_v2.py` → `art/states/decay/v2/`.
 
 ![](../art/states/decay/v2/state_decay.png)
@@ -613,6 +621,8 @@ Gana por **presencia**: es la única de las tres que se lee de un vistazo en los
 Las dos descartadas se conservan enteras en `art/states/decay/v1/` y `art/states/decay/v3/` (T.7 #20 y #21).
 
 ### A.3.6 `ART-ST-CONV` — `Reconvirtiendo`
+
+> **Sin cara desde `T6-12` (2026-11-15).** Los «frames con la cara ciega» de esta sección son la medida con la que se eligió la propuesta, y se conservan como historia. `verifica_tinte` ya no la toma: sin ojos, el susto se lee en la sacudida del sprite, que ningún overlay tapa. Vuelto a medir sobre los sprites sin ojos, los trece nodos pasan en las dos facciones.
 
 **Diseño cerrado: «La colada».** Generador: `tools/gen_state_conv_v2.py` → `art/states/conv/v2/`.
 
@@ -696,6 +706,8 @@ Lo que sí se conserva intacto es el número de Energía: vive en la capa 6 de [
 **El coste asumido.** Un barrido recto es lo más parecido a una transición de interfaz que hay en este documento: un *wipe*. NOVA no tiene un solo elemento de UI dentro del tablero (A.3.2), y ese es el argumento que descartó la v1 de `ART-ST-IGN` y, más tarde, «El bloque» de `ART-ST-FROZEN` (A.3.4). Se mitiga con el filo ondulado y con la estela tramada, pero **si en juego la colada se lee como un efecto de menú, «El torno» está entero en `art/states/conv/v1/`** ([NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #22). Y es la más cara de las tres en cara ciega.
 
 ### A.3.7 `ART-ST-CAP` — `Capturado`
+
+> **Sin cara desde `T6-12` (2026-11-15).** Como en A.3.6: los frames de cara ciega son la medida con la que se eligió, y ya no se toman. Vuelto a medir sobre los sprites sin ojos, los catorce nodos pasan.
 
 **Diseño cerrado: «El relevo».** Generador: `tools/gen_state_cap_v2.py` → `art/states/cap/v2/`.
 
@@ -981,7 +993,7 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 
 Son los **únicos items del juego**. No hay más y no debe haber más: la [sección 9](./NOVA_GameDesign_Spec.md#9-power-ups-del-cielo) los cierra en dos, y un tercero sería inventar una regla de juego.
 
-**Los iconos no son nodos, y eso decide cómo se dibujan.** Un nodo es una criatura: cara, volumen, y una silueta que hay que reconocer entre otras cuatro. Un icono es un símbolo que se lee a 48 px **en dos sitios a la vez** —flotando sobre el Asteroide marcado y en el HUD—, así que se construye al revés: primero la silueta legible, el volumen después y solo el que quepa. Por eso llevan `esquirla` y `bulto` y no `esfera`.
+**Los iconos no son nodos, y eso decide cómo se dibujan.** Un nodo es una criatura: volumen y una silueta que hay que reconocer entre otras cuatro. Un icono es un símbolo que se lee a 48 px **en dos sitios a la vez** —flotando sobre el Asteroide marcado y en el HUD—, así que se construye al revés: primero la silueta legible, el volumen después y solo el que quepa. Por eso llevan `esquirla` y `bulto` y no `esfera`.
 
 **El halo no dice qué power-up es.** Eso lo dice el icono que flota encima. El halo solo dice **dónde** y **cuánto queda**, así que va en `neutral` —la rampa sin significado— y no en la del tipo: pintarlo de amarillo o de rosa duplicaría la información del icono y obligaría a dos versiones del mismo asset.
 
@@ -1163,7 +1175,7 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 
 **Y los ✅ suben de 104 a 105 el 2026-11-01** con el haz de Cero Absoluto, `ART-WLD-BEAM-ZER` v1, «El rosario de escarcha» (A.4.2). A.4.2 queda en 21 de 23: faltan los haces de Decaimiento y Agujero de Gusano.
 
-**Y los ✅ bajan de 105 a 104 el 2026-11-01, con el total de 135 a 134:** los nodos pierden los ojos (A.8 #5) y `ART-ST-SCARE`, que era un ojo, sale del inventario. A.3 queda en 8 de 8. Los 34 sprites de A.2 y las 16 hojas de idle siguen ✅ con ojos hasta que `T6-12` los regenere sin ellos; la señal del susto que los sustituya está por decidir ([NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #55).
+**Y los ✅ bajan de 105 a 104 el 2026-11-01, con el total de 135 a 134:** los nodos pierden los ojos (A.8 #5) y `ART-ST-SCARE`, que era un ojo, sale del inventario. A.3 queda en 8 de 8. Los 34 sprites de A.2 y las 16 hojas de idle siguieron ✅ con ojos hasta que `T6-12` los regeneró sin ellos el 2026-11-15 (A.2), sin mover el recuento. Ninguna señal sustituye a la cara: el susto es el temblor y el salto ([NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #55).
 
 **Y los ✅ suben de 91 a 105 el 2026-11-01, con el total de 121 a 135:** el protón pasa de tres tallas a diez, una por cada 5 de Carga, y sus archivos de 6 a 20 (A.4.2). A.4.2 queda en 20 de 23; faltan los tres haces.
 
@@ -1189,7 +1201,7 @@ Lo que sigue bloqueando la fase 6 son los otros nueve grupos de este inventario.
 
 **A.3 está cerrada: los nueve overlays de estado, 9 de 9.** Con `ART-NOD-*` (A.2) y `ART-ST-*` (A.3) completos, **`T6-02` y `T6-03` dejan de estar bloqueadas por arte** ([NOVA_Tracking.md](./NOVA_Tracking.md), T.4): las tres primeras tareas de la fase 6 solo las retiene ya su cadena de código. Lo que queda por delante son cuatro grupos de mundo y UI —A.4.1, A.4.2, A.4.3 y A.6— y los quince VFX de A.5. **A.4.2 es ahora el grupo con más trabajo de diseño por delante**, no el más mecánico: los tres haces son la primera pieza del proyecto que se estira y se rota, y eso no lo ha hecho ningún asset todavía.
 
-**La vara de verificación creció con los assets, no antes que ellos.** `verifica_tinte` empezó midiendo tres cosas y acabó midiendo nueve: cara libre, contador y contraste (A.3.4); cierre del bucle, frames distintos, convivencia con otro overlay y reparto aire/cuerpo (A.3.5); modo transitorio con frames ciegos (A.3.6); y arranque en el pico (A.3.7). **Ninguna se añadió por precaución; todas después de que algo se colara.**
+**La vara de verificación creció con los assets, no antes que ellos.** `verifica_tinte` empezó midiendo tres cosas y acabó midiendo nueve: cara libre, contador y contraste (A.3.4); cierre del bucle, frames distintos, convivencia con otro overlay y reparto aire/cuerpo (A.3.5); modo transitorio con frames ciegos (A.3.6); y arranque en el pico (A.3.7). **Ninguna se añadió por precaución; todas después de que algo se colara.** Y dos se quitaron con la cara en `T6-12`: *cara libre* y *frames ciegos*.
 
 **Pendiente de verificación, no de diseño:** `ART-ST-FROZEN` y `ART-ST-DECAY` se midieron con `verifica_tinte` sobre los trece congelables en sus rampas de Jugador y Enemigo. Desde que el Magnetar neutral es objetivo de poder ([7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido)), los dos tintes pueden caer también sobre la rampa **neutral**, que es la más apagada de las tres. La geometría es la misma y los assets no cambian; lo que falta es **pasar la vara otra vez** sobre `mag_lvl1..5_neutral.png`. Los dos siguen ✅ mientras no se demuestre lo contrario, y el riesgo está acotado a cinco sprites. Ver [NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #29.
 
@@ -1199,8 +1211,8 @@ Lo que sigue bloqueando la fase 6 son los otros nueve grupos de este inventario.
 
 | Primitiva | La ejercita |
 |---|---|
-| `esfera` | Estrella, Púlsar (ojos), Magnetar (ojos) |
-| `esferoide` | Púlsar v2, Magnetar v2 (núcleo y yugos, descartada), `ART-ST-SCARE` (esclerótica y pupila) |
+| `esfera` | Quarks del protón v2, núcleo de la brasa de `ART-ST-IGN` v2. Hasta `T6-12`, los ojos de la Estrella, el Púlsar y el Magnetar |
+| `esferoide` | Cuerpos de la Estrella y el Púlsar v2, el ovni de los fondos. Descartados: Magnetar v2 (núcleo y yugos), `ART-ST-SCARE` (esclerótica y pupila). Hasta `T6-12`, las rendijas del Asteroide |
 | `corona_radial` | Estrella |
 | `halo_trama` | Estrella |
 | `cono_trama` | Púlsar v2 |
@@ -1242,7 +1254,7 @@ Ninguna decisión de art design queda abierta. Se conservan aquí con su motivo,
 | 2 | ¿El nivel se indica solo por el sprite, o con pips/números? | **Solo sprite** | Cero UI extra. Se sostiene con señales redundantes: tamaño, temperatura del núcleo, densidad de atmósfera y halo. Coste asumido: el escalón N3→N4 es el más débil. |
 | 3 | ¿El Magnetar neutral usa gris o una tercera paleta? | Rampa `mag_n`, gris acerado derivado de `neutral` | Una tercera paleta propia lo convertiría en un tercer bando a ojos del jugador, y no lo es. |
 | 4 | ¿Tamaño de sprite por tipo en unidades de mundo? | Huella de **0.6 u a 1.2 u**; celda 96 px = 1.5 u, **PPU 64** | Con nodos más pequeños el clic se vuelve incómodo; con nodos más grandes, un Magnetar N1 (radio 2.0 u) apenas sobresaldría de su propio sprite y su anillo dejaría de informar. |
-| 5 | ¿Los nodos tienen cara/ojos? | **No.** **Cerrada el 2026-11-01** por el usuario: se quitan por completo, y lo ejecuta `T6-12` ([NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #53). Hasta entonces el arte con ojos sigue en uso. Antes: «Sí, en todos», reabierta el 2026-10-27 | [14.2](./NOVA_Estados_Animaciones.md#142-animación-de-susto) pide "ojos muy abiertos" para el susto. Sin cara habría que inventar otra señal para la lectura más importante del juego. La señal del susto sin cara queda abierta en T.7 #55. |
+| 5 | ¿Los nodos tienen cara/ojos? | **No.** **Cerrada el 2026-11-01** por el usuario: se quitan por completo ([NOVA_Tracking.md](./NOVA_Tracking.md), T.7 #53). **Ejecutada en `T6-12` el 2026-11-15**: los 34 sprites y las 16 hojas, regenerados sin ojos (A.2). Antes: «Sí, en todos», reabierta el 2026-10-27 | Antes, [14.2](./NOVA_Estados_Animaciones.md#142-animación-de-susto) pedía «ojos muy abiertos» para el susto. **Sin cara no hace falta otra señal**: el susto es el temblor y el salto del sprite (T.7 #55, cerrado el 2026-11-15). |
 
 ### Cerradas fuera de A.8
 
@@ -1263,7 +1275,7 @@ Ninguna decisión de art design queda abierta. Se conservan aquí con su motivo,
 | Idle del Magnetar | **Transform**, y por tanto **cabeceo de 2 px** y no squash: escalar por transform rompe la rejilla | Contrato, A.2.4 |
 | Luz propia del Asteroide | **Ninguna.** Es el único nodo que solo refleja; su píxel más claro es un reflejo. Cierra la partición de materiales | A.2.1 |
 | Acabado del Asteroide | **Mate, sin especular.** Única excepción a la regla 3 del contrato: una roca lijada por micrometeoritos no es material pulido | Contrato, A.2.1 |
-| Cara del Asteroide | **Ojos cerrados**, dos rendijas asimétricas. Sirve igual para `Dormido` y para `SinEncender`; los abre `ART-ST-SCARE` | A.2.1 |
+| ~~Cara del Asteroide~~ | ~~**Ojos cerrados**, dos rendijas asimétricas~~. **Anulada por A.8 #5**: sin cara desde `T6-12` | A.2.1 |
 | Marca de posesión del Asteroide | **El overlay `ART-ST-IGN`, no el sprite.** Ninguna geometría cambia entre facciones (14.0 #3) | A.2.1 |
 | Cota de brillo de un fondo | La media de cualquier ventana de 96×96 por debajo del tono más oscuro de un cuerpo de nodo, calculado de la paleta. **En cada fotograma**, desde que el fondo se mueve | A.4.5 |
 | Color de un fondo | **Solo rampas sin significado** (`bg_s1/2/3`, y `neutral` para estrellas y ovni). Las cinco con significado de juego están prohibidas. Los mapas se separan por estructura y por cómo se mueven, no por tono | A.4.5 |
@@ -1280,19 +1292,19 @@ Ninguna decisión de art design queda abierta. Se conservan aquí con su motivo,
 | Independencia del tipo en los overlays | **Vale para los cuatro que van sobre cualquier nodo.** | A.3.1 |
 | Señal de `Dormido` | **Tres glifos `Z` que cabecean en su sitio**, con la fase retrasada hacia fuera | A.3.1 |
 | Señal de `SinEncender` | **Una brasa**, quieta mientras `energy < 10` y abierta en cinco trazos que crepitan cuando llega a 10 | A.3.2 |
-| Señal de `Asustado` | **Un ojo muy abierto**, esclerótica clara y pupila contraída y baja | A.3.3 |
-| Anclaje de un overlay que va sobre la cara | **Tallas discretas más desplazamiento entero**, nunca escala: una escala no entera rompe el pixel-perfect | A.3.3, A.4.2 |
-| Forma del ojo asustado | **Más alto que ancho.** No es una licencia: el ancho lo raciona la separación entre ojos —9 | A.3.3 |
+| Señal de `Asustado` | **El temblor y el salto del sprite**, sin asset (T.7 #55). Antes, un ojo muy abierto, descartado con la cara | 14.2, A.3.3 |
+| Anclaje de un asset que tiene que encajar en sitios de distinto tamaño | **Tallas discretas más desplazamiento entero**, nunca escala: una escala no entera rompe el pixel-perfect. Lo estrenó el protón; lo usó el ojo del susto, hoy descartado | A.4.2, A.3.3 |
+| ~~Forma del ojo asustado~~ | ~~**Más alto que ancho**~~. **Anulada**: el asset se descartó con la cara (A.8 #5) | A.3.3 |
 | Cuándo un asset pequeño no se anima | **Cuando la rejilla se come el movimiento.** Si una hoja de 16 frames no contiene 16 imágenes distintas, no es una animación | A.3.3, contrato |
 | Las dos lecturas de `SinEncender` | **Variante visual, no estado nuevo.** El animador lee `energy >= 10` (14 | A.3.2, 14.1 |
 | Peso relativo de dos lecturas del mismo overlay | **La accionable nunca pesa menos que la pasiva**, en ningún frame | A.3.2 |
 | Señal de `Congelado` | **Una red de grietas que cruza el nodo**, sin centro ni eje, con la escarcha brotando de la propia grieta | A.3.4 |
-| Cómo cruza la cara un overlay | **Por el pasillo de 4 px que hay entre los dos ojos** en los trece nodos encendidos, `x 45-49` | A.3.4 |
+| ~~Cómo cruza la cara un overlay~~ | ~~**Por el pasillo de 4 px que hay entre los dos ojos**~~. **Ya no aplica**: sin cara, un overlay cruza el cuerpo por donde quiera. «El vidrio» conserva su pasillo como historia | A.3.4 |
 | Señal de `Infectado` | **Una nube tramada con cizalla, sesgada hacia abajo, que respira**, más cinco gotas que caen | A.3.5 |
 | Ciclo de un aura | **Radial, no giratorio.** El ciclo lo llevan el radio y la densidad, desfasados entre sí | A.3.5, contrato |
 | Alcance real de cada overlay | **Ninguno va sobre los cuatro nodos.** `Congelado`, `Infectado` y el buff son **trece** sprites: 14 | A.3, A.3.4 |
 | Contorno en algo que se dibuja encima de un nodo | **Ninguno.** Sobre un sprite ya terminado el contorno no separa, tacha: engorda cada línea de 1 a 3 px y los dos de más son negros | Contrato, A.3.4 |
-| Qué se le mide a un overlay que cubre el cuerpo | **Cara libre, contador de nivel y contraste.** Las tres sobre los sprites reales, en `verifica_tinte` | A.3 |
+| Qué se le mide a un overlay que cubre el cuerpo | **Contador de nivel y contraste.** Las dos sobre los sprites reales, en `verifica_tinte`. La *cara libre* se quitó con la cara (`T6-12`) | A.3 |
 | Facciones en los overlays | **Las llevan `ART-ST-IGN`, `ART-ST-READY` y `ART-ST-CONV`**, y por dos motivos distintos | A.2.1, A.3.2, A.3.6 |
 | Qué quiere decir «silueta neutra» en 14.1 | **Sin tipo, no sin bando**: durante la reconversión el nodo sigue siendo de su dueño | A.3.6, 14.1 |
 | Quién dibuja el colapso de `Reconvirtiendo` | **El animador, cambiando de sprite.** Un overlay aditivo no puede borrar ni recolorear lo que hay debajo | A.3.6 |
@@ -1300,7 +1312,7 @@ Ninguna decisión de art design queda abierta. Se conservan aquí con su motivo,
 | Señal de `Capturado` | **Dos anillos blancos que se cruzan en el frame central**, uno cerrándose y otro saliendo | A.3.7 |
 | Si la geometría cambia con la facción | **No cambia en ninguno de los catorce**, comprobado byte a byte sobre los 34 sprites | A.3.7, 14.0 #3 |
 | Cómo entra un efecto con duración | **Depende de si se prepara o se dispara.** Uno que se prepara —`Reconvirtiendo`— entra desde nada | A.3.6, A.3.7, contrato |
-| Qué se le mide a un efecto con duración | **Que entre desde nada y salga a nada**, y cuántos frames deja la cara ciega | A.3.6 |
+| Qué se le mide a un efecto con duración | **Que entre desde nada y salga a nada**. Los frames de cara ciega se dejaron de medir con la cara (`T6-12`) | A.3.6 |
 | Señal de un power-up activo | **Un galón de dos chevrones en la esquina inferior derecha**, en el color del power-up y **estático** | A.3.8 |
 | Sobre qué nodos va el buff | **Solo sobre los que el power-up afecta** : Rayo a Magnetar y Púlsar, Hidrógeno a Estrella | A.3.8 |
 | Color de un overlay de power-up | **El del power-up, no el de la facción.** A | A.3.8, A.4.4 |

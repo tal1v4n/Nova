@@ -329,7 +329,7 @@ namespace Nova.Tests
         }
 
         // Decidido con el usuario el 2026-10-26: con sprite, el círculo se aparta y el número va bajo
-        // la huella, en claro sobre el cielo, sin tapar la cara.
+        // la huella, en claro sobre el cielo, sin tapar el cuerpo (18 #48).
         [Test]
         public void WithASpriteTheCircleStepsAsideAndTheEnergyGoesUnderneath()
         {

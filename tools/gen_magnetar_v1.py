@@ -84,7 +84,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from nova_core import (L, a_rgba, dir_nodo, esfera, exporta_huellas, guardar,
+from nova_core import (L, a_rgba, dir_nodo, exporta_huellas, guardar,
                        huella_px, lienzo, poliedro, rampa, veta)
 
 NODO = 'magnetar'
@@ -223,8 +223,6 @@ def magnetar(nivel, faccion, t=0.0):
     """Devuelve el lienzo de un Magnetar v1. `t` no se usa: idle por transform."""
     cfg = NIVELES[nivel]
     ramp = rampa({'player': 'mag_p', 'enemy': 'mag_e'}.get(faccion, 'mag_n'))
-    ojo = rampa('ojo')
-
     lz = lienzo(CELDA)
     ry = cfg['radio']
     rx = ry * ANCHO
@@ -242,13 +240,7 @@ def magnetar(nivel, faccion, t=0.0):
 
     # 3. vetas incandescentes sobre la corteza ya tallada
     _vetas(lz, verts, ramp, cfg, MESA, oid=20)
-
-    # 4. ojos, los ultimos por encima de todo (14.7). Van sobre la mesa: la
-    #    cara plana del frente es literalmente la cara del bicho.
-    ro = max(3.0, ry * 0.235)
-    sep = rx * 0.42
-    for signo in (-1, 1):
-        esfera(lz, C + sep * signo, C - ry * 0.13, ro, ojo, oid=30 + signo)
+    # Sin cara: la mesa ya no lleva ojos (A.8 #5, T6-12).
 
     return lz
 

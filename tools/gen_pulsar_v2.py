@@ -45,14 +45,15 @@ Anatomia, en orden de dibujo:
     3. banda (atras)  anillo ecuatorial, mitad trasera
     4. cuerpo       esferoide achatado, inclinado con el eje
     5. banda (delante)
-    6. ojos         horizontales, siempre por encima de todo (14.7)
+
+Sin cara: los nodos no tienen ojos (A.8 #5, T6-12).
 
 IDLE: hoja de 16 frames. Los frentes viajan por el haz y el bucle cierra por
 construccion (ver `_frentes`). Y el cuerpo respira con la `s` del contrato
 -alto x s sobre el eje de giro, ancho / sqrt(s)-, porque el contrato da hoja
 a la Estrella y al Pulsar precisamente para que la deformacion la dibuje el
 generador y no un transform. La banda ecuatorial y los conos no respiran:
-son la maquina, y la criatura es el cuerpo con su cara. El frame 0 es el
+son la maquina, y la criatura es el cuerpo. El frame 0 es el
 sprite estatico de siempre.
 
 HUELLA. El cono es luz y no cuenta para el hitbox de clic (contrato, "Huella
@@ -71,7 +72,7 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from nova_core import (a_rgba, anillo_orbital, cono_trama, dir_nodo, esfera,
+from nova_core import (a_rgba, anillo_orbital, cono_trama, dir_nodo,
                        esferoide, exporta_huellas, guardar, huella_px, lienzo, rampa)
 
 NODO = 'pulsar'
@@ -180,7 +181,6 @@ def pulsar(nivel, faccion, t=0.0):
     cfg = NIVELES[nivel]
     suf = 'p' if faccion == 'player' else 'e'
     cuerpo = rampa(f'pul_{suf}')
-    ojo    = rampa('ojo')
 
     lz = lienzo(CELDA)
     fase = t
@@ -206,17 +206,6 @@ def pulsar(nivel, faccion, t=0.0):
 
     anillo_orbital(lz, C, C, cfg['ban'], cfg['ban'] * 0.30, ECU, 2.1,
                    cuerpo, oid=6, mitad='delante', sesgo_banda=0)
-
-    # 6. ojos HORIZONTALES, no rodados con el cuerpo. Rodarlos 58 grados
-    #    deja la cara volcada y el nodo parece caerse en vez de girar. La
-    #    tension es deliberada: la criatura mira de frente y la maquina que
-    #    la rodea esta inclinada.
-    #    Los ojos viajan con el cuerpo que respira; su tamano no cambia.
-    ro = max(3.0, cfg['ry'] * 0.30)
-    sep = rx * 0.34
-    alt = -ry * 0.20
-    for signo in (-1, 1):
-        esfera(lz, C + sep * signo, C + alt, ro, ojo, oid=20 + signo)
 
     return lz
 

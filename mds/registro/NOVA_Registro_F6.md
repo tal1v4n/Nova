@@ -8,6 +8,8 @@ Una línea por tarea completada. La más reciente arriba.
 
 | Fecha | Tarea | Resultado | Notas / desviaciones de la spec |
 |---|---|---|---|
+| 2026-11-15 | **T6-12** 🟨: los nodos sin ojos | Adelantada a petición del usuario. **Arte:** `gen_asteroide_v1.py`, `gen_estrella_v1.py`, `gen_pulsar_v2.py` y `gen_magnetar_v1.py` dejan de dibujar los ojos, y se regeneran los 34 sprites y las 16 hojas. Comparado píxel a píxel con los de antes: cambian 30 020 píxeles, todos de la rampa `ojo`, con el alfa idéntico; las huellas no cambian, el frame 0 de cada hoja es el sprite estático y las 16 hojas cierran con 16 frames distintos. **Herramientas:** `nova_estados.py` cambia `OJOS` por `NODOS` y quita *cara libre* y *frames ciegos* de `verifica_tinte`; la tabla de anclaje y `verifica_ojos` pasan a `nova_ojos.py`. Los siete overlays elegidos vuelven a pasar sobre los sprites nuevos y sus PNG no cambian. Se regeneran las vistas de `art/_preview`. **Código:** fuera los comentarios de la cara en `NodeVisual`, `ProvisionalNodeView` y `NodeVisualTests`; no había aserciones que dependieran de ella. **Docs:** 14.1, 14.2, 14.6, 14.7, A.2, A.3, A.7, A.8, el contrato y 18 #48–#49. Compila con `dotnet build`; **sin pasar todavía por Unity** | Desviaciones 323–328. Fase 6: 8 de 14 |
+| 2026-11-15 | **T6-03** ✅ | Cerrada: el usuario vio el susto en Play con el salto a 4 px y lo aprobó («mantenlo así»). La suite de EditMode se pasa junto con la de `T6-12` | Fase 6: 8 de 14 |
 | 2026-11-15 | **T6-03** 🟨: el susto sin cara | **Código:** `NodeAnimator` dibuja el susto en la capa 5 de 14.7 con `ScarePixels`: salto de 4, 3, 2 y 1 px hacia arriba al empezar y temblor de 1 px a los lados a 12 fps mientras dure, sumados al cabeceo, en tiempo escalado y también con el nodo congelado. `ProvisionalNodeView` deja de temblar cuando el animador mueve el sprite (se quita `CurrentShake`); su temblor queda solo para el círculo de las escenas sin arte. **Tests:** seis nuevos en `NodeAnimatorTests`. **Spec:** 14.2, 14.7, 15.8 y 18 #49. Compila con `dotnet build`; **sin pasar todavía por el Test Runner ni por Play** | Desviaciones 320–322. Fase 6: 7 de 14 |
 | 2026-11-15 | Decisión: **el susto sin cara es solo temblor y salto** (T.7 #55 cerrado) | Decidido por el usuario: no entra ningún asset nuevo en lugar de los ojos. `T6-03` pasa de 🔴 en espera a ⬜, sin arte, y se abre | Fase 6: 7 de 14 |
 | 2026-11-15 | Proyecto: `mds/school/` fuera de git | Lo añade el usuario a `.gitignore`; con él se commitean los ajustes que regeneró Unity (escenas de prueba, URP, Build Profiles) | — |
@@ -44,6 +46,15 @@ Una línea por tarea completada. La más reciente arriba.
 ## Desviaciones
 
 > **Cómo leer esta lista.** Una línea por desviación: **qué cambió** y **dónde vive ahora**. El razonamiento completo está en el documento que se cita, que es el que manda; aquí solo está el rastro de cuándo y por qué se movió. Los números no se reutilizan nunca, ni siquiera cuando una desviación queda revertida.
+
+**`T6-12` (2026-11-15).**
+
+323. **`T6-12` se hace antes de cerrar la fase**, y no al final, a petición del usuario. Es la excepción a su propia definición en T.4. → T.3.
+324. **La tabla de anclaje de los ojos no se borra: se muda a `tools/nova_ojos.py`.** `OJOS`, `TALLAS`, `mascara_ojos` y `verifica_ojos` salen de `nova_estados.py` como pedía la tarea, pero los dos generadores descartados del susto los importan y A.1 les exige seguir corriendo. `nova_estados.py` gana `NODOS`, la lista de los catorce, en el mismo orden que `sorted(OJOS)`. La rampa `ojo` se queda en `nova_paleta.py` porque la siguen usando cinco generadores descartados. → `nova_ojos.py`, `nova_estados.py`, *Reglas de trabajo* del contrato.
+325. **`verifica_tinte` pierde `min_ojo` y `max_frames_ciego`**, y con ellos las seis llamadas de los generadores de `Capturado` y `Reconvirtiendo`, también las de los descartados. Un efecto con duración se mide ahora por su pico de tapado y su contador. → `nova_estados.py`, A.3, A.8.
+326. **Los generadores de los overlays se volvieron a correr solo para verificar.** Sus PNG salían iguales en píxeles y distintos en bytes (como en la desviación 289), y se devolvieron a los de git: T6-12 dice que no se regeneran. Lo mismo con las vistas de `art/_preview` que solo cambiaban en bytes. Las del susto descartado (`estados/scare_*`) se conservan con ojos, porque son la comparación histórica. → `art/_preview`.
+327. **18 #48 cambia de porqué y no de regla.** El número de Energía sigue bajo el sprite; ya no por no tapar la cara, sino por no tapar el cuerpo, donde van los tintes, las auras y el contador de nivel. → 18 #48, `NodeLayout`.
+328. **El contraste de «El vidrio» baja un poco**, de 73.4–128.0 a 73.2–125.2, porque donde el hielo pisaba los ojos ahora pisa el cuerpo. Sigue pasando en los trece. → A.3.4.
 
 **`T6-03` (2026-11-15).**
 

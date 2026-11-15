@@ -20,8 +20,9 @@ import numpy as np
 from PIL import Image
 
 from nova_core import RAIZ, a_rgba, dir_preview
-from nova_estados import (ASTEROIDE, BUFEABLES, CONGELABLES, OJOS,
+from nova_estados import (ASTEROIDE, BUFEABLES, CONGELABLES,
                           SPRITE, SPRITE_PROPIO)
+from nova_ojos import OJOS  # solo para `scare`, descartado (T6-12)
 from nova_paleta import FONDO, hex_a_rgb
 
 BG = np.array(hex_a_rgb(FONDO), np.uint8)

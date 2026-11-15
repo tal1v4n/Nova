@@ -188,7 +188,7 @@ def main():
         print(f'  --- {fac} ---')
         ok &= verifica_tinte(conv, FRAMES, nodos=RECONVERTIBLES,
                              sprite=SPRITE_PROPIO, bucle=False,
-                             exige_contador=False, max_frames_ciego=8,
+                             exige_contador=False,
                              args=(fac,))
     if not ok:
         raise SystemExit('alguna comprobacion ha fallado')
