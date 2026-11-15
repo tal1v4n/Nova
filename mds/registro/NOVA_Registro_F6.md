@@ -8,6 +8,7 @@ Una línea por tarea completada. La más reciente arriba.
 
 | Fecha | Tarea | Resultado | Notas / desviaciones de la spec |
 |---|---|---|---|
+| 2026-11-15 | Arte: **`ART-WLD-SEL` ✅**, v1 «La órbita» (elegida por el usuario) | Se propusieron dos: `tools/gen_select_v1.py`, una órbita con tres cometas girando (16 frames), y `tools/gen_select_v2.py`, «El arco», fijo. Las dos con cinco tallas (radio libre de 24 a 40 px, la media huella más 4) y abiertas por abajo en la franja del número de Energía. La v2 queda descartada en su carpeta. A.7: 107 → 108 de 134; A.4.3, 2 de 4. `T6-06` sigue 🔴 por el lazo y el apuntado | Desviaciones 329–330 |
 | 2026-11-15 | **T6-12** ✅ | Cerrada: el usuario sincronizó y asignó el arte, pasó la suite de EditMode en verde (con ella queda confirmada también la de `T6-03`) y vio en Play los cuatro tipos sin ojos, con sus estados y el susto | Fase 6: 9 de 14 |
 | 2026-11-15 | **T6-12** 🟨: los nodos sin ojos | Adelantada a petición del usuario. **Arte:** `gen_asteroide_v1.py`, `gen_estrella_v1.py`, `gen_pulsar_v2.py` y `gen_magnetar_v1.py` dejan de dibujar los ojos, y se regeneran los 34 sprites y las 16 hojas. Comparado píxel a píxel con los de antes: cambian 30 020 píxeles, todos de la rampa `ojo`, con el alfa idéntico; las huellas no cambian, el frame 0 de cada hoja es el sprite estático y las 16 hojas cierran con 16 frames distintos. **Herramientas:** `nova_estados.py` cambia `OJOS` por `NODOS` y quita *cara libre* y *frames ciegos* de `verifica_tinte`; la tabla de anclaje y `verifica_ojos` pasan a `nova_ojos.py`. Los siete overlays elegidos vuelven a pasar sobre los sprites nuevos y sus PNG no cambian. Se regeneran las vistas de `art/_preview`. **Código:** fuera los comentarios de la cara en `NodeVisual`, `ProvisionalNodeView` y `NodeVisualTests`; no había aserciones que dependieran de ella. **Docs:** 14.1, 14.2, 14.6, 14.7, A.2, A.3, A.7, A.8, el contrato y 18 #48–#49. Compila con `dotnet build`; **sin pasar todavía por Unity** | Desviaciones 323–328. Fase 6: 8 de 14 |
 | 2026-11-15 | **T6-03** ✅ | Cerrada: el usuario vio el susto en Play con el salto a 4 px y lo aprobó («mantenlo así»). La suite de EditMode se pasa junto con la de `T6-12` | Fase 6: 8 de 14 |
@@ -47,6 +48,11 @@ Una línea por tarea completada. La más reciente arriba.
 ## Desviaciones
 
 > **Cómo leer esta lista.** Una línea por desviación: **qué cambió** y **dónde vive ahora**. El razonamiento completo está en el documento que se cita, que es el que manda; aquí solo está el rastro de cuándo y por qué se movió. Los números no se reutilizan nunca, ni siquiera cuando una desviación queda revertida.
+
+**`ART-WLD-SEL` (2026-11-15).**
+
+329. **El anillo de selección es una ID con cinco archivos**, uno por talla, y un `.json` con los radios, en `art/world/select/v1/`. A.4.3 decía un solo PNG, `art/world/world_select_ring.png`. Un anillo escalado rompe el pixel-perfect, igual que el protón. → A.4.3.
+330. **El anillo se abre por abajo**, en la franja del número de Energía (`|x| ≤ 19` px bajo el centro). El número va justo debajo del sprite (18 #48) y un anillo cerrado le pasaría por detrás. La spec no decía nada; sale de 14.7 («el número nunca se oculta»). → A.4.3.
 
 **`T6-12` (2026-11-15).**
 

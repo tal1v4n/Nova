@@ -976,10 +976,22 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 
 | ID | Elemento | Requisito | Archivo | Estado | Vista previa |
 |---|---|---|---|---|---|
-| `ART-WLD-SEL` | Anillo de selección | Sobre nodo propio seleccionado | `art/world/world_select_ring.png` | ⬜ | `![](art/world/world_select_ring.png)` |
+| `ART-WLD-SEL` | Anillo de selección | Sobre nodo propio seleccionado, detrás de él (capa 0). **Cinco tallas**, una hoja de 16 frames cada una; la talla la elige la huella del nodo | `art/world/select/v1/world_select_{24,28,32,36,40}_sheet.png` + `world_select_tallas.json` | ✅ | ![](../art/world/select/v1/world_select_32_sheet.png) |
 | `ART-WLD-LASSO` | Lazo de selección múltiple | Rectángulo punteado | `art/world/world_lasso.png` | ⬜ | `![](art/world/world_lasso.png)` |
 | `ART-WLD-AIM` | Cursor de apuntado de poder | **Sin anillo de alcance.** Retícula que se posa sobre el objetivo bajo el cursor y solo sobre objetivos válidos ([7.2.1](./NOVA_GameDesign_Spec.md#721-objetivo-válido)) | `art/world/world_aim_cursor.png` | ⬜ | `![](art/world/world_aim_cursor.png)` |
 | `ART-WLD-LINK` | Línea de envío origen→cursor | Filamento de plasma en la rampa del Jugador que sigue al cursor durante el arrastre derecho y desde cada nodo de una selección activa ([13.1](./NOVA_GameDesign_Spec.md#131-ratón), [14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma)). Trazo estirable de tres piezas ([A.4.6](#a46-filamento-de-plasma--149)), **bucle de 16 frames**. Un solo archivo: solo el Jugador tiene cursor | `art/world/link/v2/world_link_sheet.png` | ✅ | ![](../art/world/link/v2/world_link_sheet.png) |
+
+**El anillo de selección, cerrado: «La órbita»**, v1 (elegida por el usuario el 2026-11-15). Generador: `tools/gen_select_v1.py` → `art/world/select/v1/`; vistas con `--vista` en `art/_preview/select/v1/` (`select_tablero.png` y `_x2`, `select_tablero_x2.gif`, `select_tallas_x3.png`).
+
+- **La idea.** Una órbita en la banda 4 de `str_p` alrededor del nodo y **tres cometas** que la recorren en sentido horario, un tercio de vuelta por ciclo, en una hoja de 16 frames a 12 fps. Cada cometa tiene una cabeza de 2 px en la banda 1 y una cola que baja a la 2 (2 px de grueso) y a la 3. Son tres porque con dos se lee un eje y con cuatro una cruz, y las dos cosas son retículas, que es lo que hace `ART-WLD-AIM`. También es el gesto de los tres quarks del protón (A.4.2): un nodo seleccionado está cargado, a punto de soltar uno.
+- **Abierto por abajo.** El número de Energía va justo debajo del sprite (18 #48) y mide hasta 34 px con tres cifras. La órbita no se dibuja en esa franja (`|x| ≤ 19` por debajo del centro), y los cometas pasan por detrás del número: salen por un lado y entran por el otro. Si estuviera cerrada, su luz asomaría entre los trazos de las cifras.
+- **Cinco tallas, no una escalada.** Por el pixel-perfect, como el protón. El radio libre de cada talla es la media huella del nodo más 4 px de aire, redondeado a la talla siguiente: 24 (Estrella N1), 28 (Magnetar N1, Púlsar N1), 32 (Estrella N2), 36 (Estrella N3, Púlsar N2, Magnetar N2–N3) y 40 (Estrella N4–N5, Púlsar N3, Magnetar N4–N5). `world_select_tallas.json` lleva los radios y el aire, y Unity elige con la huella que ya exporta cada nodo. La mayor mide 86 px: dos nodos a la separación mínima (96 px) no se tocan.
+- **Detrás del nodo, capa 0 de 14.7.** Lo que la luz tramada del nodo (conos del Púlsar, halo de la Estrella N5) tapa de la órbita deja verla por los huecos de la trama.
+- **No se confunde** con el anillo del Magnetar propio (`mag_p`, a medio tono, quieto y de 96 a 160 px de radio) ni con `ART-ST-CAP` (blanco, 0.4 s). **No pisa el galón del buff**: 0 px compartidos en las cinco tallas, así que un nodo seleccionado y con buff enseña los dos.
+- **El generador falla si no se cumple:** alfa binario, nada dentro del radio libre ni en la franja del número, sin tocar el borde de la celda, el bucle cerrado (el frame 16 es el 0, por la simetría de los tres cometas) y 16 frames distintos por talla.
+- **Para `T6-06`:** como el idle, cada nodo debería arrancar el ciclo con el desfase de su posición (`NodeAnimator.IdlePhase`), o seis nodos de un lazo girarían en bloque.
+
+**Propuesta v2: «El arco»** (2026-11-15, **descartada por el usuario**; se conserva por A.1). Generador: `tools/gen_select_v2.py` → `art/world/select/v2/`. Es el mismo aro fijo de 2 px, abierto por abajo y con las puntas apagándose, con las mismas tallas. Se lee más fuerte a 1×, pero un aro quieto es lo que más se parece al anillo del Magnetar.
 
 **`ART-WLD-LINK` deja de ser una línea de arrastre y pasa a ser un filamento de plasma** (2026-10-10). Ya no se ve solo durante el arrastre: también sale de cada nodo de una selección activa, así que es el elemento de mundo que el jugador **más tiempo tiene en pantalla** después de los nodos, y por eso se anima. Sigue siendo **un** asset. Cambia el nombre de archivo, porque ahora es una hoja, y el conteo de A.4.3 no se mueve.
 
@@ -1162,12 +1174,14 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.3 Estados | **8** | **8** ✅ | — (ya no bloquea `T6-02` ni `T6-03`) |
 | A.4.1 Radio del Magnetar | **18** | **18** ✅ | — (ya no bloquea `T6-05`) |
 | A.4.2 Protón y haces de poder | **23** | **23** ✅ | — (ya no bloquea `T6-04` ni `T6-11`) |
-| A.4.3 Selección y apuntado | **4** | **1** | Pulido de input (fase 6). `ART-WLD-LINK` ✅: ya no bloquea `T5-06` |
+| A.4.3 Selección y apuntado | **4** | **2** | `T6-06`. `ART-WLD-LINK` ✅ (ya no bloquea `T5-06`) y `ART-WLD-SEL` ✅; faltan el lazo y el apuntado |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
 | A.5 VFX | 15 | 0 | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **134** | **107** | — |
+| **Total** | **134** | **108** | — |
+
+**Y los ✅ suben de 107 a 108 el 2026-11-15** con el anillo de selección, `ART-WLD-SEL` v1, «La órbita» (A.4.3): una sola ID con cinco tallas, como el protón contaba una ID por bando antes de crecer a diez archivos. A.4.3 queda en 2 de 4: faltan el lazo y el apuntado, y `T6-06` sigue bloqueada.
 
 **Y los ✅ suben de 106 a 107 el 2026-11-01** con el haz de Agujero de Gusano, `ART-WLD-BEAM-WRM` v1, «El desgarro» (A.4.2). **A.4.2 queda cerrado, 23 de 23**, y `T6-11` deja de estar bloqueada por arte. Los tres haces comparten hoja y montaje: tres piezas en filas, 3 frames en columnas, tramo de 256 px en mosaico.
 
