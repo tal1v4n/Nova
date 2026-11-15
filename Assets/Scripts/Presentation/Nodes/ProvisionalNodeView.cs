@@ -20,8 +20,12 @@ namespace Nova.Presentation
     // sprite hasta T6-02 y T6-03. Sin sprite, todo sigue como antes.
     //
     // T6-02: con NodeAnimator y el arte de A.3, los estados los dibuja él: aquí ya no se tiñe el sprite
-    // ni se pinta el halo. Y el sprite lo mueve él (cabeceo más este temblor, que lee de CurrentShake),
-    // porque dos componentes escribiendo la misma posición se pisan. El número sigue temblando aquí.
+    // ni se pinta el halo. Y el sprite lo mueve él (el cabeceo),
+    // porque dos componentes escribiendo la misma posición se pisan.
+    //
+    // T6-03: el susto definitivo es de NodeAnimator (salto y temblor, capa 5 de 14.7). Con él moviendo el
+    // sprite, aquí no tiembla nada: el número se queda quieto, como con el cabeceo (A.2.5). Este temblor
+    // solo queda para el círculo de las escenas sin arte.
     [DefaultExecutionOrder(100)] // Presentation, 15.10
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NodeController))]
@@ -80,9 +84,6 @@ namespace Nova.Presentation
         internal int TextScale => textScale;
         internal SpriteRenderer Aura { get { EnsureBuilt(); return aura; } }
 
-        // Temblor provisional del susto en este momento, o cero. Lo suma NodeAnimator al sprite.
-        internal Vector3 CurrentShake => IsScared ? ShakeOffset(Mathf.FloorToInt(Time.time * ShakeStepsPerSecond)) : Vector3.zero;
-
         void OnEnable()
         {
             Subscribe();
@@ -103,7 +104,7 @@ namespace Nova.Presentation
         // Presentación en Update (15.10): solo lee la bandera y mueve los hijos.
         void Update()
         {
-            if (body == null || label == null || !IsScared)
+            if (body == null || label == null || !ShakesItself)
                 return;
             ApplyOffset(ShakeOffset(Mathf.FloorToInt(Time.time * ShakeStepsPerSecond)));
         }
@@ -147,8 +148,11 @@ namespace Nova.Presentation
                 ? new Vector3(0f, -NodeLayout.LabelCenterPixels(diameter, textScale) / (float)PixelsPerUnit, 0f)
                 : Vector3.zero;
 
-            ApplyOffset(IsScared ? ShakeOffset(Mathf.FloorToInt(Time.time * ShakeStepsPerSecond)) : Vector3.zero);
+            ApplyOffset(ShakesItself ? ShakeOffset(Mathf.FloorToInt(Time.time * ShakeStepsPerSecond)) : Vector3.zero);
         }
+
+        // T6-03: con NodeAnimator moviendo el sprite, el susto es suyo.
+        bool ShakesItself => IsScared && !(HasArt && Animator != null);
 
         bool HasArt => Visual != null && NodeVisual.SpriteOf(Node) != null;
 

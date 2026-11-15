@@ -22,7 +22,10 @@ namespace Nova.Presentation
     //
     // Lo que se mueve es el sprite con sus overlays, que cuelgan de él: el nodo no, así que el collider,
     // el número y la barra se quedan quietos (A.2.5). Tiempo escalado: en pausa el tablero se para (15.8).
-    // El susto (ojos y sacudida definitiva) es de T6-03: mientras, se suma aquí el temblor provisional.
+    //
+    // T6-03: el susto (14.2) es la capa 5 de 14.7, sin asset (T.7 #55): un salto corto hacia arriba al
+    // empezar y un temblor de 1 px a los lados mientras dure, en píxeles enteros y sumados al cabeceo.
+    // Corre en tiempo escalado y no se para con el hielo: un nodo congelado y asustado tiene que avisar (14.6).
     [DefaultExecutionOrder(100)] // Presentation, 15.10
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NodeController), typeof(NodeVisual))]
@@ -38,6 +41,12 @@ namespace Nova.Presentation
         // Frame de ART-ST-CONV con la celda llena: aquí cambia el sprite (A.3.6).
         public const int ConvertSwapFrame = 16;
 
+        // T6-03, el susto (14.2): temblor de 1 px a cada lado, un paso por frame, y el salto, en píxeles
+        // hacia arriba frame a frame desde que empieza. Arranca en el pico, como todo lo que se dispara (A.3.7).
+        public const int ScareShakePixels = 1;
+        static readonly int[] ScareHopPixels = { 3, 2, 1 };
+        public static int ScareHopFrames => ScareHopPixels.Length;
+
         const int PixelsPerUnit = 64;
 
         [SerializeField] BalanceConfig balance;
@@ -49,8 +58,6 @@ namespace Nova.Presentation
         NodeVisual visual;
         NodeConverter converter;
         bool converterLooked;
-        ProvisionalNodeView provisional;
-        bool provisionalLooked;
 
         SpriteRenderer convertTint;
         SpriteRenderer frozenTint;
@@ -62,6 +69,7 @@ namespace Nova.Presentation
         double clock;              // segundos de los bucles de estado
         double idleClock;          // segundos de idle: no corre congelado
         double captureClock = -1;  // segundos de Capturado, o < 0 si no se está reproduciendo
+        double scareClock = -1;    // segundos de Asustado, o < 0 si no lo está
         bool subscribed;
 
         public void Configure(BalanceConfig config, NodeStateArt stateArt)
@@ -81,6 +89,7 @@ namespace Nova.Presentation
         internal SpriteRenderer Buff { get { EnsureBuilt(); return buff; } }
         internal SpriteRenderer Effect { get { EnsureBuilt(); return effect; } }
         internal bool IsCapturePlaying => captureClock >= 0;
+        internal bool IsScarePlaying => scareClock >= 0;
 
         void OnEnable()
         {
@@ -108,6 +117,11 @@ namespace Nova.Presentation
             clock += deltaTime;
             if (Node.IsInitialized && !Node.HasState(NodeStateFlags.Frozen))
                 idleClock += deltaTime;
+            // El susto empieza en su frame 0 en el primer Advance que ve la bandera.
+            if (Node.IsInitialized && Node.HasState(NodeStateFlags.Scared))
+                scareClock = scareClock < 0 ? 0 : scareClock + deltaTime;
+            else
+                scareClock = -1;
             if (captureClock >= 0)
             {
                 captureClock += deltaTime;
@@ -141,6 +155,17 @@ namespace Nova.Presentation
         {
             int amplitude = type == NodeType.Asteroid ? 1 : type == NodeType.Magnetar ? 2 : 0;
             return Mathf.RoundToInt(amplitude * Mathf.Sin(2f * Mathf.PI * frame / BobCycleFrames));
+        }
+
+        // Desplazamiento del susto en ese frame, en píxeles enteros (14.2): x, el temblor, a la derecha en
+        // los pares y a la izquierda en los impares; y, el salto, que acaba en 0 tras ScareHopFrames.
+        public static Vector2Int ScarePixels(int frame)
+        {
+            if (frame < 0)
+                throw new ArgumentOutOfRangeException(nameof(frame), frame, "El susto empieza en el frame 0.");
+            int shake = (frame & 1) == 0 ? ScareShakePixels : -ScareShakePixels;
+            int hop = frame < ScareHopPixels.Length ? ScareHopPixels[frame] : 0;
+            return new Vector2Int(shake, hop);
         }
 
         static int FrameAt(double seconds) => (int)Math.Floor(seconds * FramesPerSecond + 1e-9);
@@ -183,10 +208,10 @@ namespace Nova.Presentation
             }
             Visual.Body.sprite = body;
 
-            // Cabeceo y temblor: se mueve el sprite, y con él lo que cuelga de él.
+            // Cabeceo y susto (capa 5): se mueve el sprite, y con él lo que cuelga de él.
             int bob = converting ? 0 : BobPixels(Node.Type, (int)(idleTick % BobCycleFrames));
-            Vector3 shake = Provisional != null ? Provisional.CurrentShake : Vector3.zero;
-            Visual.Body.transform.localPosition = new Vector3(0f, bob / (float)PixelsPerUnit, 0f) + shake;
+            Vector2Int scare = scareClock >= 0 ? ScarePixels(FrameAt(scareClock)) : Vector2Int.zero;
+            Visual.Body.transform.localPosition = new Vector3(scare.x, bob + scare.y, 0f) / PixelsPerUnit;
 
             if (!DrawsStates)
             {
@@ -294,20 +319,6 @@ namespace Nova.Presentation
                     converterLooked = true;
                 }
                 return converter;
-            }
-        }
-
-        // Opcional: de él sale el temblor provisional del susto hasta T6-03.
-        ProvisionalNodeView Provisional
-        {
-            get
-            {
-                if (!provisionalLooked)
-                {
-                    provisional = GetComponent<ProvisionalNodeView>();
-                    provisionalLooked = true;
-                }
-                return provisional;
             }
         }
 

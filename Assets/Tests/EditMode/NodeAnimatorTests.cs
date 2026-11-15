@@ -242,6 +242,117 @@ namespace Nova.Tests
             Assert.AreEqual(before, Body(animator).sprite.name);
         }
 
+        // --- El susto (T6-03, 14.2): capa 5 de 14.7, sin asset ---
+
+        static int BodyPixelsX(NodeAnimator animator) => Mathf.RoundToInt(Body(animator).transform.localPosition.x * 64f);
+
+        [Test]
+        public void TheScareJumpsFromItsPeakAndShakesOneWholePixelEachWay()
+        {
+            Assert.AreEqual(new Vector2Int(1, 3), NodeAnimator.ScarePixels(0), "Arranca en el pico del salto.");
+            Assert.AreEqual(new Vector2Int(-1, 2), NodeAnimator.ScarePixels(1));
+            Assert.AreEqual(new Vector2Int(1, 1), NodeAnimator.ScarePixels(2));
+            for (int frame = NodeAnimator.ScareHopFrames; frame < 40; frame++)
+            {
+                Vector2Int offset = NodeAnimator.ScarePixels(frame);
+                Assert.AreEqual(0, offset.y, "Tras el salto, solo el temblor.");
+                Assert.AreEqual((frame & 1) == 0 ? 1 : -1, offset.x);
+            }
+            Assert.Throws<System.ArgumentOutOfRangeException>(() => NodeAnimator.ScarePixels(-1));
+        }
+
+        [Test]
+        public void AScaredStarJumpsShakesAndSettlesWithoutMovingTheNode()
+        {
+            NodeController node = Node(Star, Faction.Player, 10, 2, new Vector2(1f, 1f));
+            NodeAnimator animator = Animate(node, States());
+            Assert.AreEqual(Vector3.zero, Body(animator).transform.localPosition, "La Estrella no cabecea.");
+
+            node.SetStateFlag(NodeStateFlags.Scared, true);
+            for (int frame = 0; frame < 8; frame++)
+            {
+                animator.Advance(frame == 0 ? 0f : Frame);
+                Vector2Int expected = NodeAnimator.ScarePixels(frame);
+                Assert.AreEqual(expected.x, BodyPixelsX(animator), $"Temblor, frame {frame}.");
+                Assert.AreEqual(expected.y, BodyPixelsY(animator), $"Salto, frame {frame}.");
+                Assert.AreEqual(Body(animator).transform.localPosition.x * 64f, BodyPixelsX(animator), 1e-4f, "Píxeles enteros.");
+            }
+            Assert.AreEqual(new Vector3(1f, 1f, 0f), node.transform.position, "El collider no tiembla.");
+
+            node.SetStateFlag(NodeStateFlags.Scared, false);
+            animator.Advance(Frame);
+            Assert.IsFalse(animator.IsScarePlaying);
+            Assert.AreEqual(Vector3.zero, Body(animator).transform.localPosition);
+        }
+
+        [Test]
+        public void TheScareAddsToTheBob()
+        {
+            NodeController node = Node(Magnetar, Faction.Neutral, 100, 3, new Vector2(1f, 1f));
+            NodeAnimator animator = Animate(node, States());
+            animator.Advance(Frame * 3);
+            int bob = BodyPixelsY(animator);
+
+            node.SetStateFlag(NodeStateFlags.Scared, true);
+            animator.Advance(0f);
+            Assert.AreEqual(bob + NodeAnimator.ScarePixels(0).y, BodyPixelsY(animator));
+            Assert.AreEqual(NodeAnimator.ScarePixels(0).x, BodyPixelsX(animator));
+        }
+
+        [Test]
+        public void AFrozenNodeStillShakesWhenScared()
+        {
+            NodeController node = Node(Star, Faction.Enemy, 10, 2);
+            node.SetStateFlag(NodeStateFlags.Frozen, true);
+            NodeAnimator animator = Animate(node, States());
+
+            node.SetStateFlag(NodeStateFlags.Scared, true);
+            var seen = new HashSet<int>();
+            for (int frame = 0; frame < 6; frame++)
+            {
+                animator.Advance(frame == 0 ? 0f : Frame);
+                seen.Add(BodyPixelsX(animator));
+            }
+            CollectionAssert.AreEquivalent(new[] { -1, 1 }, seen, "14.6: Congelado y Asustado conviven y el susto se ve.");
+        }
+
+        [Test]
+        public void TheScareStopsInThePauseAndANewOneJumpsAgain()
+        {
+            NodeController node = Node(Pulsar, Faction.Player, 10, 1);
+            NodeAnimator animator = Animate(node, States());
+            node.SetStateFlag(NodeStateFlags.Scared, true);
+            animator.Advance(0f);
+            animator.Advance(Frame * 5);
+            Vector3 held = Body(animator).transform.localPosition;
+            animator.Advance(0f); // Time.deltaTime con Time.timeScale = 0
+            Assert.AreEqual(held, Body(animator).transform.localPosition);
+
+            node.SetStateFlag(NodeStateFlags.Scared, false);
+            animator.Advance(Frame);
+            node.SetStateFlag(NodeStateFlags.Scared, true);
+            animator.Advance(Frame);
+            Assert.AreEqual(NodeAnimator.ScarePixels(0).y, BodyPixelsY(animator), "Un susto nuevo vuelve a saltar.");
+        }
+
+        [Test]
+        public void WithTheAnimatorTheEnergyNumberDoesNotShake()
+        {
+            NodeController node = Node(Star, Faction.Player, 10, 2);
+            NodeAnimator animator = Animate(node, States());
+            var view = node.gameObject.AddComponent<ProvisionalNodeView>();
+            view.Subscribe();
+            view.Refresh();
+            Vector3 label = view.Label.transform.localPosition;
+
+            node.SetStateFlag(NodeStateFlags.Scared, true);
+            animator.Advance(0f);
+
+            Assert.AreEqual(label, view.Label.transform.localPosition, "El número no se mueve (A.2.5).");
+            Assert.AreNotEqual(Vector3.zero, Body(animator).transform.localPosition, "El sprite sí.");
+            view.Unsubscribe();
+        }
+
         // --- Estados ---
 
         [Test]
