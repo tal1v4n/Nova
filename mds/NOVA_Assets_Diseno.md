@@ -1000,7 +1000,7 @@ No es decoración: es la información con la que el jugador decide una ruta. Deb
 - **Entrada y reposo.** Al posarse en un objetivo, las puntas llegan desde fuera en tres pasos (5, 2 y 1 px) y en el cuarto frame se quedan clavadas: es la curva orbital de 13.12 hecha a pasos de píxel entero. Unity reproduce la entrada cada vez que la retícula cambia de objetivo y se queda en el último frame. Después no se mueve, porque el cursor ya se está moviendo.
 - **Tallas:** las cinco de `ART-WLD-SEL`, elegidas con la misma huella y el mismo `world_select_tallas.json`. Son tres poderes por cinco tallas, quince hojas. Por la entrada desde fuera, la talla 40 no cabe en 96: esta familia va en **celda de 112**, centrada (*Familias exentas de la celda* del contrato).
 - **El generador falla si no se cumple:** alfa binario, sin tocar el borde de la celda, nada dentro del radio libre ni en la franja del número, y los cuatro frames distintos.
-- **La atenuación de lo no válido sigue siendo código** (`ProvisionalAimView` hasta `T6-06`), no arte.
+- **La atenuación de lo no válido sigue siendo código**, no arte: desde `T6-06`, `AimDimView` tiñe el sprite y sus overlays (desviación 333); el velo de `ProvisionalAimView` queda para los nodos sin sprite.
 
 **El lazo, cerrado: «El marco»**, v1 (elegida por el usuario el 2026-11-15). Generador: `tools/gen_lasso_v1.py` → `art/world/lasso/v1/`; vistas con `--vista` en `art/_preview/lasso/v1/` (`lasso_tablero.png` y `_x2`, `lasso_gesto_x2.gif`, `lasso_piezas_x8.png`).
 

@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &248498848
+--- !u!1 &412449071
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,8 +127,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 248498850}
-  - component: {fileID: 248498849}
+  - component: {fileID: 412449073}
+  - component: {fileID: 412449072}
   m_Layer: 0
   m_Name: Level
   m_TagString: Untagged
@@ -136,13 +136,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &248498849
+--- !u!114 &412449072
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 248498848}
+  m_GameObject: {fileID: 412449071}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 559d7765605ad6645b30b1953e94f187, type: 3}
@@ -159,16 +159,16 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 522b0098b45f4cf79825eab6fcba9df3, type: 2}
   - {fileID: 11400000, guid: 60239a795aac47ae831455c6af4006ce, type: 2}
   - {fileID: 11400000, guid: d326ab9f887d49ecaf643726db6c660c, type: 2}
-  registry: {fileID: 2087189133}
-  buffs: {fileID: 2087189132}
+  registry: {fileID: 600868202}
+  buffs: {fileID: 600868201}
   startLevel: {fileID: 11400000, guid: a076090aa74667c4182b8904d28f9d4b, type: 2}
---- !u!4 &248498850
+--- !u!4 &412449073
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 248498848}
+  m_GameObject: {fileID: 412449071}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -177,7 +177,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1383896799
+--- !u!1 &600868200
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -185,10 +185,561 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1383896803}
-  - component: {fileID: 1383896800}
-  - component: {fileID: 1383896802}
-  - component: {fileID: 1383896801}
+  - component: {fileID: 600868235}
+  - component: {fileID: 600868202}
+  - component: {fileID: 600868234}
+  - component: {fileID: 600868233}
+  - component: {fileID: 600868232}
+  - component: {fileID: 600868231}
+  - component: {fileID: 600868230}
+  - component: {fileID: 600868229}
+  - component: {fileID: 600868228}
+  - component: {fileID: 600868227}
+  - component: {fileID: 600868226}
+  - component: {fileID: 600868225}
+  - component: {fileID: 600868224}
+  - component: {fileID: 600868223}
+  - component: {fileID: 600868222}
+  - component: {fileID: 600868221}
+  - component: {fileID: 600868220}
+  - component: {fileID: 600868219}
+  - component: {fileID: 600868218}
+  - component: {fileID: 600868217}
+  - component: {fileID: 600868216}
+  - component: {fileID: 600868215}
+  - component: {fileID: 600868214}
+  - component: {fileID: 600868213}
+  - component: {fileID: 600868212}
+  - component: {fileID: 600868211}
+  - component: {fileID: 600868210}
+  - component: {fileID: 600868209}
+  - component: {fileID: 600868208}
+  - component: {fileID: 600868207}
+  - component: {fileID: 600868206}
+  - component: {fileID: 600868205}
+  - component: {fileID: 600868201}
+  - component: {fileID: 600868204}
+  - component: {fileID: 600868203}
+  m_Layer: 0
+  m_Name: Systems
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &600868201
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01d9835d357c421e8c2d2f8e62a0413d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Gameplay::Nova.Systems.FactionBuffs
+--- !u!114 &600868202
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b24018c72d98cf4a9151020dd15f3fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Gameplay::Nova.Systems.NodeRegistry
+--- !u!114 &600868203
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20547e53568e4f50b66fac08fce34303, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.ProvisionalPowerUpView
+  spawner: {fileID: 600868204}
+  haloPixels: 64
+--- !u!114 &600868204
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3d8d81a1281435aab089a67d71d8fac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Gameplay::Nova.Systems.PowerUpSpawner
+  balance: {fileID: 11400000, guid: b44adcf886c3449d9ae9f4ed9cf6e100, type: 2}
+  powerUps:
+  - {fileID: 11400000, guid: e73de1f23a9b4eb8b414647f27497b1c, type: 2}
+  - {fileID: 11400000, guid: e0655be9badb4822a0fb57e80835c04d, type: 2}
+  buffs: {fileID: 600868201}
+  nodes: {fileID: 600868202}
+  loader: {fileID: 412449072}
+  seed: 0
+--- !u!114 &600868205
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bca5ea4568f9b284ea7e08b8283a7fff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Gameplay::Nova.Systems.WinConditionChecker
+  balance: {fileID: 11400000, guid: b44adcf886c3449d9ae9f4ed9cf6e100, type: 2}
+  nodes: {fileID: 600868202}
+  protons: {fileID: 600868234}
+  loader: {fileID: 0}
+--- !u!114 &600868206
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c231ff29b9004e64a4dc657635b1ccb6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.UI::Nova.UI.PulsarPowerWheel
+  panel: {fileID: 600868227}
+  aim: {fileID: 600868226}
+  font: {fileID: 11400000, guid: 1047128195f8fd547bc221a7cc3be269, type: 2}
+  text: {fileID: 11400000, guid: 48cbd8ec450f4b498f1ec86102406c77, type: 2}
+  viewer: 1
+--- !u!114 &600868207
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11f7e5531c6855c479c3eff52296e16d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.UI::Nova.UI.NodeInfoPanel
+  panel: {fileID: 600868227}
+  font: {fileID: 11400000, guid: 1047128195f8fd547bc221a7cc3be269, type: 2}
+  text: {fileID: 11400000, guid: 48cbd8ec450f4b498f1ec86102406c77, type: 2}
+  viewer: 1
+--- !u!114 &600868208
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06829b4934f3db24db50e42175e4c388, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.UI::Nova.UI.IgnitionMenu
+  menu: {fileID: 600868228}
+  font: {fileID: 11400000, guid: 1047128195f8fd547bc221a7cc3be269, type: 2}
+  text: {fileID: 11400000, guid: 48cbd8ec450f4b498f1ec86102406c77, type: 2}
+--- !u!114 &600868209
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09d1930b5cfd7224faa01002fa5e2fe2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.AimReticleView
+  aim: {fileID: 600868226}
+  cursor: {fileID: 600868225}
+  art: {fileID: 11400000, guid: 49981a46122922447b287af685b9346b, type: 2}
+  nodes: {fileID: 600868202}
+--- !u!114 &600868210
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 103c42a41b4d06844b1b451f46b6225f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.AimDimView
+  aim: {fileID: 600868226}
+  nodes: {fileID: 600868202}
+--- !u!114 &600868211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf78880346b34d868c493820af18c04d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.ProvisionalAimView
+  aim: {fileID: 600868226}
+  nodes: {fileID: 600868202}
+  diameterPixels: 64
+--- !u!114 &600868212
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba0be457e49fa394fb532896e491cf86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.AudioDirector
+  beams: {fileID: 600868233}
+  bank: {fileID: 11400000, guid: 085b7935c42751f4f89dc6c411075f90, type: 2}
+--- !u!114 &600868213
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 068f287c4e823034682e00f642ed0b95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.PowerBeamVisual
+  beams: {fileID: 600868233}
+  art: {fileID: 11400000, guid: 2d058ef59eb9a454c83bfb905fe1165d, type: 2}
+--- !u!114 &600868214
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99e0eb3f2a9ef444e8bf7085e4f3a80a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.ProvisionalBeamView
+  beams: {fileID: 600868233}
+  thicknessPixels: 3
+--- !u!114 &600868215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e802d991e2c6aac42bf3d4dada403242, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.ProtonVisual
+  registry: {fileID: 600868234}
+  art: {fileID: 11400000, guid: ab02d5ca82ea3264180b82d5d44a5b35, type: 2}
+--- !u!114 &600868216
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16c433bf8f1f28c47b099482086dda05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.ProvisionalProtonView
+  registry: {fileID: 600868234}
+  font: {fileID: 11400000, guid: 1047128195f8fd547bc221a7cc3be269, type: 2}
+  diameterPixels: 24
+--- !u!114 &600868217
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d262b60a1eec874f81938fdcb4b04d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.SendLineVisual
+  state: {fileID: 600868225}
+  art: {fileID: 11400000, guid: 49981a46122922447b287af685b9346b, type: 2}
+--- !u!114 &600868218
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4a50c84952b74c47b5247e35d8b7fe3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.ProvisionalSendLineView
+  state: {fileID: 600868225}
+  thicknessPixels: 2
+--- !u!114 &600868219
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a9e764b67d353346892e7e359cc1d41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.MagnetarRadiusView
+  art: {fileID: 11400000, guid: cff5a10ce555e234cb2f8b787172c37d, type: 2}
+  registry: {fileID: 600868202}
+--- !u!114 &600868220
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f29179c0a64a9546a7213ae5f219351, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.LassoView
+  state: {fileID: 600868224}
+  art: {fileID: 11400000, guid: 49981a46122922447b287af685b9346b, type: 2}
+--- !u!114 &600868221
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e382f34cadcc63a4b92f847240acfc70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.SelectionRingView
+  selection: {fileID: 600868230}
+  art: {fileID: 11400000, guid: 49981a46122922447b287af685b9346b, type: 2}
+--- !u!114 &600868222
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f97ff272dcb9d14409c110e2df730b53, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.ProvisionalSelectionView
+  selection: {fileID: 600868230}
+  diameterPixels: 76
+  thicknessPixels: 2
+--- !u!114 &600868223
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 627b9b671cbd62043b59e6039bd54684, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Input::Nova.Input.InputRouter
+  balance: {fileID: 11400000, guid: b44adcf886c3449d9ae9f4ed9cf6e100, type: 2}
+  selection: {fileID: 600868230}
+  issuer: {fileID: 600868229}
+  ignitionMenu: {fileID: 600868228}
+  infoPanel: {fileID: 600868227}
+  worldCamera: {fileID: 1978849158}
+  sendLine: {fileID: 600868225}
+  aim: {fileID: 600868226}
+  game: {fileID: 0}
+  lasso: {fileID: 600868224}
+--- !u!114 &600868224
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68aede2b056c7f74b9becd22fc007c98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Input::Nova.Input.LassoState
+--- !u!114 &600868225
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c1ab0d8ec1476b4a82c09e07f237964, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Input::Nova.Input.SendLineState
+  selection: {fileID: 600868230}
+  ignitionMenu: {fileID: 600868228}
+  aim: {fileID: 600868226}
+--- !u!114 &600868226
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5593afbe8a64d6984072d58933d7a05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Input::Nova.Input.PowerAimState
+--- !u!114 &600868227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7e1bbaa1a5fefb40a740d78b4581bb0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Input::Nova.Input.InfoPanelState
+--- !u!114 &600868228
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0c62af037f7317498e5dcf0d4ecf641, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Input::Nova.Input.IgnitionMenuState
+--- !u!114 &600868229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbc71432044a567428759f0c14228a89, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Input::Nova.Input.PlayerCommandIssuer
+  launcher: {fileID: 600868231}
+--- !u!114 &600868230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2c06a209fe682e45a9da399ba05810b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Input::Nova.Input.SelectionManager
+  registry: {fileID: 600868202}
+--- !u!114 &600868231
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5eda4adbf953a54189fa10696355231, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Gameplay::Nova.Systems.ProtonLauncher
+  balance: {fileID: 11400000, guid: b44adcf886c3449d9ae9f4ed9cf6e100, type: 2}
+  pool: {fileID: 600868232}
+  registry: {fileID: 600868234}
+--- !u!114 &600868232
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a4629b4e92381842bb4361f68d7fee1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Gameplay::Nova.Systems.ProtonPool
+--- !u!114 &600868233
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 900ddd3164eed3440a900fb3249d3b97, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Gameplay::Nova.Systems.PowerBeamSystem
+--- !u!114 &600868234
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6166b47d3922e047aec8c5c299af9a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Gameplay::Nova.Systems.ProtonRegistry
+--- !u!4 &600868235
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600868200}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1978849157
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1978849162}
+  - component: {fileID: 1978849158}
+  - component: {fileID: 1978849161}
+  - component: {fileID: 1978849160}
+  - component: {fileID: 1978849159}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -196,13 +747,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!20 &1383896800
+--- !u!20 &1978849158
 Camera:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1383896799}
+  m_GameObject: {fileID: 1978849157}
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
@@ -247,13 +798,13 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!114 &1383896801
+--- !u!114 &1978849159
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1383896799}
+  m_GameObject: {fileID: 1978849157}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c88f5cead0c0b2a4eb05b5900433f8d1, type: 3}
@@ -271,13 +822,21 @@ MonoBehaviour:
   m_CropFrameX: 0
   m_CropFrameY: 0
   m_StretchFill: 0
---- !u!114 &1383896802
+--- !u!81 &1978849160
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1978849157}
+  m_Enabled: 1
+--- !u!114 &1978849161
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1383896799}
+  m_GameObject: {fileID: 1978849157}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
@@ -315,460 +874,16 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
---- !u!4 &1383896803
+--- !u!4 &1978849162
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1383896799}
+  m_GameObject: {fileID: 1978849157}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -10}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2087189131
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2087189159}
-  - component: {fileID: 2087189133}
-  - component: {fileID: 2087189158}
-  - component: {fileID: 2087189157}
-  - component: {fileID: 2087189156}
-  - component: {fileID: 2087189155}
-  - component: {fileID: 2087189154}
-  - component: {fileID: 2087189153}
-  - component: {fileID: 2087189152}
-  - component: {fileID: 2087189151}
-  - component: {fileID: 2087189150}
-  - component: {fileID: 2087189149}
-  - component: {fileID: 2087189148}
-  - component: {fileID: 2087189147}
-  - component: {fileID: 2087189146}
-  - component: {fileID: 2087189145}
-  - component: {fileID: 2087189144}
-  - component: {fileID: 2087189143}
-  - component: {fileID: 2087189142}
-  - component: {fileID: 2087189141}
-  - component: {fileID: 2087189140}
-  - component: {fileID: 2087189139}
-  - component: {fileID: 2087189138}
-  - component: {fileID: 2087189137}
-  - component: {fileID: 2087189136}
-  - component: {fileID: 2087189132}
-  - component: {fileID: 2087189135}
-  - component: {fileID: 2087189134}
-  m_Layer: 0
-  m_Name: Systems
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &2087189132
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 01d9835d357c421e8c2d2f8e62a0413d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Gameplay::Nova.Systems.FactionBuffs
---- !u!114 &2087189133
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9b24018c72d98cf4a9151020dd15f3fe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Gameplay::Nova.Systems.NodeRegistry
---- !u!114 &2087189134
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 20547e53568e4f50b66fac08fce34303, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.ProvisionalPowerUpView
-  spawner: {fileID: 2087189135}
-  haloPixels: 64
---- !u!114 &2087189135
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b3d8d81a1281435aab089a67d71d8fac, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Gameplay::Nova.Systems.PowerUpSpawner
-  balance: {fileID: 11400000, guid: b44adcf886c3449d9ae9f4ed9cf6e100, type: 2}
-  powerUps:
-  - {fileID: 11400000, guid: e73de1f23a9b4eb8b414647f27497b1c, type: 2}
-  - {fileID: 11400000, guid: e0655be9badb4822a0fb57e80835c04d, type: 2}
-  buffs: {fileID: 2087189132}
-  nodes: {fileID: 2087189133}
-  loader: {fileID: 248498849}
-  seed: 0
---- !u!114 &2087189136
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bca5ea4568f9b284ea7e08b8283a7fff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Gameplay::Nova.Systems.WinConditionChecker
-  balance: {fileID: 11400000, guid: b44adcf886c3449d9ae9f4ed9cf6e100, type: 2}
-  nodes: {fileID: 2087189133}
-  protons: {fileID: 2087189158}
-  loader: {fileID: 0}
---- !u!114 &2087189137
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c231ff29b9004e64a4dc657635b1ccb6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.UI::Nova.UI.PulsarPowerWheel
-  panel: {fileID: 2087189151}
-  aim: {fileID: 2087189150}
-  font: {fileID: 11400000, guid: 1047128195f8fd547bc221a7cc3be269, type: 2}
-  text: {fileID: 11400000, guid: 48cbd8ec450f4b498f1ec86102406c77, type: 2}
-  viewer: 1
---- !u!114 &2087189138
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 11f7e5531c6855c479c3eff52296e16d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.UI::Nova.UI.NodeInfoPanel
-  panel: {fileID: 2087189151}
-  font: {fileID: 11400000, guid: 1047128195f8fd547bc221a7cc3be269, type: 2}
-  text: {fileID: 11400000, guid: 48cbd8ec450f4b498f1ec86102406c77, type: 2}
-  viewer: 1
---- !u!114 &2087189139
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 06829b4934f3db24db50e42175e4c388, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.UI::Nova.UI.IgnitionMenu
-  menu: {fileID: 2087189152}
-  font: {fileID: 11400000, guid: 1047128195f8fd547bc221a7cc3be269, type: 2}
-  text: {fileID: 11400000, guid: 48cbd8ec450f4b498f1ec86102406c77, type: 2}
---- !u!114 &2087189140
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf78880346b34d868c493820af18c04d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.ProvisionalAimView
-  aim: {fileID: 2087189150}
-  nodes: {fileID: 2087189133}
-  diameterPixels: 64
---- !u!114 &2087189141
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 068f287c4e823034682e00f642ed0b95, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.PowerBeamVisual
-  beams: {fileID: 2087189157}
-  art: {fileID: 11400000, guid: 2d058ef59eb9a454c83bfb905fe1165d, type: 2}
---- !u!114 &2087189142
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 99e0eb3f2a9ef444e8bf7085e4f3a80a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.ProvisionalBeamView
-  beams: {fileID: 2087189157}
-  thicknessPixels: 3
---- !u!114 &2087189143
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e802d991e2c6aac42bf3d4dada403242, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.ProtonVisual
-  registry: {fileID: 2087189158}
-  art: {fileID: 11400000, guid: ab02d5ca82ea3264180b82d5d44a5b35, type: 2}
---- !u!114 &2087189144
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 16c433bf8f1f28c47b099482086dda05, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.ProvisionalProtonView
-  registry: {fileID: 2087189158}
-  font: {fileID: 11400000, guid: 1047128195f8fd547bc221a7cc3be269, type: 2}
-  diameterPixels: 24
---- !u!114 &2087189145
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b4a50c84952b74c47b5247e35d8b7fe3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.ProvisionalSendLineView
-  state: {fileID: 2087189149}
-  thicknessPixels: 2
---- !u!114 &2087189146
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8a9e764b67d353346892e7e359cc1d41, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.MagnetarRadiusView
-  art: {fileID: 11400000, guid: cff5a10ce555e234cb2f8b787172c37d, type: 2}
-  registry: {fileID: 2087189133}
---- !u!114 &2087189147
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f97ff272dcb9d14409c110e2df730b53, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.ProvisionalSelectionView
-  selection: {fileID: 2087189154}
-  diameterPixels: 76
-  thicknessPixels: 2
---- !u!114 &2087189148
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 627b9b671cbd62043b59e6039bd54684, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Input::Nova.Input.InputRouter
-  balance: {fileID: 11400000, guid: b44adcf886c3449d9ae9f4ed9cf6e100, type: 2}
-  selection: {fileID: 2087189154}
-  issuer: {fileID: 2087189153}
-  ignitionMenu: {fileID: 2087189152}
-  infoPanel: {fileID: 2087189151}
-  worldCamera: {fileID: 1383896800}
-  sendLine: {fileID: 2087189149}
-  aim: {fileID: 2087189150}
-  game: {fileID: 0}
---- !u!114 &2087189149
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2c1ab0d8ec1476b4a82c09e07f237964, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Input::Nova.Input.SendLineState
-  selection: {fileID: 2087189154}
-  ignitionMenu: {fileID: 2087189152}
-  aim: {fileID: 2087189150}
---- !u!114 &2087189150
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b5593afbe8a64d6984072d58933d7a05, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Input::Nova.Input.PowerAimState
---- !u!114 &2087189151
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c7e1bbaa1a5fefb40a740d78b4581bb0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Input::Nova.Input.InfoPanelState
---- !u!114 &2087189152
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b0c62af037f7317498e5dcf0d4ecf641, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Input::Nova.Input.IgnitionMenuState
---- !u!114 &2087189153
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fbc71432044a567428759f0c14228a89, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Input::Nova.Input.PlayerCommandIssuer
-  launcher: {fileID: 2087189155}
---- !u!114 &2087189154
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f2c06a209fe682e45a9da399ba05810b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Input::Nova.Input.SelectionManager
-  registry: {fileID: 2087189133}
---- !u!114 &2087189155
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5eda4adbf953a54189fa10696355231, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Gameplay::Nova.Systems.ProtonLauncher
-  balance: {fileID: 11400000, guid: b44adcf886c3449d9ae9f4ed9cf6e100, type: 2}
-  pool: {fileID: 2087189156}
-  registry: {fileID: 2087189158}
---- !u!114 &2087189156
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a4629b4e92381842bb4361f68d7fee1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Gameplay::Nova.Systems.ProtonPool
---- !u!114 &2087189157
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 900ddd3164eed3440a900fb3249d3b97, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Gameplay::Nova.Systems.PowerBeamSystem
---- !u!114 &2087189158
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e6166b47d3922e047aec8c5c299af9a0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Nova.Gameplay::Nova.Systems.ProtonRegistry
---- !u!4 &2087189159
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2087189131}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -778,6 +893,6 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 1383896803}
-  - {fileID: 2087189159}
-  - {fileID: 248498850}
+  - {fileID: 1978849162}
+  - {fileID: 600868235}
+  - {fileID: 412449073}
