@@ -36,7 +36,7 @@ Mientras esté entre comillas invertidas no se renderiza y no rompe el documento
 art/
 ├── nodes/<nodo>/v<n>/  <tipo>_lvl<n>_<faccion>.png   pulsar/v2/pul_lvl2_player.png
 ├── states/<estado>/v<n>/  state_<estado>_<variante>.png  frozen/v3/state_frozen_overlay.png
-├── fx/                 fx_<id>.png | fx_<id>_sheet.png  fx_cap_sheet.png
+├── fx/<efecto>/v<n>/   fx_<id>.png | fx_<id>_sheet.png  fx/shot/v3/fx_shot_sheet.png
 ├── world/              world_<elemento>.png           world_proton_player.png
 ├── ui/                 ui_<elemento>.png              ui_powerwheel_slot.png
 ├── bg/fondos/v<n>/     bg_<seccion>.png | bg_ufo_sheet.png  fondos/v2/bg_section1.png
@@ -1159,7 +1159,7 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-FX-SEND` | Lanzamiento | `art/fx/fx_send_sheet.png` | 0.2 s | 3 | ⬜ |
 | `ART-FX-ABS` | Absorción aliada | `art/fx/fx_absorb_sheet.png` | 0.3 s | 4 | ⬜ |
 | `ART-FX-DMG` | Daño sin captura | `art/fx/fx_damage_sheet.png` | 0.3 s | 4 | ⬜ |
-| `ART-FX-SHOT` | Disparo del Magnetar: destello sobre el protón | `art/fx/fx_shot_sheet.png` | 0.17 s, como el arco | 2 | ⬜ |
+| `ART-FX-SHOT` | Disparo del Magnetar: destello sobre el protón | `art/fx/shot/v3/fx_shot_sheet.png`: **una hoja**, 20 filas (bando × talla del protón) y 4 variantes | 0.17 s, como el arco | 2 | ✅ |
 | `ART-FX-KILL` | Protón destruido | `art/fx/fx_protonkill_sheet.png` | 0.25 s | 3 | ⬜ |
 | `ART-FX-THAW` | Deshielo | `art/fx/fx_thaw_sheet.png` | 0.5 s | 6 | ⬜ |
 | `ART-FX-CURE` | Cura de Decaimiento | `art/fx/fx_cure_sheet.png` | 0.4 s | 5 | ⬜ |
@@ -1169,6 +1169,24 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-FX-PWR-WRM` | Impacto Agujero de Gusano | `art/fx/fx_wormhole_impact_sheet.png` | 1.0 s | 12 | ⬜ |
 | `ART-FX-CASCADE` | Cascada de conquista | `art/fx/fx_cascade_sheet.png` | 3.0 s | 36 | ⬜ |
 | `ART-FX-VANISH` | Protones huérfanos | `art/fx/fx_vanish_sheet.png` | 0.4 s | 5 | ⬜ |
+
+### `ART-FX-SHOT` — destello sobre el protón
+
+![ART-FX-SHOT v3](../art/_preview/fx_shot/v3/fx_shot_golpe_x3.png)
+
+**Diseño cerrado: «El brillo de aerógrafo», v3** (elegida por el usuario el 2026-11-15). Generador: `tools/gen_fx_shot_v3.py` → `art/fx/shot/v3/fx_shot_sheet.png` y su `.json`; vistas en `art/_preview/fx_shot/v3/` (`--gif` para el tablero animado, a velocidad real y a un cuarto). La comparativa de las tres propuestas está en `art/_preview/fx_shot/comparativa_golpe_x3.png`.
+
+- **El destello de la época.** La paleta es la de una ilustración de aerógrafo de los 70–80 (contrato, *Paleta*), y en esas portadas todo lo que brilla brilla igual: una estrella de cuatro puntas finísimas, una larga y otra corta, con cuatro diagonales cortas y un resplandor redondo. El golpe del arco le «saca brillo» al protón un instante.
+- **Golpe (frame 0):** la cruz mayor sobresale 8 px de la bolsa en un eje y 3 en el otro; índice 1 hasta la membrana, 2 y 3 hacia la punta; 2 px de grueso cerca del centro y 1 en la punta. Diagonales en el 2 y el 3 y un resplandor ralo dentro de la bolsa. **Apagado (frame 1):** la cruz sobresale la mitad y baja una banda; quedan dos motas donde estaban las puntas largas.
+- **Una fila por talla.** El protón mide de 23 a 43 px según su Carga, así que el destello se mide contra la bolsa de cada una de las diez tallas de «La bolsa» (`gen_proton_v2.TALLAS`). Hoja de 512 × 1280 en celdas de **64**: filas `player_1…10` y `enemy_1…10`, columnas variante 0 frame 0, variante 0 frame 1, variante 1 frame 0… Lo dice `fx_shot_sheet.json`.
+- **Cuatro variantes**, que `VFXPool` sortea en cada disparo: cruz recta y en aspa, y en cada una cuál de los dos brazos es el largo. Un Magnetar N5 dispara 4.27 veces por segundo, y el mismo destello en el mismo sitio se leería como un parpadeo del sprite.
+- **En el color del protón alcanzado, no del Magnetar:** `plasma_p` y `plasma_e`, índices 1–5. El arco ya trae el color de quien dispara; el destello es el plasma de quien recibe. El `[1]` es casi blanco, tan claro como el contacto del arco, y el blanco puro sigue siendo de `FX-CAP`.
+- **Encima del número y sin pisarlo.** Va en la capa 7 de [14.7](./NOVA_Estados_Animaciones.md#147-prioridad-visual), por encima de la Carga, que es justo lo que el disparo cambia. **Cuelga del protón**: en 0.17 s el protón recorre 27 px.
+- **El generador falla** si el alfa no es binario, si sale un índice fuera de 1–5, si un píxel cae en la caja de cualquier Carga de su talla (con su contorno y uno de holgura), si toca el borde de la celda, si no sale de la bolsa, si el golpe no llega al índice 1, si el frame 1 no da menos luz que el 0 o si las cuatro variantes no son distintas. Las comprobaciones, la hoja y las vistas viven en `gen_fx_shot_v1.py` y las tres propuestas las comparten.
+
+**Propuesta v1, «El campanazo»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_shot_v1.py` → `art/fx/shot/v1/`. La bolsa suena como una campana golpeada: un aro de 1 px la ciñe aplastado en el eje del golpe (el modo cuadrupolar de una membrana) y rebota al revés, suelto y roto. La más presente de las tres.
+
+**Propuesta v2, «Los dos cuantos»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_shot_v2.py` → `art/fx/shot/v2/`. El destello es el daño: dos cuantos de plasma —los 2 de Carga que quita cada disparo— salen por dos rasgaduras de la bolsa y huyen con estela. La más ligera (unos 100 px de golpe contra 250–450).
 
 ## A.6 UI — [13](./NOVA_GameDesign_Spec.md#13-controles-y-ui)
 
@@ -1201,9 +1219,11 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.3 Selección y apuntado | **4** | **4** ✅ | — (ya no bloquea `T6-06`) |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
-| A.5 VFX | 15 | 0 | `VFXPool`, fase 6 |
+| A.5 VFX | 15 | **1** | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **134** | **110** | — |
+| **Total** | **134** | **111** | — |
+
+**Y los ✅ suben de 110 a 111 el 2026-11-15** con el destello sobre el protón alcanzado, `ART-FX-SHOT` v3, «El brillo de aerógrafo» (A.5), el primero de los VFX. Es un solo archivo, como decía la tabla, pero con veinte filas —bando por talla del protón— y cuatro variantes. A.5 queda en 1 de 15.
 
 **Y los ✅ suben de 109 a 110 el 2026-11-15** con el cursor de apuntado, `ART-WLD-AIM` v1, «El cepo» (A.4.3). **A.4.3 queda cerrado, 4 de 4**, y `T6-06` deja de estar bloqueada por arte.
 

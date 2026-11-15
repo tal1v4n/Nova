@@ -1,0 +1,29 @@
+{
+ "cellSize": 64,
+ "frames": 2,
+ "variants": 4,
+ "fps": 12,
+ "rows": [
+  "player_1",
+  "player_2",
+  "player_3",
+  "player_4",
+  "player_5",
+  "player_6",
+  "player_7",
+  "player_8",
+  "player_9",
+  "player_10",
+  "enemy_1",
+  "enemy_2",
+  "enemy_3",
+  "enemy_4",
+  "enemy_5",
+  "enemy_6",
+  "enemy_7",
+  "enemy_8",
+  "enemy_9",
+  "enemy_10"
+ ],
+ "note": "una fila por faccion y talla del proton (world_proton_tallas.json); columnas: variante 0 frame 0, variante 0 frame 1, variante 1 frame 0...; pivote en el centro, colgado del proton"
+}
