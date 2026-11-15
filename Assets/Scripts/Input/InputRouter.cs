@@ -60,6 +60,9 @@ namespace Nova.Input
         [Tooltip("Opcional: sin él Esc solo avisa con OnPauseRequested y la entrada nunca se suspende (T5-05).")]
         [SerializeField] GameManager game;
 
+        [Tooltip("Opcional: sin él el lazo selecciona pero no se dibuja (T6-06).")]
+        [SerializeField] LassoState lasso;
+
         readonly Queue<PointerEvent> pending = new Queue<PointerEvent>();
         int nodesMask = -1;
 
@@ -148,6 +151,8 @@ namespace Nova.Input
             rightPressNode = null;
             if (sendLine != null)
                 sendLine.EndDrag();
+            if (lasso != null)
+                lasso.Clear();
         }
 
         void Update()
@@ -237,6 +242,10 @@ namespace Nova.Input
             if (pressing && !dragging && BeyondThreshold(world, pressWorld))
                 dragging = true;
 
+            // T6-06: un arrastre izquierdo es siempre lazo (18 #32), salvo en modo apuntado, donde no hace nada.
+            if (lasso != null && pressing && dragging && !IsAiming)
+                lasso.Set(pressWorld, world);
+
             if (rightPressing && !rightDragging && BeyondThreshold(world, rightPressWorld))
             {
                 rightDragging = true;
@@ -253,6 +262,8 @@ namespace Nova.Input
                 return;
             MoveTo(world);
             pressing = false;
+            if (lasso != null)
+                lasso.Clear();
 
             // Menú de encendido abierto (13.7): un clic sobre una opción la elige; cualquier otro
             // clic o arrastre lo cierra sin encender y sigue su curso normal.
@@ -432,8 +443,9 @@ namespace Nova.Input
         // Para la escena de prueba y los tests: el cableado normal es por el Inspector.
         public void Configure(BalanceConfig config, SelectionManager selectionManager, PlayerCommandIssuer commandIssuer,
             IgnitionMenuState menu, InfoPanelState panel, Camera cam = null, SendLineState line = null, PowerAimState powerAim = null,
-            GameManager flow = null)
+            GameManager flow = null, LassoState lassoState = null)
         {
+            lasso = lassoState;
             UnsubscribeGame();
             game = flow;
             SubscribeGame();

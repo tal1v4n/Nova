@@ -23,6 +23,9 @@ namespace Nova.Input
         public NodeController Pulsar => pulsar;
         public Faction Launcher => launcher;
 
+        // El poder que se va a lanzar: la retícula va en su color (T6-06, 14.4). Sin apuntado, el primero.
+        public PowerType Power => caster != null && caster.Power != null ? caster.Power.Type : default;
+
         // Empieza o termina el apuntado.
         public event Action OnChanged;
 

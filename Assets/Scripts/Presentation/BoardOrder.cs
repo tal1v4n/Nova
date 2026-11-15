@@ -49,5 +49,12 @@ namespace Nova.Presentation
         // arco del Magnetar (T6-05) y el haz de poder (T6-11) son trazos de la capa 0 (Strokes).
         public const int MagnetarShot = 10;
         public const int Beam = 11;
+
+        // T6-06. El anillo de selección va detrás del nodo y asoma por fuera, como el radio del Magnetar, pero
+        // encima de él: un Magnetar propio seleccionado enseña los dos (A.4.3). La retícula de apuntado va sobre
+        // el objetivo y el lazo sobre todo el tablero, por debajo de la UI de partida (20 y 30).
+        public const int SelectionRing = BehindNode + 1;
+        public const int AimReticle = 12;
+        public const int Lasso = 13;
     }
 }

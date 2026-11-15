@@ -11,6 +11,8 @@ namespace Nova.Presentation
     // de T.2: el filamento de plasma de 14.9 (ART-WLD-LINK) lo pone T6-06.
     //
     // Sigue al cursor en cada frame, en Update (15.10). Solo lee SendLineState.
+    //
+    // T6-06: con un SendLineVisual con arte en el mismo objeto, se aparta y no dibuja nada.
     [DefaultExecutionOrder(100)] // Presentation, 15.10
     [DisallowMultipleComponent]
     public sealed class ProvisionalSendLineView : MonoBehaviour
@@ -67,7 +69,8 @@ namespace Nova.Presentation
         // Un trazo por origen, del centro al cursor; los que sobran se apagan.
         public void Refresh()
         {
-            IReadOnlyList<NodeController> origins = state != null ? state.Origins : null;
+            bool replaced = TryGetComponent(out SendLineVisual replacement) && replacement.HasArt;
+            IReadOnlyList<NodeController> origins = state != null && !replaced ? state.Origins : null;
             int count = origins != null ? origins.Count : 0;
             Vector2 tip = state != null ? state.Cursor : Vector2.zero;
 

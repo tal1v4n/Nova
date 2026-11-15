@@ -34,6 +34,7 @@ namespace Nova.Editor
         public const string MagnetarArtPath = "Assets/Data/MagnetarArt.asset";
         public const string ProtonArtPath = "Assets/Data/ProtonArt.asset";
         public const string PowerBeamArtPath = "Assets/Data/PowerBeamArt.asset";
+        public const string InputArtPath = "Assets/Data/InputArt.asset";
 
         // <hoja>_<n>: el nombre que SpriteImportRules da a cada frame.
         static readonly Regex FrameIndex = new Regex(@"_(\d+)$");
@@ -124,8 +125,16 @@ namespace Nova.Editor
                 return;
             }
             EditorUtility.SetDirty(beams);
+
+            InputArt input = LoadOrCreate<InputArt>(InputArtPath);
+            if (!ConfigureInput(input, out string inputError))
+            {
+                Debug.LogError($"[Nova] {inputError}");
+                return;
+            }
+            EditorUtility.SetDirty(input);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[Nova] Sprites, huellas y hojas de idle asignados a los {Nodes.Length} tipos de nodo, los overlays de estado a {StateArtPath}, el radio y el arco del Magnetar a {MagnetarArtPath}, el protón a {ProtonArtPath} y los haces de poder a {PowerBeamArtPath}.");
+            Debug.Log($"[Nova] Sprites, huellas y hojas de idle asignados a los {Nodes.Length} tipos de nodo, los overlays de estado a {StateArtPath}, el radio y el arco del Magnetar a {MagnetarArtPath}, el protón a {ProtonArtPath}, los haces de poder a {PowerBeamArtPath} y la línea, la selección, el lazo y la retícula a {InputArtPath}.");
         }
 
         static T LoadOrCreate<T>(string path) where T : ScriptableObject
@@ -208,6 +217,74 @@ namespace Nova.Editor
                 return true;
             error = $"Falta {missing} o no está cortada: sincroniza con Nova → Arte → Sincronizar sprites desde art.";
             return false;
+        }
+
+        // T6-06: el arte de la entrada (A.4.3), tal como lo copia ArtBridge.
+        public const string LinkSheetPath = WorldFolder + "/link/world_link_sheet.png";
+        public const string SelectSizesJsonPath = WorldFolder + "/select/world_select_tallas.json";
+        public static string RingSheetPath(int radius) => $"{WorldFolder}/select/world_select_{radius}_sheet.png";
+        public const string LassoCornerPath = WorldFolder + "/lasso/world_lasso_corner.png";
+        public const string LassoEdgePath = WorldFolder + "/lasso/world_lasso_edge_sheet.png";
+        public static string AimSheetPath(string power, int radius) => $"{WorldFolder}/aim/world_aim_{power}_{radius}_sheet.png";
+
+        // La línea de envío, las tallas del anillo de selección, las piezas del lazo y las quince hojas de la
+        // retícula. Cuántas tallas hay y su radio vienen de world_select_tallas.json; la retícula usa las mismas.
+        public static bool ConfigureInput(InputArt input, out string error)
+        {
+            error = null;
+            string missing = null;
+
+            var json = AssetDatabase.LoadAssetAtPath<TextAsset>(SelectSizesJsonPath);
+            SelectSizesExport tallas = json != null ? JsonUtility.FromJson<SelectSizesExport>(json.text) : null;
+            if (tallas?.radios == null || tallas.radios.Length == 0 || tallas.aire < 0)
+            {
+                error = $"Falta {SelectSizesJsonPath} o no está completo: sincroniza con Nova → Arte → Sincronizar sprites desde art.";
+                return false;
+            }
+
+            InputArt.Frames Sheet(string path)
+            {
+                var frames = new InputArt.Frames(LoadFrames(path));
+                if (!frames.IsComplete)
+                    missing ??= path;
+                return frames;
+            }
+
+            Sprite[] link = LoadFrames(LinkSheetPath);
+            InputArt.Frames LinkPiece(string piece)
+            {
+                var frames = new InputArt.Frames(link.Where(sprite => sprite.name.Contains($"_{piece}_")).ToArray());
+                if (!frames.IsComplete)
+                    missing ??= LinkSheetPath;
+                return frames;
+            }
+
+            InputArt.Frames[] PerSize(System.Func<int, string> path) =>
+                tallas.radios.Select(radius => Sheet(path(radius))).ToArray();
+
+            var corner = AssetDatabase.LoadAssetAtPath<Sprite>(LassoCornerPath);
+            if (corner == null)
+                missing ??= LassoCornerPath;
+
+            input.Configure(LinkPiece("birth"), LinkPiece("tile"), LinkPiece("tip"),
+                tallas.aire, tallas.radios, PerSize(RingSheetPath),
+                corner, Sheet(LassoEdgePath),
+                PerSize(r => AimSheetPath("zero", r)), PerSize(r => AimSheetPath("decay", r)),
+                PerSize(r => AimSheetPath("wormhole", r)));
+
+            if (missing == null)
+                return true;
+            error = $"Falta {missing} o no está cortada: sincroniza con Nova → Arte → Sincronizar sprites desde art.";
+            return false;
+        }
+
+        // El JSON de tools/gen_select_v1.py, exporta_tallas.
+        [Serializable]
+        sealed class SelectSizesExport
+        {
+            public int ppu;
+            public int aire;
+            public int[] radios;
         }
 
         // La talla va de 1 a N en el nombre del archivo, y de 0 a N − 1 en ProtonArt.

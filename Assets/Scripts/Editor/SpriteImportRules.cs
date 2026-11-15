@@ -37,8 +37,8 @@ namespace Nova.Editor
         const int MaxTextureSize = 8192;
 
         // Subirla reimporta todo lo que pasa por aquí. 1: las texturas de datos (T5-05b); 2: todo en 2D;
-        // 3: el protón y las cifras (T6-04); 4: el protón en diez tallas.
-        public override uint GetVersion() => 4;
+        // 3: el protón y las cifras (T6-04); 4: el protón en diez tallas; 5: el lazo (T6-06).
+        public override uint GetVersion() => 5;
 
         void OnPreprocessTexture()
         {
@@ -69,10 +69,11 @@ namespace Nova.Editor
             importer.npotScale = TextureImporterNPOTScale.None;
             importer.maxTextureSize = MaxTextureSize;
 
-            // Pivote Center: en NOVA nada se apoya en un suelo (Bottom no aplica a ningún asset).
+            // Pivote Center: en NOVA nada se apoya en un suelo (Bottom no aplica a ningún asset). La esquina del
+            // lazo (T6-06) es la excepción: se coloca por su esquina de arriba a la izquierda y se refleja allí.
             var settings = new TextureImporterSettings();
             importer.ReadTextureSettings(settings);
-            settings.spriteAlignment = (int)SpriteAlignment.Center;
+            settings.spriteAlignment = (int)(fileName == LassoCornerName ? SpriteAlignment.TopLeft : SpriteAlignment.Center);
             settings.spriteMeshType = SpriteMeshType.FullRect;
             importer.SetTextureSettings(settings);
 
@@ -133,6 +134,12 @@ namespace Nova.Editor
         const int ProtonCell = 48;
         const int ProtonDropSteps = 4;
 
+        // ART-WLD-LASSO (A.4.3, tools/gen_lasso_v1.py): el tramo es una tira de frames de 8 × 1, no cuadrados, con el
+        // pivote a la izquierda y centrado en su fila; LassoView lo coloca en mosaico desde la esquina de la que sale.
+        const string LassoEdgeName = "world_lasso_edge_sheet";
+        const string LassoCornerName = "world_lasso_corner";
+        const int LassoTile = 8;
+
         // Las cifras de la Carga: diez celdas de 7 × 9, de 0 a 9, con la cifra pegada a la izquierda y su
         // contorno dentro. Pivote abajo a la izquierda: ProtonVisual las coloca en píxeles enteros.
         const string DigitsName = "world_charge_digits";
@@ -157,6 +164,17 @@ namespace Nova.Editor
                     .Select(i => Frame($"{baseName}_body_{i}", new Rect(i * ProtonCell, ProtonCell, ProtonCell, ProtonCell), center))
                     .Concat(Enumerable.Range(0, ProtonDropSteps)
                         .Select(i => Frame($"{baseName}_drop_{i}", new Rect(i * ProtonCell, 0, ProtonCell, ProtonCell), center)))
+                    .ToArray();
+            }
+            else if (baseName == LassoEdgeName)
+            {
+                if (height != 1 || width % LassoTile != 0)
+                {
+                    Debug.LogError($"[Nova] {importer.assetPath}: {width}x{height} no son frames de {LassoTile}x1.");
+                    return;
+                }
+                rects = Enumerable.Range(0, width / LassoTile)
+                    .Select(i => Frame($"{baseName}_{i}", new Rect(i * LassoTile, 0, LassoTile, 1), new Vector2(0f, 0.5f)))
                     .ToArray();
             }
             else if (baseName == DigitsName)

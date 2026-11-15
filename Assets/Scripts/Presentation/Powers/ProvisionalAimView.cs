@@ -12,6 +12,9 @@ namespace Nova.Presentation
     // fondo a media opacidad, y los válidos se ven enteros. No hay círculo de alcance, porque no hay
     // alcance. La atenuación es código y no arte (desviación 81); la retícula ART-WLD-AIM llega con
     // T6-06. Solo lee PowerAimState y NodeRegistry.
+    //
+    // T6-06: con un AimDimView en el mismo objeto, los nodos con sprite los atenúa él tiñendo el sprite, y este
+    // velo —que es alfa parcial— solo queda para los círculos de las escenas sin arte.
     [DefaultExecutionOrder(100)] // Presentation, 15.10
     [DisallowMultipleComponent]
     public sealed class ProvisionalAimView : MonoBehaviour
@@ -61,6 +64,7 @@ namespace Nova.Presentation
         {
             NodeRegistry registry = nodes != null ? nodes : NodeRegistry.Instance;
             int used = 0;
+            bool dimView = TryGetComponent(out AimDimView _);
             if (aim != null && aim.IsAiming && registry != null)
             {
                 IReadOnlyList<NodeController> all = registry.All;
@@ -68,6 +72,8 @@ namespace Nova.Presentation
                 {
                     NodeController node = all[i];
                     if (node == null || !node.IsInitialized || aim.IsValidTarget(node))
+                        continue;
+                    if (dimView && AimDimView.Handles(node))
                         continue;
                     SpriteRenderer veil = Veil(used++);
                     Vector3 position = node.transform.position;

@@ -7,6 +7,8 @@ namespace Nova.Presentation
 {
     // T1-12: anillo provisional alrededor de cada nodo seleccionado. Primitiva de la regla 4 de
     // T.2: desechable, la sustituye ART-WLD-SEL en T6-06. Solo lee OnSelectionChanged.
+    //
+    // T6-06: con un SelectionRingView con arte en el mismo objeto, se aparta y no dibuja nada.
     [DefaultExecutionOrder(100)] // Presentation, 15.10
     [DisallowMultipleComponent]
     public sealed class ProvisionalSelectionView : MonoBehaviour
@@ -83,6 +85,8 @@ namespace Nova.Presentation
                 return;
 
             var keep = new HashSet<NodeController>(selection.Selected);
+            if (TryGetComponent(out SelectionRingView replacement) && replacement.HasArt)
+                keep.Clear();
 
             var gone = new List<NodeController>();
             foreach (NodeController node in rings.Keys)

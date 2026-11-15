@@ -588,14 +588,21 @@ namespace Nova.Editor
             var aim = go.AddComponent<PowerAimState>(); // T3-07
             var sendLine = go.AddComponent<SendLineState>(); // T2-09
             sendLine.Configure(selection, menu, aim);
+            var lasso = go.AddComponent<LassoState>(); // T6-06
             var router = go.AddComponent<InputRouter>();
-            router.Configure(balance, selection, issuer, menu, panel, camera, sendLine, aim, game); // T5-05: Esc pausa
+            router.Configure(balance, selection, issuer, menu, panel, camera, sendLine, aim, game, lasso); // T5-05: Esc pausa
 
+            // T6-06: la entrada con su arte. Sin InputArt asignado, las vistas provisionales siguen al mando y el
+            // lazo no se dibuja.
+            var input = AssetDatabase.LoadAssetAtPath<InputArt>(NodeArtAssets.InputArtPath);
             go.AddComponent<ProvisionalSelectionView>().Configure(selection);
+            go.AddComponent<SelectionRingView>().Configure(input, selection);
+            go.AddComponent<LassoView>().Configure(input, lasso);
             // T6-05: los anillos de radio. Sin MagnetarArt asignado, el anillo sigue siendo el provisional.
             go.AddComponent<MagnetarRadiusView>().Configure(
                 AssetDatabase.LoadAssetAtPath<MagnetarArt>(NodeArtAssets.MagnetarArtPath), registry);
             go.AddComponent<ProvisionalSendLineView>().Configure(sendLine);
+            go.AddComponent<SendLineVisual>().Configure(input, sendLine); // T6-06
             go.AddComponent<ProvisionalProtonView>().Configure(protons, font);
             // T6-04: el protón con su arte. Sin ProtonArt asignado, el disco provisional sigue al mando.
             go.AddComponent<ProtonVisual>().Configure(
@@ -611,6 +618,8 @@ namespace Nova.Editor
                 Debug.LogWarning($"[Nova] No existe {AudioAssets.SoundBankPath}: importa el audio con Nova → Audio → Importar audio y crear el mezclador. La partida saldrá sin sonido.");
             go.AddComponent<AudioDirector>().Configure(sounds, beams);
             go.AddComponent<ProvisionalAimView>().Configure(aim, registry); // T3-07
+            go.AddComponent<AimDimView>().Configure(aim, registry); // T6-06
+            go.AddComponent<AimReticleView>().Configure(input, aim, sendLine, registry); // T6-06
             go.AddComponent<IgnitionMenu>().Configure(menu, font, text);
             go.AddComponent<NodeInfoPanel>().Configure(panel, font, text);
             go.AddComponent<PulsarPowerWheel>().Configure(panel, aim, font, text); // T3-07

@@ -193,7 +193,9 @@ Efectos que se reproducen y terminan. No bloquean nada.
 Cuando varios estados coexisten, este es el orden de capas de abajo a arriba:
 
 ```
-0. Trazos de mundo           línea de envío, arco del Magnetar (14.9), haz de poder (7.2.2)
+0. Trazos de mundo           línea de envío, arco del Magnetar (14.9), haz de poder (7.2.2),
+                             y por debajo de ellos los anillos: radio del Magnetar y, encima,
+                             anillo de selección (A.4.3)
 1. Sprite base del nodo (tipo + nivel + facción)
 2. Tinte de estado           Congelado > Reconvirtiendo > Normal
 3. Aura de estado            Infectado
@@ -202,6 +204,8 @@ Cuando varios estados coexisten, este es el orden de capas de abajo a arriba:
 6. Números y HUD             Energía, barra de carga del Púlsar
 7. Efectos puntuales         14.5
 ```
+
+**Por encima de los siete, la entrada** (`T6-06`, A.4.3): la retícula de apuntado sobre su objetivo y, encima de todo el tablero, el lazo. Los dos son del cursor, no del nodo, y solo existen mientras dura el gesto. La UI de partida sigue por encima. La atenuación del modo apuntado no es una capa: multiplica el color de las capas 1–4 de lo que no es objetivo y deja intacta la 6.
 
 El número de Energía **nunca se oculta**, en ningún estado. Es la información que el jugador lee más veces por partida.
 
