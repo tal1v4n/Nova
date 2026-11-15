@@ -47,6 +47,7 @@ crashlynx/
 
 # Capturas de las pruebas a mano en Play: evidencia local, no se versiona
 /mds/evidencias/
+/mds/school/
 
 # Vistas en movimiento de art/_preview: salida derivada y pesada (tracking, desviacion 264)
 art/_preview/**/*.gif
