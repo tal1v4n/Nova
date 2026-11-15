@@ -44,7 +44,7 @@ namespace Nova.Presentation
         // T6-03, el susto (14.2): temblor de 1 px a cada lado, un paso por frame, y el salto, en píxeles
         // hacia arriba frame a frame desde que empieza. Arranca en el pico, como todo lo que se dispara (A.3.7).
         public const int ScareShakePixels = 1;
-        static readonly int[] ScareHopPixels = { 3, 2, 1 };
+        static readonly int[] ScareHopPixels = { 4, 3, 2, 1 };
         public static int ScareHopFrames => ScareHopPixels.Length;
 
         const int PixelsPerUnit = 64;

@@ -249,9 +249,9 @@ namespace Nova.Tests
         [Test]
         public void TheScareJumpsFromItsPeakAndShakesOneWholePixelEachWay()
         {
-            Assert.AreEqual(new Vector2Int(1, 3), NodeAnimator.ScarePixels(0), "Arranca en el pico del salto.");
-            Assert.AreEqual(new Vector2Int(-1, 2), NodeAnimator.ScarePixels(1));
-            Assert.AreEqual(new Vector2Int(1, 1), NodeAnimator.ScarePixels(2));
+            Assert.AreEqual(new Vector2Int(1, 4), NodeAnimator.ScarePixels(0), "Arranca en el pico del salto.");
+            Assert.AreEqual(new Vector2Int(-1, 3), NodeAnimator.ScarePixels(1));
+            Assert.AreEqual(new Vector2Int(1, 2), NodeAnimator.ScarePixels(2));
             for (int frame = NodeAnimator.ScareHopFrames; frame < 40; frame++)
             {
                 Vector2Int offset = NodeAnimator.ScarePixels(frame);
