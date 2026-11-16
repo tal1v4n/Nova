@@ -154,7 +154,7 @@ Efectos que se reproducen y terminan. No bloquean nada.
 | `FX-PWR-WRM` | Impacto Agujero de Gusano | El nodo objetivo | **Termina el haz** | 1.0 s → `Capturado` |
 | `FX-DROP` | Aparición de power-up | Un Asteroide neutral al azar | `PowerUpSpawner` | Halo + icono, hasta recogida o 30 s |
 | `FX-BUFF` | Power-up activo | Los nodos de la facción **a los que el power-up afecta** ([A.3.8](./NOVA_Assets_Diseno.md#a38-art-st-buff--power-up-activo)) | Recogida del power-up | 20 s |
-| `FX-CASCADE` | Cascada de conquista | Los nodos neutrales restantes, Asteroides y Magnetares | Victoria ([10.1](./NOVA_GameDesign_Spec.md#101-victoria-del-jugador)) | 3 s, de cercano a lejano |
+| `FX-CASCADE` | Cascada de conquista | Los nodos neutrales restantes, Asteroides y Magnetares | Victoria ([10.1](./NOVA_GameDesign_Spec.md#101-victoria-del-jugador)), uno por nodo en `WinConditionChecker.OnConquered` | 3 s en total, de cercano a lejano; **1.0 s por nodo**, desde su captura ([A.5](./NOVA_Assets_Diseno.md#a5-vfx-puntuales--145)) |
 | `FX-VANISH` | Protones huérfanos | Protones del bando derrotado | Su bando pierde el último nodo | 0.4 s |
 | `FX-SHAKE` | Sacudida de cámara | La cámara | Captura de un nodo con Energía ≥ 50 | 0.3 s |
 

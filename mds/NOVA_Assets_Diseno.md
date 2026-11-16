@@ -1167,7 +1167,7 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-FX-PWR-ZER` | Impacto Cero Absoluto | `art/fx/pwr_zer/v2/fx_pwr_zer_sheet.png`: **una hoja**, 5 filas (talla de `ART-WLD-SEL`), una sola rampa; acaba en `ART-ST-FROZEN` | 0.7 s | 9 | ✅ |
 | `ART-FX-PWR-DEC` | Impacto Decaimiento | `art/fx/pwr_dec/v1/fx_pwr_dec_sheet.png`: **una hoja**, 5 filas (talla de `ART-WLD-SEL`), una sola rampa; acaba en `ART-ST-DECAY` | 0.7 s | 9 | ✅ |
 | `ART-FX-PWR-WRM` | Impacto Agujero de Gusano | `art/fx/pwr_wrm/v1/fx_pwr_wrm_sheet.png`: **una hoja**, 5 filas (talla de `ART-WLD-SEL`), una sola rampa; suena a la vez que `ART-ST-CAP`, por debajo | 1.0 s | 12 | ✅ |
-| `ART-FX-CASCADE` | Cascada de conquista | `art/fx/fx_cascade_sheet.png` | 3.0 s | 36 | ⬜ |
+| `ART-FX-CASCADE` | Cascada de conquista | `art/fx/cascade/v1/fx_cascade_sheet.png`: **una hoja**, 5 filas (talla de `ART-WLD-SEL`), en `plasma_p`; **uno por nodo**, en `OnConquered`: la cascada entera dura 3 s | 1.0 s | 12 | ✅ |
 | `ART-FX-VANISH` | Protones huérfanos | `art/fx/vanish/v1/fx_vanish_sheet.png`: **una hoja**, 20 filas (bando × talla del protón) y 16 variantes, una por frame del bucle | 0.4 s | 5 | ✅ |
 
 ### `ART-FX-SHOT` — destello sobre el protón
@@ -1405,6 +1405,24 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 
 **Propuesta v3, «El pliegue»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_pwr_wrm_v3.py` → `art/fx/pwr_wrm/v3/`. La malla del espacio-tiempo de los diagramas de la relatividad se hunde en embudo hacia el nodo, se retuerce al tragárselo y rebota como una tela tensa hasta quedar plana. La más original y la más cargada: una cuadrícula alrededor del nodo durante casi todo el segundo.
 
+### `ART-FX-CASCADE` — la cascada de conquista
+
+![ART-FX-CASCADE v1](../art/_preview/fx_cascade/v1/fx_cascade_hoja_x3.png)
+
+**Diseño cerrado: «Los fuegos artificiales», v1** (elegida por el usuario el 2026-11-15). Generador: `tools/gen_fx_cascade_v1.py` → `art/fx/cascade/v1/fx_cascade_sheet.png` y su `.json`; vistas en `art/_preview/fx_cascade/v1/` (la hoja, sobre un Asteroide y Magnetares, que son los únicos neutrales posibles, con el nodo neutral antes en la primera columna; `--gif` para el tablero, a velocidad real y a un cuarto: dos nodos del Jugador y seis neutrales que caen de cerca a lejos en 3 s, y con el último todo se congela). La comparativa de las tres propuestas, en `art/_preview/fx_cascade/comparativa_x3.png` (`py tools/gen_fx_cascade_v1.py --comparativa`).
+
+- **Un efecto por nodo, no uno de 3 s.** `WinConditionChecker` pasa cada nodo neutral al Jugador en su instante —el i-ésimo de n a los (i + 1) / n de los 3 s de [10.1](./NOVA_GameDesign_Spec.md#101-victoria-del-jugador)— con `Steal`, como un Agujero de Gusano, y lanza `OnConquered(node)` para este efecto. El asset es lo que le pasa a **un** nodo: 1.0 s, 12 frames, desde ese tick. La ola de cerca a lejos no la dibuja la hoja; la dibuja el orden en que se disparan. Esta tabla decía «3.0 s, 36 frames», como si fuese una sola animación.
+- **Acompaña a la captura**, como `ART-FX-PWR-WRM`: en el mismo frame el nodo se recolorea y arranca «El relevo» (`ART-ST-CAP`), que va **encima**. Nada de blanco, que es de `FX-CAP`.
+- **Se celebra.** La partida está ganada y lo que queda es fiesta: cada nodo que se suma lanza un cohete que estalla sobre él, y en cadena es una traca que recorre el mapa. **El disparo (frame 0):** un destello en cruz en el centro del nodo, en el índice 1, y el cohete saliendo. **La subida (frames 1–2):** el cohete sube con su estela de chispas, debajo de los anillos. **El estallido (frame 3):** a 16 px sobre el centro, justo cuando «El relevo» se va. **La palmera (frames 4–8):** veinte chispas se abren hasta unos 23 px con su trazo y un corazón de diez más lentas; frenan, caen y las puntas crepitan. **La lluvia (frames 9–11):** caen como un sauce y se apagan.
+- **El frame 0 se sostiene solo.** Con el último nodo de la cascada la partida se congela y entra la pantalla de victoria ([10.3](./NOVA_GameDesign_Spec.md#103-fin-de-nivel)): ese nodo se queda en el frame 0, que por eso es el destello del disparo.
+- **En el color del Jugador.** La cascada solo va al Jugador: `plasma_p`, la rampa de su plasma, índices 1–5.
+- **Una fila por talla, por el número.** Cada nodo conserva su Energía (10.1) y la pantalla de victoria cuenta cuántos llegaron por la cascada (13.11): todo se recorta contra la caja del número (la `franja` de `ART-FX-THAW`) y queda dentro de `r 43.5`. La talla es la de `talla_de` por la huella, también la del Asteroide (43 px, talla 28). Hoja de 1152 × 480 en celdas de 96: filas `cascade_24…40`, una columna por frame; lo dice `fx_cascade_sheet.json`.
+- **El generador falla** si sale un índice fuera de 1–5, si pisa la caja del número, si toca el borde, si un frame está vacío o repetido, si el frame 0 no llega al índice 1 o si el último no es el de menos luz y pasa de la cuarta parte del pico. Las comprobaciones, la hoja y las vistas viven en `gen_fx_cascade_v1.py` y las tres propuestas las comparten.
+
+**Propuesta v2, «La red»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_cascade_v2.py` → `art/fx/cascade/v2/`. El nodo se enchufa al plasma del Jugador: le brotan cinco zarcillos serpenteantes con halo, la luz baja por ellos hacia el nodo —el patrón «Flujo» de 13.12— y se recogen. La más ligada al lenguaje del juego.
+
+**Propuesta v3, «Las luciérnagas»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_cascade_v3.py` → `art/fx/cascade/v3/`. Dieciocho luces llegan desde el aire, cada una por su curva y parpadeando a su ritmo, y se posan en el cuerpo. La más tranquila y la más sutil a la escala del tablero.
+
 ## A.6 UI — [13](./NOVA_GameDesign_Spec.md#13-controles-y-ui)
 
 
@@ -1436,9 +1454,11 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.3 Selección y apuntado | **4** | **4** ✅ | — (ya no bloquea `T6-06`) |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
-| A.5 VFX | 15 | **14** | `VFXPool`, fase 6 |
+| A.5 VFX | 15 | **15** ✅ | — (ya no bloquea `T6-07`) |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **134** | **124** | — |
+| **Total** | **134** | **125** | — |
+
+**Y los ✅ suben de 124 a 125 el 2026-11-15** con la cascada de conquista, `ART-FX-CASCADE` v1, «Los fuegos artificiales» (A.5): cada nodo que se suma al ganar lanza un cohete que estalla sobre él. **A.5 queda cerrado, 15 de 15**, y `T6-07` deja de estar bloqueada por arte.
 
 **Y los ✅ suben de 123 a 124 el 2026-11-15** con el impacto de Agujero de Gusano, `ART-FX-PWR-WRM` v1, «La rasgadura» (A.5): el desgarro del haz se queda abierto sobre el nodo, enseña el otro cielo y se cose. A.5 queda en 14 de 15: falta la cascada de conquista.
 

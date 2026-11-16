@@ -1,0 +1,20 @@
+{
+ "cellSize": 96,
+ "frames": 12,
+ "fps": 12,
+ "sizes": [
+  24,
+  28,
+  32,
+  36,
+  40
+ ],
+ "rows": [
+  "cascade_24",
+  "cascade_28",
+  "cascade_32",
+  "cascade_36",
+  "cascade_40"
+ ],
+ "note": "uno por nodo, sobre cada nodo que WinConditionChecker.OnConquered pasa al Jugador, en ese tick: el nodo ya lleva su paleta nueva y state_captured_sheet suena a la vez, por encima; la talla, la de world_select_tallas.json por la huella del nodo (tambien la del Asteroide); una sola rampa (plasma_p), la del Jugador"
+}
