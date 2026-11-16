@@ -1162,7 +1162,7 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-FX-SHOT` | Disparo del Magnetar: destello sobre el protón | `art/fx/shot/v3/fx_shot_sheet.png`: **una hoja**, 20 filas (bando × talla del protón) y 4 variantes | 0.17 s, como el arco | 2 | ✅ |
 | `ART-FX-KILL` | Protón destruido | `art/fx/kill/v2/fx_kill_sheet.png`: **una hoja**, 2 filas (bando) y 16 variantes, una por frame del bucle del protón | 0.25 s | 3 | ✅ |
 | `ART-FX-THAW` | Deshielo | `art/fx/thaw/v1/fx_thaw_sheet.png`: **una hoja**, 5 filas (talla de `ART-WLD-SEL`), una sola rampa | 0.5 s | 6 | ✅ |
-| `ART-FX-CURE` | Cura de Decaimiento | `art/fx/fx_cure_sheet.png` | 0.4 s | 5 | ⬜ |
+| `ART-FX-CURE` | Cura de Decaimiento | `art/fx/cure/v1/fx_cure_sheet.png`: **una hoja**, 5 filas (talla de `ART-WLD-SEL`) y 16 variantes, una por frame del bucle del miasma; una sola rampa | 0.4 s | 5 | ✅ |
 | `ART-FX-CAST` | Lanzamiento de poder | `art/fx/fx_cast_sheet.png` | 0.4 s | 5 | ⬜ |
 | `ART-FX-PWR-ZER` | Impacto Cero Absoluto | `art/fx/fx_zero_impact_sheet.png` | 0.7 s | 9 | ⬜ |
 | `ART-FX-PWR-DEC` | Impacto Decaimiento | `art/fx/fx_decay_impact_sheet.png` | 0.7 s | 9 | ⬜ |
@@ -1323,6 +1323,22 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 
 **Propuesta v3, «La soldadura»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_thaw_v3.py` → `art/fx/thaw/v3/`. La grieta se cierra por donde creció: las ramas vuelven a su nudo, el tronco se cierra como una cremallera y de la última puntada sale un soplo de vaho. A 1× el frente de la soldadura era pequeño.
 
+### `ART-FX-CURE` — la cura de Decaimiento
+
+![ART-FX-CURE v1](../art/_preview/fx_cure/v1/fx_cure_hoja_x3.png)
+
+**Diseño cerrado: «La purga», v1** (elegida por el usuario el 2026-11-15). Generador: `tools/gen_fx_cure_v1.py` → `art/fx/cure/v1/fx_cure_sheet.png` y su `.json`; vistas en `art/_preview/fx_cure/v1/` (`--gif` para el tablero, a velocidad real y a un cuarto: tres nodos infectados, con el miasma respirando, se curan uno tras otro). La comparativa de las tres propuestas, en `art/_preview/fx_cure/comparativa_x3.png` (`py tools/gen_fx_cure_v1.py --comparativa`).
+
+- **El impacto expulsa la infección.** En el tick en que el nodo recibe Energía de cualquier facción ([7.4](./NOVA_GameDesign_Spec.md#74-decaimiento), *Cura*), `NodeDecay` quita la bandera, el overlay «El miasma» (A.3.5) desaparece y en su sitio empieza este efecto. **El empujón (frame 0):** la nube del frame del bucle, más densa y dos bandas más clara: la Energía que entra la enciende. **Se aleja (frames 1–3):** sale 4, 8 y 12 px del cuerpo, cada vez más rala, y las gotas caen deprisa y se apagan. **Se va (frame 4):** unas motas al borde.
+- **Arranca del miasma, en su frame: 16 variantes.** La nube se dibuja con la fórmula de `gen_state_decay_v2.campo` y sus cinco gotas, y la variante *v* arranca del frame *v* del bucle de 16; `VFXPool` toma la del frame en que estaba el overlay, como `ART-FX-KILL` con el bucle del protón. El generador exige que el frame 0 conserve el 60 % de los píxeles del overlay fuera de la caja del número (conserva el 96 % o más).
+- **Una sola rampa, sin bando.** `decaimiento`, la del overlay, índices 1–5. La cura la da cualquiera que le envíe Energía, y lo que se ve es la infección yéndose; quién la cura ya lo dicen `ART-FX-ABS` o `ART-FX-DMG`, que salen en el mismo impacto.
+- **Una fila por talla, por el número.** El miasma está sesgado hacia abajo y sus gotas cruzan el número; la cura no: se recorta contra la caja del número de su talla, como el deshielo. Hoja de 7680 × 480 en celdas de 96: filas `cure_24…40`, columnas variante 0 frames 0–4, variante 1…; lo dice `fx_cure_sheet.json`.
+- **El generador falla** si sale un índice fuera de 1–5, si pisa la caja del número, si toca el borde, si un frame está vacío o repetido, si el frame 0 no arranca del miasma, si el último no es el de menos luz y pasa de la cuarta parte del pico o si las variantes se repiten. Las comprobaciones, la hoja y las vistas viven en `gen_fx_cure_v1.py` y las tres propuestas las comparten.
+
+**Propuesta v2, «El barrido»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_cure_v2.py` → `art/fx/cure/v2/`. Un frente de luz baja por el nodo como un trapo por un cristal y se lleva el miasma por donde caía. El frente es una línea horizontal: una figura recta, de las que A.3 dejó fuera del tablero.
+
+**Propuesta v3, «La efervescencia»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_cure_v3.py` → `art/fx/cure/v3/`. Como el agua oxigenada: la nube se recoge en nueve burbujas que suben y revientan en cruz. La infección caía; la cura sube.
+
 ## A.6 UI — [13](./NOVA_GameDesign_Spec.md#13-controles-y-ui)
 
 
@@ -1354,9 +1370,11 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.3 Selección y apuntado | **4** | **4** ✅ | — (ya no bloquea `T6-06`) |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
-| A.5 VFX | 15 | **9** | `VFXPool`, fase 6 |
+| A.5 VFX | 15 | **10** | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **134** | **119** | — |
+| **Total** | **134** | **120** | — |
+
+**Y los ✅ suben de 119 a 120 el 2026-11-15** con la cura de Decaimiento, `ART-FX-CURE` v1, «La purga» (A.5): el impacto expulsa el miasma, que se aleja del cuerpo y se deshace. A.5 queda en 10 de 15.
 
 **Y los ✅ suben de 118 a 119 el 2026-11-15** con el deshielo, `ART-FX-THAW` v1, «El deshielo» (A.5): las grietas de «El vidrio» se hacen agua y escurren. A.5 queda en 9 de 15.
 

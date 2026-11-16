@@ -1,0 +1,22 @@
+{
+ "cellSize": 96,
+ "frames": 5,
+ "fps": 12,
+ "variants": 16,
+ "sizes": [
+  24,
+  28,
+  32,
+  36,
+  40
+ ],
+ "rows": [
+  "cure_24",
+  "cure_28",
+  "cure_32",
+  "cure_36",
+  "cure_40"
+ ],
+ "columns": "variante 0 frames 0-4, variante 1 frames 0-4, ...",
+ "note": "sobre el nodo curado, en el tick en que desaparece el overlay state_decay_sheet; la variante, el frame en que estaba su bucle de 16; la talla, la de world_select_tallas.json por la huella del nodo; una sola rampa (decaimiento), sin bando; pivote en el centro"
+}
