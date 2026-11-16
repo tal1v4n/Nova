@@ -680,6 +680,7 @@ Cómo se comporta ([18](#18-decisiones-tomadas-por-defecto) #30, desde `T2-03`):
 - `NIVEL MÁXIMO` sale en cualquier nodo que esté al máximo, sea de quien sea: es información.
 - Sigue abierto mientras se juega y se repinta al cambiar la Energía, el nivel, el tipo o el dueño del nodo; si lo capturan, pierde el botón. Lo cierran el clic derecho en vacío y `Esc`; el clic derecho sobre otro nodo lo lleva a ese nodo.
 - Un clic izquierdo **dentro** del panel es suyo y no llega a lo que haya debajo; el botón mejora sin tocar la selección y sin enviar nada. Fuera del panel, el clic izquierdo sigue su curso normal.
+- **El alto sigue al contenido** (`ART-UI-PANEL`, 2026-11-16): 8 de margen arriba y abajo y 24 por fila, así que el panel de un nodo ajeno mide tres filas y el de un Púlsar propio, nueve. El arte, en [A.6](./NOVA_Assets_Diseno.md#a6-ui--13); lo monta `T6-09`.
 - La reconversión (punto 5) llegó con `T2-07`: una fila «Reconvertir» con dos botones, uno por destino, con su coste, solo en nodos propios. Mientras dura, los botones dejan sitio a «Reconvirtiendo a …» ([18](#18-decisiones-tomadas-por-defecto) #33). La rueda (punto 6) llegó con `T3-07`: un rótulo con el estado de la carga, las tres ranuras y «Cancelar +N» en las tres últimas filas, solo en un Púlsar propio ([18](#18-decisiones-tomadas-por-defecto) #34 y #35).
 
 ### 13.4 Traducción de "velocidad de ataque"

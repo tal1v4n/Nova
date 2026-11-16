@@ -1,0 +1,33 @@
+{
+ "width": 208,
+ "padding": 8,
+ "rowHeight": 24,
+ "modulePadding": 4,
+ "moduleGap": 2,
+ "moduleCell": 20,
+ "moduleBorder": 6,
+ "moduleCenterMode": "tiled",
+ "tabWidth": 4,
+ "tabInset": [
+  2,
+  4
+ ],
+ "textIndentFromTab": 4,
+ "tabRows": [
+  "player",
+  "enemy",
+  "neutral",
+  "accion",
+  "poderes: 3 filas, tramos de arriba abajo"
+ ],
+ "tabOf": {
+  "info": "faccion del nodo",
+  "mejora": "accion",
+  "reconv": "accion",
+  "poderes": "poderes"
+ },
+ "enterStaggerMs": 60,
+ "enterMs": 320,
+ "enterSlidePx": 12,
+ "note": "la lengueta lisa en mosaico; la de poderes, sus 3 filas estiradas en 3 tramos iguales; el texto 4 px mas alla de la lengueta, los botones no; un modulo por bloque de 13.3 que tenga filas; alto = 2 * modulePadding + rowHeight * filas; la lengueta del lado del nodo, de y 4 a alto - 4, a 2 px del borde; al abrir, cada modulo entra 60 ms despues del anterior, deslizandose 12 px desde el nodo con la orbital"
+}

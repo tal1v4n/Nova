@@ -1432,7 +1432,7 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | ID | Elemento | Notas | Archivo | Estado |
 |---|---|---|---|---|
 | `ART-UI-HUD-ENERGY` | Número de Energía sobre el nodo | Legible sobre cualquier estado (14.7). Cifras propias de plasma con un pulso que corre por el trazo; el neutral, quieto | `art/ui/energy_label/v3/ui_energy_label_player_sheet.png`, `ui_energy_label_enemy_sheet.png`, `ui_energy_label_neutral.png` y `ui_energy_label.json` | ✅ |
-| `ART-UI-PANEL` | Panel de clic derecho | 6 bloques de [13.3](./NOVA_GameDesign_Spec.md#133-panel-de-clic-derecho) | `art/ui/ui_info_panel.png` | ⬜ |
+| `ART-UI-PANEL` | Panel de clic derecho | 6 bloques de [13.3](./NOVA_GameDesign_Spec.md#133-panel-de-clic-derecho). Una lectura en trama con esquinas del bando, unida al nodo por un cable de plasma; el alto sigue al contenido | `art/ui/info_panel/v2/ui_info_panel_screen.png`, `ui_info_panel_corner.png`, `ui_info_panel_edge.png`, `ui_info_panel_tether.png`, `ui_info_panel_pulse.png`, `ui_info_panel_socket.png` y `ui_info_panel.json` | ✅ |
 | `ART-UI-BTN-UPG` | Botón de mejora | Estados normal / deshabilitado con coste en rojo / `NIVEL MÁXIMO` | `art/ui/ui_btn_upgrade.png` | ⬜ |
 | `ART-UI-BTN-CONV` | Botón de reconversión | **Dos** destinos con coste: nunca a Asteroide ni al propio tipo ([13.3](./NOVA_GameDesign_Spec.md#133-panel-de-clic-derecho) #5) | `art/ui/ui_btn_convert.png` | ⬜ |
 | `ART-UI-IGN-MENU` | Menú radial de encendido | 3 opciones: Estrella, Púlsar, Magnetar | `art/ui/ui_ignition_menu.png` | ⬜ |
@@ -1440,6 +1440,24 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-UI-CHARGE` | Barra de carga bajo el Púlsar | **Visible también en el Púlsar enemigo** ([7.5](./NOVA_GameDesign_Spec.md#75-agujero-de-gusano)). Una mecha con el dibujo del haz del poder que arde hacia una llama; pausada, brasa; lista, estrella | `art/ui/charge_bar/v3/ui_charge_fuse_sheet.png`, `ui_charge_flame_sheet.png`, `ui_charge_socket.png`, `ui_charge_track.png` y `ui_charge.json` | ✅ |
 | `ART-UI-POWERBAR` | Barra de poder inferior | El **reparto** de Energía entre los dos bandos: cian desde la izquierda, magenta desde la derecha, sin parte vacía ni neutral | `art/ui/power_bar/v1/ui_power_bar_frame.png`, `ui_power_bar_fill_sheet.png`, `ui_power_bar_front_sheet.png` y `ui_power_bar.json` | ✅ |
 | `ART-UI-TOPBAR` | Cronómetro, nivel, pausa | [13.6](./NOVA_GameDesign_Spec.md#136-hud-permanente). El texto va en TextMeshPro; el arte es la sombra tramada detrás y el botón de pausa | `art/ui/topbar/v3/ui_topbar_plate.png`, `ui_topbar_pause_sheet.png` y `ui_topbar.json` | ✅ |
+
+### `ART-UI-PANEL` — el panel de clic derecho
+
+![ART-UI-PANEL v2](../art/_preview/ui_info_panel/v2/casos_x2.png)
+
+**Diseño cerrado: «La sonda», v2** (elegida por el usuario el 2026-11-16). Generador: `tools/gen_panel_v2.py` → `art/ui/info_panel/v2/`; vistas en `art/_preview/ui_info_panel/v2/` (los cuatro paneles a ×3; cada uno junto a su nodo, con su número y, en el Púlsar, su mecha, a ×2; el nivel 9 a 1080p con el panel abierto sobre la Estrella propia; `--gif` para el cable con su pulso). Comparativa de las tres en `art/_preview/ui_info_panel/comparativa_x2.png`.
+
+- **Qué es** ([13.3](./NOVA_GameDesign_Spec.md#133-panel-de-clic-derecho), 18 #30). El panel que abre el clic derecho sobre cualquier nodo, a su lado y sin taparlo, con sus seis bloques en el orden de 13.3. El texto va en TextMeshPro con Jersey 10 a tamaño nativo, en filas de 24 con 8 de margen, como hoy `InfoPanelState`. **Los botones y la rueda no son de este asset**: son `ART-UI-BTN-UPG`, `ART-UI-BTN-CONV` y `ART-UI-WHEEL`; las vistas los pintan como boceto con el botón secundario de 13.12.
+- **El alto sigue al contenido.** `2 · 8 + 24 · filas`: tres filas el de un nodo ajeno o un Asteroide, nueve el de un Púlsar propio. Hasta ahora medía siempre nueve y en un nodo ajeno quedaban seis vacías. El ancho sigue en 208.
+- **Una lectura, no una caja.** El panel es lo que devuelve una sonda lanzada al nodo. El fondo es una **trama** casi opaca del color del espacio, `#0B0E1A` donde la Bayer pasa de 12/64 (cubre el 81 %), con **líneas de barrido** cada 4 px en `#11142A`: deja asomar el tablero lo justo para parecer proyectado. Sin marco entero: **cuatro esquinas** de 8 × 8 y 2 px de grueso en el ancla del bando, con el vértice en el índice 1, y entre ellas un **filo** de un punto cada 2 px en el índice 5 del bando.
+- **El cable.** Del borde del nodo (media huella + 2) al costado del panel sale un **cable de plasma** del bando (`plasma_p`, `plasma_e`, `neutral`): un punto cada 2 px en el índice 4, y un pulso de 3 px —índices 0 y 1— que lo recorre del nodo al panel cada 2.67 s (32 frames, el patrón «Flujo» de 13.12). Si el panel se desplaza en vertical para caber en pantalla, el cable baja o sube en escalón a mitad de camino. Donde toca el panel, un **enchufe** de 3 × 7 en el ancla del bando.
+- **El título** va en el índice 2 del bando —el 1 si es neutral— y debajo lleva una **raya** del bando en el índice 4 con un **testigo** de 3 × 3 al final que parpadea cada 8 frames: la lectura está viva y se repinta (18 #30). Los bloques se separan con un punto cada 4 px en la sombra del bando.
+- **Las piezas.** `ui_info_panel_screen.png` (la tesela de 8 × 8 de la trama), y una fila por bando —player, enemy, neutral— en `ui_info_panel_corner.png`, `ui_info_panel_edge.png`, `ui_info_panel_tether.png`, `ui_info_panel_pulse.png` y `ui_info_panel_socket.png`. `ui_info_panel.json`: medidas y montaje.
+- **El generador falla** si el alfa no es binario, si sale un color fuera de `str_p`, `str_e`, `neutral`, `plasma_p`, `plasma_e`, `#11142A` y `#0B0E1A`, si un texto de los cuatro casos no cabe con su margen, si un panel se sale de su caja o si la trama no cubre entre el 75 y el 90 %. Los casos, el texto con sus tildes, el boceto de los botones, las comprobaciones y las vistas viven en `gen_panel_v1.py` y las tres propuestas los comparten.
+
+**Propuesta v1, «La placa»** (2026-11-16, **descartada**; se conserva por A.1). `tools/gen_panel_v1.py` → `art/ui/info_panel/v1/`. Una sola placa de 13.12 con el marco del bando, una cabecera más oscura con el filo del bando, líneas de puntos entre bloques y una pestaña en escalera que señala al nodo. La más sobria.
+
+**Propuesta v3, «Los módulos»** (2026-11-16, **descartada**; se conserva por A.1). `tools/gen_panel_v3.py` → `art/ui/info_panel/v3/`. Un módulo por bloque con una lengüeta del lado del nodo —del bando la información, cian las acciones, tres tramos de color los poderes— que entran escalonados al abrirse; un nodo ajeno trae solo uno. La que dice por su tamaño cuánto puedes hacer.
 
 ### `ART-UI-CHARGE` — la barra de carga del Púlsar
 
@@ -1529,8 +1547,10 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
 | A.5 VFX | 15 | **15** ✅ | — (ya no bloquea `T6-07`) |
-| A.6 UI | **9** | **4** | Pulido de UI de partida (`T6-09`; ya no bloquea `T6-08`) |
-| **Total** | **134** | **129** | — |
+| A.6 UI | **9** | **5** | Pulido de UI de partida (`T6-09`; ya no bloquea `T6-08`) |
+| **Total** | **134** | **130** | — |
+
+**Y los ✅ suben de 129 a 130 el 2026-11-16** con el panel de clic derecho, `ART-UI-PANEL` v2, «La sonda» (A.6): una lectura en trama con las esquinas del bando, unida al nodo por un cable de plasma con su pulso, y con el alto ajustado a sus filas. A.6 queda en 5 de 9; a `T6-09` le faltan cuatro.
 
 **Y los ✅ suben de 128 a 129 el 2026-11-16** con la barra de carga del Púlsar, `ART-UI-CHARGE` v3, «La mecha» (A.6): el haz del poder en miniatura ardiendo hacia una llama, que en pausa queda en brasa y lista se hace estrella. A.6 queda en 4 de 9; a `T6-09` le faltan cinco.
 

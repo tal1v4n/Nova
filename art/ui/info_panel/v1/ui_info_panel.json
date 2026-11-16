@@ -1,0 +1,30 @@
+{
+ "width": 208,
+ "padding": 8,
+ "rowHeight": 24,
+ "capTop": 7,
+ "plateCell": 20,
+ "plateBorder": 6,
+ "plateCenterMode": "tiled",
+ "rows": [
+  "player",
+  "enemy",
+  "neutral"
+ ],
+ "headerHeight": 26,
+ "headerTile": 8,
+ "separatorTile": 2,
+ "tabSize": [
+  8,
+  16
+ ],
+ "titleColor": {
+  "player": "#A6F2FD",
+  "enemy": "#FF9EB2",
+  "neutral": "#E2E6EF"
+ },
+ "textColor": "#E2E6EF",
+ "labelColor": "#B5BCCD",
+ "mutedColor": "#8A93A6",
+ "note": "alto = 2 * padding + rowHeight * filas; la cabecera tapa la primera fila por dentro del marco (x 2..ancho-2); el separador en mosaico 1 px encima de la primera fila de cada bloque salvo el primero; la pestana sale del costado del nodo, centrada, con la punta hacia el, y el marco se abre 12 px donde se toca"
+}

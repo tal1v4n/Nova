@@ -1,0 +1,18 @@
+{
+ "width": 208,
+ "padding": 8,
+ "rowHeight": 24,
+ "rows": [
+  "player",
+  "enemy",
+  "neutral"
+ ],
+ "screenTile": 8,
+ "cornerSize": 8,
+ "edgeStep": 2,
+ "tetherStep": 2,
+ "pulseLoopFrames": 32,
+ "fps": 12,
+ "titleRuleBlinkFrames": 8,
+ "note": "fondo: la tesela de 8 en mosaico; esquinas espejadas; filo un punto cada 2 px; cable del borde del nodo (media huella + 2) al costado del panel, en escalon si el panel se desplaza en vertical, un punto cada 2 px y el pulso de 3 px recorriendolo del nodo al panel en 32 frames; enchufe a 3 px del panel, en la y del cable"
+}
