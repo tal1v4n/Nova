@@ -1,0 +1,53 @@
+{
+ "width": 94,
+ "height": 20,
+ "cellHeight": 22,
+ "pressedDrop": 2,
+ "capTop": 5,
+ "padX": 6,
+ "gap": 4,
+ "hoverMs": 160,
+ "hoverCurve": [
+  0.2,
+  0.8,
+  0.2,
+  1.0
+ ],
+ "text": {
+  "normal": "#E2E6EF",
+  "cost": "#3FD7F5",
+  "hover": "#FFFFFF",
+  "hoverCost": "#E8FEFF",
+  "muted": "#8A93A6",
+  "missing": "#F2456B",
+  "unavailable": "#5D6580"
+ },
+ "states": [
+  "normal",
+  "encima",
+  "pulsado",
+  "falta",
+  "bloqueado",
+  "nodisp"
+ ],
+ "plateCell": 20,
+ "plateBorder": 6,
+ "plateCenterMode": "tiled",
+ "plateColumns": [
+  "normal",
+  "encima",
+  "pulsado",
+  "falta",
+  "bloqueado",
+  "nodisp"
+ ],
+ "fillTile": 8,
+ "fillSteps": 5,
+ "pip": {
+  "energyPerPip": 5,
+  "y": 16,
+  "rightX": 86,
+  "step": 3
+ },
+ "note": "encima: la trama de carga entra de izquierda a derecha por dentro del marco con la orbital en 160 ms y se densifica de paso 1 a 5; pulsado: lleno en paso 5 y 2 px abajo; falta: el coste en magenta y ceil(faltan / 5) pastillas de 2 x 2 hacia la izquierda desde rightX, cada step px; bloqueado: gris con trama diagonal; nodisp: marco en trazos y solo el tipo, sin coste"
+}

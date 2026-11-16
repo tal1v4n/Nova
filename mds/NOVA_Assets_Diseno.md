@@ -1434,12 +1434,31 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-UI-HUD-ENERGY` | Número de Energía sobre el nodo | Legible sobre cualquier estado (14.7). Cifras propias de plasma con un pulso que corre por el trazo; el neutral, quieto | `art/ui/energy_label/v3/ui_energy_label_player_sheet.png`, `ui_energy_label_enemy_sheet.png`, `ui_energy_label_neutral.png` y `ui_energy_label.json` | ✅ |
 | `ART-UI-PANEL` | Panel de clic derecho | 6 bloques de [13.3](./NOVA_GameDesign_Spec.md#133-panel-de-clic-derecho). Una lectura en trama con esquinas del bando, unida al nodo por un cable de plasma; el alto sigue al contenido | `art/ui/info_panel/v2/ui_info_panel_screen.png`, `ui_info_panel_corner.png`, `ui_info_panel_edge.png`, `ui_info_panel_tether.png`, `ui_info_panel_pulse.png`, `ui_info_panel_socket.png` y `ui_info_panel.json` | ✅ |
 | `ART-UI-BTN-UPG` | **Icono de mejora sobre el nodo** (era el botón del panel; 13.13) | Aviso difuminado; listo con el relleno difuminado y el sonar nítido; activo al 100 % con el cursor sobre el nodo; encima con el borde en blanco, y pulsado | `art/ui/upgrade_icon/v3/ui_upgrade_icon_sheet.png` y `ui_upgrade_icon.json` | ✅ |
-| `ART-UI-BTN-CONV` | Botón de reconversión | **Dos** destinos con coste: nunca a Asteroide ni al propio tipo ([13.3](./NOVA_GameDesign_Spec.md#133-panel-de-clic-derecho) #5) | `art/ui/ui_btn_convert.png` | ⬜ |
+| `ART-UI-BTN-CONV` | Botón de reconversión | **Dos** destinos con coste: nunca a Asteroide ni al propio tipo ([13.3](./NOVA_GameDesign_Spec.md#133-panel-de-clic-derecho) #5). Encima, un frente lo barre y lo deja primario; sin Energía, el frente se para donde llega la Energía y lo que falta va en magenta | `art/ui/btn_convert/v2/ui_btn_convert_plate.png`, `ui_btn_convert_front.png`, `ui_btn_convert_fill.png` y `ui_btn_convert.json` | ✅ |
 | `ART-UI-IGN-MENU` | Menú radial de encendido | 3 opciones: Estrella, Púlsar, Magnetar | `art/ui/ui_ignition_menu.png` | ⬜ |
 | `ART-UI-WHEEL` | Rueda de poderes del Púlsar | 3 ranuras fijas + candado con nivel requerido ([13.5](./NOVA_GameDesign_Spec.md#135-rueda-de-poderes-del-púlsar)) | `art/ui/ui_power_wheel.png` | ⬜ |
 | `ART-UI-CHARGE` | Barra de carga bajo el Púlsar | **Visible también en el Púlsar enemigo** ([7.5](./NOVA_GameDesign_Spec.md#75-agujero-de-gusano)). Una mecha con el dibujo del haz del poder que arde hacia una llama; pausada, brasa; lista, estrella | `art/ui/charge_bar/v3/ui_charge_fuse_sheet.png`, `ui_charge_flame_sheet.png`, `ui_charge_socket.png`, `ui_charge_track.png` y `ui_charge.json` | ✅ |
 | `ART-UI-POWERBAR` | Barra de poder inferior | El **reparto** de Energía entre los dos bandos: cian desde la izquierda, magenta desde la derecha, sin parte vacía ni neutral | `art/ui/power_bar/v1/ui_power_bar_frame.png`, `ui_power_bar_fill_sheet.png`, `ui_power_bar_front_sheet.png` y `ui_power_bar.json` | ✅ |
 | `ART-UI-TOPBAR` | Cronómetro, nivel, pausa | [13.6](./NOVA_GameDesign_Spec.md#136-hud-permanente). El texto va en TextMeshPro; el arte es la sombra tramada detrás y el botón de pausa | `art/ui/topbar/v3/ui_topbar_plate.png`, `ui_topbar_pause_sheet.png` y `ui_topbar.json` | ✅ |
+
+### `ART-UI-BTN-CONV` — el botón de reconversión
+
+![ART-UI-BTN-CONV v2](../art/_preview/ui_btn_convert/v2/estados_x4.png)
+
+**Diseño cerrado: «El barrido», v2** (elegida por el usuario el 2026-11-16). Generador: `tools/gen_btnconv_v2.py` → `art/ui/btn_convert/v2/`; vistas en `art/_preview/ui_btn_convert/v2/` (los seis estados por pareja y lo que falta de menos a más, a ×4; cuatro paneles de «La sonda» con sus botones junto a su nodo, a ×2; `--gif` para el cursor que entra, barre, pulsa y pasa al otro). Comparativa de las tres en `art/_preview/ui_btn_convert/comparativa_x3.png`.
+
+- **Qué es** ([13.3](./NOVA_GameDesign_Spec.md#133-panel-de-clic-derecho) punto 5, [8.2](./NOVA_GameDesign_Spec.md#82-costes), 18 #33). Los dos botones de la sexta fila del panel, solo en un nodo propio: uno por destino, en el orden de 16.2, con el tipo a la izquierda y el coste a la derecha. El texto va en TextMeshPro con Jersey 10; las vistas lo pintan con la propia fuente.
+- **El sitio.** 94 × 20 cada uno, separados 4 px, dentro de los 8 de margen de «La sonda»: el mismo sitio que hoy `InfoPanelState.ConversionOffsets`. La celda mide 22 para que el pulsado baje 2 px.
+- **El ancho manda.** «Magnetar» (63 px) y «30» (16) llenan los 94 con 6 de margen y 3 de aire. `30 · faltan 12` (81) no cabe, así que **lo que falta no va en texto**: el coste va en magenta y lo que falta lo dice el dibujo (13.3).
+- **El botón hace lo que anuncia.** Reconvertir es, en el tablero, un frente que barre el nodo y lo descubre siendo otro (`ART-ST-CONV`, A.3.6). En reposo es el secundario de 13.12 con el **frente aparcado** en su borde izquierdo, una raya de 1 px en `str_p[5]`. **Encima**, el frente —una columna de 2 px en `str_p[1]` y `str_p[0]` con una estela en trama— lo barre de izquierda a derecha con la orbital en 160 ms y deja detrás el **primario**: relleno `str_p[3]`, marco `str_p[4]` y el texto en `#11142A`, píxel a píxel según por dónde va el frente. **Pulsado**, el primario se aclara a `str_p[2]` con el marco en `str_p[1]` y baja 2 px.
+- **Sin Energía** (`MissingEnergy`). El marco en gris y el frente **parado donde llega tu Energía**, a `Energía / coste` del ancho, en `neutral[2]`: detrás, lo que tienes, en una trama gris (`neutral[4]`); delante, lo que falta, en una trama magenta (`str_e[5]`). El coste, en magenta.
+- **Bloqueado** (`Disabled`: Congelado, Infectado, cargando o con un poder cargado, 8.1). Gris, sin frente y con la trama diagonal, **sin magenta** (18 #33). **No disponible** (`Unavailable`, 18 #29): el marco en trazos y solo el tipo, sin coste. Reconvirtiendo no es un estado del botón: los dos dejan sitio a «Reconvirtiendo a …».
+- **Las piezas.** `ui_btn_convert_plate.png`: la placa de 20 × 20 en nueve cortes (bordes de 6, centro en mosaico), una columna por estado —normal, encima, pulsado, falta, bloqueado, nodisp—. `ui_btn_convert_front.png`: el frente, 5 × 16; fila 0 el que barre, fila 1 el parado. `ui_btn_convert_fill.png`: teselas de 8 × 8, lo que tienes y lo que falta, en mosaico absoluto. `ui_btn_convert.json`: medidas, colores del texto y montaje. Lo integra `T6-09`.
+- **El generador falla** si el alfa no es binario, si sale un color fuera de `str_p`, `str_e`, `neutral`, `#11142A` y `#0B0E1A`, si un estado no mide 94 × 22, si dos estados son iguales, si el pulsado no baja, si «Magnetar» y «30» no caben, si los dos botones no llenan la fila, si lo que falta no crece al faltar más, si bloqueado o no disponible llevan magenta, si el barrido no deja dos mitades o si el primario no lleva el texto oscuro. Los estados, el texto, las comprobaciones y las vistas viven en `gen_btnconv_v1.py` y las tres propuestas los comparten.
+
+**Propuesta v1, «Las teclas»** (2026-11-16, **descartada**; se conserva por A.1). `tools/gen_btnconv_v1.py` → `art/ui/btn_convert/v1/`. El secundario de 13.12 tal cual, con el patrón «Carga» encima; sin Energía, una pastilla magenta de 2 × 2 bajo el coste por cada 5 que falten. La más sobria.
+
+**Propuesta v3, «El conducto»** (2026-11-16, **descartada**; se conserva por A.1). `tools/gen_btnconv_v3.py` → `art/ui/btn_convert/v3/`. Un conducto de plasma de 2 px en la base que se llena con la Energía sobre el coste y corre cuando alcanza; lo que falta, en puntos magenta. Era la v3 del botón de mejora descartado. La más fácil de leer.
 
 ### `ART-UI-BTN-UPG` — el icono de mejora sobre el nodo
 
@@ -1568,8 +1587,10 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
 | A.5 VFX | 15 | **15** ✅ | — (ya no bloquea `T6-07`) |
-| A.6 UI | **9** | **6** | Pulido de UI de partida (`T6-09`; ya no bloquea `T6-08`) |
-| **Total** | **134** | **131** | — |
+| A.6 UI | **9** | **7** | Pulido de UI de partida (`T6-09`; ya no bloquea `T6-08`) |
+| **Total** | **134** | **132** | — |
+
+**Y los ✅ suben de 131 a 132 el 2026-11-16** con el botón de reconversión, `ART-UI-BTN-CONV` v2, «El barrido» (A.6): encima, un frente barre el botón y lo deja primario, como la reconversión barre el nodo; sin Energía, el frente se para donde llega la Energía y lo que falta va en magenta. A.6 queda en 7 de 9; a `T6-09` le faltan dos.
 
 **Y los ✅ suben de 130 a 131 el 2026-11-16** con el icono de mejora, `ART-UI-BTN-UPG` v3, «El sello» (A.6): el botón de mejora del panel pasa a ser un icono encima del nodo (13.13, 18 #54), un rombo con un chevron que lanza un sonar cuando se puede pulsar. A.6 queda en 6 de 9; a `T6-09` le faltan tres, y el icono lo integra `T6-15`.
 

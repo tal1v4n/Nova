@@ -1,0 +1,60 @@
+{
+ "width": 94,
+ "height": 20,
+ "cellHeight": 22,
+ "pressedDrop": 2,
+ "capTop": 5,
+ "padX": 6,
+ "gap": 4,
+ "hoverMs": 160,
+ "hoverCurve": [
+  0.2,
+  0.8,
+  0.2,
+  1.0
+ ],
+ "text": {
+  "normal": "#E2E6EF",
+  "cost": "#3FD7F5",
+  "hover": "#FFFFFF",
+  "hoverCost": "#E8FEFF",
+  "muted": "#8A93A6",
+  "missing": "#F2456B",
+  "unavailable": "#5D6580"
+ },
+ "states": [
+  "normal",
+  "encima",
+  "pulsado",
+  "falta",
+  "bloqueado",
+  "nodisp"
+ ],
+ "plateCell": 20,
+ "plateBorder": 6,
+ "plateCenterMode": "tiled",
+ "plateColumns": [
+  "normal",
+  "encima",
+  "pulsado",
+  "falta",
+  "bloqueado",
+  "nodisp"
+ ],
+ "innerX0": 2,
+ "innerX1": 92,
+ "frontHeight": 16,
+ "frontRows": [
+  "sweep",
+  "stopped"
+ ],
+ "fillTile": 8,
+ "fillColumns": [
+  "have",
+  "missing"
+ ],
+ "primaryFill": "#3FD7F5",
+ "pressedFill": "#A6F2FD",
+ "primaryText": "#11142A",
+ "note": "encima: el frente sweep (x 0-1 la columna) va de innerX0 a innerX1 con la orbital en 160 ms; a su izquierda, dentro del marco, primaryFill y el texto en primaryText; pulsado: todo pressedFill, 2 px abajo; falta: el frente stopped en innerX0 + round((innerX1 - innerX0) * Energia / coste), have a su izquierda y missing a su derecha, en mosaico absoluto; bloqueado: gris con trama diagonal; nodisp: marco en trazos y solo el tipo"
+}
