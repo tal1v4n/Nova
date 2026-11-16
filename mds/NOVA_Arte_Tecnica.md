@@ -644,6 +644,8 @@ cambian por segundo, que es cuánto movimiento hay.
 | Compression | None |
 | Pivot | Bottom para lo que se apoya, Center para el resto |
 
+**Las piezas del HUD** (`T6-08`, A.6) llevan el pivote **arriba a la izquierda** y se colocan en píxeles de la pantalla de 960 × 540. La placa de la barra de arriba es de nueve cortes con el borde de su `.json` y se dibuja en *Draw Mode: Tiled*, con el centro en mosaico, porque estirada deformaría la trama; los rellenos de la barra de poder también van en mosaico. Las tres hojas —rellenos, frente y botón de pausa— son rejillas cuya celda dice el `.json` del generador (`ui_power_bar.json`, `ui_topbar.json`), y cada celda se llama `<hoja>_<fila>_<columna>`.
+
 **Las hojas de A.5 son rejillas** (`T6-07`): `fx_<efecto>_sheet.png`, en celdas de 48, 64 o 96 según el efecto, con una fila por caso y las variantes en columnas. `SpriteImportRules` las corta con la celda que dice el `.json` que el generador deja al lado —`ArtBridge` copia los dos— y llama a cada celda `<hoja>_<fila>_<columna>`, con la fila 0 arriba. Qué es cada fila lo dice el mismo `.json` (`rows`), y `VfxArt` elige por ese nombre.
 
 Números de juego (vida, puntaje, valores) no se hornean en el sprite: van

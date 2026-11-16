@@ -719,6 +719,8 @@ La rueda vive en el **panel de clic derecho** del Púlsar ([13.3](#133-panel-de-
 
 La barra de poder suma la Energía de todos los nodos de cada bando. **No cuenta** la Materia Inerte de los Asteroides neutrales ni la Carga de los protones en vuelo.
 
+**Enseña el reparto** (`T6-08`, confirmado por el usuario el 2026-11-16): la parte del Jugador sobre la suma de los dos bandos. El cian llena desde la izquierda y el magenta desde la derecha hasta tocarse en un frente, sin parte vacía ni color neutral; sin Energía en ninguno de los dos, a medias. Cuentan solo los nodos **encendidos**: un Asteroide propio tampoco suma ([NOVA_Nodos.md](./NOVA_Nodos.md)). El frente llega a cada reparto nuevo en 0.32 s con la curva orbital (13.12). El cronómetro cuenta **tiempo de juego** (`MatchRecorder`) y en pausa se para. El arte y el montaje, en [A.6](./NOVA_Assets_Diseno.md#a6-ui--13).
+
 
 ### 13.7 Menú radial de encendido
 
@@ -785,7 +787,7 @@ Los tramos de la ruta hasta el siguiente son plasma del Jugador; los demás, una
 
 ### 13.10 Menú de pausa
 
-Lo abre `Esc` o el botón de pausa del HUD (13.6). `Esc` cierra antes lo más reciente: **apuntado, menú de encendido, panel de clic derecho y, solo si no hay nada de eso, pausa** (13.3, 13.5, 13.7; es el orden de `InputRouter.PressEscape`). Al abrirse **congela la partida** ([15.8](#158-presentation), *Tiempo de la UI y pausa*); el tablero queda visible y quieto detrás de un velo de trama.
+Lo abre `Esc` o el botón de pausa del HUD (13.6). **El botón no cierra antes nada** ([18](#18-decisiones-tomadas-por-defecto) #53): menú, panel o apuntado se quedan como estaban, congelados con la partida; y una pulsación que empieza en él es suya, no hace lazo ni llega al tablero. `Esc` cierra antes lo más reciente: **apuntado, menú de encendido, panel de clic derecho y, solo si no hay nada de eso, pausa** (13.3, 13.5, 13.7; es el orden de `InputRouter.PressEscape`). Al abrirse **congela la partida** ([15.8](#158-presentation), *Tiempo de la UI y pausa*); el tablero queda visible y quieto detrás de un velo de trama.
 
 Tres columnas:
 
@@ -948,6 +950,7 @@ Assets/
 | `SoundBank.cs` | Los sonidos de la partida (S.6): cada ID `SND-*` con su clip, su bus y su volumen base, y el ancho del tablero, el panorama máximo, las voces por ID y el tamaño del pool. Un solo asset, `Assets/Data/Audio/SoundBank.asset`, del mismo menú (`T6-14`) |
 | `InputArt.cs` | El arte de la entrada del Jugador ([NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md), A.4.3): la línea de envío en tres piezas, el anillo de selección en sus tallas con el radio y el aire de cada una, las dos piezas del lazo y la retícula por poder y talla. `SizeFor` elige la talla con la huella del nodo. Lo rellena *Asignar sprites de nodo* (`T6-06`) |
 | `VfxArt.cs` | El arte de los efectos puntuales ([NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md), A.5): las quince hojas `fx_*_sheet`, cada una con sus filas por nombre —las del `.json` del generador—, sus frames y sus variantes, y la cadencia. Un solo asset, `Assets/Data/VfxArt.asset`, que rellena `NodeArtAssets` (`T6-07`) |
+| `HudArt.cs` | El arte del HUD permanente ([NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md), A.6): la carcasa, las teselas de cada bando y el frente de la barra de poder, la placa y el botón de pausa de la barra de arriba, y sus medidas de `ui_power_bar.json` y `ui_topbar.json`, en píxeles de la pantalla de 960 × 540. Da la geometría: el píxel del reparto, el ancho de una placa y dónde va cada pieza. Lo rellena `NodeArtAssets` (`T6-08`) |
 | `UiText.cs` | **Todos los textos de la UI**, en español: nombres de tipo, formatos del panel, `DORMIDO`, `NIVEL MÁXIMO`… Una instancia, `Assets/Data/UiText.asset`. El juego es solo en español, pero ningún texto se escribe en un script o un prefab ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #39) |
 
 ### 15.5 Gameplay — componentes de nodo
@@ -1015,7 +1018,9 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 | `PowerAimState.cs` | Estado del modo apuntado: qué Púlsar apunta y para qué bando, y qué es objetivo válido ([7.2.1](#721-objetivo-válido)). Lo abre y lo cierra `InputRouter`; vive en `Nova.Input` por lo mismo que `IgnitionMenuState` (`T3-07`) |
 | `IgnitionMenuState.cs` | Estado del menú radial de encendido: abierto o no, sobre qué Asteroide, dónde y la geometría de sus opciones. Lo abre y lo cierra `InputRouter`; vive en `Nova.Input` porque el router resuelve el clic contra él |
 | `IgnitionMenu.cs` | Dibuja el menú radial de encendido. Solo lee `IgnitionMenuState` y valida cada opción con `NodeIgnition.Check` |
-| `PowerBarUI.cs` | Barra inferior. Lee de `NodeRegistry`, no acumula estado. |
+| `PowerBarUI.cs` | Barra inferior (13.6) con su arte, «El conducto» (A.6): el reparto de la Energía de los nodos encendidos de cada bando. El relleno del Enemigo en mosaico por todo el interior y el del Jugador encima hasta el reparto, los dos desde x0; el frente encima, con la curva orbital. Lee de `NodeRegistry` en cada frame y no acumula estado de juego. Lee `HudArt` (`T6-08`) |
+| `HudTopBar.cs` | La barra de arriba (13.6) con su arte, «Las lecturas» (A.6): el nivel (`MAPA 2 · NIVEL 5`), el cronómetro con el tiempo de juego de `MatchRecorder` y el botón de pausa, con el estado que le da `HudState`. Texto en TextMeshPro con Jersey 10 a tamaño nativo sobre la placa de nueve cortes. Solo lee (`T6-08`) |
+| `HudState.cs` | El botón de pausa del HUD para la entrada: dónde está (de `HudArt`) y si el ratón está encima o lo pulsa. Lo escribe `InputRouter` en cada frame y lo lee `HudTopBar`; el clic lo resuelve `InputRouter.PressPauseButton`. Vive en `Nova.Input` por lo mismo que `InfoPanelState` (`T6-08`) |
 | `EndLevelScreen.cs` | Victoria y derrota ([13.11](#1311-pantallas-de-fin-de-nivel)). Lee `MatchRecorder` y, en el estancamiento, las cinco vías de `OutcomeRules` |
 | `PauseMenu.cs` | Menú de pausa ([13.10](#1310-menú-de-pausa)), con sus confirmaciones. Lee `Esc` por su cuenta mientras está abierto ([15.8](#158-presentation), *Tiempo de la UI y pausa*) |
 | `MainMenuScreen.cs` | Menú principal ([13.8](#138-menú-principal)) |
@@ -1271,6 +1276,7 @@ Reglas que no estaban en el diseño original y que se añadieron para cerrar hue
 | 50 | **Con la partida congelada, los sonidos de la partida se quedan quietos** —pausa o fin de nivel, `Time.timeScale = 0`— y siguen donde iban al reanudar. La música de los menús no se ve afectada: en `Game` no suena ([NOVA_Sonido.md](./NOVA_Sonido.md), S.6) | Es la regla del tablero en [15.8](#158-presentation), *Tiempo de la UI y pausa*: en pausa nada corre. Un sonido que siguiera diría que el juego corre. Decidido con el usuario el 2026-11-02 (`T6-14`) |
 | 51 | **Un impacto que solo avanza el deshielo también enseña el daño** (`ART-FX-DMG`): `ImpactResult.ThawProgress` le quita Energía al nodo congelado igual que `Damaged`, y el hielo solo no lo decía. Vale para protones de cualquier bando, porque en un nodo congelado todos drenan ([7.3](#73-cero-absoluto)). Decidido con el usuario el 2026-11-16 ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #57) |
 | 52 | **El arco del Magnetar acaba en el borde de la bolsa del protón**, no en su centro: el último píxel de la punta cae en `bagRadiusPixels` de su talla, así que el trazo no pasa por detrás de las cifras de la Carga ni se lee como un signo menos. Sin `ProtonArt`, el contacto sigue en el centro. Decidido con el usuario el 2026-11-16 ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #56) |
+| 53 | **El botón de pausa del HUD abre la pausa sin cerrar antes nada**, a diferencia de `Esc`, que cierra primero el apuntado, el menú de encendido o el panel (13.10). Lo que estuviera abierto se queda congelado con la partida y sigue ahí al reanudar. Una pulsación que empieza en el botón es suya: si se suelta dentro pausa, y si no, no hace nada —ni lazo ni clic sobre el tablero—. Decidido al implementar `T6-08` el 2026-11-16; el usuario lo dio por bueno en Play |
 
 ---
 

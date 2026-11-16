@@ -22,6 +22,11 @@ namespace Nova.Editor
     // celda no siempre mide 96 —el protón usa 48 y 64—. La mide el .json que el generador deja al lado, y que
     // ArtBridge copia con la hoja.
     //
+    // T6-08: las piezas del HUD (A.6) se colocan por su esquina de arriba a la izquierda, en píxeles de la
+    // pantalla de referencia: todas llevan ahí el pivote. La placa de la barra de arriba lleva sus nueve cortes,
+    // y las tres hojas —rellenos y frente de la barra de poder y el botón de pausa— son rejillas cuya celda
+    // dice el .json del generador, que va en la misma carpeta con otro nombre (ui_power_bar.json, ui_topbar.json).
+    //
     // T5-05b: las texturas de datos de los fondos con movimiento no son sprites. Los campos y los
     // puntos son números —densidades y fracciones a 8 bits— y se leen en lineal; lo fijo es color y
     // se lee en sRGB, como un sprite. Ninguna se filtra ni se comprime, y el alfa es dato: no se trata
@@ -41,8 +46,9 @@ namespace Nova.Editor
         const int MaxTextureSize = 8192;
 
         // Subirla reimporta todo lo que pasa por aquí. 1: las texturas de datos (T5-05b); 2: todo en 2D;
-        // 3: el protón y las cifras (T6-04); 4: el protón en diez tallas; 5: el lazo (T6-06); 6: las hojas de A.5 (T6-07).
-        public override uint GetVersion() => 6;
+        // 3: el protón y las cifras (T6-04); 4: el protón en diez tallas; 5: el lazo (T6-06); 6: las hojas de A.5 (T6-07);
+        // 7: el HUD (T6-08).
+        public override uint GetVersion() => 7;
 
         void OnPreprocessTexture()
         {
@@ -77,8 +83,15 @@ namespace Nova.Editor
             // lazo (T6-06) es la excepción: se coloca por su esquina de arriba a la izquierda y se refleja allí.
             var settings = new TextureImporterSettings();
             importer.ReadTextureSettings(settings);
-            settings.spriteAlignment = (int)(fileName == LassoCornerName ? SpriteAlignment.TopLeft : SpriteAlignment.Center);
+            bool topLeft = fileName == LassoCornerName || HudPattern.IsMatch(fileName);
+            settings.spriteAlignment = (int)(topLeft ? SpriteAlignment.TopLeft : SpriteAlignment.Center);
             settings.spriteMeshType = SpriteMeshType.FullRect;
+            // La placa del HUD: nueve cortes, con el borde de su .json (la escalera más el marco).
+            if (fileName == HudPlateName)
+            {
+                int border = HudExport(assetPath, HudTopBarJson)?.plateBorder ?? 0;
+                settings.spriteBorder = new Vector4(border, border, border, border);
+            }
             importer.SetTextureSettings(settings);
 
             if (isSheet)
@@ -171,12 +184,67 @@ namespace Nova.Editor
             return export != null ? export.cellSize : 0;
         }
 
+        // ART-UI-POWERBAR y ART-UI-TOPBAR (A.6): todo lo suyo se coloca por la esquina de arriba a la izquierda.
+        static readonly Regex HudPattern = new Regex(@"^ui_(power_bar|topbar)_");
+        const string HudPlateName = "ui_topbar_plate";
+        const string HudPowerBarJson = "ui_power_bar.json";
+        const string HudTopBarJson = "ui_topbar.json";
+
+        // Lo que hace falta de los .json de A.6 para cortar las hojas.
+        [System.Serializable]
+        sealed class HudSheetExport
+        {
+            public int height;
+            public int tileWidth;
+            public int frontWidth;
+            public int plateBorder;
+            public int[] pauseCell;
+        }
+
+        static HudSheetExport HudExport(string assetPath, string jsonName)
+        {
+            string json = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(assetPath), jsonName);
+            return System.IO.File.Exists(json) ? JsonUtility.FromJson<HudSheetExport>(System.IO.File.ReadAllText(json)) : null;
+        }
+
+        // La celda de una hoja del HUD (ancho, alto), o (0, 0) si su .json no está.
+        static Vector2Int HudCell(string assetPath, string baseName)
+        {
+            if (baseName == "ui_topbar_pause_sheet")
+            {
+                HudSheetExport top = HudExport(assetPath, HudTopBarJson);
+                return top?.pauseCell != null && top.pauseCell.Length == 2 ? new Vector2Int(top.pauseCell[0], top.pauseCell[1]) : default;
+            }
+            HudSheetExport bar = HudExport(assetPath, HudPowerBarJson);
+            if (bar == null)
+                return default;
+            return new Vector2Int(baseName == "ui_power_bar_front_sheet" ? bar.frontWidth : bar.tileWidth, bar.height);
+        }
+
+        static readonly Regex HudSheetPattern = new Regex(@"^ui_(power_bar_(fill|front)|topbar_pause)_sheet$");
+
         static void SliceSheet(TextureImporter importer)
         {
             importer.GetSourceTextureWidthAndHeight(out int width, out int height);
             string baseName = System.IO.Path.GetFileNameWithoutExtension(importer.assetPath);
             SpriteRect[] rects;
-            if (EffectSheetPattern.IsMatch(baseName))
+            if (HudSheetPattern.IsMatch(baseName))
+            {
+                Vector2Int cell = HudCell(importer.assetPath, baseName);
+                if (cell.x <= 0 || cell.y <= 0 || width % cell.x != 0 || height % cell.y != 0)
+                {
+                    Debug.LogError($"[Nova] {importer.assetPath}: {width}x{height} no es una rejilla de celdas de {cell.x}x{cell.y} (falta o no cuadra su .json).");
+                    return;
+                }
+                int rows = height / cell.y;
+                int columns = width / cell.x;
+                var topLeft = new Vector2(0f, 1f);
+                // <hoja>_<fila>_<columna>, con la fila 0 arriba como en el generador.
+                rects = Enumerable.Range(0, rows).SelectMany(row => Enumerable.Range(0, columns).Select(column =>
+                    Frame($"{baseName}_{row}_{column}", new Rect(column * cell.x, height - (row + 1) * cell.y, cell.x, cell.y), topLeft)))
+                    .ToArray();
+            }
+            else if (EffectSheetPattern.IsMatch(baseName))
             {
                 int cell = EffectCellSize(importer.assetPath);
                 if (cell <= 0 || width % cell != 0 || height % cell != 0)

@@ -63,6 +63,9 @@ namespace Nova.Input
         [Tooltip("Opcional: sin él el lazo selecciona pero no se dibuja (T6-06).")]
         [SerializeField] LassoState lasso;
 
+        [Tooltip("Opcional: sin él no hay botón de pausa en el HUD (T6-08).")]
+        [SerializeField] HudState hud;
+
         readonly Queue<PointerEvent> pending = new Queue<PointerEvent>();
         int nodesMask = -1;
 
@@ -73,6 +76,9 @@ namespace Nova.Input
         bool dragging;
         Vector2 pressWorld;
         NodeController pressNode;
+
+        // T6-08: la pulsación empezó sobre el botón de pausa del HUD. Es suya: no hace lazo ni llega al tablero.
+        bool pressOnHud;
 
         // Pulsación derecha en curso (T2-09): actúa al soltar, porque hasta entonces no se sabe
         // si es un clic —panel o cancelar— o un arrastre que envía (13.1).
@@ -146,6 +152,9 @@ namespace Nova.Input
             pressing = false;
             dragging = false;
             pressNode = null;
+            pressOnHud = false;
+            if (hud != null)
+                hud.Release();
             rightPressing = false;
             rightDragging = false;
             rightPressNode = null;
@@ -170,6 +179,9 @@ namespace Nova.Input
                 // pasa por la cola del tick.
                 if (sendLine != null)
                     sendLine.SetCursor(world);
+                // El botón de pausa del HUD se enciende y se hunde con el ratón, también fuera del tick (T6-08).
+                if (hud != null)
+                    hud.SetPointer(world, mouse.leftButton.isPressed);
 
                 if (mouse.leftButton.wasPressedThisFrame)
                     pending.Enqueue(new PointerEvent(PointerKind.LeftDown, world, PickNode(world)));
@@ -233,6 +245,7 @@ namespace Nova.Input
             dragging = false;
             pressWorld = world;
             pressNode = node;
+            pressOnHud = hud != null && hud.Contains(world);
         }
 
         // 13.1: una pulsación pasa a arrastre cuando el cursor se aleja MÁS del umbral; por debajo
@@ -243,7 +256,7 @@ namespace Nova.Input
                 dragging = true;
 
             // T6-06: un arrastre izquierdo es siempre lazo (18 #32), salvo en modo apuntado, donde no hace nada.
-            if (lasso != null && pressing && dragging && !IsAiming)
+            if (lasso != null && pressing && dragging && !IsAiming && !pressOnHud)
                 lasso.Set(pressWorld, world);
 
             if (rightPressing && !rightDragging && BeyondThreshold(world, rightPressWorld))
@@ -264,6 +277,16 @@ namespace Nova.Input
             pressing = false;
             if (lasso != null)
                 lasso.Clear();
+
+            // T6-08: una pulsación que empieza en el botón de pausa del HUD es suya. Si se suelta dentro, pausa;
+            // si no, no hace nada: ni lazo, ni clic sobre el tablero, ni cierra menús.
+            if (pressOnHud)
+            {
+                pressOnHud = false;
+                if (hud.Contains(world))
+                    PressPauseButton();
+                return;
+            }
 
             // Menú de encendido abierto (13.7): un clic sobre una opción la elige; cualquier otro
             // clic o arrastre lo cierra sin encender y sigue su curso normal.
@@ -429,6 +452,15 @@ namespace Nova.Input
                 game.Pause();
         }
 
+        // El botón de pausa del HUD (13.6, 13.10): abre la pausa sin cerrar antes nada, a diferencia de Esc.
+        // Lo que estuviera abierto —menú, panel o apuntado— se queda como estaba, congelado con la partida.
+        public void PressPauseButton()
+        {
+            OnPauseRequested?.Invoke();
+            if (game != null)
+                game.Pause();
+        }
+
         // Avanza el reloj del buffer. En partida, un tick fijo; en los tests, lo que haga falta.
         public void Step(float deltaTime)
         {
@@ -443,9 +475,10 @@ namespace Nova.Input
         // Para la escena de prueba y los tests: el cableado normal es por el Inspector.
         public void Configure(BalanceConfig config, SelectionManager selectionManager, PlayerCommandIssuer commandIssuer,
             IgnitionMenuState menu, InfoPanelState panel, Camera cam = null, SendLineState line = null, PowerAimState powerAim = null,
-            GameManager flow = null, LassoState lassoState = null)
+            GameManager flow = null, LassoState lassoState = null, HudState hudState = null)
         {
             lasso = lassoState;
+            hud = hudState;
             UnsubscribeGame();
             game = flow;
             SubscribeGame();

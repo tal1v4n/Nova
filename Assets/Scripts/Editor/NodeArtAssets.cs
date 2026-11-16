@@ -39,6 +39,8 @@ namespace Nova.Editor
         public const string InputArtPath = "Assets/Data/InputArt.asset";
         public const string VfxArtPath = "Assets/Data/VfxArt.asset";
         public const string EffectsFolder = "Assets/Sprites/fx";
+        public const string HudArtPath = "Assets/Data/HudArt.asset";
+        public const string UiFolder = "Assets/Sprites/ui";
 
         // <hoja>_<n>: el nombre que SpriteImportRules da a cada frame.
         static readonly Regex FrameIndex = new Regex(@"_(\d+)$");
@@ -145,8 +147,16 @@ namespace Nova.Editor
                 return;
             }
             EditorUtility.SetDirty(effects);
+
+            HudArt hud = LoadOrCreate<HudArt>(HudArtPath);
+            if (!ConfigureHud(hud, out string hudError))
+            {
+                Debug.LogError($"[Nova] {hudError}");
+                return;
+            }
+            EditorUtility.SetDirty(hud);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[Nova] Sprites, huellas y hojas de idle asignados a los {Nodes.Length} tipos de nodo, los overlays de estado a {StateArtPath}, el radio y el arco del Magnetar a {MagnetarArtPath}, el protón a {ProtonArtPath}, los haces de poder a {PowerBeamArtPath}, la línea, la selección, el lazo y la retícula a {InputArtPath} y los quince efectos a {VfxArtPath}.");
+            Debug.Log($"[Nova] Sprites, huellas y hojas de idle asignados a los {Nodes.Length} tipos de nodo, los overlays de estado a {StateArtPath}, el radio y el arco del Magnetar a {MagnetarArtPath}, el protón a {ProtonArtPath}, los haces de poder a {PowerBeamArtPath}, la línea, la selección, el lazo y la retícula a {InputArtPath} y los quince efectos a {VfxArtPath} y el HUD a {HudArtPath}.");
         }
 
         static T LoadOrCreate<T>(string path) where T : ScriptableObject
@@ -297,6 +307,94 @@ namespace Nova.Editor
             public int ppu;
             public int aire;
             public int[] radios;
+        }
+
+        // T6-08: las piezas del HUD (A.6), tal como las copia ArtBridge: ui/power_bar/ y ui/topbar/, con su .json.
+        public const string PowerBarFolder = UiFolder + "/power_bar";
+        public const string TopBarFolder = UiFolder + "/topbar";
+
+        [Serializable]
+        sealed class PowerBarExport
+        {
+            public int height;
+            public int x0;
+            public int x1;
+            public int snap;
+            public int frames;
+            public float fps;
+            public int frontContact;
+        }
+
+        [Serializable]
+        sealed class TopBarExport
+        {
+            public int margin;
+            public int top;
+            public int height;
+            public int plateBorder;
+            public int padX;
+            public int gap;
+            public int plateWidthStep;
+            public int letterSpacing;
+            public string levelText;
+            public string timerText;
+            public string timerTemplate;
+            public int[] pauseCell;
+        }
+
+        // Las celdas <hoja>_<fila>_<columna> de una fila, en orden de columna.
+        static Sprite[] HudRow(string sheetPath, int row)
+        {
+            return AssetDatabase.LoadAllAssetsAtPath(sheetPath).OfType<Sprite>()
+                .Select(sprite => (sprite, match: CellIndex.Match(sprite.name)))
+                .Where(entry => entry.match.Success && int.Parse(entry.match.Groups[1].Value) == row)
+                .OrderBy(entry => int.Parse(entry.match.Groups[2].Value))
+                .Select(entry => entry.sprite)
+                .ToArray();
+        }
+
+        static Color32 Hex(string hex)
+        {
+            return ColorUtility.TryParseHtmlString(hex, out Color color) ? (Color32)color : new Color32(255, 255, 255, 255);
+        }
+
+        public static bool ConfigureHud(HudArt hud, out string error)
+        {
+            error = null;
+            string barJsonPath = PowerBarFolder + "/ui_power_bar.json";
+            string topJsonPath = TopBarFolder + "/ui_topbar.json";
+            var barJson = AssetDatabase.LoadAssetAtPath<TextAsset>(barJsonPath);
+            var topJson = AssetDatabase.LoadAssetAtPath<TextAsset>(topJsonPath);
+            PowerBarExport bar = barJson != null ? JsonUtility.FromJson<PowerBarExport>(barJson.text) : null;
+            TopBarExport top = topJson != null ? JsonUtility.FromJson<TopBarExport>(topJson.text) : null;
+            if (bar == null || top == null || top.pauseCell == null || top.pauseCell.Length != 2)
+            {
+                error = $"Falta {(bar == null ? barJsonPath : topJsonPath)}: sincroniza con Nova → Arte → Sincronizar sprites desde art.";
+                return false;
+            }
+
+            string fillPath = PowerBarFolder + "/ui_power_bar_fill_sheet.png";
+            string frontPath = PowerBarFolder + "/ui_power_bar_front_sheet.png";
+            string pausePath = TopBarFolder + "/ui_topbar_pause_sheet.png";
+            hud.ConfigurePowerBar(AssetDatabase.LoadAssetAtPath<Sprite>(PowerBarFolder + "/ui_power_bar_frame.png"),
+                HudRow(fillPath, 0), HudRow(fillPath, 1), HudRow(frontPath, 0), bar.height, bar.x0, bar.x1, bar.snap,
+                bar.fps, bar.frontContact);
+            hud.ConfigureTopBar(AssetDatabase.LoadAssetAtPath<Sprite>(TopBarFolder + "/ui_topbar_plate.png"),
+                HudRow(pausePath, 0), top.margin, top.top, top.height, top.plateBorder, top.padX, top.gap,
+                top.plateWidthStep, top.letterSpacing, Hex(top.levelText), Hex(top.timerText), top.timerTemplate,
+                new Vector2Int(top.pauseCell[0], top.pauseCell[1]));
+
+            if (!hud.HasPowerBar || hud.FillFrames != bar.frames)
+            {
+                error = $"La barra de poder de {PowerBarFolder} está incompleta o sin cortar: sincroniza con Nova → Arte → Sincronizar sprites desde art.";
+                return false;
+            }
+            if (!hud.HasTopBar)
+            {
+                error = $"La barra de arriba de {TopBarFolder} está incompleta o sin cortar: sincroniza con Nova → Arte → Sincronizar sprites desde art.";
+                return false;
+            }
+            return true;
         }
 
         // T6-07: la hoja de un efecto de A.5 y su .json, tal como los copia ArtBridge: fx/<carpeta>/fx_<carpeta>_sheet.

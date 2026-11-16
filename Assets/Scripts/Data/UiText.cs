@@ -94,6 +94,9 @@ namespace Nova.Data
         [Tooltip("{0} nombre del mapa, {1} nivel.")]
         [SerializeField] string levelNameFormat = "{0} · {1}";
 
+        [Tooltip("El nivel en el HUD (13.6, T6-08). {0} mapa, {1} nivel.")]
+        [SerializeField] string hudLevelFormat = "MAPA {0} · NIVEL {1}";
+
         [Tooltip("{0} minutos, {1} segundos.")]
         [SerializeField] string clockFormat = "{0}:{1:00}";
 
@@ -349,6 +352,7 @@ namespace Nova.Data
         public string Cancel(int refund) => Format(cancelFormat, refund);
 
         public string MapName(int map) => Pick(mapNames, map - 1, nameof(map));
+        public string HudLevel(int map, int level) => Format(hudLevelFormat, map, level);
         public string LevelCaption(int map, int level) => Format(levelCaptionFormat, map, level, MapName(map).ToUpperInvariant());
         public string LevelName(int map, int level) => Format(levelNameFormat, MapName(map), level);
         public string ConversionMechanic => conversionMechanic;

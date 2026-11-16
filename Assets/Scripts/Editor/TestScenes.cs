@@ -589,8 +589,12 @@ namespace Nova.Editor
             var sendLine = go.AddComponent<SendLineState>(); // T2-09
             sendLine.Configure(selection, menu, aim);
             var lasso = go.AddComponent<LassoState>(); // T6-06
+            // T6-08: el HUD con su arte. Sin HudArt asignado no hay HUD, y el botón de pausa no existe.
+            var hudArt = AssetDatabase.LoadAssetAtPath<HudArt>(NodeArtAssets.HudArtPath);
+            var hud = go.AddComponent<HudState>();
+            hud.Configure(hudArt);
             var router = go.AddComponent<InputRouter>();
-            router.Configure(balance, selection, issuer, menu, panel, camera, sendLine, aim, game, lasso); // T5-05: Esc pausa
+            router.Configure(balance, selection, issuer, menu, panel, camera, sendLine, aim, game, lasso, hud); // T5-05: Esc pausa
 
             // T6-06: la entrada con su arte. Sin InputArt asignado, las vistas provisionales siguen al mando y el
             // lazo no se dibuja.
@@ -629,6 +633,10 @@ namespace Nova.Editor
             go.AddComponent<IgnitionMenu>().Configure(menu, font, text);
             go.AddComponent<NodeInfoPanel>().Configure(panel, font, text);
             go.AddComponent<PulsarPowerWheel>().Configure(panel, aim, font, text); // T3-07
+            // T6-08: la barra de poder en todas las escenas; la de arriba, solo con GameManager, que da el nivel y el tiempo.
+            go.AddComponent<PowerBarUI>().Configure(hudArt, registry);
+            if (game != null)
+                go.AddComponent<HudTopBar>().Configure(hudArt, hud, game, font, text);
 
             EditorUtility.SetDirty(go);
             return registry;
