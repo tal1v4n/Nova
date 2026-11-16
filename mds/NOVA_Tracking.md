@@ -244,9 +244,9 @@ Creada el **2026-09-28**. `T.4` empezaba en `T1-01` dando por hecho un proyecto 
 > 5. **Tests.** Coherencia de lo exportado con los tres `BackgroundDefinition`; el render del material contra los fotogramas de referencia, **≥ 99.5 % de píxeles idénticos** —lo que queda son empates de coma flotante en el umbral de Bayer— y el presupuesto medido sobre ese render; la pausa congela el fondo; el ovni sale cada 60–120 s, alternando el lado, y nunca dos a la vez; y la fase de una capa sigue exacta a una hora de partida.
 > 6. **Cierre.** El usuario lo ve en Play en los tres mapas, con la pausa y una pasada del ovni.
 
-### Fase 6 — Presentación 🔴
+### Fase 6 — Presentación
 
-Ninguna tarea de esta fase puede iniciarse hoy. Se desbloquean una a una según avance [NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md).
+Las tareas de esta fase se desbloquearon una a una según avanzaba [NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md). **El arte está completo desde el 2026-11-16 (134 de 134)**: ya solo `T6-10` sigue bloqueada, por el audio de S.5. Las notas de abajo son el historial de cómo se fueron desbloqueando.
 
 > **`ART-NOD-*` está completo: 34 de 34.** Los cuatro tipos de nodo tienen sus sprites, así que `T6-01` deja de estar 🔴 y pasa a ⬜: lo único que la retiene ya es su dependencia de código (`T5-07`), como cualquier otra tarea. Es la primera tarea de la fase 6 que existe de verdad.
 >
