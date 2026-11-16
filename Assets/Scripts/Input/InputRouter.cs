@@ -66,6 +66,9 @@ namespace Nova.Input
         [Tooltip("Opcional: sin él no hay botón de pausa en el HUD (T6-08).")]
         [SerializeField] HudState hud;
 
+        [Tooltip("Opcional: sin él no hay icono de mejora y no se puede mejorar (T6-15).")]
+        [SerializeField] UpgradeIconState upgradeIcons;
+
         readonly Queue<PointerEvent> pending = new Queue<PointerEvent>();
         int nodesMask = -1;
 
@@ -79,6 +82,9 @@ namespace Nova.Input
 
         // T6-08: la pulsación empezó sobre el botón de pausa del HUD. Es suya: no hace lazo ni llega al tablero.
         bool pressOnHud;
+
+        // T6-15: el nodo cuyo icono de mejora activo estaba bajo la pulsación. El clic es del icono (13.13).
+        NodeController pressIcon;
 
         // Pulsación derecha en curso (T2-09): actúa al soltar, porque hasta entonces no se sabe
         // si es un clic —panel o cancelar— o un arrastre que envía (13.1).
@@ -153,8 +159,11 @@ namespace Nova.Input
             dragging = false;
             pressNode = null;
             pressOnHud = false;
+            pressIcon = null;
             if (hud != null)
                 hud.Release();
+            if (upgradeIcons != null)
+                upgradeIcons.Release();
             rightPressing = false;
             rightDragging = false;
             rightPressNode = null;
@@ -182,6 +191,9 @@ namespace Nova.Input
                 // El botón de pausa del HUD se enciende y se hunde con el ratón, también fuera del tick (T6-08).
                 if (hud != null)
                     hud.SetPointer(world, mouse.leftButton.isPressed);
+                // Y los iconos de mejora pasan a activo, encima y pulsado con el cursor (T6-15).
+                if (upgradeIcons != null)
+                    upgradeIcons.SetPointer(world, PickNode(world), mouse.leftButton.isPressed);
 
                 if (mouse.leftButton.wasPressedThisFrame)
                     pending.Enqueue(new PointerEvent(PointerKind.LeftDown, world, PickNode(world)));
@@ -246,6 +258,7 @@ namespace Nova.Input
             pressWorld = world;
             pressNode = node;
             pressOnHud = hud != null && hud.Contains(world);
+            pressIcon = upgradeIcons != null ? upgradeIcons.IconAt(world, true) : null;
         }
 
         // 13.1: una pulsación pasa a arrastre cuando el cursor se aleja MÁS del umbral; por debajo
@@ -275,6 +288,8 @@ namespace Nova.Input
                 return;
             MoveTo(world);
             pressing = false;
+            NodeController icon = pressIcon;
+            pressIcon = null;
             if (lasso != null)
                 lasso.Clear();
 
@@ -302,18 +317,14 @@ namespace Nova.Input
             }
 
             // Panel de clic derecho (13.3): un clic dentro es suyo y no llega a lo que haya
-            // debajo; sobre el botón, mejora, y sobre un destino, reconvierte (T2-07). Las reglas
-            // deciden si se puede: con el botón deshabilitado o ausente, el clic no hace nada.
+            // debajo; sobre un destino, reconvierte (T2-07). Las reglas deciden si se puede: con el
+            // botón deshabilitado o ausente, el clic no hace nada. La mejora ya no es del panel, sino
+            // del icono sobre el nodo (13.13, T6-15).
             //
             // El panel sigue respondiendo en modo apuntado: es el mando del Púlsar que apunta, y
             // desde él se cancela el poder (desviación 211).
             if (!dragging && Panel.Contains(pressWorld))
             {
-                if (Panel.IsOnButton(pressWorld))
-                {
-                    Issuer.Upgrade(Panel.Node);
-                    return;
-                }
                 // Rueda de poderes (13.5, T3-07): solo en un Púlsar propio.
                 if (InfoPanelState.ShowsWheel(Panel.Node, Issuer.Faction))
                 {
@@ -343,6 +354,16 @@ namespace Nova.Input
             {
                 if (!dragging && aim.IsValidTarget(pressNode))
                     Issuer.LaunchPower(aim.Pulsar, pressNode);
+                return;
+            }
+
+            // Icono de mejora activo (13.13, T6-15): el clic es suyo y gana al de 13.1 en ese rombo. Mejora sin
+            // seleccionar, sin enviar y sin tocar la selección ni el buffer, haya o no una selección. Las reglas
+            // deciden si se puede; el icono solo es activo si la mejora se puede pagar. Un arrastre que empieza
+            // en él es un lazo, como cualquier otro.
+            if (!dragging && icon != null)
+            {
+                Issuer.Upgrade(icon);
                 return;
             }
 
@@ -475,10 +496,12 @@ namespace Nova.Input
         // Para la escena de prueba y los tests: el cableado normal es por el Inspector.
         public void Configure(BalanceConfig config, SelectionManager selectionManager, PlayerCommandIssuer commandIssuer,
             IgnitionMenuState menu, InfoPanelState panel, Camera cam = null, SendLineState line = null, PowerAimState powerAim = null,
-            GameManager flow = null, LassoState lassoState = null, HudState hudState = null)
+            GameManager flow = null, LassoState lassoState = null, HudState hudState = null,
+            UpgradeIconState upgradeIconState = null)
         {
             lasso = lassoState;
             hud = hudState;
+            upgradeIcons = upgradeIconState;
             UnsubscribeGame();
             game = flow;
             SubscribeGame();

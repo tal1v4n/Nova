@@ -218,11 +218,11 @@ namespace Nova.Tests
                          InfoPanelState.RowY(6), InfoPanelState.RowY(7), InfoPanelState.RowY(8), InfoPanelState.WheelSlotOffsets[0].x })
                 Assert.AreEqual(Mathf.Round(v * 64f), v * 64f, 1e-4f, "Píxel exacto a 64 PPU.");
 
-            float bottom = InfoPanelState.CancelOffset.y - InfoPanelState.ButtonSize.y / 2f;
+            float bottom = InfoPanelState.CancelOffset.y - InfoPanelState.CancelSize.y / 2f;
             Assert.Greater(bottom, -InfoPanelState.Height / 2f, "La última fila cabe en el panel.");
             float right = InfoPanelState.WheelSlotOffsets[2].x + InfoPanelState.WheelSlotSize.x / 2f;
-            Assert.LessOrEqual(right, InfoPanelState.ButtonSize.x / 2f + 1e-5f);
-            Assert.AreEqual(-1, panel.WheelSlotAt(panel.Center + InfoPanelState.ButtonOffset), "La mejora es otro blanco.");
+            Assert.LessOrEqual(right, InfoPanelState.CancelSize.x / 2f + 1e-5f);
+            Assert.AreEqual(-1, panel.WheelSlotAt(panel.Center + new Vector2(0f, InfoPanelState.RowY(3))), "La fila de la mejora no es un blanco.");
         }
 
         // --- Cargar y cancelar (7.1) ---

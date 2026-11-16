@@ -26,6 +26,10 @@ namespace Nova.Data
         [Tooltip("Multiplicador de un impacto hostil sobre un Magnetar (6.2).")]
         [SerializeField, Range(0.01f, 1f)] float magnetarResistance;
 
+        [Header("Mejora")]
+        [Tooltip("El icono de mejora avisa desde coste − este margen de Energía (13.13).")]
+        [SerializeField, Min(0)] int upgradeHintMargin;
+
         [Header("Encendido y reconversión")]
         [Tooltip("Energía para encender un Asteroide propio, igual para los tres tipos (4.1).")]
         [SerializeField, Min(0)] int ignitionCost;
@@ -63,6 +67,7 @@ namespace Nova.Data
         public int DragThreshold => dragThreshold;
         public int MagnetarShotDamage => magnetarShotDamage;
         public float MagnetarResistance => magnetarResistance;
+        public int UpgradeHintMargin => upgradeHintMargin;
         public int IgnitionCost => ignitionCost;
         public int InertMatter => inertMatter;
         public float ConversionDuration => conversionDuration;

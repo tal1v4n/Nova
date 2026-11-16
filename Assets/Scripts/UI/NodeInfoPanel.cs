@@ -9,9 +9,10 @@ using UnityEngine;
 namespace Nova.UI
 {
     // Panel de clic derecho (13.3, 13.4, T2-03): tipo y nivel, Energía / Tope, velocidad de ataque,
-    // el botón de mejora o NIVEL MÁXIMO y, desde T2-07, los dos destinos de reconversión. Solo
+    // el coste de la mejora o NIVEL MÁXIMO y, desde T2-07, los dos destinos de reconversión. Solo
     // dibuja: el estado es de InfoPanelState, el clic lo resuelve InputRouter y los botones se
-    // validan con NodeController.CheckUpgrade y NodeConverter.Check, sin efectos.
+    // validan con NodeConverter.Check, sin efectos. Desde T6-15 la mejora es texto: se mejora desde
+    // el icono sobre el nodo (13.13).
     //
     // El punto 6 de 13.3 —la rueda de poderes— lo dibuja PulsarPowerWheel (T3-07) en las tres últimas
     // filas, sobre el mismo fondo. Fondo, botones y texto son primitivas de la regla 4 de T.2; la
@@ -22,7 +23,7 @@ namespace Nova.UI
     {
         // Disabled: bloqueado por algo que no es la Energía (congelado, reconvirtiendo); el coste
         // sale sin rojo. Unavailable: el tipo aún no existe en la partida (18 #29).
-        internal enum ButtonLook { Hidden, Enabled, MissingEnergy, Disabled, Unavailable, MaxLevel }
+        internal enum ButtonLook { Hidden, Enabled, MissingEnergy, Disabled, Unavailable }
 
         static readonly Color32 BackgroundColor = new Color32(0x14, 0x1A, 0x2A, 0xF0);
         static readonly Color32 TextColor = new Color32(0xE6, 0xEC, 0xF5, 0xFF);
@@ -51,13 +52,11 @@ namespace Nova.UI
         [Tooltip("Textos de la UI (T.7 #39).")]
         [SerializeField] UiText text;
 
-        [Tooltip("Facción que mira el panel: el botón solo sale en sus nodos.")]
+        [Tooltip("Facción que mira el panel: el coste de la mejora y los botones solo salen en sus nodos.")]
         [SerializeField] Faction viewer = Faction.Player;
 
         GameObject root;
         TextMeshPro[] lines;
-        SpriteRenderer button;
-        TextMeshPro buttonLabel;
         SpriteRenderer[] conversionButtons;
         TextMeshPro[] conversionLabels;
         ButtonLook[] conversionLooks;
@@ -66,10 +65,7 @@ namespace Nova.UI
         bool subscribed;
 
         internal bool IsVisible => root != null && root.activeSelf;
-        internal ButtonLook Button { get; private set; }
         internal string Line(int index) { EnsureBuilt(); return lines[index].enabled ? lines[index].text : null; }
-        internal string ButtonText { get { EnsureBuilt(); return buttonLabel.text; } }
-        internal Vector2 ButtonPosition { get { EnsureBuilt(); return button.transform.position; } }
         internal ButtonLook ConversionButton(int index) { EnsureBuilt(); return conversionLooks[index]; }
         internal string ConversionText(int index) { EnsureBuilt(); return conversionLabels[index].enabled ? conversionLabels[index].text : null; }
         internal Vector2 ConversionPosition(int index) { EnsureBuilt(); return conversionButtons[index].transform.position; }
@@ -129,13 +125,12 @@ namespace Nova.UI
                 // 13.4: el Asteroide solo enseña que duerme y lo que cuesta encenderlo.
                 SetLines(t.TypeName(node.Type), t.EnergyLine(node.Energy, node.EnergyCap), t.Sleeping,
                     t.IgnitionCost(IgnitionCostOf(node)));
-                PaintButton(ButtonLook.Hidden, null);
                 PaintConversion(null, t);
                 return;
             }
 
-            SetLines(t.Title(node.Type, node.Level), t.EnergyLine(node.Energy, node.EnergyCap), AttackSpeed(node, t), null);
-            PaintUpgrade(node, t);
+            SetLines(t.Title(node.Type, node.Level), t.EnergyLine(node.Energy, node.EnergyCap), AttackSpeed(node, t),
+                UpgradeLine(node, t));
             PaintConversion(node, t);
         }
 
@@ -159,26 +154,16 @@ namespace Nova.UI
             }
         }
 
-        // 13.3 punto 4: NIVEL MÁXIMO al máximo; el botón, solo en un nodo propio, deshabilitado
-        // y con el coste en rojo si falta Energía, nunca oculto.
-        void PaintUpgrade(NodeController node, UiText t)
+        // 13.3 punto 4 (T6-15): NIVEL MÁXIMO en cualquier nodo al máximo, sea de quien sea; si no, el coste
+        // del nivel siguiente como información, solo en un nodo propio y siempre, también sin Energía
+        // suficiente, Congelado o Reconvirtiendo: el jugador necesita saber cuánto le falta.
+        string UpgradeLine(NodeController node, UiText t)
         {
-            ActionCheck check = node.CheckUpgrade(viewer);
             if (node.Level >= node.Definition.MaxLevel)
-                PaintButton(ButtonLook.MaxLevel, t.MaxLevel);
-            else if (node.Faction != viewer)
-                PaintButton(ButtonLook.Hidden, null);
-            else
-            {
-                ButtonLook look = LookOf(check);
-                PaintButton(look, t.Upgrade(CostText(look, check.Cost)));
-            }
-        }
-
-        void PaintButton(ButtonLook look, string label)
-        {
-            Button = look;
-            Paint(button, buttonLabel, look, label);
+                return t.MaxLevel;
+            if (node.Faction != viewer)
+                return null;
+            return t.UpgradeCost(node.Definition.UpgradeCostTo(node.Level + 1));
         }
 
         // 13.3 punto 5: solo en un nodo propio encendido, los dos destinos con su coste. Mientras
@@ -235,7 +220,7 @@ namespace Nova.UI
 
         static void Paint(SpriteRenderer body, TextMeshPro label, ButtonLook look, string text)
         {
-            body.enabled = look != ButtonLook.Hidden && look != ButtonLook.MaxLevel;
+            body.enabled = look != ButtonLook.Hidden;
             body.color = look == ButtonLook.Enabled ? EnabledColor : DisabledColor;
             label.enabled = look != ButtonLook.Hidden;
             label.text = text ?? string.Empty;
@@ -312,8 +297,8 @@ namespace Nova.UI
             background.color = BackgroundColor;
             background.sortingOrder = SortingOrder;
 
-            // Cinco filas de texto de arriba abajo. La cuarta comparte sitio con el botón de mejora
-            // (el Asteroide la usa para el coste de encendido) y la quinta es el rótulo de
+            // Cinco filas de texto de arriba abajo. La cuarta es la de la mejora —el coste o NIVEL
+            // MÁXIMO; el Asteroide la usa para el coste de encendido— y la quinta es el rótulo de
             // reconversión; la sexta es la de sus dos botones.
             lines = new TextMeshPro[5];
             for (int i = 0; i < lines.Length; i++)
@@ -321,14 +306,6 @@ namespace Nova.UI
                 lines[i] = Label(root.transform, new Vector2(0f, InfoPanelState.RowY(i)), TextAlignmentOptions.Left,
                     InfoPanelState.Width - 2f * Padding);
             }
-
-            button = new GameObject("UpgradeButton").AddComponent<SpriteRenderer>();
-            button.transform.SetParent(root.transform, false);
-            button.transform.localPosition = InfoPanelState.ButtonOffset;
-            button.sprite = PrimitiveSprites.Rect(Mathf.RoundToInt(InfoPanelState.ButtonSize.x * ppu), Mathf.RoundToInt(InfoPanelState.ButtonSize.y * ppu));
-            button.sortingOrder = SortingOrder + 1;
-            buttonLabel = Label(button.transform, Vector2.zero, TextAlignmentOptions.Center, InfoPanelState.ButtonSize.x);
-            buttonLabel.sortingOrder = SortingOrder + 2;
 
             Vector2 conversionSize = InfoPanelState.ConversionButtonSize;
             conversionButtons = new SpriteRenderer[InfoPanelState.ConversionOffsets.Length];

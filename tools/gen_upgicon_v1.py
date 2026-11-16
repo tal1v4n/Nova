@@ -29,8 +29,10 @@ y PULSADO.
 EL SITIO. Encima de la huella, centrado, a 2 px. El nodo mejorable mas
 grande es una Estrella de nivel 4 (huella 68) y el nodo mas alto de los
 nueve niveles esta en y = 3 u, a 78 px del borde: entre su huella y la
-barra de arriba (24 px + 2 de aire) quedan **16 px**. Ese es el alto maximo
-del icono, y el generador lo comprueba contra los nueve niveles.
+barra de arriba (24 px + 2 de aire) quedan **16 px**. Ese era el alto maximo
+del icono. Desde T6-15 la comprobacion mira las placas de verdad de la barra
+de arriba, que van en las esquinas (PLACAS): ningun nodo alto cae bajo ellas,
+y cada propuesta fija su propio ALTO_MAX y ANCHO_MAX.
 
     py tools/gen_upgicon_v1.py         piezas, comprobaciones y vistas
     py tools/gen_upgicon_v1.py --gif   y la animada
@@ -63,6 +65,10 @@ ALTO_MAX = 16
 ANCHO_MAX = 24
 GAP = 2
 TOPE_HUD = 24 + 2
+# La barra de arriba no ocupa todo el ancho (T6-08): son placas en las esquinas. A la izquierda, la del nivel
+# («MAPA 3 · NIVEL 9», unos 150 px desde x = 4); a la derecha, el cronometro y la pausa (unos 90 px hasta
+# x = 956). Con aire: el icono solo tiene que esquivar estas dos franjas y no salirse por arriba.
+PLACAS = ((0, 184), (848, 960))
 FRAMES = 16                     # 1.33 s a 12 fps
 FPS = 12
 CONT = np.array(CONTORNO, np.uint8)
@@ -146,7 +152,7 @@ def comprobar(gen, permitidos, nombre):
                 for f in range(FRAMES):
                     im = gen.icono(e, tipo, n, f)
                     alto = max(alto, im.shape[0])
-                    if im.shape[0] > ALTO_MAX or im.shape[1] > ANCHO_MAX:
+                    if im.shape[0] > getattr(gen, 'ALTO_MAX', ALTO_MAX) or im.shape[1] > getattr(gen, 'ANCHO_MAX', ANCHO_MAX):
                         fallos.append(f'{tipo} {n} {e}: mide {im.shape[1]} x {im.shape[0]}')
                     if not set(np.unique(im[..., 3])) <= {0, 255}:
                         fallos.append('alfa no binario')
@@ -164,13 +170,19 @@ def comprobar(gen, permitidos, nombre):
     fuera = usados - permitidos
     if fuera:
         fallos.append('colores fuera de paleta: ' + ', '.join('#%02X%02X%02X' % c for c in sorted(fuera)))
-    # el sitio: encima del nodo mejorable mas grande, en el nodo mas alto, no pisa el HUD
+    # el sitio: encima del nodo mejorable mas grande, en cada nodo de los nueve niveles, no pisa ninguna placa
+    # de la barra de arriba ni se sale de la pantalla
     mx = max(huella(c, v, p, n) for _, c, v, p, ns, _ in MEJORABLES for n in ns)
+    ancho = getattr(gen, 'ANCHO_MAX', ANCHO_MAX)
     for nv in range(1, 10):
         s = open(os.path.join(RAIZ, 'Assets', 'Data', 'Levels', f'Level{nv}.asset'), encoding='utf-8').read()
         for a, b in re.findall(r'position: \{x: (-?[\d.]+), y: (-?[\d.]+)\}', s):
-            cy = 270 - float(b) * 64
-            if cy - (mx + 1) // 2 - GAP - alto < TOPE_HUD:
+            cx, cy = 480 + float(a) * 64, 270 - float(b) * 64
+            arriba = cy - (mx + 1) // 2 - GAP - alto
+            if arriba < 0:
+                fallos.append(f'nivel {nv}: el icono sobre ({a}, {b}) se sale por arriba')
+            pisa = any(cx + ancho / 2 > x0 and cx - ancho / 2 < x1 for x0, x1 in PLACAS)
+            if pisa and arriba < TOPE_HUD:
                 fallos.append(f'nivel {nv}: el icono sobre ({a}, {b}) pisa la barra de arriba')
     fallos += gen.comprobar_propio() if hasattr(gen, 'comprobar_propio') else []
     if fallos:
@@ -230,11 +242,12 @@ def tipos_vista(gen, f=0):
     """Los iconos activos de todos los tipos y niveles mejorables, a solas."""
     filas = []
     for tipo, _, _, _, niveles, _ in MEJORABLES:
-        fila = np.empty((ALTO_MAX + 6, 4 * (ANCHO_MAX + 6) + 4, 3), np.uint8)
+        alto, ancho = getattr(gen, 'ALTO_MAX', ALTO_MAX), getattr(gen, 'ANCHO_MAX', ANCHO_MAX)
+        fila = np.empty((alto + 6, 4 * (ancho + 6) + 4, 3), np.uint8)
         fila[:] = FONDO
         for i, n in enumerate(niveles):
             ic = gen.icono('activo', tipo, n, f)
-            pega(fila, ic, 4 + i * (ANCHO_MAX + 6) + (ANCHO_MAX - ic.shape[1]) // 2, 3)
+            pega(fila, ic, 4 + i * (ancho + 6) + (ancho - ic.shape[1]) // 2, 3)
         filas.append(fila)
     return np.vstack(filas)
 

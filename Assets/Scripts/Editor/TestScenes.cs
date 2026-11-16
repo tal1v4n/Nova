@@ -593,14 +593,18 @@ namespace Nova.Editor
             var hudArt = AssetDatabase.LoadAssetAtPath<HudArt>(NodeArtAssets.HudArtPath);
             var hud = go.AddComponent<HudState>();
             hud.Configure(hudArt);
+            // T6-15: el icono de mejora sobre el nodo, con el arte de HudArt. Sin él no se puede mejorar.
+            var upgradeIcons = go.AddComponent<UpgradeIconState>();
+            upgradeIcons.Configure(hudArt, balance, registry);
             var router = go.AddComponent<InputRouter>();
-            router.Configure(balance, selection, issuer, menu, panel, camera, sendLine, aim, game, lasso, hud); // T5-05: Esc pausa
+            router.Configure(balance, selection, issuer, menu, panel, camera, sendLine, aim, game, lasso, hud, upgradeIcons); // T5-05: Esc pausa
 
             // T6-06: la entrada con su arte. Sin InputArt asignado, las vistas provisionales siguen al mando y el
             // lazo no se dibuja.
             var input = AssetDatabase.LoadAssetAtPath<InputArt>(NodeArtAssets.InputArtPath);
             go.AddComponent<ProvisionalSelectionView>().Configure(selection);
             go.AddComponent<SelectionRingView>().Configure(input, selection);
+            go.AddComponent<UpgradeIcon>().Configure(upgradeIcons, registry); // T6-15
             go.AddComponent<LassoView>().Configure(input, lasso);
             // T6-05: los anillos de radio. Sin MagnetarArt asignado, el anillo sigue siendo el provisional.
             go.AddComponent<MagnetarRadiusView>().Configure(

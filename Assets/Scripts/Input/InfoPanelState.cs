@@ -6,8 +6,9 @@ using UnityEngine;
 namespace Nova.Input
 {
     // Estado del panel de clic derecho (13.3, T2-03): si está abierto, de qué nodo y dónde. Lo
-    // abre y lo cierra InputRouter, y el botón de mejora sale por el emisor de comandos como
-    // cualquier otra acción; NodeInfoPanel (Nova.UI) solo lo dibuja.
+    // abre y lo cierra InputRouter, y sus botones salen por el emisor de comandos como cualquier
+    // otra acción; NodeInfoPanel (Nova.UI) solo lo dibuja. Desde T6-15 la mejora no es un botón
+    // del panel sino el icono sobre el nodo (13.13): la cuarta fila es solo texto.
     //
     // Como en IgnitionMenuState, la geometría vive aquí porque el router resuelve el clic contra
     // ella: el panel dibujado y su blanco salen del mismo sitio.
@@ -30,10 +31,6 @@ namespace Nova.Input
         // media fila de 24.
         public static float RowY(int row) => Height / 2f - (8f + 12f + 24f * row) / 64f;
 
-        // Botón de mejora: la cuarta fila, 192 x 26 px.
-        public static readonly Vector2 ButtonSize = new Vector2(3f, 0.40625f);
-        public static readonly Vector2 ButtonOffset = new Vector2(0f, RowY(3));
-
         // Reconversión (13.3 punto 5): dos botones de 94 x 26 px en la sexta fila, separados 4 px.
         // Son dos y no tres: nunca a Asteroide ni al propio tipo (8.1).
         public static readonly Vector2 ConversionButtonSize = new Vector2(1.46875f, 0.40625f);
@@ -54,7 +51,9 @@ namespace Nova.Input
             new Vector2(1.03125f, RowY(7)),
         };
 
-        // «Cancelar +N» (7.1, 18 #19): la novena fila, del tamaño del botón de mejora.
+        // «Cancelar +N» (7.1, 18 #19): la novena fila, 192 x 26 px. Medía lo que el botón de mejora, que ya
+        // no existe (T6-15).
+        public static readonly Vector2 CancelSize = new Vector2(3f, 0.40625f);
         public static readonly Vector2 CancelOffset = new Vector2(0f, RowY(8));
 
         // Los dos destinos de un tipo encendido, en el orden de 16.2: Estrella, Púlsar, Magnetar.
@@ -90,11 +89,6 @@ namespace Nova.Input
             return IsOpen && Inside(world, Center, new Vector2(Width, Height));
         }
 
-        public bool IsOnButton(Vector2 world)
-        {
-            return IsOpen && Inside(world, Center + ButtonOffset, ButtonSize);
-        }
-
         // Índice del botón de reconversión bajo world (0 o 1), o -1.
         public int ConversionOptionAt(Vector2 world)
         {
@@ -123,7 +117,7 @@ namespace Nova.Input
 
         public bool IsOnCancel(Vector2 world)
         {
-            return IsOpen && Inside(world, Center + CancelOffset, ButtonSize);
+            return IsOpen && Inside(world, Center + CancelOffset, CancelSize);
         }
 
         // 13.3 punto 6: la rueda solo sale en un Púlsar propio que pueda cargar.

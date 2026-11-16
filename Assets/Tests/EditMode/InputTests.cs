@@ -555,7 +555,8 @@ namespace Nova.Tests
             router.ReleaseLeft(at, node);
         }
 
-        Vector2 UpgradeButton => panel.Center + InfoPanelState.ButtonOffset;
+        // T6-15: la cuarta fila del panel, que hasta entonces era el botón de mejora.
+        Vector2 UpgradeRow => panel.Center + new Vector2(0f, InfoPanelState.RowY(3));
 
         [Test]
         public void RightClickOnAnotherNodeMovesThePanel()
@@ -594,41 +595,18 @@ namespace Nova.Tests
             Assert.IsFalse(paused);
         }
 
+        // 13.3 punto 4 (T6-15): la fila de la mejora es información. Se mejora desde el icono (UpgradeIconTests).
         [Test]
-        public void UpgradeButtonUpgradesAndCharges()
+        public void ClickOnTheUpgradeRowDoesNotUpgrade()
         {
             NodeController star = Node("Star", Faction.Player, 30);
             router.ClickRight(star);
 
-            ClickAt(UpgradeButton);
-
-            Assert.AreEqual(2, star.Level);
-            Assert.AreEqual(10, star.Energy, "16.2: pasar a nivel 2 cuesta 20.");
-            Assert.IsTrue(panel.IsOpen, "El panel sigue abierto para seguir mejorando.");
-        }
-
-        [Test]
-        public void UpgradeButtonWithoutEnoughEnergyDoesNothing()
-        {
-            NodeController star = Node("Star", Faction.Player, 19);
-            router.ClickRight(star);
-
-            ClickAt(UpgradeButton);
+            ClickAt(UpgradeRow);
 
             Assert.AreEqual(1, star.Level);
-            Assert.AreEqual(19, star.Energy);
-        }
-
-        [Test]
-        public void UpgradeButtonOnAForeignNodeDoesNothing()
-        {
-            NodeController enemy = Node("Star", Faction.Enemy, 50);
-            router.ClickRight(enemy);
-
-            ClickAt(UpgradeButton);
-
-            Assert.AreEqual(1, enemy.Level);
-            Assert.AreEqual(50, enemy.Energy);
+            Assert.AreEqual(30, star.Energy);
+            Assert.IsTrue(panel.IsOpen, "El clic es del panel, aunque no haga nada.");
         }
 
         [Test]
@@ -638,27 +616,10 @@ namespace Nova.Tests
             router.ClickRight(star);
             NodeController hidden = Node("Star", Faction.Player, 10, panel.Center);
             Vector2 inside = panel.Center + new Vector2(0f, InfoPanelState.Height / 4f);
-            Assert.IsFalse(panel.IsOnButton(inside));
 
             ClickAt(inside, hidden);
 
             Assert.IsFalse(selection.HasSelection, "El clic es del panel.");
-        }
-
-        [Test]
-        public void UpgradeButtonDoesNotSendWithASelection()
-        {
-            NodeController star = Node("Star", Faction.Player, 30);
-            NodeController other = Node("Star", Faction.Player, 30, new Vector2(-4f, 0f));
-            Click(other);
-            router.ClickRight(star);
-
-            ClickAt(UpgradeButton);
-            WaitBuffer();
-
-            Assert.AreEqual(2, star.Level);
-            Assert.AreEqual(30, other.Energy, "El clic en el botón no es un envío.");
-            Assert.IsTrue(selection.IsSelected(other));
         }
 
         // --- Reconversión desde el panel (13.3 punto 5, T2-07) ---

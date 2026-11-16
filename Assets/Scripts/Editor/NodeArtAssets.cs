@@ -325,6 +325,21 @@ namespace Nova.Editor
             public int frontContact;
         }
 
+        // T6-15: el icono de mejora (ART-UI-BTN-UPG), en ui/upgrade_icon/ con su .json.
+        public const string UpgradeIconFolder = UiFolder + "/upgrade_icon";
+
+        [Serializable]
+        sealed class UpgradeIconExport
+        {
+            public int cellWidth;
+            public int cellHeight;
+            public int frames;
+            public float fps;
+            public string[] rows;
+            public int gap;
+            public int[] hitBox;
+        }
+
         [Serializable]
         sealed class TopBarExport
         {
@@ -392,6 +407,39 @@ namespace Nova.Editor
             if (!hud.HasTopBar)
             {
                 error = $"La barra de arriba de {TopBarFolder} está incompleta o sin cortar: sincroniza con Nova → Arte → Sincronizar sprites desde art.";
+                return false;
+            }
+            return ConfigureUpgradeIcon(hud, out error);
+        }
+
+        // T6-15: las cinco filas de la hoja, en el orden de HudArt (aviso, listo, activo, encima y pulsado), que es
+        // el de UpgradeIconLook. Si el .json trae otro orden, falla: el código lee la fila por su número.
+        static readonly string[] UpgradeIconRowNames = { "aviso", "listo", "activo", "encima", "pulsado" };
+
+        static bool ConfigureUpgradeIcon(HudArt hud, out string error)
+        {
+            error = null;
+            string jsonPath = UpgradeIconFolder + "/ui_upgrade_icon.json";
+            var json = AssetDatabase.LoadAssetAtPath<TextAsset>(jsonPath);
+            UpgradeIconExport icon = json != null ? JsonUtility.FromJson<UpgradeIconExport>(json.text) : null;
+            if (icon == null || icon.hitBox == null || icon.hitBox.Length != 2 || icon.rows == null)
+            {
+                error = $"Falta {jsonPath}: sincroniza con Nova → Arte → Sincronizar sprites desde art.";
+                return false;
+            }
+            if (!icon.rows.SequenceEqual(UpgradeIconRowNames))
+            {
+                error = $"{jsonPath}: las filas son {string.Join(", ", icon.rows)} y HudArt espera {string.Join(", ", UpgradeIconRowNames)}.";
+                return false;
+            }
+
+            string sheetPath = UpgradeIconFolder + "/ui_upgrade_icon_sheet.png";
+            Sprite[] cells = Enumerable.Range(0, HudArt.UpgradeIconRows).SelectMany(row => HudRow(sheetPath, row)).ToArray();
+            hud.ConfigureUpgradeIcon(cells, icon.frames, icon.fps, new Vector2Int(icon.cellWidth, icon.cellHeight), icon.gap,
+                new Vector2Int(icon.hitBox[0], icon.hitBox[1]));
+            if (!hud.HasUpgradeIcon)
+            {
+                error = $"El icono de mejora de {UpgradeIconFolder} está incompleto o sin cortar: sincroniza con Nova → Arte → Sincronizar sprites desde art.";
                 return false;
             }
             return true;

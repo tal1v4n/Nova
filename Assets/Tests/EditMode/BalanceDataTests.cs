@@ -95,6 +95,7 @@ namespace Nova.Tests
             Assert.AreEqual(4, balance.DragThreshold);
             Assert.AreEqual(2, balance.MagnetarShotDamage);
             Assert.AreEqual(0.5f, balance.MagnetarResistance);
+            Assert.AreEqual(5, balance.UpgradeHintMargin, "13.13: el icono de mejora avisa desde coste − 5.");
             Assert.AreEqual(10, balance.IgnitionCost);
             Assert.AreEqual(10, balance.InertMatter);
             Assert.AreEqual(3.0f, balance.ConversionDuration);

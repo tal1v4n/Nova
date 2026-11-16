@@ -31,6 +31,10 @@ namespace Nova.Presentation
         public const int ChargeBar = 7;
         public const int ChargeFill = 8;
 
+        // 14.7, capa 6, también: el icono de mejora (13.13, T6-15). Va encima de la huella y no pisa el número
+        // ni la barra de carga, así que comparte orden con la Energía.
+        public const int UpgradeIcon = Energy;
+
         // El velo del apuntado tapa nodo y número, como la barra.
         public const int AimVeil = 7;
 

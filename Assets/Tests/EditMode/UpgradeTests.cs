@@ -184,8 +184,7 @@ namespace Nova.Tests
             Assert.AreEqual("Estrella · Nivel 1", view.Line(0));
             Assert.AreEqual("Energía 25 / 50", view.Line(1));
             Assert.AreEqual("Generación: 0.50 E/s", view.Line(2), "13.4 y 4.2: 1 / 2.00 s.");
-            Assert.AreEqual(NodeInfoPanel.ButtonLook.Enabled, view.Button);
-            Assert.AreEqual("Mejorar · 20", view.ButtonText);
+            Assert.AreEqual("Mejora: 20", view.Line(3), "T6-15: la fila 4 es información; se mejora desde el icono.");
         }
 
         [Test]
@@ -216,32 +215,43 @@ namespace Nova.Tests
             Assert.IsNull(view.Line(2));
         }
 
+        // 13.3: el coste se ve siempre, también sin Energía, Congelado o Reconvirtiendo: el jugador necesita saber
+        // cuánto le falta. Ya no es un botón, así que no hay rojo.
         [Test]
-        public void MissingEnergyShowsTheButtonWithTheCostInRed()
+        public void TheCostIsShownWithoutEnoughEnergyAndWhenFrozen()
         {
-            panel.Open(Node("Star", Faction.Player, 5), Vector2.zero);
+            NodeController star = Node("Star", Faction.Player, 5);
+            panel.Open(star, Vector2.zero);
+            Assert.AreEqual("Mejora: 20", view.Line(3));
 
-            Assert.AreEqual(NodeInfoPanel.ButtonLook.MissingEnergy, view.Button, "13.3: deshabilitado, nunca oculto.");
-            StringAssert.Contains("<color=#F2456B>20</color>", view.ButtonText);
+            star.SetStateFlag(NodeStateFlags.Frozen, true);
+            view.Refresh();
+            Assert.AreEqual("Mejora: 20", view.Line(3));
         }
 
         [Test]
         [Section17(24)]
-        public void MaxLevelReplacesTheButton()
+        public void MaxLevelReplacesTheCost()
         {
             panel.Open(Node("Star", Faction.Player, 50, 5), Vector2.zero);
+            Assert.AreEqual("NIVEL MÁXIMO", view.Line(3));
+        }
 
-            Assert.AreEqual(NodeInfoPanel.ButtonLook.MaxLevel, view.Button);
-            Assert.AreEqual("NIVEL MÁXIMO", view.ButtonText);
+        // 13.3: NIVEL MÁXIMO es información y sale en cualquier nodo al máximo, sea de quien sea.
+        [Test]
+        public void MaxLevelShowsOnForeignNodesToo()
+        {
+            panel.Open(Node("Magnetar", Faction.Neutral, 50, 5), Vector2.zero);
+            Assert.AreEqual("NIVEL MÁXIMO", view.Line(3));
         }
 
         [Test]
         [Section17(23)]
-        public void ForeignNodeHasNoButton()
+        public void ForeignNodeHasNoUpgradeCost()
         {
             panel.Open(Node("Star", Faction.Enemy, 50), Vector2.zero);
 
-            Assert.AreEqual(NodeInfoPanel.ButtonLook.Hidden, view.Button);
+            Assert.IsNull(view.Line(3));
             Assert.AreEqual("Estrella · Nivel 1", view.Line(0), "La información sí se ve.");
             Assert.AreEqual("Energía 50 / 50", view.Line(1));
             Assert.AreEqual("Generación: 0.50 E/s", view.Line(2), "13.4: la velocidad de ataque de la Estrella.");
@@ -256,27 +266,23 @@ namespace Nova.Tests
             Assert.AreEqual("Energía 7 / 10", view.Line(1));
             Assert.AreEqual("DORMIDO", view.Line(2));
             Assert.AreEqual("Encender: 10", view.Line(3));
-            Assert.AreEqual(NodeInfoPanel.ButtonLook.Hidden, view.Button);
         }
 
         [Test]
         public void PanelFollowsTheNodeWhileOpen()
         {
-            NodeController star = Node("Star", Faction.Player, 19);
+            NodeController star = Node("Star", Faction.Player, 20);
             panel.Open(star, Vector2.zero);
-            Assert.AreEqual(NodeInfoPanel.ButtonLook.MissingEnergy, view.Button);
-
-            star.AddEnergy(1);
-            Assert.AreEqual(NodeInfoPanel.ButtonLook.Enabled, view.Button, "Llegar al coste habilita el botón.");
+            Assert.AreEqual("Mejora: 20", view.Line(3));
 
             star.TryUpgrade(Faction.Player);
             Assert.AreEqual("Estrella · Nivel 2", view.Line(0));
             Assert.AreEqual("Generación: 0.63 E/s", view.Line(2));
-            Assert.AreEqual(NodeInfoPanel.ButtonLook.MissingEnergy, view.Button);
+            Assert.AreEqual("Mejora: 30", view.Line(3));
         }
 
         [Test]
-        public void CapturedNodeLosesTheButton()
+        public void CapturedNodeLosesTheUpgradeCost()
         {
             NodeController star = Node("Star", Faction.Player, 30);
             panel.Open(star, Vector2.zero);
@@ -284,17 +290,7 @@ namespace Nova.Tests
             star.ApplyImpact(ImpactResolver.Resolve(new ProtonSnapshot(Faction.Enemy, 40), star.Snapshot(), Balance.MagnetarResistance));
 
             Assert.AreEqual(Faction.Enemy, star.Faction);
-            Assert.AreEqual(NodeInfoPanel.ButtonLook.Hidden, view.Button);
-        }
-
-        [Test]
-        public void TheDrawnButtonIsTheClickTarget()
-        {
-            Vector2 center = new Vector2(1f, -2f);
-            panel.Open(Node("Star", Faction.Player, 30), center);
-
-            Assert.Less(Vector2.Distance(center + InfoPanelState.ButtonOffset, view.ButtonPosition), 1e-5f);
-            Assert.IsTrue(panel.IsOnButton(view.ButtonPosition));
+            Assert.IsNull(view.Line(3));
         }
 
         // --- Geometría del panel ---
@@ -314,7 +310,7 @@ namespace Nova.Tests
         [Test]
         public void PanelSizesFallOnWholePixels()
         {
-            foreach (float size in new[] { InfoPanelState.Width, InfoPanelState.Height, InfoPanelState.ButtonSize.x, InfoPanelState.ButtonSize.y })
+            foreach (float size in new[] { InfoPanelState.Width, InfoPanelState.Height, InfoPanelState.CancelSize.x, InfoPanelState.CancelSize.y })
                 Assert.AreEqual(Mathf.Round(size * 64f), size * 64f, 1e-4f);
         }
 

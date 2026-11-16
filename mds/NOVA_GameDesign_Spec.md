@@ -94,6 +94,7 @@ Estos términos son los que deben usarse en el código, sin sinónimos. Cualquie
 | **Encendido** | Convertir un Asteroide propio de nivel 0 en un nodo de nivel 1 de otro tipo. | `Ignition` |
 | **Reconversión** | Cambiar un nodo ya encendido a otro tipo. Lo devuelve a nivel 1. | `Conversion` |
 | **Mejora** | Subir un nivel dentro del mismo tipo. | `Upgrade` |
+| **Icono de mejora** | Rombo encima de un nodo propio mejorable desde el que se mejora con un clic ([13.13](#1313-icono-de-mejora)). Avisa desde `coste − 5`; su estado lo calcula `UpgradeIconState` y lo dibuja `UpgradeIcon`. | `UpgradeIcon` |
 | **Poder** | Habilidad del Púlsar. Cero Absoluto, Decaimiento o Agujero de Gusano. | `Power` |
 | **Haz** | Trazo recto del Púlsar a su objetivo por el que se entrega un Poder. Dura 0.25 s, no viaja y no es interceptable. Sustituye al antiguo proyectil de poder. | `PowerBeam` |
 | **Línea de envío** | Filamento de plasma en color de facción que sale de un nodo propio y **sigue al cursor** mientras el Jugador apunta un envío: durante el arrastre derecho y con una selección activa ([13.1](#131-ratón)). Solo presentación: no tiene efecto de juego y desaparece al soltar. No es el protón ni lo sustituye. | `SendLine` |
@@ -738,7 +739,7 @@ Tres opciones, siempre las mismas y siempre las tres, en el orden de [16.2](#162
 | Púlsar | 10 | Púlsar nivel 1 con 0 de Energía |
 | Magnetar | 10 | Magnetar nivel 1 con 0 de Energía |
 
-- Con `energy < 10` el menú **se abre igual**, con las tres opciones deshabilitadas y el coste en rojo. Es el mismo criterio que el botón de mejora de [13.3](#133-panel-de-clic-derecho): el jugador necesita saber cuánto le falta, y ocultarlo no se lo dice.
+- Con `energy < 10` el menú **se abre igual**, con las tres opciones deshabilitadas y el coste en rojo. Es el mismo criterio que tenía el botón de mejora de [13.3](#133-panel-de-clic-derecho) hasta `T6-15`: el jugador necesita saber cuánto le falta, y ocultarlo no se lo dice.
 - Clic derecho o clic en vacío: cierra el menú sin encender.
 - Con el menú abierto, cualquier otro clic izquierdo —sobre un nodo— o un arrastre izquierdo **lo cierra sin encender y sigue su curso**: un clic sobre una Estrella propia la selecciona, y un lazo selecciona. El botón derecho y `Esc` **solo** lo cierran: no abren el panel, no pausan y **no empiezan un arrastre derecho**, así que no dibujan línea de envío ([18](#18-decisiones-tomadas-por-defecto) #28).
 - Una opción deshabilitada no hace nada al pulsarla y **deja el menú abierto**, para que se siga viendo cuánto falta.
@@ -856,14 +857,15 @@ El icono solo existe en un **nodo propio que pueda mejorarse**: no al nivel máx
 |---|---|---|---|
 | Menos de `coste − 5` | — | No aparece | — |
 | De `coste − 5` a `coste − 1` | — | **Aviso**: difuminado | No |
-| `coste` o más | Fuera del nodo | **Listo**: difuminado | No |
-| `coste` o más | Sobre el nodo | **Activo**: al 100 % | **Sí** |
+| `coste` o más | Fuera del nodo | **Listo**: relleno cian difuminado, con el sonar nítido | No |
+| `coste` o más | Sobre el nodo | **Activo**: el mismo, al 100 % | **Sí** |
 
-- **Se mejora con clic izquierdo sobre el icono activo.** El clic es del icono: no selecciona, no envía y no cambia la selección, haya o no una activa. El resto del nodo conserva su clic de 13.1.
+- **Se mejora con clic izquierdo sobre el icono activo.** El clic es del icono: no selecciona, no envía y no cambia la selección, haya o no una activa. El resto del nodo conserva su clic de 13.1. El aviso no se pulsa: un clic sobre él sigue su curso normal. Un arrastre que empieza en el icono es un lazo, como cualquier arrastre izquierdo, y en modo apuntado el icono no responde: ese modo suspende 13.1 entero (`T6-15`).
+- **El sonar y el relleno dicen «ya se puede»** (ajuste del usuario en `T6-15`, 2026-11-16): salen en cuanto la mejora se puede pagar, sin esperar al cursor. El cursor solo quita el difuminado. El aviso es un rombo vacío y tramado, sin sonar: con él no se puede hacer nada.
 - **«Sobre el nodo»** es sobre su huella o sobre el propio icono, para que el icono no se apague al subir el cursor hasta él.
 - El margen de 5 es un número de balance y vive en `BalanceConfig` (16.1).
 - **Difuminado no es opacidad**: el alfa del proyecto es binario, así que es el icono tramado al 50 %, como los velos de 13.12.
-- Va centrado encima de la huella, a 2 px, en la capa 6 de [14.7](./NOVA_Estados_Animaciones.md#147-prioridad-visual). Sobre el icono activo hay dos estados más: **encima** (el cursor sobre el icono) y **pulsado**. El arte es `ART-UI-BTN-UPG`, «El sello» ([A.6](./NOVA_Assets_Diseno.md#a6-ui--13)); lo integra `T6-15`.
+- Va centrado encima de la huella, a 2 px, en la capa 6 de [14.7](./NOVA_Estados_Animaciones.md#147-prioridad-visual). Sobre el icono activo hay dos estados más: **encima** (el cursor sobre el icono), que marca el borde del rombo en blanco, y **pulsado**, igual y 1 px más abajo. Solo existen sobre un icono que se puede pulsar. La zona que se pulsa es el rombo de 19 × 19 px, no el sonar. El arte es `ART-UI-BTN-UPG`, «El sello» ([A.6](./NOVA_Assets_Diseno.md#a6-ui--13)); lo integra `T6-15`.
 
 ---
 
@@ -971,7 +973,7 @@ Assets/
 | `SoundBank.cs` | Los sonidos de la partida (S.6): cada ID `SND-*` con su clip, su bus y su volumen base, y el ancho del tablero, el panorama máximo, las voces por ID y el tamaño del pool. Un solo asset, `Assets/Data/Audio/SoundBank.asset`, del mismo menú (`T6-14`) |
 | `InputArt.cs` | El arte de la entrada del Jugador ([NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md), A.4.3): la línea de envío en tres piezas, el anillo de selección en sus tallas con el radio y el aire de cada una, las dos piezas del lazo y la retícula por poder y talla. `SizeFor` elige la talla con la huella del nodo. Lo rellena *Asignar sprites de nodo* (`T6-06`) |
 | `VfxArt.cs` | El arte de los efectos puntuales ([NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md), A.5): las quince hojas `fx_*_sheet`, cada una con sus filas por nombre —las del `.json` del generador—, sus frames y sus variantes, y la cadencia. Un solo asset, `Assets/Data/VfxArt.asset`, que rellena `NodeArtAssets` (`T6-07`) |
-| `HudArt.cs` | El arte del HUD permanente ([NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md), A.6): la carcasa, las teselas de cada bando y el frente de la barra de poder, la placa y el botón de pausa de la barra de arriba, y sus medidas de `ui_power_bar.json` y `ui_topbar.json`, en píxeles de la pantalla de 960 × 540. Da la geometría: el píxel del reparto, el ancho de una placa y dónde va cada pieza. Lo rellena `NodeArtAssets` (`T6-08`) |
+| `HudArt.cs` | El arte del HUD permanente ([NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md), A.6): la carcasa, las teselas de cada bando y el frente de la barra de poder, la placa y el botón de pausa de la barra de arriba, y el icono de mejora con su celda, su separación y su zona de clic (`T6-15`), y sus medidas de `ui_power_bar.json`, `ui_topbar.json` y `ui_upgrade_icon.json`, en píxeles de la pantalla de 960 × 540. Da la geometría: el píxel del reparto, el ancho de una placa y dónde va cada pieza. Lo rellena `NodeArtAssets` (`T6-08`) |
 | `UiText.cs` | **Todos los textos de la UI**, en español: nombres de tipo, formatos del panel, `DORMIDO`, `NIVEL MÁXIMO`… Una instancia, `Assets/Data/UiText.asset`. El juego es solo en español, pero ningún texto se escribe en un script o un prefab ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #39) |
 
 ### 15.5 Gameplay — componentes de nodo
@@ -1033,8 +1035,8 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 | `EnemyThreatResponder.cs` | Refuerzo, congelación y evacuación de [12.4](./NOVA_Algoritmo_Enemigo.md#124-detección-de-amenaza-y-defensa) |
 | `EnemyCommandIssuer.cs` | `NodeCommandIssuer` del Enemigo, más `Execute`, que traduce una candidata de `EnemyEvaluator` al comando que le toca (`T4-03`) |
 | `NodeHUD.cs` | Número de Energía sobre el nodo |
-| `InfoPanelState.cs` | Estado del panel de clic derecho: abierto o no, de qué nodo, dónde y la geometría del botón. Lo abre y lo cierra `InputRouter`; vive en `Nova.Input` por lo mismo que `IgnitionMenuState` |
-| `NodeInfoPanel.cs` | Dibuja el panel de clic derecho. Solo lee `InfoPanelState` y valida el botón con `NodeController.CheckUpgrade` |
+| `InfoPanelState.cs` | Estado del panel de clic derecho: abierto o no, de qué nodo, dónde y la geometría de sus botones (reconversión, rueda y «Cancelar»). Lo abre y lo cierra `InputRouter`; vive en `Nova.Input` por lo mismo que `IgnitionMenuState`. Desde `T6-15` la mejora no es un botón del panel |
+| `NodeInfoPanel.cs` | Dibuja el panel de clic derecho. Solo lee `InfoPanelState`; la fila de la mejora es texto, `Mejora: N` o `NIVEL MÁXIMO` (13.3, `T6-15`), y los botones de reconversión se validan con `NodeConverter.Check` |
 | `PulsarPowerWheel.cs` | Dibuja la rueda de poderes en las tres últimas filas del panel. Solo lee `InfoPanelState`, `PowerAimState` y `PulsarCaster`, y valida cada ranura con `PulsarCaster.CheckCharge` (`T3-07`) |
 | `PowerAimState.cs` | Estado del modo apuntado: qué Púlsar apunta y para qué bando, y qué es objetivo válido ([7.2.1](#721-objetivo-válido)). Lo abre y lo cierra `InputRouter`; vive en `Nova.Input` por lo mismo que `IgnitionMenuState` (`T3-07`) |
 | `IgnitionMenuState.cs` | Estado del menú radial de encendido: abierto o no, sobre qué Asteroide, dónde y la geometría de sus opciones. Lo abre y lo cierra `InputRouter`; vive en `Nova.Input` porque el router resuelve el clic contra él |
@@ -1042,6 +1044,7 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 | `PowerBarUI.cs` | Barra inferior (13.6) con su arte, «El conducto» (A.6): el reparto de la Energía de los nodos encendidos de cada bando. El relleno del Enemigo en mosaico por todo el interior y el del Jugador encima hasta el reparto, los dos desde x0; el frente encima, con la curva orbital. Lee de `NodeRegistry` en cada frame y no acumula estado de juego. Lee `HudArt` (`T6-08`) |
 | `HudTopBar.cs` | La barra de arriba (13.6) con su arte, «Las lecturas» (A.6): el nivel (`MAPA 2 · NIVEL 5`), el cronómetro con el tiempo de juego de `MatchRecorder` y el botón de pausa, con el estado que le da `HudState`. Texto en TextMeshPro con Jersey 10 a tamaño nativo sobre la placa de nueve cortes. Solo lee (`T6-08`) |
 | `HudState.cs` | El botón de pausa del HUD para la entrada: dónde está (de `HudArt`) y si el ratón está encima o lo pulsa. Lo escribe `InputRouter` en cada frame y lo lee `HudTopBar`; el clic lo resuelve `InputRouter.PressPauseButton`. Vive en `Nova.Input` por lo mismo que `InfoPanelState` (`T6-08`) |
+| `UpgradeIconState.cs` | El icono de mejora (13.13) para la entrada: qué estado enseña cada nodo —aviso, listo, activo, encima o pulsado— según `NodeController.CheckUpgrade`, el margen de `BalanceConfig` y el cursor, dónde va (centrado sobre la huella, a 2 px) y su zona de clic, el rombo, con las medidas de `HudArt`. Lo escribe `InputRouter` en cada frame y lo lee `UpgradeIcon`; el clic sobre el icono activo lo resuelve `InputRouter`. Vive en `Nova.Input`, como `HudState` (`T6-15`) |
 | `EndLevelScreen.cs` | Victoria y derrota ([13.11](#1311-pantallas-de-fin-de-nivel)). Lee `MatchRecorder` y, en el estancamiento, las cinco vías de `OutcomeRules` |
 | `PauseMenu.cs` | Menú de pausa ([13.10](#1310-menú-de-pausa)), con sus confirmaciones. Lee `Esc` por su cuenta mientras está abierto ([15.8](#158-presentation), *Tiempo de la UI y pausa*) |
 | `MainMenuScreen.cs` | Menú principal ([13.8](#138-menú-principal)) |
@@ -1058,6 +1061,7 @@ Todos viven en el mismo GameObject. `NodeController` es el único que los conoce
 | `PowerBeamVisual.cs` | El haz de poder con su arte ([7.2.2](#722-el-haz), [A.4.2](./NOVA_Assets_Diseno.md#a42-protón-y-haces-de-poder--143)): una hoja por poder, montada como la línea de envío —nacimiento en el Púlsar, tramo en mosaico y punta en el objetivo—, girada con el `transform`. 3 frames a 12 fps tomados del reloj del propio haz, en la capa 0 de 14.7. Una sola vista para el tablero, en `Systems`, que recorre `PowerBeamSystem.Active`. Lee `PowerBeamArt` (Data) (`T6-11`) |
 | `SendLineVisual.cs` | La línea de envío con su arte ([14.9](./NOVA_Estados_Animaciones.md#149-filamento-de-plasma), A.4.6): una por origen de `SendLineState`, del centro del nodo al cursor, montada como el haz, en bucle de 16 frames y desfasada por su orden en la selección. Aparta a `ProvisionalSendLineView` (`T6-06`) |
 | `SelectionRingView.cs` | El anillo de selección, «La órbita» (A.4.3): uno por nodo seleccionado, con la talla de su huella y el desfase del idle, detrás del nodo. Aparta a `ProvisionalSelectionView` (`T6-06`) |
+| `UpgradeIcon.cs` | El icono de mejora, «El sello» (A.6, 13.13): uno por nodo propio mejorable a la vista, con la fila de su estado según `UpgradeIconState`, encima de la huella, en la capa 6 de 14.7 y en bucle de 16 frames a 12 fps. Solo dibuja (`T6-15`) |
 | `LassoView.cs` | El lazo, «El marco» (A.4.3): la esquina reflejada y el tramo en mosaico, del punto de pulsación al cursor (`T6-06`) |
 | `AimReticleView.cs` | La retícula de apuntado, «El cepo» (13.5, A.4.3): sobre el objetivo válido bajo el cursor, en el color del poder, con su entrada (`T6-06`) |
 | `AimDimView.cs` | La atenuación del modo apuntado en los nodos con arte: multiplica el color del sprite y sus overlays de lo que no es objetivo y lo devuelve al terminar. El número no se atenúa (`T6-06`) |
@@ -1157,6 +1161,7 @@ Estos valores deben vivir en `BalanceConfig.asset` y en las `NodeDefinition`. No
 | Arte de fondo | 960 × 540 px a PPU 64 |
 | Coste de encendido | 10 |
 | Materia Inerte del Asteroide | 10 |
+| Margen del aviso de mejora | 5 de Energía: el icono avisa desde `coste − 5` ([13.13](#1313-icono-de-mejora)) |
 | Devolución al cancelar carga | 50% |
 | Duración de la cascada de conquista | 3.0 s ([10.1](#101-victoria-del-jugador)) |
 
@@ -1224,7 +1229,7 @@ Cada fila es un test de aceptación.
 | 21 | El Enemigo pierde su último nodo con protones en vuelo | Los protones se desvanecen. Comienza la cascada de conquista. |
 | 22 | Selección múltiple con nodos a 1 de Energía | Los que no llegan al mínimo de envío se ignoran silenciosamente. Los demás envían. |
 | 23 | Clic derecho sobre un nodo enemigo | Muestra tipo, nivel, Energía y velocidad de ataque. **No** muestra botones de mejora ni reconversión. |
-| 24 | Un nodo alcanza el nivel máximo | El botón de mejora se sustituye por `NIVEL MÁXIMO`. |
+| 24 | Un nodo alcanza el nivel máximo | La fila de la mejora del panel pasa a `NIVEL MÁXIMO` y el icono de mejora desaparece (13.13). |
 | 25 | Envío al 100% desde un nodo que está siendo atacado | Legal. Es la maniobra de evacuación, disponible también para el jugador. |
 | 26 | Un Asteroide propio recibe un power-up marcado | Imposible: los power-ups solo caen sobre Asteroides **neutrales**. |
 | 27 | Se lanza un poder y, antes de que termine el haz, el objetivo pasa a ser propio del lanzador | El haz **se disipa sin efecto**. La Energía invertida se pierde y el poder no vuelve a estar cargado ([7.2.2](#722-el-haz)). |
@@ -1297,7 +1302,7 @@ Reglas que no estaban en el diseño original y que se añadieron para cerrar hue
 | 50 | **Con la partida congelada, los sonidos de la partida se quedan quietos** —pausa o fin de nivel, `Time.timeScale = 0`— y siguen donde iban al reanudar. La música de los menús no se ve afectada: en `Game` no suena ([NOVA_Sonido.md](./NOVA_Sonido.md), S.6) | Es la regla del tablero en [15.8](#158-presentation), *Tiempo de la UI y pausa*: en pausa nada corre. Un sonido que siguiera diría que el juego corre. Decidido con el usuario el 2026-11-02 (`T6-14`) |
 | 51 | **Un impacto que solo avanza el deshielo también enseña el daño** (`ART-FX-DMG`): `ImpactResult.ThawProgress` le quita Energía al nodo congelado igual que `Damaged`, y el hielo solo no lo decía. Vale para protones de cualquier bando, porque en un nodo congelado todos drenan ([7.3](#73-cero-absoluto)). Decidido con el usuario el 2026-11-16 ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #57) |
 | 52 | **El arco del Magnetar acaba en el borde de la bolsa del protón**, no en su centro: el último píxel de la punta cae en `bagRadiusPixels` de su talla, así que el trazo no pasa por detrás de las cifras de la Carga ni se lee como un signo menos. Sin `ProtonArt`, el contacto sigue en el centro. Decidido con el usuario el 2026-11-16 ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #56) |
-| 54 | **La mejora se hace desde un icono encima del nodo, no desde un botón del panel** (13.13). Aparece difuminado desde `coste − 5`; con el coste alcanzado sigue difuminado hasta que el cursor está sobre el nodo, y entonces, al 100 %, el clic izquierdo sobre el icono mejora. Solo en nodos propios que puedan mejorarse: nunca Congelados, Reconvirtiendo, al máximo, del Enemigo ni neutrales. El panel deja la fila como información (`Mejora: 40` o `NIVEL MÁXIMO`) | Pedido por el usuario el 2026-11-16, al ver las tres propuestas del botón de mejora: se mejora donde se mira, encima del nodo, y el aviso de −5 dice que ya casi. Cómo se combinan el aviso y el cursor, el gesto, la fila del panel y el caso bloqueado se cerraron con él el mismo día. Lo implementa `T6-15` |
+| 54 | **La mejora se hace desde un icono encima del nodo, no desde un botón del panel** (13.13). Aparece difuminado desde `coste − 5`; con el coste alcanzado sigue difuminado hasta que el cursor está sobre el nodo, y entonces, al 100 %, el clic izquierdo sobre el icono mejora. Solo en nodos propios que puedan mejorarse: nunca Congelados, Reconvirtiendo, al máximo, del Enemigo ni neutrales. El panel deja la fila como información (`Mejora: 40` o `NIVEL MÁXIMO`). **Ajustado con el usuario en `T6-15`**: el relleno cian y el sonar salen en cuanto la mejora se puede pagar, el borde se marca en blanco con el cursor sobre el icono y el rombo crece a 19 × 19 px | Pedido por el usuario el 2026-11-16, al ver las tres propuestas del botón de mejora: se mejora donde se mira, encima del nodo, y el aviso de −5 dice que ya casi. Cómo se combinan el aviso y el cursor, el gesto, la fila del panel y el caso bloqueado se cerraron con él el mismo día. Lo implementa `T6-15` |
 | 53 | **El botón de pausa del HUD abre la pausa sin cerrar antes nada**, a diferencia de `Esc`, que cierra primero el apuntado, el menú de encendido o el panel (13.10). Lo que estuviera abierto se queda congelado con la partida y sigue ahí al reanudar. Una pulsación que empieza en el botón es suya: si se suelta dentro pausa, y si no, no hace nada —ni lazo ni clic sobre el tablero—. Decidido al implementar `T6-08` el 2026-11-16; el usuario lo dio por bueno en Play |
 
 ---

@@ -41,8 +41,8 @@ namespace Nova.Data
         [Tooltip("{0} coste de encendido.")]
         [SerializeField] string ignitionCostFormat = "Encender: {0}";
 
-        [Tooltip("{0} coste de la mejora.")]
-        [SerializeField] string upgradeFormat = "Mejorar · {0}";
+        [Tooltip("{0} coste de la mejora. Es información: se mejora desde el icono sobre el nodo (13.13).")]
+        [SerializeField] string upgradeCostFormat = "Mejora: {0}";
 
         [SerializeField] string maxLevel = "NIVEL MÁXIMO";
 
@@ -322,11 +322,11 @@ namespace Nova.Data
         public string Charge(float energyPerSecond) => Format(chargeFormat, energyPerSecond);
         public string Sleeping => sleeping;
         public string IgnitionCost(int cost) => Format(ignitionCostFormat, cost);
-        // El coste llega ya escrito: el panel lo pinta en rojo cuando no se alcanza (13.3).
-        public string Upgrade(string cost) => Format(upgradeFormat, cost);
+        // 13.3 punto 4: el coste de la mejora como información, también sin Energía suficiente (T6-15).
+        public string UpgradeCost(int cost) => Format(upgradeCostFormat, cost);
         public string MaxLevel => maxLevel;
         public string ConvertHeader => convertHeader;
-        // Como en Upgrade, el coste llega ya escrito para poder pintarlo en rojo.
+        // El coste llega ya escrito: el panel lo pinta en rojo cuando no se alcanza (13.3).
         public string Convert(NodeType target, string cost) => Format(convertFormat, TypeName(target), cost);
         public string Converting(NodeType target) => Format(convertingFormat, TypeName(target));
 

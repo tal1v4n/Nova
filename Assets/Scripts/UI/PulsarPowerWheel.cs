@@ -279,7 +279,7 @@ namespace Nova.UI
                 slotLabels[i].sortingOrder = SortingOrder + 2;
             }
 
-            Vector2 cancelSize = InfoPanelState.ButtonSize;
+            Vector2 cancelSize = InfoPanelState.CancelSize;
             cancel = new GameObject("CancelButton").AddComponent<SpriteRenderer>();
             cancel.transform.SetParent(root.transform, false);
             cancel.transform.localPosition = InfoPanelState.CancelOffset;

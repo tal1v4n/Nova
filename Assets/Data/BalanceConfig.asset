@@ -17,6 +17,7 @@ MonoBehaviour:
   dragThreshold: 4
   magnetarShotDamage: 2
   magnetarResistance: 0.5
+  upgradeHintMargin: 5
   ignitionCost: 10
   inertMatter: 10
   conversionDuration: 3

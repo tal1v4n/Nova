@@ -27,6 +27,9 @@ namespace Nova.Editor
     // y las tres hojas —rellenos y frente de la barra de poder y el botón de pausa— son rejillas cuya celda
     // dice el .json del generador, que va en la misma carpeta con otro nombre (ui_power_bar.json, ui_topbar.json).
     //
+    // T6-15: el icono de mejora (A.6, ART-UI-BTN-UPG) es una rejilla de celdas de 29 × 20 —fila = estado,
+    // columna = frame— que mide ui_upgrade_icon.json, con el pivote abajo al centro: va encima de la huella.
+    //
     // T5-05b: las texturas de datos de los fondos con movimiento no son sprites. Los campos y los
     // puntos son números —densidades y fracciones a 8 bits— y se leen en lineal; lo fijo es color y
     // se lee en sRGB, como un sprite. Ninguna se filtra ni se comprime, y el alfa es dato: no se trata
@@ -47,8 +50,8 @@ namespace Nova.Editor
 
         // Subirla reimporta todo lo que pasa por aquí. 1: las texturas de datos (T5-05b); 2: todo en 2D;
         // 3: el protón y las cifras (T6-04); 4: el protón en diez tallas; 5: el lazo (T6-06); 6: las hojas de A.5 (T6-07);
-        // 7: el HUD (T6-08).
-        public override uint GetVersion() => 7;
+        // 7: el HUD (T6-08); 8: el icono de mejora (T6-15).
+        public override uint GetVersion() => 8;
 
         void OnPreprocessTexture()
         {
@@ -223,6 +226,26 @@ namespace Nova.Editor
 
         static readonly Regex HudSheetPattern = new Regex(@"^ui_(power_bar_(fill|front)|topbar_pause)_sheet$");
 
+        // ART-UI-BTN-UPG (T6-15): la hoja y su .json, que no se llama como ella.
+        const string UpgradeIconSheetName = "ui_upgrade_icon_sheet";
+        const string UpgradeIconJson = "ui_upgrade_icon.json";
+
+        [System.Serializable]
+        sealed class UpgradeIconExport
+        {
+            public int cellWidth;
+            public int cellHeight;
+        }
+
+        static Vector2Int UpgradeIconCell(string assetPath)
+        {
+            string json = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(assetPath), UpgradeIconJson);
+            if (!System.IO.File.Exists(json))
+                return default;
+            UpgradeIconExport export = JsonUtility.FromJson<UpgradeIconExport>(System.IO.File.ReadAllText(json));
+            return export != null ? new Vector2Int(export.cellWidth, export.cellHeight) : default;
+        }
+
         static void SliceSheet(TextureImporter importer)
         {
             importer.GetSourceTextureWidthAndHeight(out int width, out int height);
@@ -242,6 +265,22 @@ namespace Nova.Editor
                 // <hoja>_<fila>_<columna>, con la fila 0 arriba como en el generador.
                 rects = Enumerable.Range(0, rows).SelectMany(row => Enumerable.Range(0, columns).Select(column =>
                     Frame($"{baseName}_{row}_{column}", new Rect(column * cell.x, height - (row + 1) * cell.y, cell.x, cell.y), topLeft)))
+                    .ToArray();
+            }
+            else if (baseName == UpgradeIconSheetName)
+            {
+                Vector2Int cell = UpgradeIconCell(importer.assetPath);
+                if (cell.x <= 0 || cell.y <= 0 || width % cell.x != 0 || height % cell.y != 0)
+                {
+                    Debug.LogError($"[Nova] {importer.assetPath}: {width}x{height} no es una rejilla de celdas de {cell.x}x{cell.y} (falta o no cuadra {UpgradeIconJson}).");
+                    return;
+                }
+                int rows = height / cell.y;
+                int columns = width / cell.x;
+                // Abajo al centro, en la columna cell.x / 2 entera, como lo coloca el generador.
+                var bottomCenter = new Vector2((cell.x / 2) / (float)cell.x, 0f);
+                rects = Enumerable.Range(0, rows).SelectMany(row => Enumerable.Range(0, columns).Select(column =>
+                    Frame($"{baseName}_{row}_{column}", new Rect(column * cell.x, height - (row + 1) * cell.y, cell.x, cell.y), bottomCenter)))
                     .ToArray();
             }
             else if (EffectSheetPattern.IsMatch(baseName))

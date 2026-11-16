@@ -1,6 +1,6 @@
 {
- "cellWidth": 23,
- "cellHeight": 16,
+ "cellWidth": 29,
+ "cellHeight": 20,
  "frames": 16,
  "fps": 12,
  "rows": [
@@ -14,8 +14,8 @@
  "hintMargin": 5,
  "pivot": "bottom-center",
  "hitBox": [
-  15,
-  15
+  19,
+  19
  ],
- "note": "fila = estado, columna = frame; el rombo centrado en la celda; la zona que se pulsa es el rombo de 15 x 15, no el sonar"
+ "note": "fila = estado, columna = frame; el rombo centrado en x y pegado arriba en la celda; la zona que se pulsa es el rombo de 19 x 19, no el sonar"
 }

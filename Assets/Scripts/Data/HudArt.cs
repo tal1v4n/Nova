@@ -57,6 +57,17 @@ namespace Nova.Data
         [SerializeField] string timerTemplate = "00:00";
         [SerializeField] Vector2Int pauseCell = new Vector2Int(20, 22);
 
+        [Header("Icono de mejora (ART-UI-BTN-UPG, «El sello», T6-15)")]
+        [Tooltip("Las celdas de ui_upgrade_icon_sheet por filas —aviso, listo, activo, encima y pulsado— y en cada fila sus frames.")]
+        [SerializeField] Sprite[] upgradeIcon = Array.Empty<Sprite>();
+        [SerializeField, Min(1)] int upgradeIconFrames = 16;
+        [SerializeField, Min(1f)] float upgradeIconFramesPerSecond = 12f;
+        [Tooltip("La celda, con el pivote abajo al centro: el icono va centrado sobre la huella, a gap px de ella.")]
+        [SerializeField] Vector2Int upgradeIconCell = new Vector2Int(29, 20);
+        [SerializeField] int upgradeIconGap = 2;
+        [Tooltip("La zona que se pulsa: el rombo, arriba y centrado en la celda. El sonar no cuenta.")]
+        [SerializeField] Vector2Int upgradeIconHitBox = new Vector2Int(19, 19);
+
         public bool HasPowerBar =>
             barFrame != null && FillFrames > 0 && enemyFill != null && enemyFill.Length == FillFrames &&
             Array.IndexOf(playerFill, null) < 0 && Array.IndexOf(enemyFill, null) < 0 &&
@@ -65,6 +76,13 @@ namespace Nova.Data
         public bool HasTopBar =>
             plate != null && pauseButton != null && pauseButton.Length == 3 && Array.IndexOf(pauseButton, null) < 0;
 
+        // Las cinco filas de ui_upgrade_icon_sheet, en el orden de su .json.
+        public const int UpgradeIconRows = 5;
+
+        public bool HasUpgradeIcon =>
+            upgradeIcon != null && upgradeIcon.Length == UpgradeIconRows * upgradeIconFrames && Array.IndexOf(upgradeIcon, null) < 0;
+
+        // El icono de mejora no entra: el HUD permanente se dibuja sin él, y él sin el HUD.
         public bool IsComplete => HasPowerBar && HasTopBar;
 
         public Sprite BarFrame => barFrame;
@@ -94,6 +112,13 @@ namespace Nova.Data
         public Color32 TimerTextColor => timerTextColor;
         public string TimerTemplate => timerTemplate;
         public Vector2Int PauseCell => pauseCell;
+
+        public int UpgradeIconFrames => upgradeIconFrames;
+        public float UpgradeIconFramesPerSecond => upgradeIconFramesPerSecond;
+        public Sprite UpgradeIcon(int row, int frame) => upgradeIcon[row * upgradeIconFrames + frame];
+        public Vector2Int UpgradeIconCell => upgradeIconCell;
+        public int UpgradeIconGap => upgradeIconGap;
+        public Vector2Int UpgradeIconHitBox => upgradeIconHitBox;
 
         // --- Geometría, en píxeles de la pantalla de referencia ---
 
@@ -170,6 +195,18 @@ namespace Nova.Data
             timerTextColor = timerColor;
             timerTemplate = string.IsNullOrEmpty(template) ? "00:00" : template;
             pauseCell = cell;
+        }
+
+        // cells va por filas, como la hoja: UpgradeIconRows filas de frames celdas cada una.
+        public void ConfigureUpgradeIcon(Sprite[] cells, int frames, float framesPerSecond, Vector2Int cell, int iconGap,
+            Vector2Int hitBox)
+        {
+            upgradeIcon = cells ?? Array.Empty<Sprite>();
+            upgradeIconFrames = Mathf.Max(1, frames);
+            upgradeIconFramesPerSecond = Mathf.Max(1f, framesPerSecond);
+            upgradeIconCell = cell;
+            upgradeIconGap = iconGap;
+            upgradeIconHitBox = hitBox;
         }
     }
 }

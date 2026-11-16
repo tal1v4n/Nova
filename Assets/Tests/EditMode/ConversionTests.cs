@@ -448,8 +448,7 @@ namespace Nova.Tests
             Assert.AreEqual("Reconvirtiendo a Magnetar", view.Line(4));
             Assert.AreEqual(NodeInfoPanel.ButtonLook.Hidden, view.ConversionButton(0));
             Assert.AreEqual(NodeInfoPanel.ButtonLook.Hidden, view.ConversionButton(1));
-            Assert.AreEqual(NodeInfoPanel.ButtonLook.Disabled, view.Button, "Mejorar está bloqueado, y no por la Energía.");
-            Assert.AreEqual("Mejorar · 20", view.ButtonText, "Sin rojo.");
+            Assert.AreEqual("Mejora: 20", view.Line(3), "El coste se sigue viendo; el icono no sale (13.13).");
 
             Run(star, ConversionTicks);
 
@@ -480,7 +479,7 @@ namespace Nova.Tests
                 Assert.Less(Vector2.Distance(center + InfoPanelState.ConversionOffsets[i], view.ConversionPosition(i)), 1e-5f);
                 Assert.AreEqual(i, panel.ConversionOptionAt(view.ConversionPosition(i)));
             }
-            Assert.AreEqual(-1, panel.ConversionOptionAt(center + InfoPanelState.ButtonOffset), "El botón de mejora es otro blanco.");
+            Assert.AreEqual(-1, panel.ConversionOptionAt(center + new Vector2(0f, InfoPanelState.RowY(3))), "La fila de la mejora no es un blanco.");
         }
 
         [Test]
