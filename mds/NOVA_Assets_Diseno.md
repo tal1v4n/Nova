@@ -1168,7 +1168,7 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-FX-PWR-DEC` | Impacto Decaimiento | `art/fx/fx_decay_impact_sheet.png` | 0.7 s | 9 | ⬜ |
 | `ART-FX-PWR-WRM` | Impacto Agujero de Gusano | `art/fx/fx_wormhole_impact_sheet.png` | 1.0 s | 12 | ⬜ |
 | `ART-FX-CASCADE` | Cascada de conquista | `art/fx/fx_cascade_sheet.png` | 3.0 s | 36 | ⬜ |
-| `ART-FX-VANISH` | Protones huérfanos | `art/fx/fx_vanish_sheet.png` | 0.4 s | 5 | ⬜ |
+| `ART-FX-VANISH` | Protones huérfanos | `art/fx/vanish/v1/fx_vanish_sheet.png`: **una hoja**, 20 filas (bando × talla del protón) y 16 variantes, una por frame del bucle | 0.4 s | 5 | ✅ |
 
 ### `ART-FX-SHOT` — destello sobre el protón
 
@@ -1205,6 +1205,23 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 
 **Propuesta v3, «El brillo que se cierra»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_kill_v3.py` → `art/fx/kill/v3/`. La estrella de aerógrafo de `ART-FX-SHOT` al revés: los quarks se enroscan hacia el centro y la estrella se cierra. Las estelas iban rectas y dibujaban un logotipo (el de Mercedes); se curvaron en espiral antes de enseñarla.
 
+### `ART-FX-VANISH` — los protones huérfanos
+
+![ART-FX-VANISH v1](../art/_preview/fx_vanish/v1/fx_vanish_hoja_x3.png)
+
+**Diseño cerrado: «El vaho», v1** (elegida por el usuario el 2026-11-15). Generador: `tools/gen_fx_vanish_v1.py` → `art/fx/vanish/v1/fx_vanish_sheet.png` y su `.json`; vistas en `art/_preview/fx_vanish/v1/` (`--gif` para el tablero, a velocidad real y a un cuarto: tres protones del Enemigo de tallas distintas se quedan huérfanos a la vez). La comparativa de las tres propuestas, en `art/_preview/fx_vanish/comparativa_x3.png`.
+
+- **No es una muerte.** Cuando un bando pierde su último nodo, sus protones en vuelo «se desvanecen sin impactar» ([10.1](./NOVA_GameDesign_Spec.md#101-victoria-del-jugador); 17, caso 21). `ART-FX-KILL` es un golpe que implosiona; aquí nadie toca al protón: se queda sin dueño y se apaga.
+- **Sin nadie que la sostenga, la bolsa se deshace en vaho.** La Carga era lo que la mantenía tensa: la bolsa crece 1 px por frame y su trama se aclara, como el aliento en un cristal. Los quarks se separan con ella (un 8 % por frame) y bajan una banda cada dos frames. Los muelles se van en el frame 1, y desde ahí nada lleva contorno: lo que se disuelve ya no tiene borde. Una erosión de Bayer quita cada frame una quinta parte más de píxeles, hasta unas motas.
+- **Cualquier talla y los dos bandos.** Un protón huérfano puede llevar de 1 a 100 de Carga: una fila por bando y talla, en celdas de **64** porque la bolsa de la talla mayor crece hasta 24 px. Los dos bandos porque 10.2 también deja huérfanos los del Jugador, aunque la partida acabe ahí.
+- **Sustituye al protón sin salto: 16 variantes.** Como `ART-FX-KILL`, la variante *v* arranca del frame *v* del bucle de «La bolsa», dibujada con el mismo modelo (`gen_proton_v2`). Hoja de 5120 × 1280: columnas variante 0 frames 0–4, variante 1…; lo dice `fx_vanish_sheet.json`.
+- **El número se va primero.** La Carga no está en la hoja: `ProtonVisual` deja de dibujarla en el mismo tick. Un protón huérfano ya no cuenta.
+- **El generador falla** si el alfa no es binario, si sale un color fuera de la rampa del protón y el contorno, si toca el borde, si un frame no da menos luz que el anterior (suma de luminancia), si el último deja más de la quinta parte de los píxeles del primero o ninguno, o si las 16 variantes no son distintas. Las comprobaciones, la hoja y las vistas viven en `gen_fx_vanish_v1.py` y las tres propuestas las comparten.
+
+**Propuesta v2, «Uno a uno»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_vanish_v2.py` → `art/fx/vanish/v2/`. Se apaga luz a luz: sin muelles, los tres quarks pasan a un disco oscuro y desaparecen de uno en uno, primero los dos u y luego el d. La que más se parece a una cuenta atrás.
+
+**Propuesta v3, «Sin bandera»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_vanish_v3.py` → `art/fx/vanish/v3/`. En NOVA el color es el bando: en el primer frame el protón se vuelve gris neutral, entero, y después se deshace en trama. En la victoria, todos los protones enemigos pierden el color a la vez.
+
 ## A.6 UI — [13](./NOVA_GameDesign_Spec.md#13-controles-y-ui)
 
 
@@ -1236,9 +1253,11 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.3 Selección y apuntado | **4** | **4** ✅ | — (ya no bloquea `T6-06`) |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
-| A.5 VFX | 15 | **2** | `VFXPool`, fase 6 |
+| A.5 VFX | 15 | **3** | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **134** | **112** | — |
+| **Total** | **134** | **113** | — |
+
+**Y los ✅ suben de 112 a 113 el 2026-11-15** con los protones huérfanos, `ART-FX-VANISH` v1, «El vaho» (A.5): una hoja de veinte filas, bando por talla del protón, con 16 variantes que arrancan del frame de su bucle. Con ella quedan cerrados los tres VFX que se reproducen sobre el protón. A.5 queda en 3 de 15.
 
 **Y los ✅ suben de 111 a 112 el 2026-11-15** con el protón destruido, `ART-FX-KILL` v2, «El confinamiento» (A.5): una hoja de dos filas, una por bando, con 16 variantes que arrancan del frame del bucle en que muere el protón. A.5 queda en 2 de 15.
 
