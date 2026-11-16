@@ -1437,9 +1437,29 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-UI-BTN-CONV` | Botón de reconversión | **Dos** destinos con coste: nunca a Asteroide ni al propio tipo ([13.3](./NOVA_GameDesign_Spec.md#133-panel-de-clic-derecho) #5) | `art/ui/ui_btn_convert.png` | ⬜ |
 | `ART-UI-IGN-MENU` | Menú radial de encendido | 3 opciones: Estrella, Púlsar, Magnetar | `art/ui/ui_ignition_menu.png` | ⬜ |
 | `ART-UI-WHEEL` | Rueda de poderes del Púlsar | 3 ranuras fijas + candado con nivel requerido ([13.5](./NOVA_GameDesign_Spec.md#135-rueda-de-poderes-del-púlsar)) | `art/ui/ui_power_wheel.png` | ⬜ |
-| `ART-UI-CHARGE` | Barra de carga bajo el Púlsar | **Visible también en el Púlsar enemigo** ([7.5](./NOVA_GameDesign_Spec.md#75-agujero-de-gusano)) | `art/ui/ui_charge_bar.png` | ⬜ |
+| `ART-UI-CHARGE` | Barra de carga bajo el Púlsar | **Visible también en el Púlsar enemigo** ([7.5](./NOVA_GameDesign_Spec.md#75-agujero-de-gusano)). Una mecha con el dibujo del haz del poder que arde hacia una llama; pausada, brasa; lista, estrella | `art/ui/charge_bar/v3/ui_charge_fuse_sheet.png`, `ui_charge_flame_sheet.png`, `ui_charge_socket.png`, `ui_charge_track.png` y `ui_charge.json` | ✅ |
 | `ART-UI-POWERBAR` | Barra de poder inferior | El **reparto** de Energía entre los dos bandos: cian desde la izquierda, magenta desde la derecha, sin parte vacía ni neutral | `art/ui/power_bar/v1/ui_power_bar_frame.png`, `ui_power_bar_fill_sheet.png`, `ui_power_bar_front_sheet.png` y `ui_power_bar.json` | ✅ |
 | `ART-UI-TOPBAR` | Cronómetro, nivel, pausa | [13.6](./NOVA_GameDesign_Spec.md#136-hud-permanente). El texto va en TextMeshPro; el arte es la sombra tramada detrás y el botón de pausa | `art/ui/topbar/v3/ui_topbar_plate.png`, `ui_topbar_pause_sheet.png` y `ui_topbar.json` | ✅ |
+
+### `ART-UI-CHARGE` — la barra de carga del Púlsar
+
+![ART-UI-CHARGE v3](../art/_preview/ui_charge_bar/v3/barras_x8.png)
+
+**Diseño cerrado: «La mecha», v3** (elegida por el usuario el 2026-11-16). Generador: `tools/gen_charge_v3.py` → `art/ui/charge_bar/v3/`; vistas en `art/_preview/ui_charge_bar/v3/` (las barras a ×8 con los tres poderes, los dos bandos y los cuatro casos; un Púlsar con su número y su barra a ×3; el nivel 9 a 1080p con un Agujero de Gusano cargando y un Decaimiento listo en el Púlsar más bajo de los nueve niveles; `--gif` para el contexto en movimiento y una carga entera con una pausa). Comparativa de las tres en `art/_preview/ui_charge_bar/comparativa_x2.png`.
+
+- **Qué cuenta** ([7.1](./NOVA_GameDesign_Spec.md#71-regla-de-carga), [7.5](./NOVA_GameDesign_Spec.md#75-agujero-de-gusano)). Qué poder carga, por su color de 14.4; cuánto lleva, `energíaInvertida / costeTotal`; si está **pausada** —el Púlsar se quedó sin Energía o está Congelado— y si está **lista**, que dura sin límite. Igual en los dos bandos: la barra llena del Enemigo es el contrajuego entero, y lista se distingue de «casi» en todos los frames.
+- **El sitio** (18 #48). Bajo el número de Energía: arriba de la barra a media huella + 2 + 20 + 2 del centro, centrada. **6 px de alto y 48 de ancho**: el Púlsar de nivel 3 en y = −3 u del nivel 9, el más bajo de los nueve, deja la barra a 2 px de la barra de poder. El generador lo comprueba contra los nueve assets de nivel.
+- **La barra es el haz que viene.** Arde una mecha con el dibujo del haz de su poder (A.4.2): las cuentas de hielo de «El rosario de escarcha», los eslabones que se desmigan de «La cadena de desintegración» y el zigzag de «El desgarro», en 2 px de alto (filas 2–3) y corriendo 8 px hacia la punta por bucle. En el frente, la **llama**: un rombo con el núcleo blanco y dos chispas al azar arriba y abajo. Por delante, **lo que falta**: un punto de cada dos en la fila 3, en `str_p[5]` o `str_e[5]`. A la izquierda, el **casquillo** del bando (2 × 6, `str_p[4]` o `str_e[4]`): de quién es el Púlsar se lee aunque la mecha haya ardido entera.
+- **Pausada.** La mecha se para y se apaga una banda, y la llama queda en **brasa**: 2 × 2 en el índice 4, sin chispas.
+- **Lista.** La mecha llega a la punta y la llama se hace **estrella**, una cruz que late pegada al borde derecho, y una luz de 3 px recorre la mecha hacia ella: el patrón «Sonar» de 13.12.
+- **El bucle.** 32 frames a 12 fps (2.67 s), un bucle de ambiente de 13.12.
+- **Las piezas.** `ui_charge_socket.png` y `ui_charge_track.png`: una fila por bando. `ui_charge_fuse_sheet.png`: fila = poder, 32 frames de la tesela de 8 × 6 y una columna más con la quieta (pausada). `ui_charge_flame_sheet.png`: filas `<poder>_charging` y `<poder>_ready`, celdas de 5 × 6 con el frente en x = 2; la columna 32 de la fila de cargando es la brasa. `ui_charge.json`: medidas y montaje.
+- **Cómo se monta** (`T6-09`). `n = 46 · invertido // coste` columnas de mecha desde x = 2, en mosaico desde la izquierda, sobre la pista, que va en mosaico por todo el largo; la llama con su x = 2 en la última columna de la mecha. Lista: la mecha entera, la llama lista en x = 43 y la luz por la fila 2 de x = −3 a 49 a lo largo del bucle.
+- **El generador falla** si algún estado —los tres poderes, los dos bandos, cada Energía invertida, pausada o no, en cualquier frame— pasa de 48 × 6, si el alfa no es binario, si sale un color fuera de `str_p`, `str_e`, `hielo`, `decaimiento` y `gusano`, si lista no se distingue de «casi», si pausada no se distingue de cargando, si lista no se mueve, si dos poderes se ven iguales, si la mecha no cierra el bucle o si la barra pisa la de poder en alguno de los nueve niveles. El sitio, los estados, las comprobaciones y las vistas viven en `gen_charge_v1.py` y las tres propuestas los comparten.
+
+**Propuesta v1, «La ampolla»** (2026-11-16, **descartada**; se conserva por A.1). `tools/gen_charge_v1.py` → `art/ui/charge_bar/v1/`. Un tubo de vidrio de 40 × 6 en la sombra del bando que se llena con la materia del poder —escarcha que centellea, líquido con burbujas, remolino de bandas—; pausada, quieta y apagada; lista, el vidrio en el color del poder con una luz que le da la vuelta. La más fácil de leer como barra de carga.
+
+**Propuesta v2, «Los cartuchos»** (2026-11-16, **descartada**; se conserva por A.1). `tools/gen_charge_v2.py` → `art/ui/charge_bar/v2/`. Un cartucho de 3 × 6 por cada 5 de coste —4, 7 o 12—, así que el largo dice el poder; cada fila es 1 de Energía invertida. Pausada, la fila que espera parpadea en gris; lista, un fogonazo recorre los cartuchos. La que más dice y la más fácil de montar.
 
 ### `ART-UI-HUD-ENERGY` — el número de Energía
 
@@ -1509,8 +1529,10 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
 | A.5 VFX | 15 | **15** ✅ | — (ya no bloquea `T6-07`) |
-| A.6 UI | **9** | **3** | Pulido de UI de partida (`T6-09`; ya no bloquea `T6-08`) |
-| **Total** | **134** | **128** | — |
+| A.6 UI | **9** | **4** | Pulido de UI de partida (`T6-09`; ya no bloquea `T6-08`) |
+| **Total** | **134** | **129** | — |
+
+**Y los ✅ suben de 128 a 129 el 2026-11-16** con la barra de carga del Púlsar, `ART-UI-CHARGE` v3, «La mecha» (A.6): el haz del poder en miniatura ardiendo hacia una llama, que en pausa queda en brasa y lista se hace estrella. A.6 queda en 4 de 9; a `T6-09` le faltan cinco.
 
 **Y los ✅ suben de 127 a 128 el 2026-11-16** con el número de Energía, `ART-UI-HUD-ENERGY` v3, «El filamento» (A.6): las cifras de la Carga a ×2, trazadas con el plasma del bando y con un pulso que corre por ellas; el neutral, quieto en gris. A.6 queda en 3 de 9; a `T6-09` le faltan seis.
 

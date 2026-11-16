@@ -1,0 +1,37 @@
+{
+ "width": 48,
+ "height": 6,
+ "socketWidth": 2,
+ "fuseX0": 2,
+ "fuseLength": 46,
+ "fuseTile": 8,
+ "flameWidth": 5,
+ "flameFront": 2,
+ "frames": 32,
+ "fps": 12,
+ "powers": [
+  "zero",
+  "decay",
+  "wormhole"
+ ],
+ "factions": [
+  "player",
+  "enemy"
+ ],
+ "fuseRows": [
+  "zero",
+  "decay",
+  "wormhole"
+ ],
+ "fusePausedColumn": 32,
+ "flameRows": [
+  "zero_charging",
+  "zero_ready",
+  "decay_charging",
+  "decay_ready",
+  "wormhole_charging",
+  "wormhole_ready"
+ ],
+ "flameEmberColumn": 32,
+ "note": "n = fuseLength * invertido // coste; la pista en mosaico por todo el largo, la mecha en mosaico desde fuseX0 tapando la pista, y la llama con su x = 2 en la ultima columna de la mecha; pausada: la mecha quieta (columna 32) y la brasa; lista: la mecha entera, la llama lista pegada al borde derecho y una luz de 3 px que recorre la fila 2 de la mecha de x = -3 a 49 en el bucle"
+}

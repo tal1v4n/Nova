@@ -1,0 +1,36 @@
+{
+ "width": 40,
+ "height": 6,
+ "fillX0": 1,
+ "fillY0": 1,
+ "fillWidth": 38,
+ "fillHeight": 4,
+ "fillTile": 8,
+ "frames": 32,
+ "fps": 12,
+ "powers": [
+  "zero",
+  "decay",
+  "wormhole"
+ ],
+ "factions": [
+  "player",
+  "enemy"
+ ],
+ "glassRows": [
+  "player",
+  "enemy"
+ ],
+ "readyRows": [
+  "zero",
+  "decay",
+  "wormhole"
+ ],
+ "fillRows": [
+  "zero",
+  "decay",
+  "wormhole"
+ ],
+ "fillPausedColumn": 32,
+ "note": "relleno = fillWidth * invertido // coste columnas desde fillX0, la tesela en mosaico desde la izquierda y el menisco en su ultima columna; pausada: la columna 32, quieta; lista: el vidrio del poder con su frame y la materia entera, sin menisco; la materia se recorta por las puntas redondeadas (la mascara es el interior del vidrio)"
+}

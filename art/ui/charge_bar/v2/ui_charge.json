@@ -1,0 +1,41 @@
+{
+ "cellWidth": 3,
+ "cellHeight": 6,
+ "pitch": 4,
+ "energyPerCell": 5,
+ "rows": [
+  "player_zero",
+  "player_decay",
+  "player_wormhole",
+  "enemy_zero",
+  "enemy_decay",
+  "enemy_wormhole"
+ ],
+ "cells": [
+  "empty",
+  "front1",
+  "front2",
+  "front3",
+  "front4",
+  "front5",
+  "full",
+  "dim0",
+  "dim1",
+  "dim2",
+  "dim3",
+  "dim4",
+  "wait0",
+  "wait1",
+  "wait2",
+  "wait3",
+  "wait4",
+  "dimfull",
+  "readyfull",
+  "readyflash"
+ ],
+ "frames": 32,
+ "fps": 12,
+ "readySweepFrames": 2,
+ "waitBlinkFrames": 16,
+ "note": "cartuchos = coste / 5, cada 4 px, centrados bajo el nodo; llenos, resto = divmod(invertido, 5). Cargando: los llenos en full y el ultimo con frente (front<resto>, o front5 si resto es 0); pausada: los llenos en dimfull y el siguiente alterna wait<resto> y dim<resto> cada 8 frames; lista: readyfull, y el cartucho i en readyflash cuando (f - 2 i) % 32 < 2"
+}
