@@ -1160,7 +1160,7 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-FX-ABS` | Absorción aliada | `art/fx/fx_absorb_sheet.png` | 0.3 s | 4 | ⬜ |
 | `ART-FX-DMG` | Daño sin captura | `art/fx/fx_damage_sheet.png` | 0.3 s | 4 | ⬜ |
 | `ART-FX-SHOT` | Disparo del Magnetar: destello sobre el protón | `art/fx/shot/v3/fx_shot_sheet.png`: **una hoja**, 20 filas (bando × talla del protón) y 4 variantes | 0.17 s, como el arco | 2 | ✅ |
-| `ART-FX-KILL` | Protón destruido | `art/fx/fx_protonkill_sheet.png` | 0.25 s | 3 | ⬜ |
+| `ART-FX-KILL` | Protón destruido | `art/fx/kill/v2/fx_kill_sheet.png`: **una hoja**, 2 filas (bando) y 16 variantes, una por frame del bucle del protón | 0.25 s | 3 | ✅ |
 | `ART-FX-THAW` | Deshielo | `art/fx/fx_thaw_sheet.png` | 0.5 s | 6 | ⬜ |
 | `ART-FX-CURE` | Cura de Decaimiento | `art/fx/fx_cure_sheet.png` | 0.4 s | 5 | ⬜ |
 | `ART-FX-CAST` | Lanzamiento de poder | `art/fx/fx_cast_sheet.png` | 0.4 s | 5 | ⬜ |
@@ -1187,6 +1187,23 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 **Propuesta v1, «El campanazo»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_shot_v1.py` → `art/fx/shot/v1/`. La bolsa suena como una campana golpeada: un aro de 1 px la ciñe aplastado en el eje del golpe (el modo cuadrupolar de una membrana) y rebota al revés, suelto y roto. La más presente de las tres.
 
 **Propuesta v2, «Los dos cuantos»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_shot_v2.py` → `art/fx/shot/v2/`. El destello es el daño: dos cuantos de plasma —los 2 de Carga que quita cada disparo— salen por dos rasgaduras de la bolsa y huyen con estela. La más ligera (unos 100 px de golpe contra 250–450).
+
+### `ART-FX-KILL` — el protón destruido
+
+![ART-FX-KILL v2](../art/_preview/fx_kill/v2/fx_kill_golpe_x3.png)
+
+**Diseño cerrado: «El confinamiento», v2** (elegida por el usuario el 2026-11-15). Generador: `tools/gen_fx_kill_v2.py` → `art/fx/kill/v2/fx_kill_sheet.png` y su `.json`; vistas en `art/_preview/fx_kill/v2/` (`--gif` para el tablero, a velocidad real y a un cuarto: un protón de 12 encaja los disparos con `ART-FX-SHOT` y muere con este). La comparativa de las tres propuestas, en `art/_preview/fx_kill/comparativa_golpe_x3.png`.
+
+- **Los quarks no pueden quedarse sueltos.** Es el confinamiento: si tiras de un quark, el gluón que lo ata tira más fuerte. «La bolsa» dibuja los gluones como muelles, y aquí se rompen. **Rotura (frame 0):** la bolsa ya no está, los tres quarks siguen en su sitio y cada muelle se ha partido: dos muñones en zigzag recogidos hacia sus quarks y una chispa en cada corte. **Confinamiento (frame 1):** los quarks caen unos sobre otros, encogidos, en un racimo de 5 px con su resplandor. **Nada (frame 2):** una cruz de 12 px. Cumple lo que pide [14.3](./NOVA_Estados_Animaciones.md#143-protón): implosión corta que no deja nada.
+- **Siempre en la talla 1.** Un protón solo muere por un disparo del Magnetar ([6.3](./NOVA_GameDesign_Spec.md#63-efecto-del-magnetar-sobre-protones): −2 por disparo), así que muere con 1 o 2 de Carga: la talla 1 de «La bolsa». Una fila por bando (`player`, `enemy`) en celdas de **48**, las del protón.
+- **Sustituye al protón sin salto: 16 variantes.** El sprite del protón desaparece en el tick del disparo y en su sitio empieza este efecto. La variante *v* arranca con los quarks donde estaban en el frame *v* del bucle de 16, y `VFXPool` toma la del frame en que murió. Hoja de 2304 × 96: columnas variante 0 frames 0–2, variante 1 frames 0–2…; lo dice `fx_kill_sheet.json`.
+- **Va con el arco y sin `FX-SHOT`.** Muere en el tick del disparo, así que el arco de «El chispazo» le llega en sus dos primeros frames; el destello es para el protón que sobrevive.
+- **En el color del protón:** `plasma_p` y `plasma_e`, con la luz global y el contorno de los quarks de «La bolsa». La luz no llega al blanco puro, que es de `FX-CAP`.
+- **El generador falla** si el alfa no es binario, si sale un color fuera de la rampa y el contorno, si toca el borde, si algún frame está vacío o repetido, si el frame 0 se sale de la bolsa, si un frame ocupa lo mismo o más que el anterior (se mide el radio de lo encendido), si el último deja más de 12 px o si las 16 variantes no son distintas. Las comprobaciones, la hoja y las vistas viven en `gen_fx_kill_v1.py` y las tres propuestas las comparten.
+
+**Propuesta v1, «El colapso»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_kill_v1.py` → `art/fx/kill/v1/`. La membrana cae sobre sí misma: un aro a dos tercios de su radio con los quarks apretados, un núcleo caliente con cuatro trazos que caen hacia dentro y una mota.
+
+**Propuesta v3, «El brillo que se cierra»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_kill_v3.py` → `art/fx/kill/v3/`. La estrella de aerógrafo de `ART-FX-SHOT` al revés: los quarks se enroscan hacia el centro y la estrella se cierra. Las estelas iban rectas y dibujaban un logotipo (el de Mercedes); se curvaron en espiral antes de enseñarla.
 
 ## A.6 UI — [13](./NOVA_GameDesign_Spec.md#13-controles-y-ui)
 
@@ -1219,9 +1236,11 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.3 Selección y apuntado | **4** | **4** ✅ | — (ya no bloquea `T6-06`) |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
-| A.5 VFX | 15 | **1** | `VFXPool`, fase 6 |
+| A.5 VFX | 15 | **2** | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **134** | **111** | — |
+| **Total** | **134** | **112** | — |
+
+**Y los ✅ suben de 111 a 112 el 2026-11-15** con el protón destruido, `ART-FX-KILL` v2, «El confinamiento» (A.5): una hoja de dos filas, una por bando, con 16 variantes que arrancan del frame del bucle en que muere el protón. A.5 queda en 2 de 15.
 
 **Y los ✅ suben de 110 a 111 el 2026-11-15** con el destello sobre el protón alcanzado, `ART-FX-SHOT` v3, «El brillo de aerógrafo» (A.5), el primero de los VFX. Es un solo archivo, como decía la tabla, pero con veinte filas —bando por talla del protón— y cuatro variantes. A.5 queda en 1 de 15.
 

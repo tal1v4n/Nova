@@ -1,0 +1,11 @@
+{
+ "cellSize": 48,
+ "frames": 3,
+ "variants": 16,
+ "fps": 12,
+ "rows": [
+  "player",
+  "enemy"
+ ],
+ "note": "talla 1 del proton; la variante es el frame del bucle del proton en que muere; columnas: variante 0 frames 0-2, variante 1 ...; pivote en el centro, en el sitio del proton"
+}
