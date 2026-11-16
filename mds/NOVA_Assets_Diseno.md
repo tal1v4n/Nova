@@ -1158,7 +1158,7 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-FX-UPG` | Mejora de nivel | `art/fx/fx_upgrade_sheet.png` | 0.5 s | 6 | ⬜ |
 | `ART-FX-SEND` | Lanzamiento | `art/fx/send/v1/fx_send_sheet.png`: **una hoja**, 10 filas (bando × talla de `ART-WLD-SEL`) | 0.2 s | 3 | ✅ |
 | `ART-FX-ABS` | Absorción aliada | `art/fx/abs/v1/fx_abs_sheet.png`: **una hoja**, 10 filas (bando × talla de `ART-WLD-SEL`) | 0.3 s | 4 | ✅ |
-| `ART-FX-DMG` | Daño sin captura | `art/fx/fx_damage_sheet.png` | 0.3 s | 4 | ⬜ |
+| `ART-FX-DMG` | Daño sin captura | `art/fx/dmg/v3/fx_dmg_sheet.png`: **una hoja**, 10 filas (bando del atacante × talla de `ART-WLD-SEL`) y 4 variantes | 0.3 s | 4 | ✅ |
 | `ART-FX-SHOT` | Disparo del Magnetar: destello sobre el protón | `art/fx/shot/v3/fx_shot_sheet.png`: **una hoja**, 20 filas (bando × talla del protón) y 4 variantes | 0.17 s, como el arco | 2 | ✅ |
 | `ART-FX-KILL` | Protón destruido | `art/fx/kill/v2/fx_kill_sheet.png`: **una hoja**, 2 filas (bando) y 16 variantes, una por frame del bucle del protón | 0.25 s | 3 | ✅ |
 | `ART-FX-THAW` | Deshielo | `art/fx/fx_thaw_sheet.png` | 0.5 s | 6 | ⬜ |
@@ -1253,6 +1253,24 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 
 **Propuesta v3, «Los tres quarks»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_abs_v3.py` → `art/fx/abs/v3/`. Los tres quarks del protón entran en espiral desde arriba y encienden tres arcos al tocar. A 1× las motas apenas se ven, sobre todo sobre la corona de la Estrella.
 
+### `ART-FX-DMG` — el daño sin captura
+
+![ART-FX-DMG v3](../art/_preview/fx_dmg/v3/fx_dmg_hoja_x3.png)
+
+**Diseño cerrado: «El diente de sierra», v3** (elegida por el usuario el 2026-11-15). Generador: `tools/gen_fx_dmg_v3.py` → `art/fx/dmg/v3/fx_dmg_sheet.png` y su `.json`; vistas en `art/_preview/fx_dmg/v3/` (`--gif` para el tablero, a velocidad real y a un cuarto: un asedio en ráfaga sobre una Estrella enemiga y un Asteroide neutral, y la respuesta del Enemigo). La comparativa de las tres propuestas, en `art/_preview/fx_dmg/comparativa_x3.png`.
+
+- **El borde se eriza.** Es el dibujo con el que los cómics de la época pintan un golpe: el contorno de lo golpeado deja de ser liso y se vuelve una sierra. **Golpe (frame 0):** un aro de 16 dientes de 3 px de alto pegado al cuerpo, en el índice 1. **Se deshace (frames 1–3):** los dientes crecen y se separan 1 px por frame, bajan una banda y se rompen, hasta quedar unas puntas.
+- **La familia de los aros.** Liso que sale, el envío («La onda»); liso que entra, la absorción («La resaca»); roto, el daño. Las tres comparten tallas y forma, y se distinguen por la línea y la dirección.
+- **En el color del que ataca:** `plasma_p` si el protón es del Jugador, `plasma_e` si es del Enemigo, caiga sobre quien caiga. La fila la elige el bando del protón y la talla el nodo golpeado (`talla_de` por su huella). En el frame 0 el índice 1 es casi blanco; el color se lee desde el frame 1.
+- **Sobre cualquier nodo ajeno** que recibe un protón hostil y no cae (`ImpactResult.Damaged`, [6.2](./NOVA_GameDesign_Spec.md#62-resolución-de-impacto)): enemigos de los cuatro tipos y neutrales.
+- **Cuatro variantes**, que `VFXPool` sortea en cada impacto: en un asedio caen protones seguidos sobre el mismo nodo. Giran los dientes y cambian por dónde se rompe la sierra. Hoja de 1536 × 960 en celdas de 96: filas `player_24…40` y `enemy_24…40`, columnas variante 0 frames 0–3, variante 1…; lo dice `fx_dmg_sheet.json`.
+- **El único efecto que pisa el cuerpo.** El número sigue libre (la franja de |x| ≤ 19 px bajo el centro), pero el daño puede entrar hasta 8 px dentro del borde: lo que se rompe es el nodo. Solo 0.3 s.
+- **El generador falla** si sale un índice fuera de 1–5, si pisa la franja del número, si entra más de 8 px en el cuerpo, si toca el borde, si un frame está vacío o repetido, si el golpe no llega al índice 1, si un frame no da menos luz que el anterior o si las variantes se repiten. Las comprobaciones, la hoja y las vistas viven en `gen_fx_dmg_v1.py` y las tres propuestas las comparten.
+
+**Propuesta v1, «La grieta»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_dmg_v1.py` → `art/fx/dmg/v1/`. Tres grietas en zigzag cruzan el borde y lo de fuera se desprende. Se leía más como chispazos que como cristal roto, y en el Magnetar quedaba despegada del cuerpo, porque su huella incluye las esquirlas.
+
+**Propuesta v2, «Las esquirlas»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_dmg_v2.py` → `art/fx/dmg/v2/`. Siete esquirlas saltan del borde como metralla y giran al alejarse. Demasiado discreta: a 1× casi no se ve.
+
 ## A.6 UI — [13](./NOVA_GameDesign_Spec.md#13-controles-y-ui)
 
 
@@ -1284,9 +1302,11 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.3 Selección y apuntado | **4** | **4** ✅ | — (ya no bloquea `T6-06`) |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
-| A.5 VFX | 15 | **5** | `VFXPool`, fase 6 |
+| A.5 VFX | 15 | **6** | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **134** | **115** | — |
+| **Total** | **134** | **116** | — |
+
+**Y los ✅ suben de 115 a 116 el 2026-11-15** con el daño sin captura, `ART-FX-DMG` v3, «El diente de sierra» (A.5): diez filas por el bando del atacante y la talla, y cuatro variantes. Con él se cierra el trío del combate —envío, absorción y daño— y A.5 queda en 6 de 15.
 
 **Y los ✅ suben de 114 a 115 el 2026-11-15** con la absorción aliada, `ART-FX-ABS` v1, «La resaca» (A.5): «La onda» al revés, en la misma hoja de diez filas. A.5 queda en 5 de 15.
 

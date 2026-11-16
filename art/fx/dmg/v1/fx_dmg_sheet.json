@@ -1,0 +1,27 @@
+{
+ "cellSize": 96,
+ "frames": 4,
+ "variants": 4,
+ "fps": 12,
+ "sizes": [
+  24,
+  28,
+  32,
+  36,
+  40
+ ],
+ "air": 4,
+ "rows": [
+  "player_24",
+  "player_28",
+  "player_32",
+  "player_36",
+  "player_40",
+  "enemy_24",
+  "enemy_28",
+  "enemy_32",
+  "enemy_36",
+  "enemy_40"
+ ],
+ "note": "la fila es la del bando del PROTON que golpea y la talla del nodo golpeado (talla_de por su huella); columnas: variante 0 frames 0-3, variante 1 ...; variante al azar en cada impacto; pivote en el centro del nodo"
+}
