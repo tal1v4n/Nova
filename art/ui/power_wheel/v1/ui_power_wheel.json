@@ -1,0 +1,91 @@
+{
+ "slot": [
+  60,
+  20
+ ],
+ "gap": 6,
+ "cancel": [
+  192,
+  20
+ ],
+ "cellHeight": 22,
+ "pressedDrop": 2,
+ "powers": [
+  "zero",
+  "decay",
+  "wormhole"
+ ],
+ "slotStates": [
+  "normal",
+  "encima",
+  "pulsado",
+  "bloqueado",
+  "candado",
+  "nodisp",
+  "cargando",
+  "listo",
+  "listo_encima",
+  "listo_pulsado"
+ ],
+ "cancelStates": [
+  "normal",
+  "encima",
+  "pulsado",
+  "bloqueado"
+ ],
+ "frames": 32,
+ "fps": 12,
+ "hoverMs": 160,
+ "curve": [
+  0.2,
+  0.8,
+  0.2,
+  1.0
+ ],
+ "text": {
+  "normal": "#E2E6EF",
+  "cost": "#3FD7F5",
+  "hover": "#FFFFFF",
+  "hoverCost": "#E8FEFF",
+  "muted": "#8A93A6",
+  "unavailable": "#5D6580",
+  "onPower": "#11142A"
+ },
+ "plateCell": 20,
+ "plateBorder": 6,
+ "plateCenterMode": "tiled",
+ "plateRows": [
+  "zero",
+  "decay",
+  "wormhole"
+ ],
+ "plateColumns": [
+  "normal",
+  "encima",
+  "pulsado",
+  "bloqueado",
+  "candado",
+  "nodisp",
+  "cargando",
+  "listo",
+  "listo_encima"
+ ],
+ "icon": 12,
+ "iconAt": [
+  4,
+  4
+ ],
+ "iconColumns": [
+  "color",
+  "listo",
+  "gris",
+  "contorno"
+ ],
+ "lockAt": [
+  6,
+  6
+ ],
+ "textRight": 56,
+ "capTop": 5,
+ "note": "ranura: placa de nueve cortes de su poder y estado; encima, la trama cian de carga (paso 1 a 5) entra de izquierda a derecha en 160 ms; cargando, la trama del poder (fila del poder: pausada, cargando) hasta 2 + floor(56 * progreso) y una columna en el indice 2 del poder en el frente; listo, relleno del poder con una luz de 3 columnas (indices 2-1-2) que cruza de x -8 a 68 cada 32 frames; pulsado y listo_pulsado, 2 px abajo; el pictograma a la izquierda y el texto alineado a la derecha"
+}

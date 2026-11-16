@@ -1,0 +1,85 @@
+{
+ "slot": [
+  60,
+  20
+ ],
+ "gap": 6,
+ "cancel": [
+  192,
+  20
+ ],
+ "cellHeight": 22,
+ "pressedDrop": 2,
+ "powers": [
+  "zero",
+  "decay",
+  "wormhole"
+ ],
+ "slotStates": [
+  "normal",
+  "encima",
+  "pulsado",
+  "bloqueado",
+  "candado",
+  "nodisp",
+  "cargando",
+  "listo",
+  "listo_encima",
+  "listo_pulsado"
+ ],
+ "cancelStates": [
+  "normal",
+  "encima",
+  "pulsado",
+  "bloqueado"
+ ],
+ "frames": 32,
+ "fps": 12,
+ "hoverMs": 160,
+ "curve": [
+  0.2,
+  0.8,
+  0.2,
+  1.0
+ ],
+ "text": {
+  "normal": "#E2E6EF",
+  "cost": "#3FD7F5",
+  "hover": "#FFFFFF",
+  "hoverCost": "#E8FEFF",
+  "muted": "#8A93A6",
+  "unavailable": "#5D6580",
+  "onPower": "#11142A"
+ },
+ "drumCell": 20,
+ "drumBorder": 6,
+ "drumCenterMode": "tiled",
+ "divider": [
+  6,
+  20
+ ],
+ "chamber": [
+  2,
+  2,
+  58,
+  18
+ ],
+ "matterColumns": [
+  "charging",
+  "paused"
+ ],
+ "matterTile": 8,
+ "surfaceRamp": 2,
+ "icon": 12,
+ "iconAt": [
+  4,
+  4
+ ],
+ "lockAt": [
+  6,
+  6
+ ],
+ "textRight": 56,
+ "capTop": 5,
+ "note": "el tambor: la placa de 192 x 20 en nueve cortes y los dos tabiques en los huecos de 6; cada camara: cargando, la materia del poder desde abajo hasta floor(16 * progreso) filas con la superficie en el indice 2 que ondea (1 px en el indice 1 cada 6, corriendo cada 2 frames); pausada, la columna paused y la superficie en el indice 4, quieta; listo, llena y 5 chispas por frame (indices 0 y 1) cada 2 frames; encima, un filo de 1 px en str_p[4]; pulsado, en str_p[2] y el contenido 2 px abajo; listo_encima, el filo en el indice 0 del poder; bloqueado y candado, rayada; nodisp, vacia con el filo en trazos"
+}

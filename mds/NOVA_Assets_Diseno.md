@@ -1436,10 +1436,29 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-UI-BTN-UPG` | **Icono de mejora sobre el nodo** (era el botón del panel; 13.13) | Aviso difuminado; listo con el relleno difuminado y el sonar nítido; activo al 100 % con el cursor sobre el nodo; encima con el borde en blanco, y pulsado | `art/ui/upgrade_icon/v3/ui_upgrade_icon_sheet.png` y `ui_upgrade_icon.json` | ✅ |
 | `ART-UI-BTN-CONV` | Botón de reconversión | **Dos** destinos con coste: nunca a Asteroide ni al propio tipo ([13.3](./NOVA_GameDesign_Spec.md#133-panel-de-clic-derecho) #5). Encima, un frente lo barre y lo deja primario; sin Energía, el frente se para donde llega la Energía y lo que falta va en magenta | `art/ui/btn_convert/v2/ui_btn_convert_plate.png`, `ui_btn_convert_front.png`, `ui_btn_convert_fill.png` y `ui_btn_convert.json` | ✅ |
 | `ART-UI-IGN-MENU` | Menú radial de encendido | 3 opciones: Estrella, Púlsar, Magnetar. Cada una es el sprite de nivel 1 del nodo entre cuatro esquinas; sin Energía, tramado; el coste en la línea del nombre | `art/ui/ignition_menu/v2/ui_ignition_menu_corner.png`, `ui_ignition_menu_nodes.png` y `ui_ignition_menu.json` | ✅ |
-| `ART-UI-WHEEL` | Rueda de poderes del Púlsar | 3 ranuras fijas + candado con nivel requerido ([13.5](./NOVA_GameDesign_Spec.md#135-rueda-de-poderes-del-púlsar)) | `art/ui/ui_power_wheel.png` | ⬜ |
+| `ART-UI-WHEEL` | Rueda de poderes del Púlsar | 3 ranuras fijas + candado con nivel requerido ([13.5](./NOVA_GameDesign_Spec.md#135-rueda-de-poderes-del-púlsar)). Teclas con el pictograma del poder; cargando, se llenan de su color; lista, la tecla entera brilla en él | `art/ui/power_wheel/v1/ui_power_wheel_plate.png`, `ui_power_wheel_fill.png`, `ui_power_wheel_icons.png`, `ui_power_wheel_lock.png` y `ui_power_wheel.json` | ✅ |
 | `ART-UI-CHARGE` | Barra de carga bajo el Púlsar | **Visible también en el Púlsar enemigo** ([7.5](./NOVA_GameDesign_Spec.md#75-agujero-de-gusano)). Una mecha con el dibujo del haz del poder que arde hacia una llama; pausada, brasa; lista, estrella | `art/ui/charge_bar/v3/ui_charge_fuse_sheet.png`, `ui_charge_flame_sheet.png`, `ui_charge_socket.png`, `ui_charge_track.png` y `ui_charge.json` | ✅ |
 | `ART-UI-POWERBAR` | Barra de poder inferior | El **reparto** de Energía entre los dos bandos: cian desde la izquierda, magenta desde la derecha, sin parte vacía ni neutral | `art/ui/power_bar/v1/ui_power_bar_frame.png`, `ui_power_bar_fill_sheet.png`, `ui_power_bar_front_sheet.png` y `ui_power_bar.json` | ✅ |
 | `ART-UI-TOPBAR` | Cronómetro, nivel, pausa | [13.6](./NOVA_GameDesign_Spec.md#136-hud-permanente). El texto va en TextMeshPro; el arte es la sombra tramada detrás y el botón de pausa | `art/ui/topbar/v3/ui_topbar_plate.png`, `ui_topbar_pause_sheet.png` y `ui_topbar.json` | ✅ |
+
+### `ART-UI-WHEEL` — la rueda de poderes del Púlsar
+
+![ART-UI-WHEEL v1](../art/_preview/ui_power_wheel/v1/estados_x4.png)
+
+**Diseño cerrado: «Las teclas», v1** (elegida por el usuario el 2026-11-16). Generador: `tools/gen_wheel_v1.py` → `art/ui/power_wheel/v1/`; vistas en `art/_preview/ui_power_wheel/v1/` (seis escenas —en reposo, nivel 1 con candados, cargando, pausada, lista y un mapa sin Gusano— con «Cancelar», a ×4; tres paneles de «La sonda» con la rueda y los botones de reconversión elegidos junto al Púlsar, a ×2; `--gif` para una carga entera de Cero Absoluto hasta lista y el cursor encima). Comparativa de las tres en `art/_preview/ui_power_wheel/comparativa_x3.png`.
+
+- **Qué es** ([13.5](./NOVA_GameDesign_Spec.md#135-rueda-de-poderes-del-púlsar), 13.3 punto 6, 18 #34, #35). Las dos últimas filas del bloque de poderes del panel de un Púlsar propio: **tres ranuras** en orden fijo —1 Cero Absoluto, 2 Decaimiento, 3 Agujero de Gusano— y debajo **«Cancelar · +N»** mientras hay una carga en curso o un poder listo. El rótulo de arriba («Agujero de Gusano · 45%») es texto del panel. El texto de las ranuras va en TextMeshPro con Jersey 10 (`1 · 20`, o `Nv 2` con el candado).
+- **El sitio de hoy.** Ranuras de 60 × 20 separadas 6 px (`InfoPanelState.WheelSlotOffsets`) y «Cancelar» de 192 × 20 (`CancelOffset`); la celda mide 22 para que el pulsado baje 2 px. Con el pictograma, `2 · 35` llena los 60 con 4 de margen y 1 de aire.
+- **Tres teclas de 13.12.** Cada ranura es el secundario de la lámina con el **pictograma** de su poder a la izquierda, 12 × 12 en su rampa de 14.4 (`hielo`, `decaimiento`, `gusano`): un copo de seis brazos, un núcleo que suelta tres motas y una espiral. El número en `neutral[1]` y el coste en cian, alineados a la derecha.
+- **Los estados** (`PulsarPowerWheel.SlotLook`). **Normal**: marco `str_p[6]`. **Encima**: la trama cian del patrón «Carga» entra de izquierda a derecha en 160 ms. **Pulsado**: llena y 2 px abajo. **Cargando**: el marco en el índice 4 del poder y la tecla llena hasta el progreso, de izquierda a derecha, en el índice 5 con trama del 4 y una columna del 2 en el frente; **pausada**, en el 6, más apagada y sin frente. **Lista**: la tecla entera en el índice 3 del poder, el marco en el 2, el pictograma y el texto oscuros (`#11142A`), y **una luz de 3 columnas la cruza cada 2.67 s**: brilla (18 #34); encima, el marco en el índice 0; pulsada, 2 px abajo. **Bloqueado** (Congelado, Reconvirtiendo u otro poder en carga): gris con la trama diagonal. **Candado** (`Locked`): gris, con un candado de 7 × 9 en vez del pictograma y `Nv N`. **No disponible** en el mapa: el marco en trazos, el pictograma en contorno y solo el número.
+- **Sin magenta.** La carga se paga por drenaje (7.1): en la rueda no falta nunca nada, y el generador lo comprueba.
+- **«Cancelar · +N»**: el secundario de 13.12 con el texto centrado y `+N` en cian; normal, encima, pulsado y bloqueado.
+- **Las piezas.** `ui_power_wheel_plate.png`: la placa de 20 × 20 en nueve cortes (bordes de 6, centro en mosaico); fila = poder, columna = estado (normal, encima, pulsado, bloqueado, candado, nodisp, cargando, listo, listo_encima). `ui_power_wheel_fill.png`: las teselas de 8 × 8 de la carga de cada poder (pausada y cargando) y las de la trama cian. `ui_power_wheel_icons.png`: los pictogramas, fila = poder; columnas color, listo, gris y contorno. `ui_power_wheel_lock.png`: el candado. `ui_power_wheel.json`: medidas, colores del texto y montaje. «Cancelar» usa la placa normal. Lo integra `T6-09`.
+- **El generador falla** si el alfa no es binario, si sale un color fuera de `str_p`, `neutral`, `hielo`, `decaimiento`, `gusano`, `#11142A` y `#0B0E1A`, si lleva magenta, si una pieza no mide lo dicho, si dos estados son iguales, si un pulsado no baja, si lista se confunde con casi o pausada con cargando, si el progreso no se ve, si lista no brilla o no cierra el bucle, o si el pictograma y el texto no caben. Los estados, los pictogramas, «Cancelar», las comprobaciones y las vistas viven en `gen_wheel_v1.py` y las tres propuestas los comparten.
+
+**Propuesta v2, «Las mechas»** (2026-11-16, **descartada**; se conserva por A.1). `tools/gen_wheel_v2.py` → `art/ui/power_wheel/v2/`. Cada tecla lleva en su base la mecha de su poder de `ART-UI-CHARGE`; cargando, la ranura enseña la barra que hay bajo el Púlsar. La más coherente con la barra y la de mecha más fina.
+
+**Propuesta v3, «El tambor»** (2026-11-16, **descartada**; se conserva por A.1). `tools/gen_wheel_v3.py` → `art/ui/power_wheel/v3/`. Una placa de 192 × 20 partida en tres cámaras que se llenan de abajo arriba con la materia del poder; lista, chispea.
 
 ### `ART-UI-IGN-MENU` — el menú radial de encendido
 
@@ -1606,8 +1625,10 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
 | A.5 VFX | 15 | **15** ✅ | — (ya no bloquea `T6-07`) |
-| A.6 UI | **9** | **8** | Pulido de UI de partida (`T6-09`; ya no bloquea `T6-08`) |
-| **Total** | **134** | **133** | — |
+| A.6 UI | **9** | **9** ✅ | — (ya no bloquea `T6-08` ni `T6-09`) |
+| **Total** | **134** | **134** | — |
+
+**Y los ✅ suben de 133 a 134 el 2026-11-16** con la rueda de poderes del Púlsar, `ART-UI-WHEEL` v1, «Las teclas» (A.6): tres teclas con el pictograma de cada poder, que se llenan de su color al cargar y brillan enteras al estar listas. **A.6 queda cerrado, 9 de 9, y con él el inventario de arte: 134 de 134.** `T6-09` deja de estar bloqueada por arte.
 
 **Y los ✅ suben de 132 a 133 el 2026-11-16** con el menú radial de encendido, `ART-UI-IGN-MENU` v2, «Los nodos» (A.6): cada opción es el sprite de nivel 1 del nodo que vas a tener, entre cuatro esquinas; sin Energía, tramado. A.6 queda en 8 de 9; a `T6-09` solo le falta `ART-UI-WHEEL`.
 

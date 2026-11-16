@@ -1,0 +1,84 @@
+{
+ "slot": [
+  60,
+  20
+ ],
+ "gap": 6,
+ "cancel": [
+  192,
+  20
+ ],
+ "cellHeight": 22,
+ "pressedDrop": 2,
+ "powers": [
+  "zero",
+  "decay",
+  "wormhole"
+ ],
+ "slotStates": [
+  "normal",
+  "encima",
+  "pulsado",
+  "bloqueado",
+  "candado",
+  "nodisp",
+  "cargando",
+  "listo",
+  "listo_encima",
+  "listo_pulsado"
+ ],
+ "cancelStates": [
+  "normal",
+  "encima",
+  "pulsado",
+  "bloqueado"
+ ],
+ "frames": 32,
+ "fps": 12,
+ "hoverMs": 160,
+ "curve": [
+  0.2,
+  0.8,
+  0.2,
+  1.0
+ ],
+ "text": {
+  "normal": "#E2E6EF",
+  "cost": "#3FD7F5",
+  "hover": "#FFFFFF",
+  "hoverCost": "#E8FEFF",
+  "muted": "#8A93A6",
+  "unavailable": "#5D6580",
+  "onPower": "#11142A"
+ },
+ "plateCell": 20,
+ "plateBorder": 6,
+ "plateCenterMode": "tiled",
+ "plateRows": [
+  "zero",
+  "decay",
+  "wormhole"
+ ],
+ "plateColumns": [
+  "normal",
+  "encima",
+  "pulsado",
+  "bloqueado",
+  "candado",
+  "nodisp",
+  "cargando",
+  "listo",
+  "listo_encima"
+ ],
+ "capTop": 4,
+ "fuseAt": [
+  6,
+  12
+ ],
+ "fuseOffColumns": [
+  "off",
+  "grey"
+ ],
+ "chargeArt": "art/ui/charge_bar/v3/ (ui_charge_socket, ui_charge_track, ui_charge_fuse_sheet, ui_charge_flame_sheet)",
+ "note": "texto centrado arriba; en la base, en fuseAt, una barra de 48 x 6 montada como la de ART-UI-CHARGE: normal, el casquillo del Jugador y la mecha apagada (fuse_off) en mosaico; encima y pulsado, la mecha que corre; cargando, la barra de carga tal cual (con la brasa si esta pausada); listo, la barra lista; bloqueado, la mecha gris; candado, la pista en gris y el candado con Nv N centrados arriba; nodisp, sin barra"
+}
