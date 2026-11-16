@@ -1164,7 +1164,7 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-FX-THAW` | Deshielo | `art/fx/thaw/v1/fx_thaw_sheet.png`: **una hoja**, 5 filas (talla de `ART-WLD-SEL`), una sola rampa | 0.5 s | 6 | ✅ |
 | `ART-FX-CURE` | Cura de Decaimiento | `art/fx/cure/v1/fx_cure_sheet.png`: **una hoja**, 5 filas (talla de `ART-WLD-SEL`) y 16 variantes, una por frame del bucle del miasma; una sola rampa | 0.4 s | 5 | ✅ |
 | `ART-FX-CAST` | Lanzamiento de poder | `art/fx/cast/v1/fx_cast_sheet.png`: **una hoja**, 9 filas (poder × nivel del Púlsar), en la rampa del poder | 0.4 s | 5 | ✅ |
-| `ART-FX-PWR-ZER` | Impacto Cero Absoluto | `art/fx/fx_zero_impact_sheet.png` | 0.7 s | 9 | ⬜ |
+| `ART-FX-PWR-ZER` | Impacto Cero Absoluto | `art/fx/pwr_zer/v2/fx_pwr_zer_sheet.png`: **una hoja**, 5 filas (talla de `ART-WLD-SEL`), una sola rampa; acaba en `ART-ST-FROZEN` | 0.7 s | 9 | ✅ |
 | `ART-FX-PWR-DEC` | Impacto Decaimiento | `art/fx/fx_decay_impact_sheet.png` | 0.7 s | 9 | ⬜ |
 | `ART-FX-PWR-WRM` | Impacto Agujero de Gusano | `art/fx/fx_wormhole_impact_sheet.png` | 1.0 s | 12 | ⬜ |
 | `ART-FX-CASCADE` | Cascada de conquista | `art/fx/fx_cascade_sheet.png` | 3.0 s | 36 | ⬜ |
@@ -1356,6 +1356,22 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 
 **Propuesta v3, «El anillo»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_cast_v3.py` → `art/fx/cast/v3/`. La banda ecuatorial se descarga: se enciende y sale disparada como un aro inclinado, perpendicular a los conos. La más limpia.
 
+### `ART-FX-PWR-ZER` — el impacto de Cero Absoluto
+
+![ART-FX-PWR-ZER v2](../art/_preview/fx_pwr_zer/v2/fx_pwr_zer_hoja_x3.png)
+
+**Diseño cerrado: «El golpe de frío», v2** (elegida por el usuario el 2026-11-15). Generador: `tools/gen_fx_pwr_zer_v2.py` → `art/fx/pwr_zer/v2/fx_pwr_zer_sheet.png` y su `.json`; vistas en `art/_preview/fx_pwr_zer/v2/` (`--gif` para el tablero, a velocidad real y a un cuarto: tres nodos reciben el Cero Absoluto uno tras otro y se quedan con su overlay). La comparativa de las tres propuestas, en `art/_preview/fx_pwr_zer/comparativa_x3.png` (`py tools/gen_fx_pwr_zer_v1.py --comparativa`).
+
+- **El frío cae de golpe.** El cero absoluto es la ausencia de movimiento, y lo que se para no se para poco a poco. Al terminar el haz de Cero Absoluto sobre su objetivo, **se cierra (frames 0–3):** un aro de trama con seis cristales encima va del borde de la celda al borde del nodo, cada vez más claro. **Se raja (frame 4):** la red entera de «El vidrio» a la vez, en el índice 1, con un vaho de trama alrededor de las líneas. **Se enfría (frames 5–8):** las líneas bajan a sus bandas y la escarcha florece hasta el overlay.
+- **Acaba en el vidrio, píxel a píxel.** Es `ART-FX-THAW` al revés: el último frame **es** `state_frozen_overlay` sin la caja del número, y en el siguiente entra el overlay sin salto. El generador lo exige. La escarcha que florece es la trama del propio overlay, que entra por umbrales de Bayer (`asentar` en `gen_fx_pwr_zer_v1.py`).
+- **Una sola rampa, sin bando, sin dirección.** `hielo`, la del haz y la del overlay, índices 1–5; el objetivo puede ser de cualquiera, también el Magnetar neutral. El haz llega desde cualquier ángulo y la hoja no gira: el golpe es un aro y la grieta, la red sin centro de A.3.4.
+- **Una fila por talla, por el número.** El aro se cierra hasta 2 px del borde de la talla y todo se recorta contra la caja del número (la `franja` de `ART-FX-THAW`). Hoja de 864 × 480 en celdas de 96: filas `pwr_zer_24…40`, una columna por frame; lo dice `fx_pwr_zer_sheet.json`.
+- **El generador falla** si sale un índice fuera de 1–5, si pisa la caja del número, si toca el borde, si un frame está vacío o repetido, si ningún frame antes del último llega al índice 1 o si el último no es el overlay. Las comprobaciones, la hoja y las vistas viven en `gen_fx_pwr_zer_v1.py` y las tres propuestas las comparten.
+
+**Propuesta v1, «La helada»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_pwr_zer_v1.py` → `art/fx/pwr_zer/v1/`. La red crece desde el nudo de enmedio, segmento a segmento, con el frente encendido, como la escarcha que trepa por un cristal. La más orgánica y la más discreta al empezar.
+
+**Propuesta v3, «El copo»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_pwr_zer_v3.py` → `art/fx/pwr_zer/v3/`. El último copo de «El rosario de escarcha» crece sobre el nodo girando y se quiebra en la red. Se veía poco sobre la Estrella grande.
+
 ## A.6 UI — [13](./NOVA_GameDesign_Spec.md#13-controles-y-ui)
 
 
@@ -1387,9 +1403,11 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.3 Selección y apuntado | **4** | **4** ✅ | — (ya no bloquea `T6-06`) |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
-| A.5 VFX | 15 | **11** | `VFXPool`, fase 6 |
+| A.5 VFX | 15 | **12** | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **134** | **121** | — |
+| **Total** | **134** | **122** | — |
+
+**Y los ✅ suben de 121 a 122 el 2026-11-15** con el impacto de Cero Absoluto, `ART-FX-PWR-ZER` v2, «El golpe de frío» (A.5): una onda de cristales se cierra sobre el nodo y el vidrio se raja de golpe. A.5 queda en 12 de 15.
 
 **Y los ✅ suben de 120 a 121 el 2026-11-15** con el lanzamiento de poder, `ART-FX-CAST` v1, «El fogonazo del faro» (A.5): los conos del Púlsar destellan en el color del poder. A.5 queda en 11 de 15.
 

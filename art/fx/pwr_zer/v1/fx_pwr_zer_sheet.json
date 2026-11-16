@@ -1,0 +1,20 @@
+{
+ "cellSize": 96,
+ "frames": 9,
+ "fps": 12,
+ "sizes": [
+  24,
+  28,
+  32,
+  36,
+  40
+ ],
+ "rows": [
+  "pwr_zer_24",
+  "pwr_zer_28",
+  "pwr_zer_32",
+  "pwr_zer_36",
+  "pwr_zer_40"
+ ],
+ "note": "sobre el objetivo del haz de Cero Absoluto, al terminar el haz; el ultimo frame es state_frozen_overlay sin la caja del numero, y en el siguiente entra el overlay; la talla, la de world_select_tallas.json por la huella del nodo; una sola rampa (hielo), sin bando"
+}
