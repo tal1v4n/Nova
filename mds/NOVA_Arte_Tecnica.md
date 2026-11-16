@@ -649,10 +649,16 @@ cambian por segundo, que es cuánto movimiento hay.
 **Las hojas de A.5 son rejillas** (`T6-07`): `fx_<efecto>_sheet.png`, en celdas de 48, 64 o 96 según el efecto, con una fila por caso y las variantes en columnas. `SpriteImportRules` las corta con la celda que dice el `.json` que el generador deja al lado —`ArtBridge` copia los dos— y llama a cada celda `<hoja>_<fila>_<columna>`, con la fila 0 arriba. Qué es cada fila lo dice el mismo `.json` (`rows`), y `VfxArt` elige por ese nombre.
 
 Números de juego (vida, puntaje, valores) no se hornean en el sprite: van
-en un objeto hijo con TextMeshPro. La sombra de suelo es un sprite aparte.
+en un objeto hijo, aparte del sprite. La sombra de suelo es un sprite aparte.
 
-**Tipografía: Jersey 10**, licencia **OFL**, una sola familia para todo
-—números sobre el nodo, paneles y menús—, importada a TextMeshPro desde
+**Los dos números del tablero llevan cifras propias, no TextMeshPro**: la
+Carga del protón (`world_charge_digits`, A.4.2) y la Energía del nodo
+(`ART-UI-HUD-ENERGY`, A.6), que es el mismo esqueleto de 5 × 7 a ×2 trazado
+con el plasma del bando. Se componen por sprites con el avance de su `.json`,
+pivote abajo a la izquierda (2026-11-16).
+
+**Tipografía: Jersey 10**, licencia **OFL**, una sola familia para el texto
+—paneles, HUD y menús—, importada a TextMeshPro desde
 `Assets/Art/Fonts/`. Tiene `á é í ó ú ñ ü ¡ ¿`, y la UI de
 [13](./NOVA_GameDesign_Spec.md#13-controles-y-ui) está escrita en español.
 Mezclar dos familias en un juego de este tamaño se nota si no se hace muy bien.

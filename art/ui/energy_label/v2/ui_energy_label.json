@@ -1,0 +1,30 @@
+{
+ "columnWidth": 12,
+ "cellHeight": 16,
+ "drumCells": 11,
+ "boxHeight": 20,
+ "digitsTop": 2,
+ "railRows": [
+  0,
+  19
+ ],
+ "railInset": 1,
+ "railTile": 4,
+ "factions": [
+  "player",
+  "enemy",
+  "neutral"
+ ],
+ "railStates": [
+  "idle",
+  "lit"
+ ],
+ "rollSeconds": 0.16,
+ "rollCurve": [
+  0.2,
+  0.8,
+  0.2,
+  1.0
+ ],
+ "note": "cada columna muestra el tambor en [s*16, s*16+16) con s redondeado al pixel; al ganar s sube (9 -> 0 por el 0 de abajo, s = 10), al perder baja; mientras rueda se enciende el rail de abajo (gana) o el de arriba (pierde); si cambia el numero de cifras, se recentra sin rodar"
+}

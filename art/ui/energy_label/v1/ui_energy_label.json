@@ -1,0 +1,50 @@
+{
+ "cellWidth": 12,
+ "cellHeight": 16,
+ "advance": [
+  12,
+  8,
+  12,
+  12,
+  12,
+  12,
+  12,
+  12,
+  12,
+  12
+ ],
+ "rows": [
+  "player_0",
+  "player_1",
+  "player_2",
+  "player_3",
+  "player_4",
+  "player_5",
+  "player_6",
+  "player_7",
+  "enemy_0",
+  "enemy_1",
+  "enemy_2",
+  "enemy_3",
+  "enemy_4",
+  "enemy_5",
+  "enemy_6",
+  "enemy_7",
+  "neutral_0",
+  "neutral_1",
+  "neutral_2",
+  "neutral_3",
+  "neutral_4",
+  "neutral_5",
+  "neutral_6",
+  "neutral_7"
+ ],
+ "factions": [
+  "player",
+  "enemy",
+  "neutral"
+ ],
+ "steps": 8,
+ "boxHeight": 20,
+ "note": "columna = cifra 0-9; fila = bando * 8 + escalon; escalon = 7 si Energia >= tope, si no min(6, Energia * 7 // tope); pivote abajo a la izquierda; avance = ancho de la celda"
+}

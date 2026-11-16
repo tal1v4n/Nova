@@ -1431,7 +1431,7 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 
 | ID | Elemento | Notas | Archivo | Estado |
 |---|---|---|---|---|
-| `ART-UI-HUD-ENERGY` | Número de Energía sobre el nodo | Legible sobre cualquier estado (14.7) | `art/ui/ui_energy_label.png` | ⬜ |
+| `ART-UI-HUD-ENERGY` | Número de Energía sobre el nodo | Legible sobre cualquier estado (14.7). Cifras propias de plasma con un pulso que corre por el trazo; el neutral, quieto | `art/ui/energy_label/v3/ui_energy_label_player_sheet.png`, `ui_energy_label_enemy_sheet.png`, `ui_energy_label_neutral.png` y `ui_energy_label.json` | ✅ |
 | `ART-UI-PANEL` | Panel de clic derecho | 6 bloques de [13.3](./NOVA_GameDesign_Spec.md#133-panel-de-clic-derecho) | `art/ui/ui_info_panel.png` | ⬜ |
 | `ART-UI-BTN-UPG` | Botón de mejora | Estados normal / deshabilitado con coste en rojo / `NIVEL MÁXIMO` | `art/ui/ui_btn_upgrade.png` | ⬜ |
 | `ART-UI-BTN-CONV` | Botón de reconversión | **Dos** destinos con coste: nunca a Asteroide ni al propio tipo ([13.3](./NOVA_GameDesign_Spec.md#133-panel-de-clic-derecho) #5) | `art/ui/ui_btn_convert.png` | ⬜ |
@@ -1440,6 +1440,24 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-UI-CHARGE` | Barra de carga bajo el Púlsar | **Visible también en el Púlsar enemigo** ([7.5](./NOVA_GameDesign_Spec.md#75-agujero-de-gusano)) | `art/ui/ui_charge_bar.png` | ⬜ |
 | `ART-UI-POWERBAR` | Barra de poder inferior | El **reparto** de Energía entre los dos bandos: cian desde la izquierda, magenta desde la derecha, sin parte vacía ni neutral | `art/ui/power_bar/v1/ui_power_bar_frame.png`, `ui_power_bar_fill_sheet.png`, `ui_power_bar_front_sheet.png` y `ui_power_bar.json` | ✅ |
 | `ART-UI-TOPBAR` | Cronómetro, nivel, pausa | [13.6](./NOVA_GameDesign_Spec.md#136-hud-permanente). El texto va en TextMeshPro; el arte es la sombra tramada detrás y el botón de pausa | `art/ui/topbar/v3/ui_topbar_plate.png`, `ui_topbar_pause_sheet.png` y `ui_topbar.json` | ✅ |
+
+### `ART-UI-HUD-ENERGY` — el número de Energía
+
+![ART-UI-HUD-ENERGY v3](../art/_preview/ui_energy_label/v3/pulso_x6.png)
+
+**Diseño cerrado: «El filamento», v3** (elegida por el usuario el 2026-11-16). Generador: `tools/gen_energy_v3.py` → `art/ui/energy_label/v3/`; vistas en `art/_preview/ui_energy_label/v3/` (el nivel 9 entero a 1080p con las dos barras del HUD, su mitad izquierda a ×3, el número sobre lo peor que puede tener debajo a ×6 y el pulso a ×6; `--gif` para el pulso y el tablero en movimiento). Comparativa de las tres en `art/_preview/ui_energy_label/comparativa_x3.png`.
+
+- **Las cifras de la Carga, a ×2.** Una sola familia de números en el tablero: el esqueleto de 5 × 7 de `world_charge_digits` (A.4.2) con trazo de 2 px y contorno de 1 px en `CONTORNO`. Celdas de 12 × 16, la del 1 de 8 × 16, y el **avance es el ancho de la celda**: los contornos de dos cifras se tocan sin pisarse. No es TextMeshPro: se compone por sprites, como la Carga ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Tipografía*).
+- **El sitio** (18 #48). Bajo el sprite y centrado bajo su huella, a 2 px (`NodeLayout.Gap`). «100», el número más ancho posible (tope 100), mide 32 px y cabe en el hueco de 38 que deja abierto «La órbita» (A.4.3); los 16 de alto caben en los 20 que reserva `NodeLayout`, centrados. El contorno hace que se lea sobre el cielo más claro, el anillo de radio y la línea de envío, que pasan por debajo (capa 0 de 14.7).
+- **De quién es.** Las cifras se trazan con el plasma del bando —`plasma_p`, `plasma_e`, el de la línea de envío y del protón— en su ancla, y **un pulso blanco recorre el trazo** como la corriente por un filamento (el patrón «Flujo» de 13.12): cabeza en el índice 0 y cola en el 1 y el 2. El pulso sigue el trazo en el orden en que se escribe la cifra, desde un extremo o, si es un lazo, desde arriba a la izquierda.
+- **Lo neutral no tiene plasma.** Un Asteroide neutral o el Magnetar neutral llevan el número quieto en `neutral[2]`, sin pulso. Al capturar un nodo su número empieza a correr: el cambio de dueño se lee también en el número.
+- **El bucle.** 32 frames a 12 fps (2.67 s); cada cifra avanza el pulso a lo largo de su propio trazo, así que en todas cierra. La cifra k del número (de izquierda a derecha) usa el frame `(f + 11 · k) % 32`: la corriente salta de una cifra a otra. Todos los números comparten el bucle y cuentan como **uno** de los tres de ambiente por pantalla (13.12).
+- **Las piezas.** `ui_energy_label_player_sheet.png` y `ui_energy_label_enemy_sheet.png`: fila = cifra 0–9, columna = frame, celdas de 12 × 16 (el 1 a la izquierda de la suya). `ui_energy_label_neutral.png`: una fila con las diez cifras quietas. `ui_energy_label.json`: celda, avance, frames, fps y desfase. Pivote abajo a la izquierda.
+- **El generador falla** si un número de 0 al tope, de cualquier bando y en cualquier frame, se sale de 38 × 20, si el alfa no es binario, si sale un color fuera de `plasma_p`, `plasma_e`, `neutral` y `CONTORNO`, si el recorrido de una cifra no pasa por todo su trazo, si el bucle no cierra o si repite demasiados frames. El esqueleto, el montaje, las comprobaciones y las vistas viven en `gen_energy_v1.py` y las tres propuestas los comparten.
+
+**Propuesta v1, «El depósito»** (2026-11-16, **descartada**; se conserva por A.1). `tools/gen_energy_v1.py` → `art/ui/energy_label/v1/`. Las cifras se llenan como un tanque, de abajo arriba, con la Energía sobre el tope en 8 escalones, con una superficie clara; lo vacío en la sombra del bando y, en el tope, el número arde en blanco (lo neutral se llena pero no arde). La que más dice: cuánto cabe.
+
+**Propuesta v2, «El contador»** (2026-11-16, **descartada**; se conserva por A.1). `tools/gen_energy_v2.py` → `art/ui/energy_label/v2/`. Un cuentakilómetros: cada cifra es un tambor que rueda con la orbital en 160 ms, hacia arriba al ganar y hacia abajo al perder, entre dos raíles de 1 px en el ancla del bando; se enciende el raíl por donde entra la cifra nueva. Ancho fijo de 12. La que dice hacia dónde va, y la más cara de montar (una máscara por columna).
 
 ### `ART-UI-TOPBAR` — la barra de arriba
 
@@ -1491,8 +1509,10 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
 | A.5 VFX | 15 | **15** ✅ | — (ya no bloquea `T6-07`) |
-| A.6 UI | **9** | **2** | Pulido de UI de partida (`T6-09`; ya no bloquea `T6-08`) |
-| **Total** | **134** | **127** | — |
+| A.6 UI | **9** | **3** | Pulido de UI de partida (`T6-09`; ya no bloquea `T6-08`) |
+| **Total** | **134** | **128** | — |
+
+**Y los ✅ suben de 127 a 128 el 2026-11-16** con el número de Energía, `ART-UI-HUD-ENERGY` v3, «El filamento» (A.6): las cifras de la Carga a ×2, trazadas con el plasma del bando y con un pulso que corre por ellas; el neutral, quieto en gris. A.6 queda en 3 de 9; a `T6-09` le faltan seis.
 
 **Y los ✅ suben de 126 a 127 el 2026-11-16** con la barra de arriba, `ART-UI-TOPBAR` v3, «Las lecturas» (A.6): el nivel y el tiempo sobre el cielo con una sombra en trama, y el botón de pausa como único mando que se enciende. A.6 queda en 2 de 9 y **`T6-08` deja de estar bloqueada por arte**.
 

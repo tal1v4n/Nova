@@ -1,0 +1,21 @@
+{
+ "cellWidth": 12,
+ "cellHeight": 16,
+ "advance": [
+  12,
+  8,
+  12,
+  12,
+  12,
+  12,
+  12,
+  12,
+  12,
+  12
+ ],
+ "frames": 32,
+ "fps": 12,
+ "digitPhaseOffset": 11,
+ "boxHeight": 20,
+ "note": "hojas del bando: fila = cifra, columna = frame; la cifra k del numero (de izquierda a derecha) usa el frame (f + k * digitPhaseOffset) % frames; neutral: una fila de cifras quietas; pivote abajo a la izquierda"
+}
