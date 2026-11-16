@@ -1154,7 +1154,7 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 
 | ID de asset | Evento (14.5) | Archivo | Duración | Frames | Estado |
 |---|---|---|---|---|---|
-| `ART-FX-IGN` | Encendido | `art/fx/fx_ignition_sheet.png` | 0.6 s | 8 | ⬜ |
+| `ART-FX-IGN` | Encendido | `art/fx/ign/v2/fx_ign_sheet.png`: **una hoja**, 4 filas (bando × talla 24 o 28 del nodo de nivel 1) | 0.6 s | 8 | ✅ |
 | `ART-FX-UPG` | Mejora de nivel | `art/fx/fx_upgrade_sheet.png` | 0.5 s | 6 | ⬜ |
 | `ART-FX-SEND` | Lanzamiento | `art/fx/send/v1/fx_send_sheet.png`: **una hoja**, 10 filas (bando × talla de `ART-WLD-SEL`) | 0.2 s | 3 | ✅ |
 | `ART-FX-ABS` | Absorción aliada | `art/fx/abs/v1/fx_abs_sheet.png`: **una hoja**, 10 filas (bando × talla de `ART-WLD-SEL`) | 0.3 s | 4 | ✅ |
@@ -1271,6 +1271,24 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 
 **Propuesta v2, «Las esquirlas»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_dmg_v2.py` → `art/fx/dmg/v2/`. Siete esquirlas saltan del borde como metralla y giran al alejarse. Demasiado discreta: a 1× casi no se ve.
 
+### `ART-FX-IGN` — el encendido
+
+![ART-FX-IGN v2](../art/_preview/fx_ign/v2/fx_ign_hoja_x3.png)
+
+**Diseño cerrado: «El crisol», v2** (elegida por el usuario el 2026-11-15). Generador: `tools/gen_fx_ign_v2.py` → `art/fx/ign/v2/fx_ign_sheet.png` y su `.json`; vistas en `art/_preview/fx_ign/v2/` (`--gif` para el tablero, a velocidad real y a un cuarto: tres Asteroides que se encienden uno tras otro, como Estrella, Púlsar y Magnetar). La comparativa de las tres propuestas, en `art/_preview/fx_ign/comparativa_x3.png`.
+
+- **El nodo sale del fuego.** En el tick en que `NodeIgnition` consume los 10 de Energía, el sprite pasa de roca a nodo de nivel 1, y la roca desaparece dentro de una bola de luz. El nodo nuevo aparece de dentro afuera, como el metal que se vacía de un crisol. **Funde (frame 0):** un disco de trama densa, índices 1 y 2, cubre el cuerpo entero. **Se vacía (frames 1–3):** se abre desde el centro hasta quedar un aro en el borde. **Chispas (frames 4–7):** el aro se apaga y suben las cinco chispas de «El pedernal» en su mismo abanico (−142° a −38°): la brasa que se encendió se despide.
+- **Tapa el relevo entero.** Es el único de los efectos que cubre el cuerpo completo, y lo hace a propósito: el jugador no ve la roca convertirse en otra cosa, ve nacer el nodo.
+- **Es la brasa que prende.** Continúa `ART-ST-READY` (A.3.2): sale de su sitio y en sus rampas, `str_p` y `str_e`, las de los colores literales de facción; índices 1–5.
+- **Sin rayos en estrella.** Un destello isótropo es la firma de la Estrella (A.3.2), y lo que nace también puede ser un Púlsar o un Magnetar.
+- **Dos tallas.** Lo que nace es de nivel 1: Estrella (39 px de huella, talla 24), Púlsar (44, talla 28) o Magnetar (41, talla 28), con la `talla_de` de «La órbita». Hoja de 768 × 384 en celdas de 96: filas `player_24`, `player_28`, `enemy_24`, `enemy_28`, una columna por frame; lo dice `fx_ign_sheet.json`.
+- **El número, libre; su caja, no la columna.** Como el efecto cruza el cuerpo, no protege toda la columna bajo el centro (lo que hacen el envío y la absorción, que no entran en él) sino la caja del número, que empieza 3 px por encima del borde de la talla (`franja` en `gen_fx_ign_v1.py`). Con la columna entera el disco salía cortado en recto por abajo.
+- **El generador falla** si sale un índice fuera de 1–5, si pisa la caja del número, si toca el borde, si un frame está vacío o repetido, si ningún frame llega al índice 1 o si el último no es el de menos luz y pasa de la cuarta parte del pico. Las comprobaciones, la hoja y las vistas viven en `gen_fx_ign_v1.py` y las tres propuestas las comparten.
+
+**Propuesta v1, «La cerilla»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_ign_v1.py` → `art/fx/ign/v1/`. La brasa cae sobre el nodo, prende en lo alto y dos llamas bajan abrazando el cuerpo. La historia más clara, pero el relevo de roca a nodo se veía como un corte mientras la brasa caía.
+
+**Propuesta v3, «La bengala»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_ign_v3.py` → `art/fx/ign/v3/`. Los cinco trazos del pedernal salen como una fuente de chispas y caen en parábola por los lados. A 1× las chispas son muy pequeñas.
+
 ## A.6 UI — [13](./NOVA_GameDesign_Spec.md#13-controles-y-ui)
 
 
@@ -1302,9 +1320,11 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.3 Selección y apuntado | **4** | **4** ✅ | — (ya no bloquea `T6-06`) |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
-| A.5 VFX | 15 | **6** | `VFXPool`, fase 6 |
+| A.5 VFX | 15 | **7** | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **134** | **116** | — |
+| **Total** | **134** | **117** | — |
+
+**Y los ✅ suben de 116 a 117 el 2026-11-15** con el encendido, `ART-FX-IGN` v2, «El crisol» (A.5): la brasa de «El pedernal» prende y el nodo sale de una bola de luz. A.5 queda en 7 de 15.
 
 **Y los ✅ suben de 115 a 116 el 2026-11-15** con el daño sin captura, `ART-FX-DMG` v3, «El diente de sierra» (A.5): diez filas por el bando del atacante y la talla, y cuatro variantes. Con él se cierra el trío del combate —envío, absorción y daño— y A.5 queda en 6 de 15.
 

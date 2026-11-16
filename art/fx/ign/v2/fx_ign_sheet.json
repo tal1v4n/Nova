@@ -1,0 +1,16 @@
+{
+ "cellSize": 96,
+ "frames": 8,
+ "fps": 12,
+ "sizes": [
+  24,
+  28
+ ],
+ "rows": [
+  "player_24",
+  "player_28",
+  "enemy_24",
+  "enemy_28"
+ ],
+ "note": "sobre el nodo recien encendido; la talla, la de world_select_tallas.json por la huella del nodo de nivel 1 (Estrella 24, Pulsar y Magnetar 28); pivote en el centro del nodo"
+}
