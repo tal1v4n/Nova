@@ -1157,7 +1157,7 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-FX-IGN` | Encendido | `art/fx/fx_ignition_sheet.png` | 0.6 s | 8 | ⬜ |
 | `ART-FX-UPG` | Mejora de nivel | `art/fx/fx_upgrade_sheet.png` | 0.5 s | 6 | ⬜ |
 | `ART-FX-SEND` | Lanzamiento | `art/fx/send/v1/fx_send_sheet.png`: **una hoja**, 10 filas (bando × talla de `ART-WLD-SEL`) | 0.2 s | 3 | ✅ |
-| `ART-FX-ABS` | Absorción aliada | `art/fx/fx_absorb_sheet.png` | 0.3 s | 4 | ⬜ |
+| `ART-FX-ABS` | Absorción aliada | `art/fx/abs/v1/fx_abs_sheet.png`: **una hoja**, 10 filas (bando × talla de `ART-WLD-SEL`) | 0.3 s | 4 | ✅ |
 | `ART-FX-DMG` | Daño sin captura | `art/fx/fx_damage_sheet.png` | 0.3 s | 4 | ⬜ |
 | `ART-FX-SHOT` | Disparo del Magnetar: destello sobre el protón | `art/fx/shot/v3/fx_shot_sheet.png`: **una hoja**, 20 filas (bando × talla del protón) y 4 variantes | 0.17 s, como el arco | 2 | ✅ |
 | `ART-FX-KILL` | Protón destruido | `art/fx/kill/v2/fx_kill_sheet.png`: **una hoja**, 2 filas (bando) y 16 variantes, una por frame del bucle del protón | 0.25 s | 3 | ✅ |
@@ -1238,6 +1238,21 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 
 **Propuesta v3, «La corona»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_send_v3.py` → `art/fx/send/v3/`. El nodo se eriza con doce rayos cortos que se despegan y se apagan, girados 15° para que ninguno caiga en el número.
 
+### `ART-FX-ABS` — la absorción aliada
+
+![ART-FX-ABS v1](../art/_preview/fx_abs/v1/fx_abs_hoja_x3.png)
+
+**Diseño cerrado: «La resaca», v1** (elegida por el usuario el 2026-11-15). Generador: `tools/gen_fx_abs_v1.py` → `art/fx/abs/v1/fx_abs_sheet.png` y su `.json`; vistas en `art/_preview/fx_abs/v1/` (`--gif` para el tablero, a velocidad real y a un cuarto: refuerzos en ráfaga sobre una Estrella del Jugador y un Asteroide del Enemigo). La comparativa de las tres propuestas, en `art/_preview/fx_abs/comparativa_x3.png`.
+
+- **«La onda» al revés.** El envío es un aro que sale ([`ART-FX-SEND`](#art-fx-send--el-lanzamiento)); la absorción, el mismo aro que vuelve. El jugador aprende un par: aro que sale, he enviado; aro que entra, me ha llegado. **Llega (frame 0):** un aro de trama rala a 10 px del cuerpo. **Se cierra (frames 1–2):** a 7 y a 4 px, ya sólido, una banda más claro cada vez, roto por arriba y entero al final. **Toca (frame 3):** pegado al cuerpo en el índice 1, con un velo por dentro.
+- **Quién absorbe:** cualquier nodo del Jugador o del Enemigo que recibe un protón de su bando (`ImpactResult.Absorbed`, [6.2](./NOVA_GameDesign_Spec.md#62-resolución-de-impacto)), también un Asteroide propio; su huella (43 px) cae en la talla 28. En el color del protón que llega, que es el del nodo: `plasma_p`, `plasma_e`.
+- **Lo de «La onda»:** las cinco tallas de «La órbita» con su `talla_de`, la franja del número libre y el cuerpo sin tapar. Hoja de 384 × 960 en celdas de 96: filas `player_24…40` y `enemy_24…40`, una columna por frame; lo dice `fx_abs_sheet.json`.
+- **El generador falla** si sale un índice fuera de 1–5, si pisa la franja del número, si entra en el cuerpo, si toca el borde, si un frame está vacío o repetido, si un frame ocupa más que el anterior (con medio píxel de tolerancia: un aro de 1 px a radio fijo no enciende los mismos píxeles en cada frame), si el último no acaba a 3 px del cuerpo o si no llega al índice 1: la llegada es lo más claro. Las comprobaciones, la hoja y las vistas viven en `gen_fx_abs_v1.py` y las tres propuestas las comparten.
+
+**Propuesta v2, «El llenado»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_abs_v2.py` → `art/fx/abs/v2/`. El nodo se llena como un vaso: dos arcos suben pegados al borde desde los lados del número y se juntan arriba con una chispa. Dice «ha subido» más que «ha llegado».
+
+**Propuesta v3, «Los tres quarks»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_abs_v3.py` → `art/fx/abs/v3/`. Los tres quarks del protón entran en espiral desde arriba y encienden tres arcos al tocar. A 1× las motas apenas se ven, sobre todo sobre la corona de la Estrella.
+
 ## A.6 UI — [13](./NOVA_GameDesign_Spec.md#13-controles-y-ui)
 
 
@@ -1269,9 +1284,11 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.3 Selección y apuntado | **4** | **4** ✅ | — (ya no bloquea `T6-06`) |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
-| A.5 VFX | 15 | **4** | `VFXPool`, fase 6 |
+| A.5 VFX | 15 | **5** | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **134** | **114** | — |
+| **Total** | **134** | **115** | — |
+
+**Y los ✅ suben de 114 a 115 el 2026-11-15** con la absorción aliada, `ART-FX-ABS` v1, «La resaca» (A.5): «La onda» al revés, en la misma hoja de diez filas. A.5 queda en 5 de 15.
 
 **Y los ✅ suben de 113 a 114 el 2026-11-15** con el lanzamiento, `ART-FX-SEND` v1, «La onda» (A.5), el primero de los VFX sobre nodos: una hoja de diez filas, bando por talla de `ART-WLD-SEL`. A.5 queda en 4 de 15.
 

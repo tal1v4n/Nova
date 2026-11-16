@@ -1,0 +1,26 @@
+{
+ "cellSize": 96,
+ "frames": 4,
+ "fps": 12,
+ "sizes": [
+  24,
+  28,
+  32,
+  36,
+  40
+ ],
+ "air": 4,
+ "rows": [
+  "player_24",
+  "player_28",
+  "player_32",
+  "player_36",
+  "player_40",
+  "enemy_24",
+  "enemy_28",
+  "enemy_32",
+  "enemy_36",
+  "enemy_40"
+ ],
+ "note": "la talla es la de world_select_tallas.json (talla_de por la huella del nodo, tambien el Asteroide); pivote en el centro del nodo destino"
+}
