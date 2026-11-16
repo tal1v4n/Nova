@@ -1,0 +1,17 @@
+{
+ "cellSize": 96,
+ "frames": 5,
+ "fps": 12,
+ "rows": [
+  "zero_1",
+  "zero_2",
+  "zero_3",
+  "decay_1",
+  "decay_2",
+  "decay_3",
+  "wormhole_1",
+  "wormhole_2",
+  "wormhole_3"
+ ],
+ "note": "sobre el Pulsar que lanza, en el mismo frame que nace el haz; la fila, por poder (rampa del poder, no del bando) y nivel del Pulsar; sin girar; pivote en el centro del nodo"
+}

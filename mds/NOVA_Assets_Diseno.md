@@ -1163,7 +1163,7 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-FX-KILL` | Protón destruido | `art/fx/kill/v2/fx_kill_sheet.png`: **una hoja**, 2 filas (bando) y 16 variantes, una por frame del bucle del protón | 0.25 s | 3 | ✅ |
 | `ART-FX-THAW` | Deshielo | `art/fx/thaw/v1/fx_thaw_sheet.png`: **una hoja**, 5 filas (talla de `ART-WLD-SEL`), una sola rampa | 0.5 s | 6 | ✅ |
 | `ART-FX-CURE` | Cura de Decaimiento | `art/fx/cure/v1/fx_cure_sheet.png`: **una hoja**, 5 filas (talla de `ART-WLD-SEL`) y 16 variantes, una por frame del bucle del miasma; una sola rampa | 0.4 s | 5 | ✅ |
-| `ART-FX-CAST` | Lanzamiento de poder | `art/fx/fx_cast_sheet.png` | 0.4 s | 5 | ⬜ |
+| `ART-FX-CAST` | Lanzamiento de poder | `art/fx/cast/v1/fx_cast_sheet.png`: **una hoja**, 9 filas (poder × nivel del Púlsar), en la rampa del poder | 0.4 s | 5 | ✅ |
 | `ART-FX-PWR-ZER` | Impacto Cero Absoluto | `art/fx/fx_zero_impact_sheet.png` | 0.7 s | 9 | ⬜ |
 | `ART-FX-PWR-DEC` | Impacto Decaimiento | `art/fx/fx_decay_impact_sheet.png` | 0.7 s | 9 | ⬜ |
 | `ART-FX-PWR-WRM` | Impacto Agujero de Gusano | `art/fx/fx_wormhole_impact_sheet.png` | 1.0 s | 12 | ⬜ |
@@ -1339,6 +1339,23 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 
 **Propuesta v3, «La efervescencia»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_cure_v3.py` → `art/fx/cure/v3/`. Como el agua oxigenada: la nube se recoge en nueve burbujas que suben y revientan en cruz. La infección caía; la cura sube.
 
+### `ART-FX-CAST` — el lanzamiento de poder
+
+![ART-FX-CAST v1](../art/_preview/fx_cast/v1/fx_cast_hoja_x3.png)
+
+**Diseño cerrado: «El fogonazo del faro», v1** (elegida por el usuario el 2026-11-15). Generador: `tools/gen_fx_cast_v1.py` → `art/fx/cast/v1/fx_cast_sheet.png` y su `.json`; vistas en `art/_preview/fx_cast/v1/` (`--gif` para el tablero, a velocidad real y a un cuarto: tres Púlsares lanzan uno tras otro, cada uno un poder). La comparativa de las tres propuestas, en `art/_preview/fx_cast/comparativa_x3.png` (`py tools/gen_fx_cast_v1.py --comparativa`).
+
+- **El faro destella.** Un púlsar es un faro (A.2.3), y lanzar un poder es su destello. En el tick en que `PulsarCaster` dispara, y en el mismo frame en que nace el haz (14.5), **destello (frame 0):** los dos conos se llenan, del índice 1 en el eje al 3, con un frente de onda pegado al cuerpo en cada sentido. **El pulso (frames 1–3):** los frentes viajan por el eje y se abren, y los conos se aclaran. **Se apaga (frame 4):** las puntas de los frentes.
+- **La gramática del propio Púlsar.** Conos y frentes son los de «El Faro» (`gen_pulsar_v2`): el eje a −32°, el `SEMIANCHO` del cono y el escorzo de los frentes. El frente es más grande que los del idle y recorre el cono entero de su nivel.
+- **En el color del poder, no del bando:** `hielo`, `decaimiento` y `gusano`, índices 1–5, como los haces de A.4.2 ([14.4](./NOVA_Estados_Animaciones.md#144-paleta-funcional)). El jugador lee qué se ha lanzado en el Púlsar antes de que el haz llegue. **Riesgo conocido:** el Cero Absoluto del Jugador, `hielo` sobre el cian del Púlsar, es el de menos contraste; es el mismo de su haz.
+- **Sin dirección al objetivo.** La hoja no gira: la dirección la da el haz, que nace en el Púlsar en el mismo frame. Hoja de 480 × 864 en celdas de 96: filas `zero_1…3`, `decay_1…3`, `wormhole_1…3`, una columna por frame; lo dice `fx_cast_sheet.json`.
+- **El número, libre:** su caja empieza 1 px por encima del borde de la huella de cada nivel (44, 60 y 68 px).
+- **El generador falla** si sale un índice fuera de 1–5, si pisa la caja del número, si toca el borde, si un frame está vacío o repetido, si ningún frame llega al índice 1 o si el último no es el de menos luz y pasa de la cuarta parte del pico. Las comprobaciones, la hoja y las vistas viven en `gen_fx_cast_v1.py` y las tres propuestas las comparten.
+
+**Propuesta v2, «La vuelta»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_cast_v2.py` → `art/fx/cast/v2/`. Los conos dan media vuelta al cielo, de 45° en 45°, con estela de radar. La más dinámica y la más cargada: los conos barrían por encima del cuerpo.
+
+**Propuesta v3, «El anillo»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_cast_v3.py` → `art/fx/cast/v3/`. La banda ecuatorial se descarga: se enciende y sale disparada como un aro inclinado, perpendicular a los conos. La más limpia.
+
 ## A.6 UI — [13](./NOVA_GameDesign_Spec.md#13-controles-y-ui)
 
 
@@ -1370,9 +1387,11 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.3 Selección y apuntado | **4** | **4** ✅ | — (ya no bloquea `T6-06`) |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
-| A.5 VFX | 15 | **10** | `VFXPool`, fase 6 |
+| A.5 VFX | 15 | **11** | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **134** | **120** | — |
+| **Total** | **134** | **121** | — |
+
+**Y los ✅ suben de 120 a 121 el 2026-11-15** con el lanzamiento de poder, `ART-FX-CAST` v1, «El fogonazo del faro» (A.5): los conos del Púlsar destellan en el color del poder. A.5 queda en 11 de 15.
 
 **Y los ✅ suben de 119 a 120 el 2026-11-15** con la cura de Decaimiento, `ART-FX-CURE` v1, «La purga» (A.5): el impacto expulsa el miasma, que se aleja del cuerpo y se deshace. A.5 queda en 10 de 15.
 
