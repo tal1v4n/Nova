@@ -1155,7 +1155,7 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | ID de asset | Evento (14.5) | Archivo | Duración | Frames | Estado |
 |---|---|---|---|---|---|
 | `ART-FX-IGN` | Encendido | `art/fx/ign/v2/fx_ign_sheet.png`: **una hoja**, 4 filas (bando × talla 24 o 28 del nodo de nivel 1) | 0.6 s | 8 | ✅ |
-| `ART-FX-UPG` | Mejora de nivel | `art/fx/fx_upgrade_sheet.png` | 0.5 s | 6 | ⬜ |
+| `ART-FX-UPG` | Mejora de nivel | `art/fx/upg/v2/fx_upg_sheet.png`: **una hoja**, 20 filas (bando × tipo y nivel nuevo: Estrella 2–5, Púlsar 2–3, Magnetar 2–5) | 0.5 s | 6 | ✅ |
 | `ART-FX-SEND` | Lanzamiento | `art/fx/send/v1/fx_send_sheet.png`: **una hoja**, 10 filas (bando × talla de `ART-WLD-SEL`) | 0.2 s | 3 | ✅ |
 | `ART-FX-ABS` | Absorción aliada | `art/fx/abs/v1/fx_abs_sheet.png`: **una hoja**, 10 filas (bando × talla de `ART-WLD-SEL`) | 0.3 s | 4 | ✅ |
 | `ART-FX-DMG` | Daño sin captura | `art/fx/dmg/v3/fx_dmg_sheet.png`: **una hoja**, 10 filas (bando del atacante × talla de `ART-WLD-SEL`) y 4 variantes | 0.3 s | 4 | ✅ |
@@ -1289,6 +1289,24 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 
 **Propuesta v3, «La bengala»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_ign_v3.py` → `art/fx/ign/v3/`. Los cinco trazos del pedernal salen como una fuente de chispas y caen en parábola por los lados. A 1× las chispas son muy pequeñas.
 
+### `ART-FX-UPG` — la mejora de nivel
+
+![ART-FX-UPG v2](../art/_preview/fx_upg/v2/fx_upg_hoja_x3.png)
+
+**Diseño cerrado: «Los galones», v2** (elegida por el usuario el 2026-11-15). Generador: `tools/gen_fx_upg_v2.py` → `art/fx/upg/v2/fx_upg_sheet.png` y su `.json`; vistas en `art/_preview/fx_upg/v2/` (`--gif` para el tablero, a velocidad real y a un cuarto: el Jugador sube su Estrella a 2 y su Magnetar a 3, y el Enemigo responde con su Púlsar a 2). La comparativa de las tres propuestas, en `art/_preview/fx_upg/comparativa_x3.png` (`py tools/gen_fx_upg_v1.py --comparativa`).
+
+- **El efecto dice el nivel.** Tantos galones como el nivel nuevo —dos, tres, cuatro o cinco— suben por el cuerpo del nodo y salen por arriba, como los de una manga. A.2.2 admite que la Estrella N3 y la N4 se parecen a 1× (*Riesgo conocido*): aquí el jugador cuenta el nivel en el instante en que cambia, sin abrir el panel.
+- **Golpe (frame 0):** la pila entera en el centro del cuerpo, en el índice 1, con un aro de trama en el borde nuevo. **Suben (frames 1–4):** la pila sube 3–4 px por frame y baja una banda cada frame desde el 3. **Se van (frame 5):** quedan, ralos, los dos últimos.
+- **Cada galón, contorneado.** Una V invertida de 13 px de ancho y 2 de luz, con una fila del índice 5 por encima y otra por debajo: sin ella el galón se perdía sobre la luz del cuerpo, sobre todo en la Estrella.
+- **Una fila por destino, no por talla.** Se mejora a diez sitios, y el sprite cambia de tamaño en el tick de la mejora (el Magnetar de 41 a 60 px de huella; el 2 → 3 no crece nada). Cada fila sabe la huella de antes, la de después y el nivel, y `VFXPool` la elige por bando, tipo y nivel nuevo sin calcular nada. Hoja de 576 × 1920 en celdas de 96: filas `player_str2…5`, `player_pul2…3`, `player_mag2…5` y lo mismo de `enemy`, una columna por frame; lo dice `fx_upg_sheet.json`.
+- **En el color del nodo:** la mejora la paga el propio nodo ([18](./NOVA_GameDesign_Spec.md#18-decisiones-tomadas-por-defecto) #18), así que va en `str_p` y `str_e`, como el encendido; índices 1–5.
+- **Cruza el cuerpo, no el número.** El número baja con el nodo nuevo; lo protege su caja, que empieza 1 px por encima del borde del cuerpo nuevo (`Salto.franja` en `gen_fx_upg_v1.py`).
+- **El generador falla** si sale un índice fuera de 1–5, si pisa la caja del número, si toca el borde, si un frame está vacío o repetido, si ningún frame llega al índice 1 o si el último no es el de menos luz y pasa de la cuarta parte del pico. Las comprobaciones, la hoja y las vistas viven en `gen_fx_upg_v1.py` y las tres propuestas las comparten.
+
+**Propuesta v1, «La muda»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_upg_v1.py` → `art/fx/upg/v1/`. El tamaño viejo se queda un tick como una cáscara de 3 px, clara por fuera y oscura por dentro, y el nodo nuevo la revienta en seis placas. Decía cuánto había crecido, pero se parecía a «La onda» y en el Magnetar la cáscara quedaba lejos del cuerpo, porque su huella incluye las esquirlas.
+
+**Propuesta v3, «El salto cuántico»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_upg_v3.py` → `art/fx/upg/v3/`. Un nivel es una órbita del átomo de Bohr: un fotón alcanza al electrón en una órbita interior y, sin frame intermedio, aparece en la exterior. La idea más original, pero la elipse recordaba al anillo del Púlsar.
+
 ## A.6 UI — [13](./NOVA_GameDesign_Spec.md#13-controles-y-ui)
 
 
@@ -1320,9 +1338,11 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.3 Selección y apuntado | **4** | **4** ✅ | — (ya no bloquea `T6-06`) |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
-| A.5 VFX | 15 | **7** | `VFXPool`, fase 6 |
+| A.5 VFX | 15 | **8** | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **134** | **117** | — |
+| **Total** | **134** | **118** | — |
+
+**Y los ✅ suben de 117 a 118 el 2026-11-15** con la mejora de nivel, `ART-FX-UPG` v2, «Los galones» (A.5): tantos galones como el nivel nuevo suben por el cuerpo del nodo. A.5 queda en 8 de 15.
 
 **Y los ✅ suben de 116 a 117 el 2026-11-15** con el encendido, `ART-FX-IGN` v2, «El crisol» (A.5): la brasa de «El pedernal» prende y el nodo sale de una bola de luz. A.5 queda en 7 de 15.
 

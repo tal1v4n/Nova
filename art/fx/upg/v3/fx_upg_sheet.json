@@ -1,0 +1,28 @@
+{
+ "cellSize": 96,
+ "frames": 6,
+ "fps": 12,
+ "rows": [
+  "player_str2",
+  "player_str3",
+  "player_str4",
+  "player_str5",
+  "player_pul2",
+  "player_pul3",
+  "player_mag2",
+  "player_mag3",
+  "player_mag4",
+  "player_mag5",
+  "enemy_str2",
+  "enemy_str3",
+  "enemy_str4",
+  "enemy_str5",
+  "enemy_pul2",
+  "enemy_pul3",
+  "enemy_mag2",
+  "enemy_mag3",
+  "enemy_mag4",
+  "enemy_mag5"
+ ],
+ "note": "sobre el nodo mejorado; la fila, por bando, tipo y nivel nuevo (str 2-5, pul 2-3, mag 2-5); pivote en el centro del nodo"
+}
