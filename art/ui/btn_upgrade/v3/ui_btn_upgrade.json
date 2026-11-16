@@ -1,0 +1,32 @@
+{
+ "width": 192,
+ "height": 20,
+ "cellHeight": 22,
+ "pressedDrop": 2,
+ "capTop": 3,
+ "padX": 6,
+ "plateCell": 20,
+ "plateBorder": 6,
+ "plateCenterMode": "tiled",
+ "plateColumns": [
+  "normal",
+  "hover",
+  "pressed",
+  "missing",
+  "blocked"
+ ],
+ "ductY": 16,
+ "ductX0": 3,
+ "ductX1": 189,
+ "ductTile": 8,
+ "flowFrames": 32,
+ "ductRows": [
+  "flow",
+  "full",
+  "hover",
+  "flash",
+  "missingDots",
+  "sealed"
+ ],
+ "note": "conducto de ductX0 a ductX1 en las filas ductY y ductY+1; listo: la fila flow, que corre; encima: hover; pulsado: flash y 2 px abajo; falta: missingDots por todo el largo y full encima en round(largo * Energia / coste); bloqueado: sealed en esa fraccion y missingDots en el resto; maximo: sin placa, el texto centrado y sealed de x 23 a 169 debajo"
+}

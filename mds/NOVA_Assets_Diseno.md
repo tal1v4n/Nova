@@ -1433,13 +1433,33 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 |---|---|---|---|---|
 | `ART-UI-HUD-ENERGY` | Número de Energía sobre el nodo | Legible sobre cualquier estado (14.7). Cifras propias de plasma con un pulso que corre por el trazo; el neutral, quieto | `art/ui/energy_label/v3/ui_energy_label_player_sheet.png`, `ui_energy_label_enemy_sheet.png`, `ui_energy_label_neutral.png` y `ui_energy_label.json` | ✅ |
 | `ART-UI-PANEL` | Panel de clic derecho | 6 bloques de [13.3](./NOVA_GameDesign_Spec.md#133-panel-de-clic-derecho). Una lectura en trama con esquinas del bando, unida al nodo por un cable de plasma; el alto sigue al contenido | `art/ui/info_panel/v2/ui_info_panel_screen.png`, `ui_info_panel_corner.png`, `ui_info_panel_edge.png`, `ui_info_panel_tether.png`, `ui_info_panel_pulse.png`, `ui_info_panel_socket.png` y `ui_info_panel.json` | ✅ |
-| `ART-UI-BTN-UPG` | Botón de mejora | Estados normal / deshabilitado con coste en rojo / `NIVEL MÁXIMO` | `art/ui/ui_btn_upgrade.png` | ⬜ |
+| `ART-UI-BTN-UPG` | **Icono de mejora sobre el nodo** (era el botón del panel; 13.13) | Aviso y listo difuminados, activo al 100 % con el cursor sobre el nodo, encima y pulsado | `art/ui/upgrade_icon/v3/ui_upgrade_icon_sheet.png` y `ui_upgrade_icon.json` | ✅ |
 | `ART-UI-BTN-CONV` | Botón de reconversión | **Dos** destinos con coste: nunca a Asteroide ni al propio tipo ([13.3](./NOVA_GameDesign_Spec.md#133-panel-de-clic-derecho) #5) | `art/ui/ui_btn_convert.png` | ⬜ |
 | `ART-UI-IGN-MENU` | Menú radial de encendido | 3 opciones: Estrella, Púlsar, Magnetar | `art/ui/ui_ignition_menu.png` | ⬜ |
 | `ART-UI-WHEEL` | Rueda de poderes del Púlsar | 3 ranuras fijas + candado con nivel requerido ([13.5](./NOVA_GameDesign_Spec.md#135-rueda-de-poderes-del-púlsar)) | `art/ui/ui_power_wheel.png` | ⬜ |
 | `ART-UI-CHARGE` | Barra de carga bajo el Púlsar | **Visible también en el Púlsar enemigo** ([7.5](./NOVA_GameDesign_Spec.md#75-agujero-de-gusano)). Una mecha con el dibujo del haz del poder que arde hacia una llama; pausada, brasa; lista, estrella | `art/ui/charge_bar/v3/ui_charge_fuse_sheet.png`, `ui_charge_flame_sheet.png`, `ui_charge_socket.png`, `ui_charge_track.png` y `ui_charge.json` | ✅ |
 | `ART-UI-POWERBAR` | Barra de poder inferior | El **reparto** de Energía entre los dos bandos: cian desde la izquierda, magenta desde la derecha, sin parte vacía ni neutral | `art/ui/power_bar/v1/ui_power_bar_frame.png`, `ui_power_bar_fill_sheet.png`, `ui_power_bar_front_sheet.png` y `ui_power_bar.json` | ✅ |
 | `ART-UI-TOPBAR` | Cronómetro, nivel, pausa | [13.6](./NOVA_GameDesign_Spec.md#136-hud-permanente). El texto va en TextMeshPro; el arte es la sombra tramada detrás y el botón de pausa | `art/ui/topbar/v3/ui_topbar_plate.png`, `ui_topbar_pause_sheet.png` y `ui_topbar.json` | ✅ |
+
+### `ART-UI-BTN-UPG` — el icono de mejora sobre el nodo
+
+![ART-UI-BTN-UPG v3](../art/_preview/ui_upgrade_icon/v3/estados_x4.png)
+
+**Diseño cerrado: «El sello», v3** (elegida por el usuario el 2026-11-16). Generador: `tools/gen_upgicon_v3.py` → `art/ui/upgrade_icon/v3/`; vistas en `art/_preview/ui_upgrade_icon/v3/` (una Estrella propia en los cinco estados a ×4; los iconos activos a ×6; el nivel 9 a 1080p con la Estrella propia activa y el Magnetar propio listo; `--gif` para la secuencia entera: la Energía sube, aparece el aviso, llega el cursor, pasa al icono y pulsa). Comparativa de las tres en `art/_preview/ui_upgrade_icon/comparativa_x3.png`.
+
+- **Ya no es un botón del panel** ([13.13](./NOVA_GameDesign_Spec.md#1313-icono-de-mejora), [18](./NOVA_GameDesign_Spec.md#18-decisiones-tomadas-por-defecto) #54). El usuario lo cambió al ver las tres propuestas del botón: se mejora desde un icono encima del nodo. El ID se conserva; el elemento es otro.
+- **Cuándo y cómo** (13.13). Solo en un nodo propio mejorable —ni Congelado, ni Reconvirtiendo, ni al máximo—. **Aviso**, difuminado, de `coste − 5` a `coste − 1`; **listo**, difuminado, con el coste y el cursor fuera del nodo; **activo**, al 100 %, con el cursor sobre el nodo, y solo entonces el clic izquierdo sobre el icono mejora. Encima del icono, **encima**; al pulsar, **pulsado**.
+- **El difuminado** es el icono tramado al 50 % con la Bayer, no opacidad: el alfa es binario.
+- **El sitio.** Centrado encima de la huella, a 2 px, en la capa 6 de 14.7. **16 px de alto como mucho**: es lo que deja una Estrella de nivel 4 (huella 68), el nodo mejorable más grande, en y = 3 u, el más alto de los nueve niveles, antes de la barra de arriba. El generador lo comprueba contra los nueve assets de nivel.
+- **El dibujo: un botón de verdad, en pequeño.** Un rombo de 13 × 13 —15 × 15 con el contorno— con el lenguaje de 13.12: relleno `#11142A`, filo en el ancla cian y un chevron de 7 × 2 px en `str_p[1]`. **Activo**, lanza un **sonar** —el patrón de 13.12 para «lo que toca hacer ahora»—: dos paréntesis de luz salen de los costados del rombo y se apagan al alejarse, cada 1.33 s; solo hacia los lados, porque arriba está la barra y abajo el nodo. **Encima**, el rombo se llena de cian y el chevron pasa a oscuro, como el botón primario de 13.12; **pulsado**, igual y 1 px más abajo.
+- **Las piezas.** `ui_upgrade_icon_sheet.png`: fila = estado (aviso, listo, activo, encima, pulsado), columna = frame (16, a 12 fps), celdas de 23 × 16 con el rombo centrado. El mismo icono para los tres tipos y todos los niveles. `ui_upgrade_icon.json`: celda, frames, margen del aviso, pivote abajo al centro y la zona que se pulsa, el rombo de 15 × 15, no el sonar.
+- **El generador falla** si algún icono pasa de 24 × 16, si el alfa no es binario, si sale un color fuera de `str_p`, `CONTORNO`, `#11142A` y `#0B0E1A`, si activo, encima y pulsado no se distinguen, si el difuminado no quita al menos el 40 % o si el icono pisa la barra de arriba en alguno de los nueve niveles. La regla, el sitio, las comprobaciones y las vistas viven en `gen_upgicon_v1.py` y las tres propuestas los comparten.
+
+**Propuesta v1, «La flecha»** (2026-11-16, **descartada**; se conserva por A.1). `tools/gen_upgicon_v1.py` → `art/ui/upgrade_icon/v1/`. Una flecha gruesa hacia arriba en cian, con luz y sombra, que respira 1 px. La más directa y la más genérica.
+
+**Propuesta v2, «Los peldaños»** (2026-11-16, **descartada**; se conserva por A.1). `tools/gen_upgicon_v2.py` → `art/ui/upgrade_icon/v2/`. Una escalera con un peldaño por nivel del tipo: los que tiene, llenos; el siguiente, el que compra el clic, llenándose de blanco. La que más dice, y la que más se parece a un icono de cobertura.
+
+**El botón de mejora, descartado entero** (2026-11-16; se conserva por A.1). Antes del cambio de regla se propusieron tres botones para la cuarta fila del panel, con los seis estados —normal, encima, pulsado, sin Energía, bloqueado y `NIVEL MÁXIMO`—: v1 «La tecla» (el secundario de 13.12 con el patrón «Carga»), v2 «Los corchetes» (cuatro corchetes que se cierran) y v3 «El conducto» (un conducto de plasma con la Energía sobre el coste). `tools/gen_btnupg_v1.py` a `v3.py` → `art/ui/btn_upgrade/v1/` a `v3/`. Vuelven a la mesa solo si la mejora vuelve al panel.
 
 ### `ART-UI-PANEL` — el panel de clic derecho
 
@@ -1547,8 +1567,10 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
 | A.5 VFX | 15 | **15** ✅ | — (ya no bloquea `T6-07`) |
-| A.6 UI | **9** | **5** | Pulido de UI de partida (`T6-09`; ya no bloquea `T6-08`) |
-| **Total** | **134** | **130** | — |
+| A.6 UI | **9** | **6** | Pulido de UI de partida (`T6-09`; ya no bloquea `T6-08`) |
+| **Total** | **134** | **131** | — |
+
+**Y los ✅ suben de 130 a 131 el 2026-11-16** con el icono de mejora, `ART-UI-BTN-UPG` v3, «El sello» (A.6): el botón de mejora del panel pasa a ser un icono encima del nodo (13.13, 18 #54), un rombo con un chevron que lanza un sonar cuando se puede pulsar. A.6 queda en 6 de 9; a `T6-09` le faltan tres, y el icono lo integra `T6-15`.
 
 **Y los ✅ suben de 129 a 130 el 2026-11-16** con el panel de clic derecho, `ART-UI-PANEL` v2, «La sonda» (A.6): una lectura en trama con las esquinas del bando, unida al nodo por un cable de plasma con su pulso, y con el alto ajustado a sus filas. A.6 queda en 5 de 9; a `T6-09` le faltan cuatro.
 

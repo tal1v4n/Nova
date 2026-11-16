@@ -605,6 +605,7 @@ El clic izquierdo significa una cosa u otra **según haya o no una selección ac
 |---|---|
 | **Arrastre derecho** desde nodo propio que puede enviar hasta destino | Envío al 50% **desde ese único origen**, sea cual sea la selección activa. En cuanto el cursor supera el umbral de arrastre aparece la **línea de envío**, que lo sigue hasta soltar. Se envía **al soltar** sobre el destino, **sin pasar por el buffer** de doble clic. Soltar en vacío o sobre el propio origen no envía nada y la línea desaparece |
 | **Arrastre izquierdo** (lazo), empiece donde empiece | Selección múltiple de nodos propios **que puedan enviar**. Los Asteroides quedan fuera: no son orígenes legales ([5.2](#52-envío)). El lazo **sustituye** a la selección activa, no se suma a ella. Empezarlo sobre un nodo ya no envía nada: el envío por arrastre es del botón derecho |
+| **Clic izquierdo** sobre el **icono de mejora** activo de un nodo propio | Mejora el nodo ([13.13](#1313-icono-de-mejora)). Es del icono: no selecciona, no envía y no cambia la selección |
 | **Clic derecho** sobre cualquier nodo | Abre el panel de información y mejoras ([13.3](#133-panel-de-clic-derecho)) |
 | **Clic derecho** en vacío | Cancela la selección y cierra el panel |
 | **Esc** | Menú de pausa ([13.10](#1310-menú-de-pausa)), si no hay apuntado, menú de encendido ni panel que cerrar antes |
@@ -668,18 +669,18 @@ Contiene, en este orden:
 1. Tipo y **nivel** actual (`Estrella · Nivel 3`).
 2. Energía actual / tope.
 3. **Velocidad de ataque** (ver 13.4).
-4. Botón de **mejora** con su coste, si el nodo no está al nivel máximo y si es propio. Si está al máximo, se muestra `NIVEL MÁXIMO` y el botón desaparece.
+4. **Mejora**: el coste del nivel siguiente como información (`Mejora: 40`), si el nodo no está al nivel máximo y si es propio. Si está al máximo, `NIVEL MÁXIMO`. **No es un botón**: se mejora desde el icono sobre el nodo ([13.13](#1313-icono-de-mejora), [18](#18-decisiones-tomadas-por-defecto) #54).
 5. Botón de **reconversión** con **los dos destinos posibles** y su coste, **si es propio**. Son dos y no tres: [8.1](#81-reglas) prohíbe volver a Asteroide, y un nodo no se reconvierte a su propio tipo. Los tres sí son correctos en el menú de *encendido*, que es otra cosa ([13.7](#137-menú-radial-de-encendido)).
 6. Si es un Púlsar propio: rueda de poderes ([13.5](#135-rueda-de-poderes-del-púlsar)). **Este panel es el único sitio desde el que se abre.**
 
-El botón de mejora se muestra **deshabilitado y con el coste en rojo** cuando no hay Energía suficiente, nunca oculto. El jugador necesita saber cuánto le falta.
+El coste de la mejora se muestra **siempre**, también sin Energía suficiente: el jugador necesita saber cuánto le falta. Hasta `T6-15` esta fila era un botón, deshabilitado y con el coste en rojo cuando faltaba Energía (18 #54).
 
 Cómo se comporta ([18](#18-decisiones-tomadas-por-defecto) #30, desde `T2-03`):
 
 - Se abre **a la derecha del nodo**, o a la izquierda si a la derecha no cabe, sin tapar su círculo. Lo abre el clic derecho sobre **cualquier** nodo, propio o no: de uno ajeno se ve la información, sin botones. Se abre **al soltar** y solo si no hubo arrastre; un arrastre derecho envía y no abre nada ([13.1](#131-ratón)).
 - `NIVEL MÁXIMO` sale en cualquier nodo que esté al máximo, sea de quien sea: es información.
-- Sigue abierto mientras se juega y se repinta al cambiar la Energía, el nivel, el tipo o el dueño del nodo; si lo capturan, pierde el botón. Lo cierran el clic derecho en vacío y `Esc`; el clic derecho sobre otro nodo lo lleva a ese nodo.
-- Un clic izquierdo **dentro** del panel es suyo y no llega a lo que haya debajo; el botón mejora sin tocar la selección y sin enviar nada. Fuera del panel, el clic izquierdo sigue su curso normal.
+- Sigue abierto mientras se juega y se repinta al cambiar la Energía, el nivel, el tipo o el dueño del nodo; si lo capturan, pierde los botones. Lo cierran el clic derecho en vacío y `Esc`; el clic derecho sobre otro nodo lo lleva a ese nodo.
+- Un clic izquierdo **dentro** del panel es suyo y no llega a lo que haya debajo; sus botones —reconversión y rueda— actúan sin tocar la selección y sin enviar nada. Fuera del panel, el clic izquierdo sigue su curso normal.
 - **El alto sigue al contenido** (`ART-UI-PANEL`, 2026-11-16): 8 de margen arriba y abajo y 24 por fila, así que el panel de un nodo ajeno mide tres filas y el de un Púlsar propio, nueve. El arte, en [A.6](./NOVA_Assets_Diseno.md#a6-ui--13); lo monta `T6-09`.
 - La reconversión (punto 5) llegó con `T2-07`: una fila «Reconvertir» con dos botones, uno por destino, con su coste, solo en nodos propios. Mientras dura, los botones dejan sitio a «Reconvirtiendo a …» ([18](#18-decisiones-tomadas-por-defecto) #33). La rueda (punto 6) llegó con `T3-07`: un rótulo con el estado de la carga, las tres ranuras y «Cancelar +N» en las tres últimas filas, solo en un Púlsar propio ([18](#18-decisiones-tomadas-por-defecto) #34 y #35).
 
@@ -845,6 +846,25 @@ Las dos entran sobre el tablero congelado, con el mismo velo de trama que la pau
 
 Los seis patrones de la maqueta, con su sitio: **Ignición** (entrada escalonada), **Flujo** (energía que corre por el plasma), **Sonar** (lo que toca hacer ahora), **Carga** (el botón secundario se llena al pasar el ratón), **Cascada** (conversión por distancia, 10.1) y **Señal perdida** (una sola vez, al entrar la derrota).
 
+### 13.13 Icono de mejora
+
+**La mejora se hace desde un icono encima del nodo, no desde el panel** ([18](#18-decisiones-tomadas-por-defecto) #54, decidido con el usuario el 2026-11-16). El panel de clic derecho enseña el coste como información (13.3, punto 4).
+
+El icono solo existe en un **nodo propio que pueda mejorarse**: no al nivel máximo, ni Congelado, ni Reconvirtiendo ([18](#18-decisiones-tomadas-por-defecto) #18). En un nodo del Enemigo o neutral no aparece nunca. Si se cumple eso, su estado lo dan la Energía del nodo y el cursor:
+
+| Energía del nodo | Cursor | Icono | ¿Se pulsa? |
+|---|---|---|---|
+| Menos de `coste − 5` | — | No aparece | — |
+| De `coste − 5` a `coste − 1` | — | **Aviso**: difuminado | No |
+| `coste` o más | Fuera del nodo | **Listo**: difuminado | No |
+| `coste` o más | Sobre el nodo | **Activo**: al 100 % | **Sí** |
+
+- **Se mejora con clic izquierdo sobre el icono activo.** El clic es del icono: no selecciona, no envía y no cambia la selección, haya o no una activa. El resto del nodo conserva su clic de 13.1.
+- **«Sobre el nodo»** es sobre su huella o sobre el propio icono, para que el icono no se apague al subir el cursor hasta él.
+- El margen de 5 es un número de balance y vive en `BalanceConfig` (16.1).
+- **Difuminado no es opacidad**: el alfa del proyecto es binario, así que es el icono tramado al 50 %, como los velos de 13.12.
+- Va centrado encima de la huella, a 2 px, en la capa 6 de [14.7](./NOVA_Estados_Animaciones.md#147-prioridad-visual). Sobre el icono activo hay dos estados más: **encima** (el cursor sobre el icono) y **pulsado**. El arte es `ART-UI-BTN-UPG`, «El sello» ([A.6](./NOVA_Assets_Diseno.md#a6-ui--13)); lo integra `T6-15`.
+
 ---
 
 ## 14. Feedback visual y estados
@@ -939,7 +959,7 @@ Assets/
 | `NodeDefinition.cs` | Tipo, tope, **coste de reconversión** ([16.4](#164-reconversión): depende del tipo de origen), nº de niveles, array de `NodeLevelData` y **el arte de cada nivel** (`NodeLevelArt`: un sprite por facción y la huella sólida, que da el radio del collider de clic), que no se escribe a mano: lo asigna *Nova → Arte → Asignar sprites de nodo* (`NodeArtAssets`) desde lo que copia `ArtBridge` (`T6-01`). **Sin prefab:** los cuatro tipos comparten `Assets/Prefabs/Node.prefab`, porque un nodo cambia de tipo sin cambiar de objeto (encendido, reconversión) |
 | `NodeLevelData.cs` | `[Serializable] struct`: coste de mejora, intervalo de generación, radio, cadencia |
 | `PowerDefinition.cs` | Tipo, coste, tiempo de carga, duración del haz, nivel requerido, color del haz ([14.4](./NOVA_Estados_Animaciones.md#144-paleta-funcional)) y, con la fase 6, VFX. El drenaje se calcula como coste / tiempo de carga (`T3-01`). **Sin campo de alcance:** el alcance es global y por tanto no es un parámetro de balance ([7.2](#72-tabla-de-poderes)). |
-| `BalanceConfig.cs` | Velocidad del protón, daño por disparo del Magnetar, multiplicador del Magnetar, buffer de doble clic, duración de reconversión, auto-deshielo, tasa de decaimiento, **coste de encendido, Materia Inerte, umbral de susto y devolución al cancelar una carga** (los cuatro, de 16.1), **ventana de expiración del power-up** (9.1, `T5-04`) y duración de la cascada de conquista (10.1, `T5-03`) |
+| `BalanceConfig.cs` | Velocidad del protón, daño por disparo del Magnetar, multiplicador del Magnetar, buffer de doble clic, duración de reconversión, auto-deshielo, tasa de decaimiento, **coste de encendido, Materia Inerte, umbral de susto y devolución al cancelar una carga** (los cuatro, de 16.1), **ventana de expiración del power-up** (9.1, `T5-04`) y duración de la cascada de conquista (10.1, `T5-03`), y **margen del aviso de mejora** (5, 13.13, `T6-15`) |
 | `LevelDefinition.cs` | Lista de `NodeSpawnData`, referencia a `EnemyProfile`, config de drops, duración objetivo, **las mecánicas que el nivel permite** ([11.1](#111-estructura)): tipos que se pueden encender, poderes que se pueden cargar y si se puede reconvertir, y **el fondo de su mapa** (`BackgroundDefinition`, `T5-05b`) |
 | `BackgroundDefinition.cs` | El fondo con movimiento de un mapa ([NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md), A.4.5): su material, las texturas de datos que lee, los parámetros de cada capa —velocidades, periodos, amplitudes— y los del ovni: ruta, velocidad e intervalo de 60–120 s. **No se escribe a mano**: lo genera `BackgroundAssets` desde lo que exporta `tools/gen_fondos_v2.py`, que es la referencia. Tres instancias, una por mapa, en `Assets/Data/Backgrounds/` (`T5-05b`) |
 | `NodeSpawnData.cs` | `[Serializable] struct`: posición, tipo, nivel, facción, energía inicial |
@@ -1277,6 +1297,7 @@ Reglas que no estaban en el diseño original y que se añadieron para cerrar hue
 | 50 | **Con la partida congelada, los sonidos de la partida se quedan quietos** —pausa o fin de nivel, `Time.timeScale = 0`— y siguen donde iban al reanudar. La música de los menús no se ve afectada: en `Game` no suena ([NOVA_Sonido.md](./NOVA_Sonido.md), S.6) | Es la regla del tablero en [15.8](#158-presentation), *Tiempo de la UI y pausa*: en pausa nada corre. Un sonido que siguiera diría que el juego corre. Decidido con el usuario el 2026-11-02 (`T6-14`) |
 | 51 | **Un impacto que solo avanza el deshielo también enseña el daño** (`ART-FX-DMG`): `ImpactResult.ThawProgress` le quita Energía al nodo congelado igual que `Damaged`, y el hielo solo no lo decía. Vale para protones de cualquier bando, porque en un nodo congelado todos drenan ([7.3](#73-cero-absoluto)). Decidido con el usuario el 2026-11-16 ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #57) |
 | 52 | **El arco del Magnetar acaba en el borde de la bolsa del protón**, no en su centro: el último píxel de la punta cae en `bagRadiusPixels` de su talla, así que el trazo no pasa por detrás de las cifras de la Carga ni se lee como un signo menos. Sin `ProtonArt`, el contacto sigue en el centro. Decidido con el usuario el 2026-11-16 ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #56) |
+| 54 | **La mejora se hace desde un icono encima del nodo, no desde un botón del panel** (13.13). Aparece difuminado desde `coste − 5`; con el coste alcanzado sigue difuminado hasta que el cursor está sobre el nodo, y entonces, al 100 %, el clic izquierdo sobre el icono mejora. Solo en nodos propios que puedan mejorarse: nunca Congelados, Reconvirtiendo, al máximo, del Enemigo ni neutrales. El panel deja la fila como información (`Mejora: 40` o `NIVEL MÁXIMO`) | Pedido por el usuario el 2026-11-16, al ver las tres propuestas del botón de mejora: se mejora donde se mira, encima del nodo, y el aviso de −5 dice que ya casi. Cómo se combinan el aviso y el cursor, el gesto, la fila del panel y el caso bloqueado se cerraron con él el mismo día. Lo implementa `T6-15` |
 | 53 | **El botón de pausa del HUD abre la pausa sin cerrar antes nada**, a diferencia de `Esc`, que cierra primero el apuntado, el menú de encendido o el panel (13.10). Lo que estuviera abierto se queda congelado con la partida y sigue ahí al reanudar. Una pulsación que empieza en el botón es suya: si se suelta dentro pausa, y si no, no hace nada —ni lazo ni clic sobre el tablero—. Decidido al implementar `T6-08` el 2026-11-16; el usuario lo dio por bueno en Play |
 
 ---

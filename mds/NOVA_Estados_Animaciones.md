@@ -201,7 +201,7 @@ Cuando varios estados coexisten, este es el orden de capas de abajo a arriba:
 3. Aura de estado            Infectado
 4. Glifos y overlays         zzz (Dormido), brasa (SinEncender), FX-BUFF
 5. Sacudida de transform     Asustado
-6. Números y HUD             Energía, barra de carga del Púlsar
+6. Números y HUD             Energía, barra de carga del Púlsar, icono de mejora (13.13)
 7. Efectos puntuales         14.5
 ```
 

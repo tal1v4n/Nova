@@ -1,0 +1,45 @@
+{
+ "frames": 16,
+ "fps": 12,
+ "gap": 2,
+ "hintMargin": 5,
+ "pivot": "bottom-center",
+ "states": [
+  "aviso",
+  "listo",
+  "activo",
+  "encima",
+  "pulsado"
+ ],
+ "sheets": {
+  "estrella": {
+   "levels": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "cellWidth": 21,
+   "cellHeight": 16
+  },
+  "pulsar": {
+   "levels": [
+    1,
+    2
+   ],
+   "cellWidth": 13,
+   "cellHeight": 12
+  },
+  "magnetar": {
+   "levels": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "cellWidth": 21,
+   "cellHeight": 16
+  }
+ },
+ "note": "una hoja por tipo; fila = (nivel actual - 1) * 5 + estado; columna = frame; centrado sobre la huella, su borde de abajo a gap px de ella"
+}

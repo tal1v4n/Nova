@@ -1,0 +1,26 @@
+{
+ "width": 192,
+ "height": 20,
+ "cellHeight": 22,
+ "pressedDrop": 2,
+ "capTop": 5,
+ "padX": 6,
+ "cornerSize": 5,
+ "edgeTile": 2,
+ "columns": [
+  "normal",
+  "encima",
+  "falta",
+  "bloqueado"
+ ],
+ "pressedUses": "hover",
+ "pressedFill": "#11142A",
+ "hoverMs": 160,
+ "hoverCurve": [
+  0.2,
+  0.8,
+  0.2,
+  1.0
+ ],
+ "note": "normal, falta y bloqueado: solo las cuatro esquinas (espejadas); encima: los brazos crecen desde cada esquina por los cuatro bordes hasta la mitad con la orbital en 160 ms; pulsado: cerrado, relleno de panel por dentro y 2 px abajo; maximo: sin esquinas, el texto centrado entre dos filos de un punto cada 2 px en neutral[5], a 6 px del texto"
+}

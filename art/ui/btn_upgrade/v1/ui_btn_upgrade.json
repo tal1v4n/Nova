@@ -1,0 +1,37 @@
+{
+ "width": 192,
+ "height": 20,
+ "cellHeight": 22,
+ "pressedDrop": 2,
+ "capTop": 5,
+ "padX": 6,
+ "plateCell": 20,
+ "plateBorder": 6,
+ "plateCenterMode": "tiled",
+ "plateColumns": [
+  "normal",
+  "hover",
+  "pressed",
+  "missing",
+  "blocked"
+ ],
+ "fillTile": 8,
+ "fillSteps": 5,
+ "hoverMs": 160,
+ "hoverCurve": [
+  0.2,
+  0.8,
+  0.2,
+  1.0
+ ],
+ "chevronGap": 7,
+ "text": {
+  "normal": "#E2E6EF",
+  "hover": "#FFFFFF",
+  "hoverCost": "#E8FEFF",
+  "muted": "#8A93A6",
+  "cost": "#3FD7F5",
+  "missing": "#F2456B"
+ },
+ "note": "encima: la trama de carga entra de izquierda a derecha por dentro del marco con la orbital en 160 ms y se densifica de paso 1 a 5; pulsado: lleno en paso 5 y 2 px abajo; falta: coste en magenta como \u00ab40 \u00b7 faltan 6\u00bb; bloqueado: todo gris; maximo: sin placa, NIVEL MAXIMO centrado con un galon a 7 px de cada lado"
+}

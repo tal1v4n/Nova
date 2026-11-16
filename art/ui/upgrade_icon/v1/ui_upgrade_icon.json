@@ -1,0 +1,17 @@
+{
+ "cellWidth": 13,
+ "cellHeight": 16,
+ "frames": 16,
+ "fps": 12,
+ "rows": [
+  "aviso",
+  "listo",
+  "activo",
+  "encima",
+  "pulsado"
+ ],
+ "gap": 2,
+ "hintMargin": 5,
+ "pivot": "bottom-center",
+ "note": "fila = estado (aviso, listo, activo, encima, pulsado), columna = frame; el icono va centrado sobre la huella con su borde de abajo a gap px de ella; el mismo para los tres tipos y todos los niveles"
+}
