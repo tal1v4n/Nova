@@ -1,0 +1,20 @@
+{
+ "cellSize": 96,
+ "frames": 12,
+ "fps": 12,
+ "sizes": [
+  24,
+  28,
+  32,
+  36,
+  40
+ ],
+ "rows": [
+  "pwr_wrm_24",
+  "pwr_wrm_28",
+  "pwr_wrm_32",
+  "pwr_wrm_36",
+  "pwr_wrm_40"
+ ],
+ "note": "sobre el objetivo del haz de Agujero de Gusano, al terminar el haz, en el mismo tick de ChangeFaction: el nodo ya lleva su paleta nueva y state_captured_sheet suena a la vez, por encima de este efecto; la talla, la de world_select_tallas.json por la huella del nodo; una sola rampa (gusano), sin bando"
+}
