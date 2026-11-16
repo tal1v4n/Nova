@@ -1,0 +1,16 @@
+{
+ "width": 960,
+ "height": 12,
+ "x0": 0,
+ "x1": 960,
+ "snap": 1,
+ "tileWidth": 64,
+ "frames": 32,
+ "fps": 12,
+ "frontWidth": 16,
+ "frontContact": 8,
+ "fillRows": [
+  "player",
+  "enemy"
+ ]
+}

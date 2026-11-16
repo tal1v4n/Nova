@@ -1438,8 +1438,25 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-UI-IGN-MENU` | Menú radial de encendido | 3 opciones: Estrella, Púlsar, Magnetar | `art/ui/ui_ignition_menu.png` | ⬜ |
 | `ART-UI-WHEEL` | Rueda de poderes del Púlsar | 3 ranuras fijas + candado con nivel requerido ([13.5](./NOVA_GameDesign_Spec.md#135-rueda-de-poderes-del-púlsar)) | `art/ui/ui_power_wheel.png` | ⬜ |
 | `ART-UI-CHARGE` | Barra de carga bajo el Púlsar | **Visible también en el Púlsar enemigo** ([7.5](./NOVA_GameDesign_Spec.md#75-agujero-de-gusano)) | `art/ui/ui_charge_bar.png` | ⬜ |
-| `ART-UI-POWERBAR` | Barra de poder inferior | Dos colores, crece desde los extremos | `art/ui/ui_power_bar.png` | ⬜ |
+| `ART-UI-POWERBAR` | Barra de poder inferior | El **reparto** de Energía entre los dos bandos: cian desde la izquierda, magenta desde la derecha, sin parte vacía ni neutral | `art/ui/power_bar/v1/`: `ui_power_bar_frame.png`, `ui_power_bar_fill_sheet.png`, `ui_power_bar_front_sheet.png` y `ui_power_bar.json` | ✅ |
 | `ART-UI-TOPBAR` | Cronómetro, nivel, pausa | [13.6](./NOVA_GameDesign_Spec.md#136-hud-permanente) | `art/ui/ui_topbar.png` | ⬜ |
+
+### `ART-UI-POWERBAR` — la barra de poder
+
+![ART-UI-POWERBAR v1](../art/_preview/ui_power_bar/v1/barra_x2.png)
+
+**Diseño cerrado: «El conducto», v1** (elegida por el usuario el 2026-11-16). Generador: `tools/gen_powerbar_v1.py` → `art/ui/power_bar/v1/`; vistas en `art/_preview/ui_power_bar/v1/` (la barra a tres repartos, el frente a ×6 y el tablero a 1080p con los nodos más grandes en la fila más baja; `--gif` para el tablero y la barra en movimiento). Comparativa de las tres en `art/_preview/ui_power_bar/comparativa_x3.png`.
+
+- **Enseña el reparto, no dos cantidades.** La barra es la parte de cada bando sobre la suma de los dos: cian del Jugador desde la izquierda, magenta del Enemigo desde la derecha, y se tocan siempre en un **frente**. **No hay parte vacía ni color neutral** (confirmado por el usuario el 2026-11-16): el neutral no cuenta (13.6) y la barra solo maneja los dos bandos. Es la lectura de «más de la mitad» de la curva de poder (13.11).
+- **El sitio.** Abajo, de lado a lado de la pantalla de 960 × 540 y pegada al borde: **12 px de alto** (24 a 1080p). Los nodos más bajos de los nueve niveles están en y = −3 u, a 78 px del borde, y lo que cuelga de un nodo —media huella, número y barra de carga (18 #48)— llega a 61 px en el peor caso: quedan 17, y la barra no pisa ningún número.
+- **Las piezas.** `ui_power_bar_frame.png` (960 × 12), la carcasa fija: el marco de 13.12, 2 px de `str_p[6]` con la esquina en escalera, y el relleno de panel `#11142A`. `ui_power_bar_fill_sheet.png`, teselas de 64 × 12: fila 0 el Jugador y fila 1 el Enemigo, 32 frames a 12 fps en columnas (2.67 s, bucle de ambiente de 13.12). `ui_power_bar_front_sheet.png`, el frente, 16 × 12 y 32 frames, con el reparto en x = 8. El interior va de x0 = 4 a x1 = 956 y de la fila 2 a la 9 (`ui_power_bar.json`).
+- **Cómo se monta** (`T6-08`). El reparto cae en `x0 + round(reparto · (x1 − x0))`; a su izquierda va el relleno del Jugador y a su derecha el del Enemigo, los dos leídos por coordenada **absoluta**, la columna `(x − x0) % 64` de su tesela, para que la trama no salte cuando el frente se mueve. El frente se pega encima con su x = 8 en el reparto y lo sigue en continuo con la curva orbital de 13.12.
+- **El dibujo.** Dentro corre el plasma de cada bando en la rampa de su línea de envío (`plasma_p`, `plasma_e`): el cuerpo en el ancla, un hilo de 1 px en el índice 1 que se retuerce —dos armónicos a velocidades distintas— y paquetes en el índice 0, todo **fluyendo hacia el frente**: la energía de cada bando empuja hacia el otro. El Enemigo no es un espejo: es el mismo dibujo con la otra rampa y el sentido contrario. En el frente la costura arde en blanco, respira cada 0.67 s y salta tres chispas por frame; una vez cada cuatro frames, una rompe la carcasa por arriba o por abajo.
+- **El generador falla** si el alfa no es binario, si sale un color fuera de `plasma_p`, `plasma_e`, `str_p[6]` y `#11142A`, si una pieza no mide 12 de alto, si la tesela o el bucle no cierran, si se repite un frame o si el 50 % no cae en el centro de la pantalla. Las piezas, el montaje, las comprobaciones y las vistas viven en `gen_powerbar_v1.py` y las tres propuestas las comparten.
+
+**Propuesta v2, «El instrumento»** (2026-11-16, **descartada**; se conserva por A.1). `tools/gen_powerbar_v2.py` → `art/ui/power_bar/v2/`. Una regleta de celdas de 3 px en `str_p` y `str_e`, como un vúmetro, con un pulso que corre hacia el frente, una aguja clara por frente y marcas en el 25, el 50 y el 75 %. El frente avanza de celda en celda (`snap` = 4). La más quieta y la más «instrumento de a bordo».
+
+**Propuesta v3, «El horizonte»** (2026-11-16, **descartada**; se conserva por A.1). `tools/gen_powerbar_v3.py` → `art/ui/power_bar/v3/`. Sin caja: una línea caliente en el borde y un resplandor en trama que sube en lenguas hacia el otro bando; el frente es una columna de luz blanca. La que menos tapa el tablero y la menos precisa.
 
 ---
 
@@ -1455,8 +1472,10 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
 | A.5 VFX | 15 | **15** ✅ | — (ya no bloquea `T6-07`) |
-| A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **134** | **125** | — |
+| A.6 UI | **9** | **1** | Pulido de UI de partida (`T6-08`, que solo espera ya a `ART-UI-TOPBAR`, y `T6-09`) |
+| **Total** | **134** | **126** | — |
+
+**Y los ✅ suben de 125 a 126 el 2026-11-16** con la barra de poder, `ART-UI-POWERBAR` v1, «El conducto» (A.6): una tubería con el plasma de cada bando fluyendo hacia el frente, donde la costura arde y salta chispas. Es el primer asset de A.6; a `T6-08` solo le falta `ART-UI-TOPBAR`.
 
 **Y los ✅ suben de 124 a 125 el 2026-11-15** con la cascada de conquista, `ART-FX-CASCADE` v1, «Los fuegos artificiales» (A.5): cada nodo que se suma al ganar lanza un cohete que estalla sobre él. **A.5 queda cerrado, 15 de 15**, y `T6-07` deja de estar bloqueada por arte.
 

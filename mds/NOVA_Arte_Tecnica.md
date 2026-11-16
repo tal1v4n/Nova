@@ -482,7 +482,7 @@ versión y Unity hace de su mitad el radio del collider de clic (`T6-01`).
 
 ### Familias exentas de la celda
 
-Seis familias de asset no caben en 96×96 y tienen resolución propia. No
+Siete familias de asset no caben en 96×96 y tienen resolución propia. No
 violan la regla de no mezclar escalas porque **no comparten familia** con
 los nodos:
 
@@ -493,6 +493,7 @@ los nodos:
 | `art/world/world_proton_*` y `art/fx/kill/*` | 48×48 | Ver abajo. El protón destruido (`ART-FX-KILL`) ocupa el sitio del protón y usa su celda ([NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md), A.5). |
 | `art/world/aim/*` | **112×112** | La retícula de apuntado entra desde fuera del nodo (5 px de más) y, sobre la talla mayor de 40 px de radio libre, sus puntas llegan a 53 px del centro: en 96 tocaría el borde ([NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md), A.4.3). |
 | `art/fx/shot/*` y `art/fx/vanish/*` | **64×64** | El destello sobre el protón (`ART-FX-SHOT`) va colgado de un protón de 48, no de un nodo: en 96 sería media celda de aire. Las puntas largas de la talla mayor llegan a 30 px del centro, y 64 les deja 2 de margen. Los protones huérfanos (`ART-FX-VANISH`) ocupan el sitio del protón, pero su bolsa crece al deshacerse y en la talla mayor no cabría en 48 ([NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md), A.5). |
+| `art/ui/power_bar/*` | **960 × 12**; teselas de **64 × 12** y frente de **16 × 12** | La barra de poder va de lado a lado de la pantalla de 960 × 540 y cabe en los 17 px que quedan bajo el nodo más bajo. La carcasa es una pieza entera; los rellenos se leen por coordenada absoluta en teselas de 64 y el frente se pega encima ([NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md), A.6). |
 | Trazos estirables: `world_beam_*`, `world_link_sheet`, `world_radius_shot_*` | **16 px de alto**, largo variable | Unen dos puntos arbitrarios del tablero, de 1 u a 17.2 u, así que se dibujan por piezas (nacimiento, tramo y punta) y no por longitud. El tramo **se repite en mosaico**, también en los haces desde `ART-WLD-BEAM-ZER` (2026-11-01): estirado, un trazo con `Filter Mode: Point` pierde la rejilla ([NOVA_Assets_Diseno.md](./NOVA_Assets_Diseno.md), A.4.2 y A.4.6). |
 
 **El protón no escala de forma continua.** [14.3](./NOVA_Estados_Animaciones.md#143-protón)
