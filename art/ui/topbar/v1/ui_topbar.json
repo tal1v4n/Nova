@@ -1,0 +1,27 @@
+{
+ "margin": 4,
+ "top": 4,
+ "height": 20,
+ "plateWidthStep": 8,
+ "textAlign": "center",
+ "plateBorder": 6,
+ "plateCenterMode": "tiled",
+ "padX": 6,
+ "gap": 4,
+ "textCapTop": 5,
+ "textCapHeight": 10,
+ "letterSpacing": 1,
+ "levelText": "#E8FEFF",
+ "timerText": "#E8FEFF",
+ "timerTemplate": "00:00",
+ "pauseCell": [
+  20,
+  22
+ ],
+ "pauseStates": [
+  "normal",
+  "hover",
+  "pressed"
+ ],
+ "pressedDrop": 2
+}

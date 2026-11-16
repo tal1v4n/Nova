@@ -1439,7 +1439,26 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-UI-WHEEL` | Rueda de poderes del Púlsar | 3 ranuras fijas + candado con nivel requerido ([13.5](./NOVA_GameDesign_Spec.md#135-rueda-de-poderes-del-púlsar)) | `art/ui/ui_power_wheel.png` | ⬜ |
 | `ART-UI-CHARGE` | Barra de carga bajo el Púlsar | **Visible también en el Púlsar enemigo** ([7.5](./NOVA_GameDesign_Spec.md#75-agujero-de-gusano)) | `art/ui/ui_charge_bar.png` | ⬜ |
 | `ART-UI-POWERBAR` | Barra de poder inferior | El **reparto** de Energía entre los dos bandos: cian desde la izquierda, magenta desde la derecha, sin parte vacía ni neutral | `art/ui/power_bar/v1/`: `ui_power_bar_frame.png`, `ui_power_bar_fill_sheet.png`, `ui_power_bar_front_sheet.png` y `ui_power_bar.json` | ✅ |
-| `ART-UI-TOPBAR` | Cronómetro, nivel, pausa | [13.6](./NOVA_GameDesign_Spec.md#136-hud-permanente) | `art/ui/ui_topbar.png` | ⬜ |
+| `ART-UI-TOPBAR` | Cronómetro, nivel, pausa | [13.6](./NOVA_GameDesign_Spec.md#136-hud-permanente). El texto va en TextMeshPro; el arte es la sombra tramada detrás y el botón de pausa | `art/ui/topbar/v3/`: `ui_topbar_plate.png`, `ui_topbar_pause_sheet.png` y `ui_topbar.json` | ✅ |
+
+### `ART-UI-TOPBAR` — la barra de arriba
+
+![ART-UI-TOPBAR v3](../art/_preview/ui_topbar/v3/arriba_x3.png)
+
+**Diseño cerrado: «Las lecturas», v3** (elegida por el usuario el 2026-11-16). Generador: `tools/gen_topbar_v3.py` → `art/ui/topbar/v3/`; vistas en `art/_preview/ui_topbar/v3/` (el nivel 9 entero a 1080p con la barra de poder abajo, la franja de arriba a ×3 y las piezas a ×6). Comparativa de las tres en `art/_preview/ui_topbar/comparativa_x3.png`.
+
+- **Qué hay arriba (13.6).** A la izquierda, el nivel: `MAPA 2 · NIVEL 5`. A la derecha, el cronómetro con el tiempo transcurrido y el botón de pausa, que abre 13.10 como `Esc`.
+- **El texto no es arte.** Va en TextMeshPro con Jersey 10 a su tamaño nativo —mayúscula de 10 px de arte, mayúsculas espaciadas 1 px (13.12)—, como manda el contrato. El arte es lo que va detrás y alrededor: la placa y el botón. Las vistas pintan el texto con la propia fuente, en su rejilla.
+- **Sin aparato.** El nivel y el tiempo son lecturas, no mandos: van sobre el cielo, con una **sombra en trama Bayer** del color del espacio (`#0B0E1A`) detrás, densa en el centro y deshecha hacia los bordes, lo justo para que una estrella del fondo no se meta entre dos letras. La jerarquía va por color: el nivel en `neutral[2]`, secundario, y el tiempo en `neutral[1]`.
+- **El botón es el único mando y el único que se enciende.** El icono —dos barras de 3 × 10, a la altura de la mayúscula— en `neutral[1]` sobre su sombra; encima, el icono pasa a `str_p[2]` y aparece un anillo de 1 px en escalera en `str_p[3]`, el cian de lo que se puede hacer; pulsado, el icono baja 2 px (4 de pantalla, 13.12).
+- **El sitio.** 4 px de margen arriba y a los lados y 20 de alto: el HUD llega a 24 px del borde, y la celda de 96 de los nodos más altos de los nueve niveles (y = 3 u) no sube de 30. El generador lo comprueba contra los nueve assets de nivel.
+- **Las piezas.** `ui_topbar_plate.png` (20 × 20): nueve cortes con bordes de 6 —la escalera de 4 más 2—, el centro **en mosaico** (*Image Type: Tiled*), no estirado, para que la trama no se deforme. `ui_topbar_pause_sheet.png`: tres estados en columnas —normal, encima, pulsado—, celdas de 20 × 22. `ui_topbar.json`: márgenes, colores del texto y medidas.
+- **Cómo se monta** (`T6-08`). La placa del nivel mide su texto más 6 px a cada lado, con el centro redondeado hacia arriba a un múltiplo de 8 para que el mosaico entre entero, y el texto va centrado; la del cronómetro mide lo que `00:00`, para que no baile al cambiar de cifra. El cronómetro va a la izquierda del botón, a 4 px.
+- **El generador falla** si el alfa no es binario, si sale un color fuera de `neutral`, `str_p` y `#0B0E1A`, si las piezas no miden lo dicho, si dos estados del botón son iguales, si el texto no cabe con su aire, si un tiempo es más ancho que `00:00` o si el HUD pisa la celda de un nodo en alguno de los nueve niveles. Las piezas, el montaje, las comprobaciones y las vistas viven en `gen_topbar_v1.py` y las tres propuestas las comparten.
+
+**Propuesta v1, «Las placas»** (2026-11-16, **descartada**; se conserva por A.1). `tools/gen_topbar_v1.py` → `art/ui/topbar/v1/`. El botón secundario de 13.12 tal cual: panel, marco de 2 px en `str_p[6]` con la escalera y texto claro; encima el marco se aclara y pulsado baja. La de la misma familia que los menús y la carcasa de la barra de poder.
+
+**Propuesta v2, «Las pestañas»** (2026-11-16, **descartada**; se conserva por A.1). `tools/gen_topbar_v2.py` → `art/ui/topbar/v2/`. Las placas cuelgan del borde de arriba, sin marco arriba y con un filo en `str_p[5]`; el botón es otra pestaña, que encima enciende el filo en cian y pulsada se estira 2 px y se llena de cian.
 
 ### `ART-UI-POWERBAR` — la barra de poder
 
@@ -1472,8 +1491,10 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
 | A.5 VFX | 15 | **15** ✅ | — (ya no bloquea `T6-07`) |
-| A.6 UI | **9** | **1** | Pulido de UI de partida (`T6-08`, que solo espera ya a `ART-UI-TOPBAR`, y `T6-09`) |
-| **Total** | **134** | **126** | — |
+| A.6 UI | **9** | **2** | Pulido de UI de partida (`T6-09`; ya no bloquea `T6-08`) |
+| **Total** | **134** | **127** | — |
+
+**Y los ✅ suben de 126 a 127 el 2026-11-16** con la barra de arriba, `ART-UI-TOPBAR` v3, «Las lecturas» (A.6): el nivel y el tiempo sobre el cielo con una sombra en trama, y el botón de pausa como único mando que se enciende. A.6 queda en 2 de 9 y **`T6-08` deja de estar bloqueada por arte**.
 
 **Y los ✅ suben de 125 a 126 el 2026-11-16** con la barra de poder, `ART-UI-POWERBAR` v1, «El conducto» (A.6): una tubería con el plasma de cada bando fluyendo hacia el frente, donde la costura arde y salta chispas. Es el primer asset de A.6; a `T6-08` solo le falta `ART-UI-TOPBAR`.
 
