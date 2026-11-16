@@ -1,0 +1,67 @@
+{
+ "cell": 56,
+ "optionDistance": 64,
+ "clickRadius": 24,
+ "nameGap": 4,
+ "extent": 112,
+ "pressedDrop": 2,
+ "options": [
+  "estrella",
+  "pulsar",
+  "magnetar"
+ ],
+ "states": [
+  "normal",
+  "encima",
+  "pulsado",
+  "falta",
+  "nodisp"
+ ],
+ "enterMs": 320,
+ "staggerMs": 80,
+ "hoverMs": 160,
+ "curve": [
+  0.2,
+  0.8,
+  0.2,
+  1.0
+ ],
+ "text": {
+  "name": "#E2E6EF",
+  "nameHover": "#FFFFFF",
+  "cost": "#3FD7F5",
+  "costHover": "#E8FEFF",
+  "muted": "#8A93A6",
+  "missing": "#F2456B",
+  "unavailable": "#5D6580"
+ },
+ "pivot": "centro de la celda = centro de la opcion",
+ "key": 44,
+ "plateCell": 20,
+ "plateBorder": 6,
+ "plateCenterMode": "tiled",
+ "plateColumns": [
+  "normal",
+  "encima",
+  "pulsado",
+  "falta",
+  "nodisp"
+ ],
+ "fillTile": 8,
+ "fillSteps": 5,
+ "icon": 18,
+ "iconTop": 6,
+ "iconRows": [
+  "estrella",
+  "pulsar",
+  "magnetar"
+ ],
+ "iconColumns": [
+  "claro",
+  "encima",
+  "gris",
+  "apagado"
+ ],
+ "costCapTop": 29,
+ "note": "tecla de key x key centrada en la opcion (1 px mas arriba; pulsado, 1 px mas abajo); pictograma centrado arriba (claro; encima y pulsado, encima; falta, gris; nodisp, apagado) y el coste centrado debajo; encima: la trama de carga sube de abajo arriba por dentro del marco con la orbital en 160 ms, de paso 1 a 5"
+}

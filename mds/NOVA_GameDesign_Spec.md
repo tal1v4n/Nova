@@ -745,6 +745,7 @@ Tres opciones, siempre las mismas y siempre las tres, en el orden de [16.2](#162
 - Una opción deshabilitada no hace nada al pulsarla y **deja el menú abierto**, para que se siga viendo cuánto falta.
 - Un tipo que la partida todavía no tiene sale **deshabilitado, en gris y sin coste** ([18](#18-decisiones-tomadas-por-defecto) #29). Durante el desarrollo es el Magnetar hasta `T2-04` y el Púlsar hasta `T3-02`. En el juego, un tipo que el nivel no permite sale igual: el Púlsar en el mapa 1 ([11.1](#111-estructura), [18](#18-decisiones-tomadas-por-defecto) #36).
 - El panel de clic derecho de un Asteroide sigue siendo informativo: `DORMIDO` y el coste de encendido ([13.4](#134-traducción-de-velocidad-de-ataque)).
+- **Cómo se ve** (`ART-UI-IGN-MENU`, «Los nodos», [A.6](./NOVA_Assets_Diseno.md#a6-ui--13)). Cada opción es el sprite de nivel 1 del nodo que se va a encender, entre cuatro esquinas; sin Energía, tramado. El nombre va centrado en su opción, encima de la de arriba y debajo de las de abajo, y el coste en su misma línea: `Estrella 10`.
 
 El estado `SinEncender` ya avisa de cuál de las dos lecturas toca sin abrir nada: la brasa está quieta por debajo de 10 y crepita al llegar ([14.1](./NOVA_Estados_Animaciones.md#141-estados-del-nodo)).
 

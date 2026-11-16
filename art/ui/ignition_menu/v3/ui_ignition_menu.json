@@ -1,0 +1,80 @@
+{
+ "cell": 56,
+ "optionDistance": 64,
+ "clickRadius": 24,
+ "nameGap": 4,
+ "extent": 112,
+ "pressedDrop": 2,
+ "options": [
+  "estrella",
+  "pulsar",
+  "magnetar"
+ ],
+ "states": [
+  "normal",
+  "encima",
+  "pulsado",
+  "falta",
+  "nodisp"
+ ],
+ "enterMs": 320,
+ "staggerMs": 80,
+ "hoverMs": 160,
+ "curve": [
+  0.2,
+  0.8,
+  0.2,
+  1.0
+ ],
+ "text": {
+  "name": "#E2E6EF",
+  "nameHover": "#FFFFFF",
+  "cost": "#3FD7F5",
+  "costHover": "#E8FEFF",
+  "muted": "#8A93A6",
+  "missing": "#F2456B",
+  "unavailable": "#5D6580"
+ },
+ "pivot": "centro de la celda = centro de la opcion",
+ "key": 40,
+ "plateCell": 20,
+ "plateBorder": 6,
+ "plateCenterMode": "tiled",
+ "plateColumns": [
+  "normal",
+  "encima",
+  "pulsado",
+  "falta",
+  "nodisp"
+ ],
+ "icon": 18,
+ "iconTop": 4,
+ "iconRows": [
+  "estrella",
+  "pulsar",
+  "magnetar"
+ ],
+ "iconColumns": [
+  "claro",
+  "encima",
+  "gris",
+  "apagado"
+ ],
+ "costCapTop": 26,
+ "filament": {
+  "from": 23,
+  "to": 40,
+  "width": 2,
+  "frames": 32,
+  "fps": 12,
+  "rows": [
+   "flow",
+   "lit",
+   "hover",
+   "flash",
+   "missingDots"
+  ],
+  "missingDotEvery": 3
+ },
+ "note": "tecla de key x key centrada en la opcion, como la v1 sin la carga; el filamento va del centro del menu en la direccion de cada opcion, de from a to px, y crece con su opcion en la entrada; se puede: flow, un pulso hacia fuera cada 32 frames; encima: hover con dos pulsos; pulsado: flash; falta: lit hasta round((to - from) * Energia / 10) y missingDots en el resto; nodisp: sin filamento"
+}

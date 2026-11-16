@@ -1435,11 +1435,30 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-UI-PANEL` | Panel de clic derecho | 6 bloques de [13.3](./NOVA_GameDesign_Spec.md#133-panel-de-clic-derecho). Una lectura en trama con esquinas del bando, unida al nodo por un cable de plasma; el alto sigue al contenido | `art/ui/info_panel/v2/ui_info_panel_screen.png`, `ui_info_panel_corner.png`, `ui_info_panel_edge.png`, `ui_info_panel_tether.png`, `ui_info_panel_pulse.png`, `ui_info_panel_socket.png` y `ui_info_panel.json` | ✅ |
 | `ART-UI-BTN-UPG` | **Icono de mejora sobre el nodo** (era el botón del panel; 13.13) | Aviso difuminado; listo con el relleno difuminado y el sonar nítido; activo al 100 % con el cursor sobre el nodo; encima con el borde en blanco, y pulsado | `art/ui/upgrade_icon/v3/ui_upgrade_icon_sheet.png` y `ui_upgrade_icon.json` | ✅ |
 | `ART-UI-BTN-CONV` | Botón de reconversión | **Dos** destinos con coste: nunca a Asteroide ni al propio tipo ([13.3](./NOVA_GameDesign_Spec.md#133-panel-de-clic-derecho) #5). Encima, un frente lo barre y lo deja primario; sin Energía, el frente se para donde llega la Energía y lo que falta va en magenta | `art/ui/btn_convert/v2/ui_btn_convert_plate.png`, `ui_btn_convert_front.png`, `ui_btn_convert_fill.png` y `ui_btn_convert.json` | ✅ |
-| `ART-UI-IGN-MENU` | Menú radial de encendido | 3 opciones: Estrella, Púlsar, Magnetar | `art/ui/ui_ignition_menu.png` | ⬜ |
+| `ART-UI-IGN-MENU` | Menú radial de encendido | 3 opciones: Estrella, Púlsar, Magnetar. Cada una es el sprite de nivel 1 del nodo entre cuatro esquinas; sin Energía, tramado; el coste en la línea del nombre | `art/ui/ignition_menu/v2/ui_ignition_menu_corner.png`, `ui_ignition_menu_nodes.png` y `ui_ignition_menu.json` | ✅ |
 | `ART-UI-WHEEL` | Rueda de poderes del Púlsar | 3 ranuras fijas + candado con nivel requerido ([13.5](./NOVA_GameDesign_Spec.md#135-rueda-de-poderes-del-púlsar)) | `art/ui/ui_power_wheel.png` | ⬜ |
 | `ART-UI-CHARGE` | Barra de carga bajo el Púlsar | **Visible también en el Púlsar enemigo** ([7.5](./NOVA_GameDesign_Spec.md#75-agujero-de-gusano)). Una mecha con el dibujo del haz del poder que arde hacia una llama; pausada, brasa; lista, estrella | `art/ui/charge_bar/v3/ui_charge_fuse_sheet.png`, `ui_charge_flame_sheet.png`, `ui_charge_socket.png`, `ui_charge_track.png` y `ui_charge.json` | ✅ |
 | `ART-UI-POWERBAR` | Barra de poder inferior | El **reparto** de Energía entre los dos bandos: cian desde la izquierda, magenta desde la derecha, sin parte vacía ni neutral | `art/ui/power_bar/v1/ui_power_bar_frame.png`, `ui_power_bar_fill_sheet.png`, `ui_power_bar_front_sheet.png` y `ui_power_bar.json` | ✅ |
 | `ART-UI-TOPBAR` | Cronómetro, nivel, pausa | [13.6](./NOVA_GameDesign_Spec.md#136-hud-permanente). El texto va en TextMeshPro; el arte es la sombra tramada detrás y el botón de pausa | `art/ui/topbar/v3/ui_topbar_plate.png`, `ui_topbar_pause_sheet.png` y `ui_topbar.json` | ✅ |
+
+### `ART-UI-IGN-MENU` — el menú radial de encendido
+
+![ART-UI-IGN-MENU v2](../art/_preview/ui_ignition_menu/v2/casos_x2.png)
+
+**Diseño cerrado: «Los nodos», v2** (elegida por el usuario el 2026-11-16). Generador: `tools/gen_ignmenu_v2.py` → `art/ui/ignition_menu/v2/`; vistas en `art/_preview/ui_ignition_menu/v2/` (tres casos sobre un Asteroide propio —se puede pagar, falta Energía y el mapa 1 sin Púlsar—, a ×2; el nivel 9 a 1080p con el menú abierto; `--gif` para la entrada, el cursor que llega y la pulsación). Comparativa de las tres en `art/_preview/ui_ignition_menu/comparativa_x2.png`.
+
+- **Qué es** ([13.7](./NOVA_GameDesign_Spec.md#137-menú-radial-de-encendido)). El menú que abre el clic izquierdo sobre un Asteroide propio, centrado en el cursor: Estrella, Púlsar y Magnetar, siempre las tres y en el orden de 16.2, en el sentido de las agujas del reloj desde arriba.
+- **La geometría es la de `IgnitionMenuState`.** Cada opción a 64 px del centro (1 u), a 90°, −30° y 210°, con un círculo de clic de 24 px de radio; el menú entero cabe en su `Extent` de 112 px. **El nombre** va centrado en la x de su opción, encima de la de arriba y debajo de las de abajo, con la mayúscula a 4 px del círculo de clic: «hacia fuera» en diagonal, como lo pone hoy `IgnitionMenu`, pisa la propia opción en las dos de abajo.
+- **Cada opción es lo que vas a tener.** El **sprite real del nodo de nivel 1 del Jugador** (A.2: la Estrella v1, el Púlsar v2 y el Magnetar v1), en una celda de 72 × 72 —el Púlsar llega a 65 de ancho con los haces—. Sin tecla: **cuatro esquinas** de 7 × 7 y 2 px de grueso, como las de «La sonda», enmarcan el círculo de clic (48 × 48), y los haces del Púlsar asoman por fuera.
+- **El coste va en la línea del nombre**, `Estrella 10`, a 4 px, porque dentro taparía el nodo: en `str_p[3]`, en `str_p[1]` encima y pulsado, y en magenta sin Energía.
+- **Los estados.** **Normal**: el nodo entero y las esquinas en `str_p[5]`. **Encima**: las esquinas se cierran 2 px sobre el nodo con la orbital en 160 ms y se encienden en `str_p[2]`, y el nombre pasa a `str_p[0]`. **Pulsado**: cerradas 3 px, en `str_p[1]`, y el nodo baja 2 px. **Sin Energía** (`MissingEnergy`): el nodo **tramado al 50 %** con la Bayer —aún no es tuyo—, las esquinas en `neutral[5]`, el nombre en gris y el coste en magenta. **No disponible** (`Unavailable`, 18 #29, #36): solo el contorno del nodo en `neutral[4]`, sin esquinas ni coste.
+- **La entrada** (patrón «Ignición» de 13.12). Cada opción sale del centro hacia su sitio con la orbital en 320 ms, con 80 ms de escalonado; el nombre aparece al llegar.
+- **Las piezas.** `ui_ignition_menu_corner.png`: la esquina de arriba a la izquierda, una columna por estado —normal, encima, pulsado, falta—; las otras tres se reflejan. `ui_ignition_menu_nodes.png`: fila = tipo; columnas entero, tramado y contorno, de 72 × 72, sacadas de los sprites de nivel 1. `ui_ignition_menu.json`: geometría, colores del texto y montaje. Lo integra `T6-09`.
+- **El generador falla** si el alfa no es binario, si sale un color fuera de los tres sprites, `str_p`, `str_e`, `neutral`, `#11142A` y `#0B0E1A`, si una opción no mide su celda o toca su borde, si dos estados son iguales, si el pulsado no baja, si el recorte corta un sprite, si sin Energía no hay magenta o lo hay donde no falta nada, si el menú se sale del `Extent`, si un nombre pisa una opción o si `Magnetar 10` se sale. La geometría, los estados, los pictogramas de la v1 y la v3, la entrada, las comprobaciones y las vistas viven en `gen_ignmenu_v1.py` y las tres propuestas los comparten.
+
+**Propuesta v1, «Las teclas»** (2026-11-16, **descartada**; se conserva por A.1). `tools/gen_ignmenu_v1.py` → `art/ui/ignition_menu/v1/`. Tres teclas de 44 px de 13.12 con un pictograma de 18 px del tipo —un sol, un núcleo con dos conos, un núcleo entre dos lazos— y el coste dentro; encima, la trama «Carga» sube de abajo arriba. La más sobria.
+
+**Propuesta v3, «Las mechas»** (2026-11-16, **descartada**; se conserva por A.1). `tools/gen_ignmenu_v3.py` → `art/ui/ignition_menu/v3/`. Teclas de 40 px con el pictograma, unidas al Asteroide por un filamento de `plasma_p` con un pulso que corre hacia fuera; sin Energía, encendido solo hasta `Energía / 10` y el resto en puntos magenta.
 
 ### `ART-UI-BTN-CONV` — el botón de reconversión
 
@@ -1587,8 +1606,10 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
 | A.5 VFX | 15 | **15** ✅ | — (ya no bloquea `T6-07`) |
-| A.6 UI | **9** | **7** | Pulido de UI de partida (`T6-09`; ya no bloquea `T6-08`) |
-| **Total** | **134** | **132** | — |
+| A.6 UI | **9** | **8** | Pulido de UI de partida (`T6-09`; ya no bloquea `T6-08`) |
+| **Total** | **134** | **133** | — |
+
+**Y los ✅ suben de 132 a 133 el 2026-11-16** con el menú radial de encendido, `ART-UI-IGN-MENU` v2, «Los nodos» (A.6): cada opción es el sprite de nivel 1 del nodo que vas a tener, entre cuatro esquinas; sin Energía, tramado. A.6 queda en 8 de 9; a `T6-09` solo le falta `ART-UI-WHEEL`.
 
 **Y los ✅ suben de 131 a 132 el 2026-11-16** con el botón de reconversión, `ART-UI-BTN-CONV` v2, «El barrido» (A.6): encima, un frente barre el botón y lo deja primario, como la reconversión barre el nodo; sin Energía, el frente se para donde llega la Energía y lo que falta va en magenta. A.6 queda en 7 de 9; a `T6-09` le faltan dos.
 

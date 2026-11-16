@@ -1,0 +1,68 @@
+{
+ "cell": 72,
+ "optionDistance": 64,
+ "clickRadius": 24,
+ "nameGap": 4,
+ "extent": 112,
+ "pressedDrop": 2,
+ "options": [
+  "estrella",
+  "pulsar",
+  "magnetar"
+ ],
+ "states": [
+  "normal",
+  "encima",
+  "pulsado",
+  "falta",
+  "nodisp"
+ ],
+ "enterMs": 320,
+ "staggerMs": 80,
+ "hoverMs": 160,
+ "curve": [
+  0.2,
+  0.8,
+  0.2,
+  1.0
+ ],
+ "text": {
+  "name": "#E2E6EF",
+  "nameHover": "#FFFFFF",
+  "cost": "#3FD7F5",
+  "costHover": "#E8FEFF",
+  "muted": "#8A93A6",
+  "missing": "#F2456B",
+  "unavailable": "#5D6580"
+ },
+ "pivot": "centro de la celda = centro de la opcion",
+ "frame": 48,
+ "corner": 7,
+ "cornerColumns": [
+  "normal",
+  "hover",
+  "pressed",
+  "missing"
+ ],
+ "cornerInset": 1,
+ "hoverClose": 2,
+ "pressedClose": 3,
+ "nodesRows": [
+  "estrella",
+  "pulsar",
+  "magnetar"
+ ],
+ "nodesColumns": [
+  "full",
+  "dithered",
+  "outline"
+ ],
+ "nodeSprites": {
+  "estrella": "art/nodes/estrella/v1/str_lvl1_player.png",
+  "pulsar": "art/nodes/pulsar/v2/pul_lvl1_player.png",
+  "magnetar": "art/nodes/magnetar/v1/mag_lvl1_player.png"
+ },
+ "costInLabel": true,
+ "costGap": 4,
+ "note": "el nodo de 48 x 48 centrado en la opcion (1 px arriba; pulsado, 1 px abajo); cuatro esquinas reflejadas a cornerInset del borde de la celda, que se cierran hoverClose px con la orbital en 160 ms al pasar el raton y pressedClose al pulsar; falta: el nodo dithered y la esquina missing; nodisp: el nodo outline, sin esquinas; el coste va en la linea del nombre, a costGap px"
+}
