@@ -42,19 +42,25 @@ namespace Nova.Presentation
         public const int Proton = 7;
         public const int ProtonCharge = 8;
 
-        // 14.7, capa 7: los efectos puntuales. Capturado es el primero que tiene arte (ART-ST-CAP).
-        public const int NodeEffect = 9;
+        // 14.7, capa 7: los efectos puntuales de A.5 (VFXPool, T6-07), por encima de los protones y de su Carga:
+        // el destello del disparo cae sobre el número del protón alcanzado, sin pisarlo.
+        public const int PointEffect = 9;
+
+        // Y encima de ellos, Capturado (ART-ST-CAP), que NodeAnimator dibuja colgado del nodo. Va encima a
+        // propósito: el impacto del Agujero de Gusano y la cascada de conquista arrancan en el mismo frame que
+        // él y se dibujan debajo de sus dos anillos (A.5). Desde T6-07 todo lo de aquí arriba sube 1.
+        public const int NodeEffect = 10;
 
         // Por encima de los protones: el disparo y el haz provisionales, rectas de color liso. Con arte, el
         // arco del Magnetar (T6-05) y el haz de poder (T6-11) son trazos de la capa 0 (Strokes).
-        public const int MagnetarShot = 10;
-        public const int Beam = 11;
+        public const int MagnetarShot = 11;
+        public const int Beam = 12;
 
         // T6-06. El anillo de selección va detrás del nodo y asoma por fuera, como el radio del Magnetar, pero
         // encima de él: un Magnetar propio seleccionado enseña los dos (A.4.3). La retícula de apuntado va sobre
         // el objetivo y el lazo sobre todo el tablero, por debajo de la UI de partida (20 y 30).
         public const int SelectionRing = BehindNode + 1;
-        public const int AimReticle = 12;
-        public const int Lasso = 13;
+        public const int AimReticle = 13;
+        public const int Lasso = 14;
     }
 }

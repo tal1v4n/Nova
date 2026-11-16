@@ -643,6 +643,8 @@ cambian por segundo, que es cuánto movimiento hay.
 | Compression | None |
 | Pivot | Bottom para lo que se apoya, Center para el resto |
 
+**Las hojas de A.5 son rejillas** (`T6-07`): `fx_<efecto>_sheet.png`, en celdas de 48, 64 o 96 según el efecto, con una fila por caso y las variantes en columnas. `SpriteImportRules` las corta con la celda que dice el `.json` que el generador deja al lado —`ArtBridge` copia los dos— y llama a cada celda `<hoja>_<fila>_<columna>`, con la fila 0 arriba. Qué es cada fila lo dice el mismo `.json` (`rows`), y `VfxArt` elige por ese nombre.
+
 Números de juego (vida, puntaje, valores) no se hornean en el sprite: van
 en un objeto hijo con TextMeshPro. La sombra de suelo es un sprite aparte.
 

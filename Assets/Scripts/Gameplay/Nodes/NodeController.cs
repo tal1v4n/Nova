@@ -165,7 +165,7 @@ namespace Nova.Gameplay
                 Freezer.NotifyImpact();
 
             if (outcome.CuresInfection)
-                Cure();
+                Cure(CureReason.Impact);
 
             if (outcome.FactionChanged)
                 Ownership.ChangeFaction(outcome.NewFaction);
@@ -231,15 +231,15 @@ namespace Nova.Gameplay
                 else
                     StateMachine.SetFlag(NodeStateFlags.Frozen, false);
             }
-            Cure();
+            Cure(CureReason.Wormhole);
             Ownership.ChangeFaction(thief);
         }
 
         // Como Thaw: sin NodeDecay, la bandera la ha puesto un test a mano y la cura la quita igual.
-        void Cure()
+        void Cure(CureReason reason)
         {
             if (Decay != null)
-                Decay.Cure();
+                Decay.Cure(reason);
             else
                 StateMachine.SetFlag(NodeStateFlags.Infected, false);
         }

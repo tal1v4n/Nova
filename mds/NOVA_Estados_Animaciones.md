@@ -205,6 +205,8 @@ Cuando varios estados coexisten, este es el orden de capas de abajo a arriba:
 7. Efectos puntuales         14.5
 ```
 
+**Dentro de la capa 7, Capturado va encima de los demás efectos** (`T6-07`): el impacto del Agujero de Gusano y la cascada de conquista arrancan en el mismo frame que `ART-ST-CAP` y se dibujan debajo de sus dos anillos ([A.5](./NOVA_Assets_Diseno.md#a5-vfx-puntuales--145)). Los efectos de A.5 van además por encima de los protones y de su Carga.
+
 **Por encima de los siete, la entrada** (`T6-06`, A.4.3): la retícula de apuntado sobre su objetivo y, encima de todo el tablero, el lazo. Los dos son del cursor, no del nodo, y solo existen mientras dura el gesto. La UI de partida sigue por encima. La atenuación del modo apuntado no es una capa: multiplica el color de las capas 1–4 de lo que no es objetivo y deja intacta la 6.
 
 El número de Energía **nunca se oculta**, en ningún estado. Es la información que el jugador lee más veces por partida.

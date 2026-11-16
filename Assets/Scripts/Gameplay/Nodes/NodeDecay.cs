@@ -5,6 +5,14 @@ using UnityEngine;
 
 namespace Nova.Gameplay
 {
+    // Por qué se quita el Decaimiento, como ThawReason con el hielo. FX-CURE solo va con la Energía que
+    // llega (14.5): el Agujero de Gusano también lo quita (7.5), pero eso es una captura.
+    public enum CureReason
+    {
+        Impact = 0,   // Cura: cualquier Energía recibida por impacto (7.4)
+        Wormhole = 1, // Lo captura un Agujero de Gusano o la cascada de conquista (7.5, 10.1)
+    }
+
     // Estado Infectado (7.4, 15.5, T3-05): pone y quita la bandera Infected y resta la Energía
     // del Decaimiento. La cura la calcula ImpactResolver (CuresInfection) y la aplica NodeController.
     //
@@ -36,7 +44,7 @@ namespace Nova.Gameplay
 
         // Al infectarse (también al reiniciarse) y al curarse.
         public event Action OnInfected;
-        public event Action OnCured;
+        public event Action<CureReason> OnCured;
 
         // Efecto de Decaimiento. Quien lo llama ya validó el objetivo (7.2.1, 7.2.2) y, si se estaba
         // reconvirtiendo, ya canceló la reconversión: 14.6 no deja convivir las dos banderas.
@@ -49,14 +57,15 @@ namespace Nova.Gameplay
             OnInfected?.Invoke();
         }
 
-        // Cura (7.4): cualquier Energía recibida por impacto, de la facción que sea.
-        public void Cure()
+        // Cura (7.4): cualquier Energía recibida por impacto, de la facción que sea. El Agujero de Gusano la
+        // quita también al capturar (7.5), y lo dice con su motivo.
+        public void Cure(CureReason reason = CureReason.Impact)
         {
             if (!IsInfected)
                 return;
             elapsedMicros = 0;
             Node.SetStateFlag(NodeStateFlags.Infected, false);
-            OnCured?.Invoke();
+            OnCured?.Invoke(reason);
         }
 
         void FixedUpdate()

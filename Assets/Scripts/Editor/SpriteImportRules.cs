@@ -18,6 +18,10 @@ namespace Nova.Editor
     // T6-04: las hojas del protón y las cifras de la Carga tampoco son tiras de frames cuadrados, y no
     // llevan el sufijo _sheet porque A.4.2 las nombra sin él. Se cortan por su nombre (ver abajo).
     //
+    // T6-07: las quince hojas de A.5 (fx_<efecto>_sheet) tampoco: son rejillas de filas por columnas, y la
+    // celda no siempre mide 96 —el protón usa 48 y 64—. La mide el .json que el generador deja al lado, y que
+    // ArtBridge copia con la hoja.
+    //
     // T5-05b: las texturas de datos de los fondos con movimiento no son sprites. Los campos y los
     // puntos son números —densidades y fracciones a 8 bits— y se leen en lineal; lo fijo es color y
     // se lee en sRGB, como un sprite. Ninguna se filtra ni se comprime, y el alfa es dato: no se trata
@@ -37,8 +41,8 @@ namespace Nova.Editor
         const int MaxTextureSize = 8192;
 
         // Subirla reimporta todo lo que pasa por aquí. 1: las texturas de datos (T5-05b); 2: todo en 2D;
-        // 3: el protón y las cifras (T6-04); 4: el protón en diez tallas; 5: el lazo (T6-06).
-        public override uint GetVersion() => 5;
+        // 3: el protón y las cifras (T6-04); 4: el protón en diez tallas; 5: el lazo (T6-06); 6: las hojas de A.5 (T6-07).
+        public override uint GetVersion() => 6;
 
         void OnPreprocessTexture()
         {
@@ -146,12 +150,49 @@ namespace Nova.Editor
         const int DigitWidth = 7;
         const int DigitCount = 10;
 
+        // ART-FX-* (A.5): fx_<efecto>_sheet.png, una rejilla de celdas cuadradas. Cada frame se llama
+        // <hoja>_<fila>_<columna>, con la fila 0 arriba como en el generador; qué es cada fila y cada columna lo
+        // dice el mismo .json, y lo lee NodeArtAssets.
+        static readonly Regex EffectSheetPattern = new Regex(@"^fx_[a-z_]+_sheet$");
+
+        [System.Serializable]
+        sealed class EffectSheetExport
+        {
+            public int cellSize;
+        }
+
+        // La celda de una hoja de A.5, del .json que la acompaña, o 0 si no está.
+        static int EffectCellSize(string assetPath)
+        {
+            string json = System.IO.Path.ChangeExtension(assetPath, ".json");
+            if (!System.IO.File.Exists(json))
+                return 0;
+            EffectSheetExport export = JsonUtility.FromJson<EffectSheetExport>(System.IO.File.ReadAllText(json));
+            return export != null ? export.cellSize : 0;
+        }
+
         static void SliceSheet(TextureImporter importer)
         {
             importer.GetSourceTextureWidthAndHeight(out int width, out int height);
             string baseName = System.IO.Path.GetFileNameWithoutExtension(importer.assetPath);
             SpriteRect[] rects;
-            if (ProtonSheetPattern.IsMatch(baseName))
+            if (EffectSheetPattern.IsMatch(baseName))
+            {
+                int cell = EffectCellSize(importer.assetPath);
+                if (cell <= 0 || width % cell != 0 || height % cell != 0)
+                {
+                    Debug.LogError($"[Nova] {importer.assetPath}: {width}x{height} no es una rejilla de celdas de {cell} (falta o no cuadra su .json).");
+                    return;
+                }
+                int rows = height / cell;
+                int columns = width / cell;
+                var center = new Vector2(0.5f, 0.5f);
+                // La fila 0 de la hoja es la de arriba; en la textura, y crece hacia arriba.
+                rects = Enumerable.Range(0, rows).SelectMany(row => Enumerable.Range(0, columns).Select(column =>
+                    Frame($"{baseName}_{row}_{column}", new Rect(column * cell, height - (row + 1) * cell, cell, cell), center)))
+                    .ToArray();
+            }
+            else if (ProtonSheetPattern.IsMatch(baseName))
             {
                 if (height != ProtonCell * 2 || width % ProtonCell != 0 || width / ProtonCell < ProtonDropSteps)
                 {

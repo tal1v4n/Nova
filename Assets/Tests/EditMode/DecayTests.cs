@@ -151,7 +151,7 @@ namespace Nova.Tests
             NodeController star = Node("Star", Faction.Enemy, 10);
             var seen = new List<string>();
             Decay(star).OnInfected += () => seen.Add("infected");
-            Decay(star).OnCured += () => seen.Add("cured");
+            Decay(star).OnCured += reason => seen.Add(reason == CureReason.Impact ? "cured" : "cured by wormhole");
 
             star.Infect();
             star.Infect();

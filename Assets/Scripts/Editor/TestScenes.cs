@@ -605,8 +605,14 @@ namespace Nova.Editor
             go.AddComponent<SendLineVisual>().Configure(input, sendLine); // T6-06
             go.AddComponent<ProvisionalProtonView>().Configure(protons, font);
             // T6-04: el protón con su arte. Sin ProtonArt asignado, el disco provisional sigue al mando.
-            go.AddComponent<ProtonVisual>().Configure(
-                AssetDatabase.LoadAssetAtPath<ProtonArt>(NodeArtAssets.ProtonArtPath), protons);
+            var protonArt = AssetDatabase.LoadAssetAtPath<ProtonArt>(NodeArtAssets.ProtonArtPath);
+            var protonVisual = go.AddComponent<ProtonVisual>();
+            protonVisual.Configure(protonArt, protons);
+            // T6-07: los efectos puntuales de A.5. Sin VfxArt asignado no se dibuja ninguno. El fin de nivel, que
+            // se añade después en las escenas que lo tienen, lo encuentra en este mismo objeto.
+            go.AddComponent<VFXPool>().Configure(
+                AssetDatabase.LoadAssetAtPath<VfxArt>(NodeArtAssets.VfxArtPath), input, protonArt, protonVisual,
+                registry, protons, beams);
             go.AddComponent<ProvisionalBeamView>().Configure(beams);
             // T6-11: el haz con su arte. Sin PowerBeamArt asignado, el trazo provisional sigue al mando.
             go.AddComponent<PowerBeamVisual>().Configure(

@@ -25,6 +25,36 @@ namespace Nova.Presentation
     //
     // Vive en el objeto Systems y no en cada protón, porque el protón vuelve al pool al llegar y su estela
     // tiene que sobrevivirle.
+    //
+    // T6-07: cuando un protón muere derribado o se queda huérfano, avisa con OnEnded de dónde estaba, de qué
+    // bando y talla era y en qué frame de su bucle iba: ART-FX-KILL y ART-FX-VANISH lo sustituyen sin salto
+    // desde ese frame (A.5), y los coloca VFXPool. El protón y su Carga dejan de dibujarse en ese mismo tick.
+    // Cómo acaba un vuelo que no llega: derribado por un Magnetar (6.3) o huérfano al perder su bando (10.1).
+    public enum ProtonFate
+    {
+        ShotDown = 0,
+        Vanished = 1,
+    }
+
+    // Lo que hace falta para sustituir al protón en su sitio (T6-07).
+    public readonly struct ProtonEnding
+    {
+        public readonly ProtonFate Fate;
+        public readonly Faction Faction;
+        public readonly int Size;       // talla de ProtonArt, de 0 a Sizes − 1
+        public readonly int LoopFrame;  // frame del bucle del cuerpo, de 0 a 15
+        public readonly Vector3 Position; // en píxel entero, donde estaba el cuerpo
+
+        public ProtonEnding(ProtonFate fate, Faction faction, int size, int loopFrame, Vector3 position)
+        {
+            Fate = fate;
+            Faction = faction;
+            Size = size;
+            LoopFrame = loopFrame;
+            Position = position;
+        }
+    }
+
     [DefaultExecutionOrder(100)] // Presentation, 15.10
     [DisallowMultipleComponent]
     public sealed class ProtonVisual : MonoBehaviour
@@ -52,6 +82,7 @@ namespace Nova.Presentation
             public float Age;
             public int DropsReleased;
             public float TraveledPixels;
+            public ProtonFate? Fate;
         }
 
         sealed class Drop
@@ -72,6 +103,9 @@ namespace Nova.Presentation
         int flights;
 
         public bool HasArt => art != null && art.IsComplete;
+
+        // Un protón derribado o huérfano, en el tick en que deja de dibujarse (T6-07).
+        public event Action<ProtonEnding> OnEnded;
 
         void LateUpdate()
         {
@@ -134,9 +168,27 @@ namespace Nova.Presentation
             visual.DropsReleased = 0;
             visual.TraveledPixels = 0f;
             visual.Root.gameObject.SetActive(true);
+            visual.Fate = null;
             visuals.Add(proton, visual);
+            proton.OnShotDown += HandleShotDown;
+            proton.OnVanished += HandleVanished;
             proton.OnFinished += HandleFinished;
         }
+
+        // Los dos llegan justo antes de OnFinished, con el protón todavía en su sitio.
+        void HandleShotDown(Proton proton) => MarkFate(proton, ProtonFate.ShotDown);
+
+        void HandleVanished(Proton proton) => MarkFate(proton, ProtonFate.Vanished);
+
+        void MarkFate(Proton proton, ProtonFate fate)
+        {
+            if (visuals.TryGetValue(proton, out Visual visual))
+                visual.Fate = fate;
+        }
+
+        // El frame del bucle que el cuerpo enseña ahora: el de Layout.
+        int LoopFrame(Visual visual) =>
+            (visual.FrameOffset + Mathf.FloorToInt(visual.Age * art.FramesPerSecond)) % art.FramesFor(visual.Faction, visual.Size).Body.Length;
 
         // OnFinished llega con el protón todavía en su sitio: se sueltan las gotas que falten hasta ahí y
         // la estela sigue apagándose sola.
@@ -146,12 +198,21 @@ namespace Nova.Presentation
             {
                 visual.TraveledPixels = Vector2.Distance(proton.Origin, proton.transform.position) * PixelsPerUnit;
                 ReleaseDrops(visual);
+                if (visual.Fate.HasValue)
+                {
+                    // La talla, la de la Carga que le queda: un derribado la tiene a 0 y cae en la primera.
+                    int size = art.SizeFor(Mathf.Max(proton.Charge, 1));
+                    OnEnded?.Invoke(new ProtonEnding(visual.Fate.Value, visual.Faction, size, LoopFrame(visual),
+                        Snap(proton.transform.position)));
+                }
                 End(visual);
             }
         }
 
         void End(Visual visual)
         {
+            visual.Proton.OnShotDown -= HandleShotDown;
+            visual.Proton.OnVanished -= HandleVanished;
             visual.Proton.OnFinished -= HandleFinished;
             visuals.Remove(visual.Proton);
             foreach (Drop drop in drops)

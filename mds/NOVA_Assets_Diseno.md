@@ -1146,7 +1146,7 @@ La v2 y la v3 son el dibujo de la v1 con otra rampa y la vaina más ancha: susti
 
 ## A.5 VFX puntuales — [14.5](./NOVA_Estados_Animaciones.md#145-animaciones-puntuales-sin-estado)
 
-Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `VFXPool`. Frames = `ceil(duración × 12)`; `FX-SHOT` es instantáneo y se resuelve con el mínimo de 2 frames.
+Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `VFXPool`, que los reproduce en partida desde `T6-07` con `Assets/Data/VfxArt.asset`. Frames = `ceil(duración × 12)`; `FX-SHOT` es instantáneo y se resuelve con el mínimo de 2 frames.
 
 **Cuatro `FX-*` de 14.5 no tienen asset aquí, y cada uno por su motivo:** `FX-CAP` reutiliza `ART-ST-CAP` (A.3.7), `FX-DROP` y `FX-BUFF` salen de A.4.4 y A.3.8, y **`FX-BEAM` sale de A.4.2** porque un haz no cabe en una celda de 96: une dos puntos arbitrarios del tablero y se dibuja estirando, no reproduciendo. `FX-SHAKE` tampoco tiene asset: es cámara, no dibujo.
 

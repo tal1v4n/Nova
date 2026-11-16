@@ -24,6 +24,8 @@ namespace Nova.Editor
     //
     // T6-11: y el de los haces de poder en PowerBeamArt —las tres hojas de A.4.2, una por poder, de
     // Assets/Sprites/world/beam_zero/, beam_decay/ y beam_wormhole/—.
+    //
+    // T6-07: y el de los efectos puntuales en VfxArt —las quince hojas de A.5, de Assets/Sprites/fx/—.
     public static class NodeArtAssets
     {
         public const string SpritesFolder = "Assets/Sprites/nodes";
@@ -35,6 +37,8 @@ namespace Nova.Editor
         public const string ProtonArtPath = "Assets/Data/ProtonArt.asset";
         public const string PowerBeamArtPath = "Assets/Data/PowerBeamArt.asset";
         public const string InputArtPath = "Assets/Data/InputArt.asset";
+        public const string VfxArtPath = "Assets/Data/VfxArt.asset";
+        public const string EffectsFolder = "Assets/Sprites/fx";
 
         // <hoja>_<n>: el nombre que SpriteImportRules da a cada frame.
         static readonly Regex FrameIndex = new Regex(@"_(\d+)$");
@@ -133,8 +137,16 @@ namespace Nova.Editor
                 return;
             }
             EditorUtility.SetDirty(input);
+
+            VfxArt effects = LoadOrCreate<VfxArt>(VfxArtPath);
+            if (!ConfigureVfx(effects, out string vfxError))
+            {
+                Debug.LogError($"[Nova] {vfxError}");
+                return;
+            }
+            EditorUtility.SetDirty(effects);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[Nova] Sprites, huellas y hojas de idle asignados a los {Nodes.Length} tipos de nodo, los overlays de estado a {StateArtPath}, el radio y el arco del Magnetar a {MagnetarArtPath}, el protón a {ProtonArtPath}, los haces de poder a {PowerBeamArtPath} y la línea, la selección, el lazo y la retícula a {InputArtPath}.");
+            Debug.Log($"[Nova] Sprites, huellas y hojas de idle asignados a los {Nodes.Length} tipos de nodo, los overlays de estado a {StateArtPath}, el radio y el arco del Magnetar a {MagnetarArtPath}, el protón a {ProtonArtPath}, los haces de poder a {PowerBeamArtPath}, la línea, la selección, el lazo y la retícula a {InputArtPath} y los quince efectos a {VfxArtPath}.");
         }
 
         static T LoadOrCreate<T>(string path) where T : ScriptableObject
@@ -285,6 +297,76 @@ namespace Nova.Editor
             public int ppu;
             public int aire;
             public int[] radios;
+        }
+
+        // T6-07: la hoja de un efecto de A.5 y su .json, tal como los copia ArtBridge: fx/<carpeta>/fx_<carpeta>_sheet.
+        public static string EffectSheetPath(string folder) => $"{EffectsFolder}/{folder}/fx_{folder}_sheet.png";
+        public static string EffectJsonPath(string folder) => $"{EffectsFolder}/{folder}/fx_{folder}_sheet.json";
+
+        // <hoja>_<fila>_<columna>: el nombre que SpriteImportRules da a cada celda de una hoja de A.5.
+        static readonly Regex CellIndex = new Regex(@"_(\d+)_(\d+)$");
+
+        // Una hoja de A.5: las filas, los frames y las variantes de su .json, y las celdas en el orden de la rejilla.
+        public static VfxArt.Sheet LoadEffectSheet(string folder, out string missing)
+        {
+            missing = null;
+            var json = AssetDatabase.LoadAssetAtPath<TextAsset>(EffectJsonPath(folder));
+            EffectExport export = json != null ? JsonUtility.FromJson<EffectExport>(json.text) : null;
+            if (export?.rows == null || export.rows.Length == 0 || export.frames < 1)
+            {
+                missing = EffectJsonPath(folder);
+                return default;
+            }
+            int variants = Math.Max(export.variants, 1);
+            int columns = export.frames * variants;
+            var cells = new Sprite[export.rows.Length * columns];
+            foreach (Sprite sprite in AssetDatabase.LoadAllAssetsAtPath(EffectSheetPath(folder)).OfType<Sprite>())
+            {
+                Match match = CellIndex.Match(sprite.name);
+                if (!match.Success)
+                    continue;
+                int row = int.Parse(match.Groups[1].Value);
+                int column = int.Parse(match.Groups[2].Value);
+                if (row < export.rows.Length && column < columns)
+                    cells[row * columns + column] = sprite;
+            }
+            var sheet = new VfxArt.Sheet(export.rows, export.frames, variants, cells);
+            if (!sheet.IsComplete)
+                missing = EffectSheetPath(folder);
+            return sheet;
+        }
+
+        // Las quince hojas de A.5, en el orden de su tabla.
+        public static bool ConfigureVfx(VfxArt effects, out string error)
+        {
+            error = null;
+            string missing = null;
+
+            VfxArt.Sheet Sheet(string folder)
+            {
+                VfxArt.Sheet sheet = LoadEffectSheet(folder, out string gap);
+                missing ??= gap;
+                return sheet;
+            }
+
+            effects.Configure(Sheet("shot"), Sheet("kill"), Sheet("vanish"), Sheet("send"), Sheet("abs"), Sheet("dmg"),
+                Sheet("ign"), Sheet("upg"), Sheet("thaw"), Sheet("cure"), Sheet("cast"), Sheet("pwr_zer"),
+                Sheet("pwr_dec"), Sheet("pwr_wrm"), Sheet("cascade"));
+
+            if (missing == null)
+                return true;
+            error = $"Falta {missing} o no está cortada: sincroniza con Nova → Arte → Sincronizar sprites desde art.";
+            return false;
+        }
+
+        // Lo que VfxArt necesita del .json de cada generador de A.5 (exporta()).
+        [Serializable]
+        sealed class EffectExport
+        {
+            public int cellSize;
+            public int frames;
+            public int variants;
+            public string[] rows;
         }
 
         // La talla va de 1 a N en el nombre del archivo, y de 0 a N − 1 en ProtonArt.

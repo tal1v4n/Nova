@@ -16,6 +16,10 @@ namespace Nova.Editor
     //
     // De una carpeta de versión se copian también sus JSON (T5-05b): los parámetros de los fondos con
     // movimiento, que lee BackgroundAssets. Sus subcarpetas no: ref/ es para los tests.
+    //
+    // T6-07: las filas de A.5 no llevan vista previa, así que no tienen ningún ../art/…png. Su ruta va entre
+    // comillas invertidas en la columna *Archivo*: `art/fx/<asset>/v<n>/<hoja>.png`. De esas se toman solo las
+    // versionadas, que se copian con su carpeta; las demás filas que citan así una ruta ya la enlazan también.
     public static class ArtBridge
     {
         const string InventoryPath = "mds/NOVA_Assets_Diseno.md";
@@ -27,6 +31,9 @@ namespace Nova.Editor
 
         // Ruta de arte dentro de una fila de tabla: ../art/<ruta>.png
         static readonly Regex ArtPathPattern = new Regex(@"\.\./art/([^)\s]+?\.png)");
+
+        // Ruta de arte entre comillas invertidas: `art/<ruta>.png` (T6-07).
+        static readonly Regex QuotedArtPathPattern = new Regex(@"`art/([^`\s]+?\.png)`");
 
         // art/<familia>/<asset>/v<n>/<archivo>. La versión desaparece del destino para que
         // cambiar de versión no cambie las rutas (ni los GUID) dentro de Unity.
@@ -102,10 +109,15 @@ namespace Nova.Editor
                 if (!IsDoneRow(line))
                     continue;
 
-                foreach (Match match in ArtPathPattern.Matches(line))
+                var paths = ArtPathPattern.Matches(line).Select(m => (path: m.Groups[1].Value, quoted: false))
+                    .Concat(QuotedArtPathPattern.Matches(line).Select(m => (path: m.Groups[1].Value, quoted: true)));
+                foreach (var (artPath, quoted) in paths)
                 {
-                    string artPath = match.Groups[1].Value;
                     Match versioned = VersionedPattern.Match(artPath);
+                    // Entre comillas también se escriben plantillas (`state_unlit_<faccion>.png`): sin versión
+                    // no hay carpeta que copiar, y el archivo suelto ya lo enlaza la misma fila.
+                    if (quoted && !versioned.Success)
+                        continue;
 
                     if (!versioned.Success)
                     {

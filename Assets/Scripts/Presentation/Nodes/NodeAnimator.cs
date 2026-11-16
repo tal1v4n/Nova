@@ -26,6 +26,12 @@ namespace Nova.Presentation
     // T6-03: el susto (14.2) es la capa 5 de 14.7, sin asset (T.7 #55): un salto corto hacia arriba al
     // empezar y un temblor de 1 px a los lados mientras dure, en píxeles enteros y sumados al cabeceo.
     // Corre en tiempo escalado y no se para con el hielo: un nodo congelado y asustado tiene que avisar (14.6).
+    //
+    // T6-07: los impactos de poder relevan a sus overlays (A.5). Mientras suena el de Cero Absoluto o el de
+    // Decaimiento, VFXPool le pide al animador que no dibuje el hielo o el aura (HoldOverlay): el último frame
+    // del impacto ya es el overlay, y el overlay entra en el frame siguiente. Por eso el aura lleva su propio
+    // reloj, que arranca en el frame 0 al infectarse y al acabar la espera, y no el del idle desfasado por la
+    // posición. Y la cura arranca del frame en que estaba el aura (InfectedLoopFrame).
     [DefaultExecutionOrder(100)] // Presentation, 15.10
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NodeController), typeof(NodeVisual))]
@@ -70,6 +76,11 @@ namespace Nova.Presentation
         double idleClock;          // segundos de idle: no corre congelado
         double captureClock = -1;  // segundos de Capturado, o < 0 si no se está reproduciendo
         double scareClock = -1;    // segundos de Asustado, o < 0 si no lo está
+        double infectedClock;      // segundos del aura de Infectado: su frame 0 es el de infectarse o el del relevo
+        bool wasInfected;
+        double frozenHold;         // segundos que el hielo espera a que acabe su impacto (T6-07)
+        double infectedHold;       // y el aura al suyo
+        int infectedLoopFrame;     // el frame del aura en el último Apply
         bool subscribed;
 
         public void Configure(BalanceConfig config, NodeStateArt stateArt)
@@ -89,6 +100,29 @@ namespace Nova.Presentation
         internal SpriteRenderer Buff { get { EnsureBuilt(); return buff; } }
         internal SpriteRenderer Effect { get { EnsureBuilt(); return effect; } }
         internal bool IsCapturePlaying => captureClock >= 0;
+
+        // El frame del bucle de Infectado que se dibujó por última vez, de 0 a 15. La cura (ART-FX-CURE) arranca
+        // de él: sigue valiendo en el tick en que la bandera se quita, que es cuando se pregunta.
+        public int InfectedLoopFrame => infectedLoopFrame;
+
+        // T6-07: no dibujar el overlay de Congelado o de Infectado durante tantos segundos, porque lo releva el
+        // impacto de su poder, que acaba en él (A.5). Al terminar, el aura arranca en su frame 0. Otra bandera
+        // no tiene impacto que la releve.
+        public void HoldOverlay(NodeStateFlags overlay, float seconds)
+        {
+            if (seconds < 0f)
+                throw new ArgumentOutOfRangeException(nameof(seconds), seconds, "La espera no es negativa.");
+            if (overlay == NodeStateFlags.Frozen)
+                frozenHold = seconds;
+            else if (overlay == NodeStateFlags.Infected)
+                infectedHold = seconds;
+            else
+                throw new ArgumentException("Solo Congelado e Infectado tienen un impacto que los releve.", nameof(overlay));
+            Apply();
+        }
+
+        internal bool IsHolding(NodeStateFlags overlay) =>
+            overlay == NodeStateFlags.Frozen ? frozenHold > 0 : overlay == NodeStateFlags.Infected && infectedHold > 0;
         internal bool IsScarePlaying => scareClock >= 0;
 
         void OnEnable()
@@ -122,6 +156,27 @@ namespace Nova.Presentation
                 scareClock = scareClock < 0 ? 0 : scareClock + deltaTime;
             else
                 scareClock = -1;
+            // El aura: su reloj arranca al infectarse. Si espera a su impacto, arranca al acabar la espera, con lo
+            // que se haya pasado de ella este frame, para ir al paso del efecto que la releva.
+            bool infected = Node.IsInitialized && Node.HasState(NodeStateFlags.Infected);
+            infectedClock = infected && wasInfected ? infectedClock + deltaTime : 0;
+            wasInfected = infected;
+            if (infectedHold > 0)
+            {
+                infectedHold -= deltaTime;
+                if (HoldEnded(infectedHold))
+                {
+                    infectedClock = Math.Max(0, -infectedHold);
+                    infectedHold = 0;
+                }
+            }
+            if (frozenHold > 0)
+            {
+                frozenHold -= deltaTime;
+                if (HoldEnded(frozenHold))
+                    frozenHold = 0;
+            }
+
             if (captureClock >= 0)
             {
                 captureClock += deltaTime;
@@ -169,6 +224,9 @@ namespace Nova.Presentation
         }
 
         static int FrameAt(double seconds) => (int)Math.Floor(seconds * FramesPerSecond + 1e-9);
+
+        // La espera acaba en el mismo frame en que acaba el impacto que la pidió: con la tolerancia de FrameAt.
+        static bool HoldEnded(double remaining) => remaining * FramesPerSecond <= 1e-9;
 
         static T Loop<T>(T[] frames, long frame) => frames[(int)(frame % frames.Length)];
 
@@ -221,10 +279,12 @@ namespace Nova.Presentation
 
             // Capa 2: los tintes.
             Show(convertTint, convertFrame >= 0 ? convertFrames[convertFrame] : null);
-            Show(frozenTint, Node.HasState(NodeStateFlags.Frozen) ? states.Frozen : null);
+            Show(frozenTint, Node.HasState(NodeStateFlags.Frozen) && frozenHold <= 0 ? states.Frozen : null);
 
-            // Capa 3: el aura.
-            Show(infectedAura, Node.HasState(NodeStateFlags.Infected) ? Loop(states.Decay, tick) : null);
+            // Capa 3: el aura, con su reloj.
+            infectedLoopFrame = (int)(FrameAt(infectedClock) % states.Decay.Length);
+            Show(infectedAura, Node.HasState(NodeStateFlags.Infected) && infectedHold <= 0
+                ? states.Decay[infectedLoopFrame] : null);
 
             // Capa 4: los glifos.
             Show(glyph, GlyphFor(tick));
