@@ -1156,7 +1156,7 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 |---|---|---|---|---|---|
 | `ART-FX-IGN` | Encendido | `art/fx/fx_ignition_sheet.png` | 0.6 s | 8 | ⬜ |
 | `ART-FX-UPG` | Mejora de nivel | `art/fx/fx_upgrade_sheet.png` | 0.5 s | 6 | ⬜ |
-| `ART-FX-SEND` | Lanzamiento | `art/fx/fx_send_sheet.png` | 0.2 s | 3 | ⬜ |
+| `ART-FX-SEND` | Lanzamiento | `art/fx/send/v1/fx_send_sheet.png`: **una hoja**, 10 filas (bando × talla de `ART-WLD-SEL`) | 0.2 s | 3 | ✅ |
 | `ART-FX-ABS` | Absorción aliada | `art/fx/fx_absorb_sheet.png` | 0.3 s | 4 | ⬜ |
 | `ART-FX-DMG` | Daño sin captura | `art/fx/fx_damage_sheet.png` | 0.3 s | 4 | ⬜ |
 | `ART-FX-SHOT` | Disparo del Magnetar: destello sobre el protón | `art/fx/shot/v3/fx_shot_sheet.png`: **una hoja**, 20 filas (bando × talla del protón) y 4 variantes | 0.17 s, como el arco | 2 | ✅ |
@@ -1222,6 +1222,22 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 
 **Propuesta v3, «Sin bandera»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_vanish_v3.py` → `art/fx/vanish/v3/`. En NOVA el color es el bando: en el primer frame el protón se vuelve gris neutral, entero, y después se deshace en trama. En la victoria, todos los protones enemigos pierden el color a la vez.
 
+### `ART-FX-SEND` — el lanzamiento
+
+![ART-FX-SEND v1](../art/_preview/fx_send/v1/fx_send_hoja_x3.png)
+
+**Diseño cerrado: «La onda», v1** (elegida por el usuario el 2026-11-15). Generador: `tools/gen_fx_send_v1.py` → `art/fx/send/v1/fx_send_sheet.png` y su `.json`; vistas en `art/_preview/fx_send/v1/` (`--gif` para el tablero, a velocidad real y a un cuarto: un lazo de tres nodos envía a la vez y el Enemigo responde). La comparativa de las tres propuestas, en `art/_preview/fx_send/comparativa_x3.png`.
+
+- **El envío es una onda.** Como la piedra en el agua: en el tick en que `ProtonLauncher` descuenta la Energía, un aro sale del borde del nodo y se aleja. **Golpe (frame 0):** un aro sólido de 1 px pegado al cuerpo, en el índice 1, con un velo de trama por dentro. **Onda (frames 1–2):** se aleja 3 px por frame, una banda y luego dos más apagado, y se va rompiendo en tramos.
+- **Quién envía:** Estrella, Púlsar y Magnetar del Jugador o del Enemigo ([5.2](./NOVA_GameDesign_Spec.md#52-envío)). Dos bandos, en el color del plasma que sale (`plasma_p`, `plasma_e`), el de la línea de envío y el protón; índices 1–5.
+- **Las tallas de «La órbita».** El nodo mide de 39 a 72 px de huella, así que el efecto usa las cinco tallas del anillo de selección (24–40 px de radio libre) con su `talla_de` por la huella: sale a la distancia a la que estaba el anillo. Hoja de 288 × 960 en celdas de 96: filas `player_24…40` y `enemy_24…40`, una columna por frame; lo dice `fx_send_sheet.json`.
+- **El número no se tapa y el cuerpo tampoco.** La Energía va justo debajo del nodo y es lo que acaba de bajar: el aro no entra en la franja de |x| ≤ 19 px bajo el centro, la misma que deja libre el anillo de selección, y se abre por abajo. Por eso no apunta al destino: un fogonazo hacia abajo caería sobre el número. Tampoco entra en el cuerpo del nodo; sí pasa por encima de la corona de la Estrella, que es luz.
+- **El generador falla** si sale un índice fuera de 1–5, si pisa la franja del número, si entra en el cuerpo, si toca el borde, si un frame está vacío o repetido, si el golpe no llega al índice 1 o si un frame no da menos luz que el anterior. Las comprobaciones, la hoja y las vistas viven en `gen_fx_send_v1.py` y las tres propuestas las comparten.
+
+**Propuesta v2, «Los tres cometas»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_send_v2.py` → `art/fx/send/v2/`. Los tres cometas de `ART-WLD-SEL` salen despedidos hacia fuera (−90°, 20° y 160°). La más ligera, pero a 1× sus cabezas de 2 × 2 apenas se ven.
+
+**Propuesta v3, «La corona»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_send_v3.py` → `art/fx/send/v3/`. El nodo se eriza con doce rayos cortos que se despegan y se apagan, girados 15° para que ninguno caiga en el número.
+
 ## A.6 UI — [13](./NOVA_GameDesign_Spec.md#13-controles-y-ui)
 
 
@@ -1253,9 +1269,11 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.3 Selección y apuntado | **4** | **4** ✅ | — (ya no bloquea `T6-06`) |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
-| A.5 VFX | 15 | **3** | `VFXPool`, fase 6 |
+| A.5 VFX | 15 | **4** | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **134** | **113** | — |
+| **Total** | **134** | **114** | — |
+
+**Y los ✅ suben de 113 a 114 el 2026-11-15** con el lanzamiento, `ART-FX-SEND` v1, «La onda» (A.5), el primero de los VFX sobre nodos: una hoja de diez filas, bando por talla de `ART-WLD-SEL`. A.5 queda en 4 de 15.
 
 **Y los ✅ suben de 112 a 113 el 2026-11-15** con los protones huérfanos, `ART-FX-VANISH` v1, «El vaho» (A.5): una hoja de veinte filas, bando por talla del protón, con 16 variantes que arrancan del frame de su bucle. Con ella quedan cerrados los tres VFX que se reproducen sobre el protón. A.5 queda en 3 de 15.
 
