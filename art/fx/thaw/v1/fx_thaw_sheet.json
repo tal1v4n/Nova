@@ -1,0 +1,20 @@
+{
+ "cellSize": 96,
+ "frames": 6,
+ "fps": 12,
+ "sizes": [
+  24,
+  28,
+  32,
+  36,
+  40
+ ],
+ "rows": [
+  "thaw_24",
+  "thaw_28",
+  "thaw_32",
+  "thaw_36",
+  "thaw_40"
+ ],
+ "note": "sobre el nodo que se deshiela, en el tick en que desaparece el overlay state_frozen_overlay; la talla, la de world_select_tallas.json por la huella del nodo; una sola rampa (hielo), sin bando; pivote en el centro"
+}

@@ -1161,7 +1161,7 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-FX-DMG` | Daño sin captura | `art/fx/dmg/v3/fx_dmg_sheet.png`: **una hoja**, 10 filas (bando del atacante × talla de `ART-WLD-SEL`) y 4 variantes | 0.3 s | 4 | ✅ |
 | `ART-FX-SHOT` | Disparo del Magnetar: destello sobre el protón | `art/fx/shot/v3/fx_shot_sheet.png`: **una hoja**, 20 filas (bando × talla del protón) y 4 variantes | 0.17 s, como el arco | 2 | ✅ |
 | `ART-FX-KILL` | Protón destruido | `art/fx/kill/v2/fx_kill_sheet.png`: **una hoja**, 2 filas (bando) y 16 variantes, una por frame del bucle del protón | 0.25 s | 3 | ✅ |
-| `ART-FX-THAW` | Deshielo | `art/fx/fx_thaw_sheet.png` | 0.5 s | 6 | ⬜ |
+| `ART-FX-THAW` | Deshielo | `art/fx/thaw/v1/fx_thaw_sheet.png`: **una hoja**, 5 filas (talla de `ART-WLD-SEL`), una sola rampa | 0.5 s | 6 | ✅ |
 | `ART-FX-CURE` | Cura de Decaimiento | `art/fx/fx_cure_sheet.png` | 0.4 s | 5 | ⬜ |
 | `ART-FX-CAST` | Lanzamiento de poder | `art/fx/fx_cast_sheet.png` | 0.4 s | 5 | ⬜ |
 | `ART-FX-PWR-ZER` | Impacto Cero Absoluto | `art/fx/fx_zero_impact_sheet.png` | 0.7 s | 9 | ⬜ |
@@ -1307,6 +1307,22 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 
 **Propuesta v3, «El salto cuántico»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_upg_v3.py` → `art/fx/upg/v3/`. Un nivel es una órbita del átomo de Bohr: un fotón alcanza al electrón en una órbita interior y, sin frame intermedio, aparece en la exterior. La idea más original, pero la elipse recordaba al anillo del Púlsar.
 
+### `ART-FX-THAW` — el deshielo
+
+![ART-FX-THAW v1](../art/_preview/fx_thaw/v1/fx_thaw_hoja_x3.png)
+
+**Diseño cerrado: «El deshielo», v1** (elegida por el usuario el 2026-11-15). Generador: `tools/gen_fx_thaw_v1.py` → `art/fx/thaw/v1/fx_thaw_sheet.png` y su `.json`; vistas en `art/_preview/fx_thaw/v1/` (`--gif` para el tablero, a velocidad real y a un cuarto: un Magnetar neutral, una Estrella del Enemigo y un Púlsar del Jugador se deshielan uno tras otro). La comparativa de las tres propuestas, en `art/_preview/fx_thaw/comparativa_x3.png` (`py tools/gen_fx_thaw_v1.py --comparativa`).
+
+- **El hielo se funde.** En el tick en que `NodeFreeze` quita la bandera —la Energía llega a 0 o pasan 30 s sin impactos ([7.3](./NOVA_GameDesign_Spec.md#73-cero-absoluto))— el overlay «El vidrio» (A.3.4) desaparece y en su sitio empieza este efecto. **La escarcha se va (frame 0):** quedan las trece grietas, sin su trama. **Se parten (frame 1):** cada línea se rompe en trazos de 2 px y cae 1 px. **Escurren (frames 2–4):** los trazos se recogen en gotas con cola que bajan a velocidades distintas y se apagan una banda por frame. **Se secan (frame 5):** quedan unas gotas sueltas.
+- **Arranca del vidrio, sin salto.** El frame 0 dibuja la red con la geometría de `gen_state_frozen_v3.py`, y el generador exige que conserve al menos el 80 % de sus píxeles de línea fuera de la caja del número (conserva el 100 %): sustituye al overlay como `ART-FX-KILL` sustituye al protón.
+- **Una sola rampa, sin bando.** `hielo`, la del overlay, índices 1–5. El overlay es uno para los trece congelables, también el Magnetar neutral, y el hielo no es de nadie. El blanco es de `FX-CAP`, que suena en el mismo tick si el deshielo acaba en captura.
+- **Una fila por talla, por el número.** El overlay baja hasta `y 76` y en los nodos chicos cae sobre el número; el deshielo no, nunca: lo que se deshiela es justo el nodo que se está vaciando, y el 0 es lo que el jugador mira. Se recorta contra la caja del número de su talla (3 px por encima del borde hacia abajo, la `franja` de `ART-FX-IGN`), y las gotas se secan antes de llegar a ella. Hoja de 576 × 480 en celdas de 96: filas `thaw_24…40`, una columna por frame; la talla, la `talla_de` de «La órbita» por la huella del nodo; lo dice `fx_thaw_sheet.json`.
+- **El generador falla** si sale un índice fuera de 1–5, si pisa la caja del número, si toca el borde, si un frame está vacío o repetido, si el frame 0 no arranca del vidrio o si el último no es el de menos luz y pasa de la cuarta parte del pico. Las comprobaciones, la hoja y las vistas viven en `gen_fx_thaw_v1.py` y las tres propuestas las comparten.
+
+**Propuesta v2, «La rotura»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_thaw_v2.py` → `art/fx/thaw/v2/`. El vidrio termina de romperse: la red se enciende entera y sus trece trozos salen despedidos girando. La más llamativa y la que más se movía en mitad de un asedio.
+
+**Propuesta v3, «La soldadura»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_thaw_v3.py` → `art/fx/thaw/v3/`. La grieta se cierra por donde creció: las ramas vuelven a su nudo, el tronco se cierra como una cremallera y de la última puntada sale un soplo de vaho. A 1× el frente de la soldadura era pequeño.
+
 ## A.6 UI — [13](./NOVA_GameDesign_Spec.md#13-controles-y-ui)
 
 
@@ -1338,9 +1354,11 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.3 Selección y apuntado | **4** | **4** ✅ | — (ya no bloquea `T6-06`) |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
-| A.5 VFX | 15 | **8** | `VFXPool`, fase 6 |
+| A.5 VFX | 15 | **9** | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **134** | **118** | — |
+| **Total** | **134** | **119** | — |
+
+**Y los ✅ suben de 118 a 119 el 2026-11-15** con el deshielo, `ART-FX-THAW` v1, «El deshielo» (A.5): las grietas de «El vidrio» se hacen agua y escurren. A.5 queda en 9 de 15.
 
 **Y los ✅ suben de 117 a 118 el 2026-11-15** con la mejora de nivel, `ART-FX-UPG` v2, «Los galones» (A.5): tantos galones como el nivel nuevo suben por el cuerpo del nodo. A.5 queda en 8 de 15.
 
