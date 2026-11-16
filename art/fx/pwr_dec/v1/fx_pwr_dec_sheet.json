@@ -1,0 +1,20 @@
+{
+ "cellSize": 96,
+ "frames": 9,
+ "fps": 12,
+ "sizes": [
+  24,
+  28,
+  32,
+  36,
+  40
+ ],
+ "rows": [
+  "pwr_dec_24",
+  "pwr_dec_28",
+  "pwr_dec_32",
+  "pwr_dec_36",
+  "pwr_dec_40"
+ ],
+ "note": "sobre el objetivo del haz de Decaimiento, al terminar el haz; el ultimo frame es el frame 15 de state_decay_sheet sin la caja del numero, y en el siguiente entra el overlay por su frame 0; la talla, la de world_select_tallas.json por la huella del nodo; una sola rampa (decaimiento), sin bando"
+}

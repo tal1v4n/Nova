@@ -1165,7 +1165,7 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | `ART-FX-CURE` | Cura de Decaimiento | `art/fx/cure/v1/fx_cure_sheet.png`: **una hoja**, 5 filas (talla de `ART-WLD-SEL`) y 16 variantes, una por frame del bucle del miasma; una sola rampa | 0.4 s | 5 | ✅ |
 | `ART-FX-CAST` | Lanzamiento de poder | `art/fx/cast/v1/fx_cast_sheet.png`: **una hoja**, 9 filas (poder × nivel del Púlsar), en la rampa del poder | 0.4 s | 5 | ✅ |
 | `ART-FX-PWR-ZER` | Impacto Cero Absoluto | `art/fx/pwr_zer/v2/fx_pwr_zer_sheet.png`: **una hoja**, 5 filas (talla de `ART-WLD-SEL`), una sola rampa; acaba en `ART-ST-FROZEN` | 0.7 s | 9 | ✅ |
-| `ART-FX-PWR-DEC` | Impacto Decaimiento | `art/fx/fx_decay_impact_sheet.png` | 0.7 s | 9 | ⬜ |
+| `ART-FX-PWR-DEC` | Impacto Decaimiento | `art/fx/pwr_dec/v1/fx_pwr_dec_sheet.png`: **una hoja**, 5 filas (talla de `ART-WLD-SEL`), una sola rampa; acaba en `ART-ST-DECAY` | 0.7 s | 9 | ✅ |
 | `ART-FX-PWR-WRM` | Impacto Agujero de Gusano | `art/fx/fx_wormhole_impact_sheet.png` | 1.0 s | 12 | ⬜ |
 | `ART-FX-CASCADE` | Cascada de conquista | `art/fx/fx_cascade_sheet.png` | 3.0 s | 36 | ⬜ |
 | `ART-FX-VANISH` | Protones huérfanos | `art/fx/vanish/v1/fx_vanish_sheet.png`: **una hoja**, 20 filas (bando × talla del protón) y 16 variantes, una por frame del bucle | 0.4 s | 5 | ✅ |
@@ -1372,6 +1372,22 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 
 **Propuesta v3, «El copo»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_pwr_zer_v3.py` → `art/fx/pwr_zer/v3/`. El último copo de «El rosario de escarcha» crece sobre el nodo girando y se quiebra en la red. Se veía poco sobre la Estrella grande.
 
+### `ART-FX-PWR-DEC` — el impacto de Decaimiento
+
+![ART-FX-PWR-DEC v1](../art/_preview/fx_pwr_dec/v1/fx_pwr_dec_hoja_x3.png)
+
+**Diseño cerrado: «La cámara de niebla», v1** (elegida por el usuario el 2026-11-15). Generador: `tools/gen_fx_pwr_dec_v1.py` → `art/fx/pwr_dec/v1/fx_pwr_dec_sheet.png` y su `.json`; vistas en `art/_preview/fx_pwr_dec/v1/` (`--gif` para el tablero, a velocidad real y a un cuarto: tres nodos reciben el Decaimiento uno tras otro y se quedan con el miasma en bucle). La comparativa de las tres propuestas, en `art/_preview/fx_pwr_dec/comparativa_x3.png` (`py tools/gen_fx_pwr_dec_v1.py --comparativa`).
+
+- **La radiación, como se vio por primera vez.** Una cámara de Wilson es aire sobresaturado: cada partícula que la cruza deja una estela de gotitas condensadas. Al terminar el haz de Decaimiento sobre su objetivo, **el núcleo (frame 0):** un destello en el centro del nodo con ocho rayos cortos, en el índice 1. **Las trazas (frames 1–4):** nueve partículas salen dejando gotas: alfas cortas, gruesas y rectas, que llegan en el frame 2, y betas largas y finas que salen rectas y se enroscan al final, como en un campo magnético, y llegan en el 4. La cabeza va en el índice 1 y la estela se apaga con la edad; cada gota lleva una sombra en el índice 5 para leerse sobre los cuerpos claros. **Se condensan (frames 5–7):** las gotas engordan, caen y se apagan, y entre ellas aparece la nube. **El miasma (frame 8).**
+- **Acaba en el miasma, respirando.** Es `ART-FX-CURE` al revés: el último frame **es** el frame 15 de `state_decay_sheet` sin la caja del número, y en el siguiente entra el overlay **por su frame 0**, así que la nube sigue respirando sin salto. El generador lo exige píxel a píxel. Los frames 5–7 traen la nube de los frames 12–14 del bucle, a medio aparecer por un ruido fijo (`parcial` en `gen_fx_pwr_dec_v1.py`): ya respira al formarse.
+- **Una sola rampa, sin bando, sin dirección.** `decaimiento`, la del haz y la del overlay, índices 1–5; el objetivo puede ser de cualquiera, también el Magnetar neutral. El haz llega desde cualquier ángulo y la hoja no gira: las trazas salen en todas direcciones.
+- **Una fila por talla, por el número.** Todo se recorta contra la caja del número (la `franja` de `ART-FX-THAW`) y queda dentro de `r 43.5`. Hoja de 864 × 480 en celdas de 96: filas `pwr_dec_24…40`, una columna por frame; lo dice `fx_pwr_dec_sheet.json`.
+- **El generador falla** si sale un índice fuera de 1–5, si pisa la caja del número, si toca el borde, si un frame está vacío o repetido, si ningún frame antes del último llega al índice 1 o si el último no es el frame 15 del miasma. Las comprobaciones, la hoja y las vistas viven en `gen_fx_pwr_dec_v1.py` y las tres propuestas las comparten.
+
+**Propuesta v2, «La vida media»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_pwr_dec_v2.py` → `art/fx/pwr_dec/v2/`. La cadena del haz se enrosca alrededor del nodo como un collar y cumple la ley de la vida media: en cada frame se desintegra la mitad, y cada átomo que se va suelta una partícula que cae y se suma a la nube. La más ligada al haz; en los nodos grandes el collar quedaba lejos del cuerpo.
+
+**Propuesta v3, «Las colonias»** (2026-11-15, **descartada**; se conserva por A.1). `tools/gen_fx_pwr_dec_v3.py` → `art/fx/pwr_dec/v3/`. Seis esporas caen en el borde del nodo y crecen como moho en una placa de Petri; las colonias se descuelgan y gotean hasta la nube. La más distinta y la que más tapaba el nodo en los frames 3–5.
+
 ## A.6 UI — [13](./NOVA_GameDesign_Spec.md#13-controles-y-ui)
 
 
@@ -1403,9 +1419,11 @@ Uno por cada `FX-*` de 14.5 **que se reproduzca sobre un nodo**. Todos van al `V
 | A.4.3 Selección y apuntado | **4** | **4** ✅ | — (ya no bloquea `T6-06`) |
 | A.4.4 Power-ups | 3 | **3** ✅ | — |
 | A.4.5 Fondos | **4** | **4** ✅ | — (ya no bloquea `T5-05b`, que los integra con su material) |
-| A.5 VFX | 15 | **12** | `VFXPool`, fase 6 |
+| A.5 VFX | 15 | **13** | `VFXPool`, fase 6 |
 | A.6 UI | **9** | 0 | Pulido de UI de partida (`T6-08`, `T6-09`) |
-| **Total** | **134** | **122** | — |
+| **Total** | **134** | **123** | — |
+
+**Y los ✅ suben de 122 a 123 el 2026-11-15** con el impacto de Decaimiento, `ART-FX-PWR-DEC` v1, «La cámara de niebla» (A.5): las partículas de la desintegración dejan estelas de gotas que caen y se hacen miasma. A.5 queda en 13 de 15.
 
 **Y los ✅ suben de 121 a 122 el 2026-11-15** con el impacto de Cero Absoluto, `ART-FX-PWR-ZER` v2, «El golpe de frío» (A.5): una onda de cristales se cierra sobre el nodo y el vidrio se raja de golpe. A.5 queda en 12 de 15.
 
