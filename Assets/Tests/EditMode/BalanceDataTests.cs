@@ -96,6 +96,7 @@ namespace Nova.Tests
             Assert.AreEqual(2, balance.MagnetarShotDamage);
             Assert.AreEqual(0.5f, balance.MagnetarResistance);
             Assert.AreEqual(5, balance.UpgradeHintMargin, "13.13: el icono de mejora avisa desde coste − 5.");
+            Assert.AreEqual(0.15f, balance.IgnitionHoverDelay, 1e-6f, "13.7: el menú se abre solo tras 0.15 s con el cursor encima.");
             Assert.AreEqual(10, balance.IgnitionCost);
             Assert.AreEqual(10, balance.InertMatter);
             Assert.AreEqual(3.0f, balance.ConversionDuration);

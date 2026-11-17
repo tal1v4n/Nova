@@ -171,6 +171,8 @@ namespace Nova.Input
             rightPressing = false;
             rightDragging = false;
             rightPressNode = null;
+            hoverAsteroid = null;
+            hoverBlocked = null;
             if (sendLine != null)
                 sendLine.EndDrag();
             if (lasso != null)
@@ -203,6 +205,10 @@ namespace Nova.Input
                     infoPanel.SetPointer(world, mouse.leftButton.isPressed);
                 if (ignitionMenu != null)
                     ignitionMenu.SetPointer(world, mouse.leftButton.isPressed);
+                // Y el menú de encendido se abre y se cierra solo con el cursor (13.7, T6-09). No pasa por la cola
+                // del tick: no es una acción de juego, como la línea de envío; encender sigue siendo un clic.
+                if (ignitionMenu != null && selection != null && issuer != null && balance != null)
+                    Hover(world, PickNode(world), Time.unscaledTime);
 
                 if (mouse.leftButton.wasPressedThisFrame)
                     pending.Enqueue(new PointerEvent(PointerKind.LeftDown, world, PickNode(world)));
@@ -544,6 +550,70 @@ namespace Nova.Input
         {
             float threshold = Balance.DragThreshold / PixelsPerUnit;
             return (world - pressedAt).sqrMagnitude > threshold * threshold;
+        }
+
+        // --- El menú de encendido al pasar el cursor (13.7, T6-09) ---
+
+        NodeController hoverAsteroid;
+        float hoverSince;
+        // El Asteroide cuyo menú se cerró con el cursor encima: no se reabre hasta que el cursor salga de él.
+        NodeController hoverBlocked;
+        bool menuWasOpen;
+
+        // El cursor sin botón, en cada frame. Sin selección, sin apuntar y sin nada pulsado, el cursor quieto
+        // IgnitionHoverDelay segundos sobre un Asteroide propio que ya puede encenderse le abre el menú, centrado
+        // en el Asteroide. Ese menú se cierra solo cuando el cursor sale de su círculo (HoverRadius). Por debajo
+        // del coste, el menú sigue siendo del clic izquierdo, con las opciones deshabilitadas.
+        public void Hover(Vector2 world, NodeController node, float now)
+        {
+            if (Menu.IsOpen)
+            {
+                menuWasOpen = true;
+                hoverAsteroid = null;
+                if (Menu.OpenedByHover && (world - Menu.Center).sqrMagnitude > IgnitionMenuState.HoverRadius * IgnitionMenuState.HoverRadius)
+                    Menu.Close();
+                return;
+            }
+            if (menuWasOpen)
+            {
+                menuWasOpen = false;
+                hoverBlocked = node;
+            }
+            if (node != hoverBlocked)
+                hoverBlocked = null;
+
+            if (node == null || node == hoverBlocked || !CanOpenByHover(node))
+            {
+                hoverAsteroid = null;
+                return;
+            }
+            if (node != hoverAsteroid)
+            {
+                hoverAsteroid = node;
+                hoverSince = now;
+            }
+            if (now - hoverSince < Balance.IgnitionHoverDelay)
+                return;
+            hoverAsteroid = null;
+            Menu.Open(node, KeepInView(node.transform.position, IgnitionMenuState.Extent, IgnitionMenuState.Extent),
+                Issuer.Faction, byHover: true);
+        }
+
+        bool CanOpenByHover(NodeController node)
+        {
+            Faction player = Issuer.Faction;
+            if (Selection.HasSelection || IsAiming || pressing || rightPressing)
+                return false;
+            if (!node.IsInitialized || node.Type != NodeType.Asteroid || node.Faction != player)
+                return false;
+            // Ya puede encenderse: alguna de las tres opciones se puede pagar.
+            NodeIgnition ignition = node.GetComponent<NodeIgnition>();
+            if (ignition == null)
+                return false;
+            foreach (NodeType type in IgnitionMenuState.Options)
+                if (ignition.Check(player, type).IsAllowed)
+                    return true;
+            return false;
         }
 
         // Clic izquierdo sin arrastre (13.1), con el cursor en world.

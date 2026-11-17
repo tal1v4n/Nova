@@ -622,6 +622,98 @@ namespace Nova.Tests
             Assert.IsFalse(selection.HasSelection, "El clic es del panel.");
         }
 
+        // --- El menú de encendido al pasar el cursor (13.7, T6-09) ---
+
+        float HoverDelay => Balance.IgnitionHoverDelay;
+
+        [Test]
+        public void HoveringAnIgnitableAsteroidOpensItsMenuAfterTheDelay()
+        {
+            NodeController asteroid = Node("Asteroid", Faction.Player, 10, new Vector2(1f, 0.5f));
+            Vector2 at = asteroid.transform.position;
+
+            router.Hover(at, asteroid, 0f);
+            Assert.IsFalse(menu.IsOpen, "Cruzarlo de pasada no lo abre.");
+            router.Hover(at, asteroid, HoverDelay * 0.5f);
+            Assert.IsFalse(menu.IsOpen);
+            router.Hover(at, asteroid, HoverDelay);
+
+            Assert.IsTrue(menu.IsOpen);
+            Assert.AreSame(asteroid, menu.Node);
+            Assert.IsTrue(menu.OpenedByHover);
+            Assert.AreEqual((Vector2)asteroid.transform.position, menu.Center, "Centrado en el Asteroide.");
+        }
+
+        [Test]
+        public void HoverDoesNotOpenBelowTheCostWithASelectionOrForeignAsteroids()
+        {
+            NodeController poor = Node("Asteroid", Faction.Player, 9);
+            router.Hover(Vector2.zero, poor, 0f);
+            router.Hover(Vector2.zero, poor, 10f);
+            Assert.IsFalse(menu.IsOpen, "Por debajo del coste, el menú es del clic izquierdo.");
+
+            NodeController neutral = Node("Asteroid", Faction.Neutral, 10, new Vector2(3f, 0f));
+            router.Hover(Vector2.zero, neutral, 0f);
+            router.Hover(Vector2.zero, neutral, 10f);
+            Assert.IsFalse(menu.IsOpen, "Solo los Asteroides propios.");
+
+            NodeController star = Node("Star", Faction.Player, 10, new Vector2(-3f, 0f));
+            selection.Select(star);
+            NodeController rich = Node("Asteroid", Faction.Player, 10, new Vector2(0f, 3f));
+            router.Hover(Vector2.zero, rich, 0f);
+            router.Hover(Vector2.zero, rich, 10f);
+            Assert.IsFalse(menu.IsOpen, "Con una selección viva, el Asteroide es un destino.");
+        }
+
+        [Test]
+        public void TheHoverMenuClosesWhenTheCursorLeavesItsCircle()
+        {
+            NodeController asteroid = Node("Asteroid", Faction.Player, 10);
+            router.Hover(Vector2.zero, asteroid, 0f);
+            router.Hover(Vector2.zero, asteroid, HoverDelay);
+            Assert.IsTrue(menu.IsOpen);
+
+            Vector2 onOption = IgnitionMenuState.OptionPosition(menu.Center, 1);
+            router.Hover(onOption, null, HoverDelay + 1f);
+            Assert.IsTrue(menu.IsOpen, "Sobre una opción sigue abierto.");
+            router.Hover(menu.Center + new Vector2(IgnitionMenuState.HoverRadius * 0.9f, 0f), null, HoverDelay + 1f);
+            Assert.IsTrue(menu.IsOpen, "Y en el camino hasta ella.");
+
+            router.Hover(menu.Center + new Vector2(IgnitionMenuState.HoverRadius + 0.1f, 0f), null, HoverDelay + 2f);
+            Assert.IsFalse(menu.IsOpen, "Fuera del círculo, se cierra solo.");
+        }
+
+        [Test]
+        public void AMenuClosedWithTheCursorOnTheAsteroidDoesNotReopenUntilItLeaves()
+        {
+            NodeController asteroid = Node("Asteroid", Faction.Player, 10);
+            router.Hover(Vector2.zero, asteroid, 0f);
+            router.Hover(Vector2.zero, asteroid, HoverDelay);
+            router.ClickRight(null);
+            Assert.IsFalse(menu.IsOpen);
+
+            router.Hover(Vector2.zero, asteroid, 5f);
+            router.Hover(Vector2.zero, asteroid, 10f);
+            Assert.IsFalse(menu.IsOpen, "Cerrado a propósito: no salta otra vez.");
+
+            router.Hover(new Vector2(4f, 4f), null, 11f);
+            router.Hover(Vector2.zero, asteroid, 12f);
+            router.Hover(Vector2.zero, asteroid, 12f + HoverDelay);
+            Assert.IsTrue(menu.IsOpen, "Al volver, sí.");
+        }
+
+        [Test]
+        public void AClickOpenedMenuDoesNotCloseWhenTheCursorLeaves()
+        {
+            NodeController asteroid = Node("Asteroid", Faction.Player, 5);
+            ClickAt(asteroid.transform.position, asteroid);
+            Assert.IsTrue(menu.IsOpen);
+            Assert.IsFalse(menu.OpenedByHover);
+
+            router.Hover(new Vector2(6f, 3f), null, 1f);
+            Assert.IsTrue(menu.IsOpen, "El del clic se cierra como siempre (13.7).");
+        }
+
         // --- Reconversión desde el panel (13.3 punto 5, T2-07) ---
 
         Vector2 ConversionButton(int index) => panel.Center + panel.ConversionOffset(index);

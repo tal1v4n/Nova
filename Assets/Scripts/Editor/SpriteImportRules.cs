@@ -274,6 +274,8 @@ namespace Nova.Editor
                 { "ui_energy_label_neutral", new Vector2Int(12, 16) },
                 // ART-UI-CHARGE «La mecha».
                 { "ui_charge_socket", new Vector2Int(2, 6) },
+                { "ui_charge_cap", new Vector2Int(2, 6) },
+                { "ui_charge_ready", new Vector2Int(8, 6) },
                 { "ui_charge_track", new Vector2Int(2, 6) },
                 { "ui_charge_fuse_sheet", new Vector2Int(8, 6) },
                 { "ui_charge_flame_sheet", new Vector2Int(5, 6) },

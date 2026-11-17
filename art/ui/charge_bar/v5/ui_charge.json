@@ -1,0 +1,59 @@
+{
+ "width": 48,
+ "height": 6,
+ "socketWidth": 2,
+ "capWidth": 2,
+ "fuseX0": 2,
+ "fuseLength": 44,
+ "fuseTile": 8,
+ "flameWidth": 5,
+ "flameFront": 2,
+ "frames": 32,
+ "fps": 12,
+ "powers": [
+  "zero",
+  "decay",
+  "wormhole"
+ ],
+ "factions": [
+  "player",
+  "enemy"
+ ],
+ "fuseRows": [
+  "zero",
+  "decay",
+  "wormhole"
+ ],
+ "fusePausedColumn": 32,
+ "flameRows": [
+  "zero_charging",
+  "zero_ready",
+  "decay_charging",
+  "decay_ready",
+  "wormhole_charging",
+  "wormhole_ready"
+ ],
+ "flameEmberColumn": 32,
+ "readyFlameX": 41,
+ "ready": "frame",
+ "readyFrameRows": [
+  0,
+  5
+ ],
+ "readyFrame": {
+  "zero": "#B8F0FF",
+  "decay": "#B4FA84",
+  "wormhole": "#C9A2FF"
+ },
+ "readyLight": {
+  "zero": "#FFFFFF",
+  "decay": "#FFFFFF",
+  "wormhole": "#FFFFFF"
+ },
+ "readyLightTail": {
+  "zero": "#EAFDFF",
+  "decay": "#E4FFD0",
+  "wormhole": "#F0E2FF"
+ },
+ "note": "cargando, como la v3 con la mecha de fuseLength; lista: la mecha entera que corre, un marco de 1 px en readyFrame por las filas 0 y 5 de fuseX0 a fuseX0 + fuseLength, y una luz que lo recorre (arriba de izquierda a derecha y abajo de vuelta): la cabeza en f / frames del camino, en readyLight, y 2 px de cola en readyLightTail; la llama lista en readyFlameX; el remate siempre"
+}

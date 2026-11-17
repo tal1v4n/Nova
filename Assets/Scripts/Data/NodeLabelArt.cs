@@ -5,7 +5,8 @@ using UnityEngine;
 namespace Nova.Data
 {
     // T6-09: el arte de lo que cuelga bajo cada nodo (A.6): el número de Energía, `ART-UI-HUD-ENERGY` «El
-    // filamento», y la barra de carga del Púlsar, `ART-UI-CHARGE` «La mecha». Lo rellena NodeArtAssets desde
+    // filamento», y la barra de carga del Púlsar, `ART-UI-CHARGE` «El latido» (v4: la mecha de «La mecha» con un
+    // remate al final y, lista, un haz sólido que late). Lo rellena NodeArtAssets desde
     // Assets/Sprites/ui/energy_label/ y ui/charge_bar/ con las medidas de sus .json; sin él, el número y la barra
     // siguen siendo las primitivas de la regla 4 de T.2.
     //
@@ -32,9 +33,11 @@ namespace Nova.Data
         [Tooltip("El hueco que reserva NodeLayout bajo la huella; el número va centrado en él.")]
         [SerializeField] int labelBoxHeight = 20;
 
-        [Header("Barra de carga (ART-UI-CHARGE, «La mecha»)")]
+        [Header("Barra de carga (ART-UI-CHARGE, «El latido»)")]
         [Tooltip("El casquillo: Jugador y Enemigo.")]
         [SerializeField] Sprite[] socket = Array.Empty<Sprite>();
+        [Tooltip("El remate, el casquillo reflejado que cierra la barra por la derecha: Jugador y Enemigo.")]
+        [SerializeField] Sprite[] cap = Array.Empty<Sprite>();
         [Tooltip("La tesela de la pista, lo que falta: Jugador y Enemigo.")]
         [SerializeField] Sprite[] track = Array.Empty<Sprite>();
         [Tooltip("La mecha: fila = poder (Cero, Decaimiento, Gusano), frames y una columna más, la quieta.")]
@@ -50,12 +53,12 @@ namespace Nova.Data
         [SerializeField] int flameFront = 2;
         [SerializeField, Min(1)] int chargeFrames = 32;
         [SerializeField, Min(1f)] float chargeFramesPerSecond = 12f;
-        [Tooltip("La luz que recorre la mecha lista, por poder: el índice 0 de su rampa.")]
-        [SerializeField] Color32[] readyLight = Array.Empty<Color32>();
-        [SerializeField] int readyLightRow = 2;
-        [SerializeField] float readyLightHalfWidth = 1.5f;
-        [SerializeField] int readyLightFrom = -3;
-        [SerializeField] int readyLightTravel = 52;
+        [Tooltip("El haz de la carga lista, por poder: la tesela encendida y la apagada.")]
+        [SerializeField] Sprite[] ready = Array.Empty<Sprite>();
+        [Tooltip("El haz late: encendido estos frames y apagado otros tantos.")]
+        [SerializeField, Min(1)] int readyBeatFrames = 4;
+        [Tooltip("La x de la llama lista, pegada al remate.")]
+        [SerializeField] int readyFlameX = 41;
 
         public bool HasEnergyLabel =>
             playerDigits != null && playerDigits.Length == Digits * digitFrames && Array.IndexOf(playerDigits, null) < 0 &&
@@ -67,10 +70,11 @@ namespace Nova.Data
 
         public bool HasChargeBar =>
             socket != null && socket.Length == 2 && Array.IndexOf(socket, null) < 0 &&
+            cap != null && cap.Length == 2 && Array.IndexOf(cap, null) < 0 &&
             track != null && track.Length == 2 && Array.IndexOf(track, null) < 0 &&
             fuse != null && fuse.Length == Powers * (chargeFrames + 1) && Array.IndexOf(fuse, null) < 0 &&
             flame != null && flame.Length == 2 * Powers * (chargeFrames + 1) && Array.IndexOf(flame, null) < 0 &&
-            readyLight != null && readyLight.Length == Powers;
+            ready != null && ready.Length == 2 * Powers && Array.IndexOf(ready, null) < 0;
 
         // --- Número ---
 
@@ -103,10 +107,8 @@ namespace Nova.Data
         public int FlameFront => flameFront;
         public int ChargeFrames => chargeFrames;
         public float ChargeFramesPerSecond => chargeFramesPerSecond;
-        public int ReadyLightRow => readyLightRow;
-        public float ReadyLightHalfWidth => readyLightHalfWidth;
-        public int ReadyLightFrom => readyLightFrom;
-        public int ReadyLightTravel => readyLightTravel;
+        public int ReadyBeatFrames => readyBeatFrames;
+        public int ReadyFlameX => readyFlameX;
 
         // La fila de cada poder en las hojas, en el orden de 16.3.
         public static int PowerRow(PowerType power)
@@ -122,6 +124,7 @@ namespace Nova.Data
         static int FactionRow(Faction faction) => faction == Faction.Enemy ? 1 : 0;
 
         public Sprite Socket(Faction faction) => socket[FactionRow(faction)];
+        public Sprite Cap(Faction faction) => cap[FactionRow(faction)];
         public Sprite Track(Faction faction) => track[FactionRow(faction)];
 
         // frame == ChargeFrames: la mecha quieta de la carga pausada.
@@ -131,7 +134,8 @@ namespace Nova.Data
         public Sprite Flame(PowerType power, bool ready, int frame) =>
             flame[(2 * PowerRow(power) + (ready ? 1 : 0)) * (chargeFrames + 1) + frame];
 
-        public Color32 ReadyLight(PowerType power) => readyLight[PowerRow(power)];
+        // El haz de la carga lista: encendido los frames (f / readyBeatFrames) pares.
+        public Sprite Ready(PowerType power, bool on) => ready[PowerRow(power) * 2 + (on ? 0 : 1)];
 
         // Para NodeArtAssets y los tests: el editor escribe aquí lo que copia ArtBridge.
         public void ConfigureEnergyLabel(Sprite[] player, Sprite[] enemy, Sprite[] neutral, Vector2Int cell, int[] advances,
@@ -148,11 +152,13 @@ namespace Nova.Data
             labelBoxHeight = boxHeight;
         }
 
-        public void ConfigureChargeBar(Sprite[] sockets, Sprite[] tracks, Sprite[] fuses, Sprite[] flames, int width, int height,
-            int socketW, int x0, int length, int flameW, int front, int frames, float framesPerSecond, Color32[] lights,
-            int lightRow, float lightHalfWidth, int lightFrom, int lightTravel)
+        public void ConfigureChargeBar(Sprite[] sockets, Sprite[] caps, Sprite[] tracks, Sprite[] fuses, Sprite[] flames,
+            Sprite[] readyTiles, int width, int height, int socketW, int x0, int length, int flameW, int front, int frames,
+            float framesPerSecond, int beatFrames, int readyFlame)
         {
             socket = sockets ?? Array.Empty<Sprite>();
+            cap = caps ?? Array.Empty<Sprite>();
+            ready = readyTiles ?? Array.Empty<Sprite>();
             track = tracks ?? Array.Empty<Sprite>();
             fuse = fuses ?? Array.Empty<Sprite>();
             flame = flames ?? Array.Empty<Sprite>();
@@ -165,11 +171,8 @@ namespace Nova.Data
             flameFront = front;
             chargeFrames = Mathf.Max(1, frames);
             chargeFramesPerSecond = Mathf.Max(1f, framesPerSecond);
-            readyLight = lights ?? Array.Empty<Color32>();
-            readyLightRow = lightRow;
-            readyLightHalfWidth = lightHalfWidth;
-            readyLightFrom = lightFrom;
-            readyLightTravel = lightTravel;
+            readyBeatFrames = Mathf.Max(1, beatFrames);
+            readyFlameX = readyFlame;
         }
     }
 }

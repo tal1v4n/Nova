@@ -60,7 +60,15 @@ namespace Nova.Input
             return -1;
         }
 
-        public void Open(NodeController asteroid, Vector2 center, Faction actor)
+        // T6-09 (13.7): abierto por el cursor, no por un clic. Ese se cierra solo cuando el cursor sale del
+        // círculo que envuelve las tres opciones (HoverRadius).
+        public bool OpenedByHover { get; private set; }
+
+        // El círculo del menú: el centro de cada opción más su radio. Envuelve el Asteroide y el camino hasta cada
+        // opción, para que el menú no se cierre en el hueco entre los dos.
+        public const float HoverRadius = OptionDistance + OptionRadius;
+
+        public void Open(NodeController asteroid, Vector2 center, Faction actor, bool byHover = false)
         {
             if (asteroid == null)
                 throw new ArgumentNullException(nameof(asteroid));
@@ -69,6 +77,7 @@ namespace Nova.Input
             node = asteroid;
             Center = center;
             Actor = actor;
+            OpenedByHover = byHover;
             // Si el Asteroide deja de ser del que abrió o deja de ser Asteroide —capturado, o
             // encendido por la propia elección—, el menú ya no tiene sentido.
             node.OnFactionChanged += HandleFactionChanged;

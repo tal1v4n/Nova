@@ -1,0 +1,50 @@
+{
+ "width": 48,
+ "height": 6,
+ "socketWidth": 2,
+ "capWidth": 2,
+ "fuseX0": 2,
+ "fuseLength": 44,
+ "fuseTile": 8,
+ "flameWidth": 5,
+ "flameFront": 2,
+ "frames": 32,
+ "fps": 12,
+ "powers": [
+  "zero",
+  "decay",
+  "wormhole"
+ ],
+ "factions": [
+  "player",
+  "enemy"
+ ],
+ "fuseRows": [
+  "zero",
+  "decay",
+  "wormhole"
+ ],
+ "fusePausedColumn": 32,
+ "flameRows": [
+  "zero_charging",
+  "zero_ready",
+  "decay_charging",
+  "decay_ready",
+  "wormhole_charging",
+  "wormhole_ready"
+ ],
+ "flameEmberColumn": 32,
+ "readyFlameX": 41,
+ "ready": "beat",
+ "readyBeatFrames": 4,
+ "readyTileRows": [
+  "zero",
+  "decay",
+  "wormhole"
+ ],
+ "readyTileColumns": [
+  "on",
+  "off"
+ ],
+ "note": "cargando, como la v3 con la mecha de fuseLength: n = fuseLength * invertido // coste, la llama con su x = flameFront en la ultima columna de la mecha; lista: la mecha se quita y entre casquillo y remate va en mosaico la tesela on los frames (f // 4) pares y la off los impares, con la llama lista en readyFlameX; el remate siempre"
+}

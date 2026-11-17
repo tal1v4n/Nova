@@ -19,6 +19,9 @@ namespace Nova.Data
         [Tooltip("Píxeles de la referencia 960x540 que separan un clic de un arrastre (13.1). 4 = 8 px físicos a 1080p.")]
         [SerializeField, Min(0)] int dragThreshold;
 
+        [Tooltip("Segundos con el cursor sobre un Asteroide propio que ya puede encenderse antes de que se abra solo su menú (13.7).")]
+        [SerializeField, Min(0f)] float ignitionHoverDelay;
+
         [Header("Magnetar")]
         [Tooltip("Carga que resta cada disparo (6.3).")]
         [SerializeField, Min(0)] int magnetarShotDamage;
@@ -65,6 +68,7 @@ namespace Nova.Data
         public float ProtonSpeed => protonSpeed;
         public float DoubleClickBuffer => doubleClickBuffer;
         public int DragThreshold => dragThreshold;
+        public float IgnitionHoverDelay => ignitionHoverDelay;
         public int MagnetarShotDamage => magnetarShotDamage;
         public float MagnetarResistance => magnetarResistance;
         public int UpgradeHintMargin => upgradeHintMargin;

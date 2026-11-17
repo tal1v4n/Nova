@@ -376,9 +376,12 @@ namespace Nova.Tests
             for (int i = 0; i < flame.Length; i++)
                 flame[i] = flameCell;
             Sprite socket = Solid(2, 6, Frame);
+            Sprite cap = Solid(2, 6, Panel);
             Sprite track = Make(2, 6, (x, y) => x == 0 ? Missing : default);
-            art.ConfigureChargeBar(new[] { socket, socket }, new[] { track, track }, fuse, flame, 48, 6, 2, 2, 46, 5, 2, 32, 12f,
-                new[] { Stopped, Stopped, Stopped }, 2, 1.5f, -3, 52);
+            Sprite on = Solid(8, 6, Stopped);
+            Sprite off = Solid(8, 6, Have);
+            art.ConfigureChargeBar(new[] { socket, socket }, new[] { cap, cap }, new[] { track, track }, fuse, flame,
+                new[] { on, off, on, off, on, off }, 48, 6, 2, 2, 44, 5, 2, 32, 12f, 4, 41);
             return art;
         }
 
@@ -404,17 +407,20 @@ namespace Nova.Tests
             var c = new PixelCanvas(48, 6);
             ChargeBarView.Compose(c, art, Faction.Player, PowerType.Wormhole, 30, 60, false, false, 0);
 
-            int n = 46 * 30 / 60;
+            int n = 44 * 30 / 60;
             Assert.AreEqual(Frame, c.Get(0, 0), "El casquillo del bando.");
+            Assert.AreEqual(Panel, c.Get(47, 0), "El remate cierra la barra.");
             Assert.AreEqual(Have, c.Get(5, 0), "Lo que arde.");
             Assert.AreEqual(Sweep, c.Get(2 + n - 1, 0), "La llama, con su frente en la última columna de la mecha.");
             Assert.AreEqual(Missing, c.Get(40, 0), "Delante, lo que falta.");
             Assert.AreEqual(0, c.Get(41, 0).a);
 
-            ChargeBarView.Compose(c, art, Faction.Player, PowerType.Wormhole, 60, 60, true, false, 16);
-            float head = 16 / 32f * 52 - 3;
-            Assert.AreEqual(Stopped, c.Get(2 + Mathf.RoundToInt(head), 2), "Lista, la luz recorre la mecha.");
-            Assert.AreEqual(Sweep, c.Get(48 - 5 + 2, 0), "Y la llama va pegada al borde derecho.");
+            ChargeBarView.Compose(c, art, Faction.Player, PowerType.Wormhole, 60, 60, true, false, 0);
+            Assert.AreEqual(Stopped, c.Get(10, 0), "Lista: el haz encendido.");
+            Assert.AreEqual(Sweep, c.Get(41 + 2, 0), "Y la estrella, junto al remate.");
+            Assert.AreEqual(Panel, c.Get(47, 0));
+            ChargeBarView.Compose(c, art, Faction.Player, PowerType.Wormhole, 60, 60, true, false, 4);
+            Assert.AreEqual(Have, c.Get(10, 0), "Y late: 4 frames después, apagado.");
         }
 
         // --- El panel entero, con arte ---

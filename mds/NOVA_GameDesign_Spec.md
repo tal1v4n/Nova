@@ -589,6 +589,7 @@ El clic izquierdo significa una cosa u otra **según haya o no una selección ac
 |---|---|
 | **Clic izquierdo** sobre nodo propio que puede enviar —Estrella, Púlsar o Magnetar— | Lo selecciona |
 | **Clic izquierdo** sobre **Asteroide propio** | Abre el menú radial de encendido ([13.7](#137-menú-radial-de-encendido)) |
+| **Cursor quieto** sobre un **Asteroide propio que ya puede encenderse** | Abre solo su menú de encendido, tras un momento ([13.7](#137-menú-radial-de-encendido), [18](#18-decisiones-tomadas-por-defecto) #55) |
 | **Clic izquierdo** sobre nodo no propio | Nada |
 
 **Con selección activa**
@@ -728,6 +729,8 @@ La barra de poder suma la Energía de todos los nodos de cada bando. **No cuenta
 ### 13.7 Menú radial de encendido
 
 Lo abre el **clic izquierdo sobre un Asteroide propio**, sin selección activa ([13.1](#131-ratón)), y sale en el cursor.
+
+**Y se abre solo con el cursor** ([18](#18-decisiones-tomadas-por-defecto) #55, pedido por el usuario el 2026-11-16 en `T6-09`). Si el Asteroide propio **ya puede encenderse** —alguna opción se puede pagar— y no hay selección activa, ni modo apuntado, ni un botón pulsado, el cursor quieto sobre él `ignitionHoverDelay` segundos (16.1) le abre el menú, **centrado en el Asteroide**. Ese menú se cierra solo, sin encender, cuando el cursor sale del círculo que envuelve las tres opciones —el centro de cada una más su radio—, y también con todo lo de abajo. Encender sigue siendo un clic sobre la opción. Si se cierra con el cursor todavía encima, no se vuelve a abrir hasta que el cursor salga del Asteroide. Por debajo del coste, el menú sigue siendo solo del clic izquierdo, con las opciones deshabilitadas, y el menú abierto con un clic no se cierra al apartar el cursor.
 
 **Por qué ahí y no en el panel.** Un Asteroide **no puede enviar nunca** ([5.2](#52-envío)), así que no es un origen legal y seleccionarlo no significaría nada: su clic izquierdo estaba libre. No es una excepción a la regla de 13.1, es el único nodo al que esa regla no le asigna nada. Encender es además la acción más repetida de la partida, y cobrarla a dos clics sería cobrarla caro.
 
@@ -1163,6 +1166,7 @@ Estos valores deben vivir en `BalanceConfig.asset` y en las `NodeDefinition`. No
 | Coste de encendido | 10 |
 | Materia Inerte del Asteroide | 10 |
 | Margen del aviso de mejora | 5 de Energía: el icono avisa desde `coste − 5` ([13.13](#1313-icono-de-mejora)) |
+| Retardo del menú de encendido al pasar el cursor | 0.15 s con el cursor quieto sobre el Asteroide ([13.7](#137-menú-radial-de-encendido)) |
 | Devolución al cancelar carga | 50% |
 | Duración de la cascada de conquista | 3.0 s ([10.1](#101-victoria-del-jugador)) |
 
@@ -1303,6 +1307,7 @@ Reglas que no estaban en el diseño original y que se añadieron para cerrar hue
 | 50 | **Con la partida congelada, los sonidos de la partida se quedan quietos** —pausa o fin de nivel, `Time.timeScale = 0`— y siguen donde iban al reanudar. La música de los menús no se ve afectada: en `Game` no suena ([NOVA_Sonido.md](./NOVA_Sonido.md), S.6) | Es la regla del tablero en [15.8](#158-presentation), *Tiempo de la UI y pausa*: en pausa nada corre. Un sonido que siguiera diría que el juego corre. Decidido con el usuario el 2026-11-02 (`T6-14`) |
 | 51 | **Un impacto que solo avanza el deshielo también enseña el daño** (`ART-FX-DMG`): `ImpactResult.ThawProgress` le quita Energía al nodo congelado igual que `Damaged`, y el hielo solo no lo decía. Vale para protones de cualquier bando, porque en un nodo congelado todos drenan ([7.3](#73-cero-absoluto)). Decidido con el usuario el 2026-11-16 ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #57) |
 | 52 | **El arco del Magnetar acaba en el borde de la bolsa del protón**, no en su centro: el último píxel de la punta cae en `bagRadiusPixels` de su talla, así que el trazo no pasa por detrás de las cifras de la Carga ni se lee como un signo menos. Sin `ProtonArt`, el contacto sigue en el centro. Decidido con el usuario el 2026-11-16 ([T.7](./NOVA_Tracking.md#t7-pendientes-abiertos) #56) |
+| 55 | **El menú de encendido se abre solo al dejar el cursor sobre un Asteroide propio que ya puede encenderse** (13.7): tras 0.15 s (16.1), sin selección, sin apuntar y sin nada pulsado, centrado en el Asteroide; se cierra solo al salir el cursor del círculo de las tres opciones, y no se reabre hasta que el cursor salga del Asteroide si se cerró con él encima. Por debajo del coste, el clic izquierdo, como antes | Pedido por el usuario el 2026-11-16, en `T6-09`: encender es la acción más repetida y no debería costar un clic más cuando ya se puede. Cerrado con él: cuándo se cierra (al salir del Asteroide y del menú), que con una selección viva no se abre —el Asteroide es un destino—, que por debajo de 10 sigue el clic y que hay un retardo corto para que cruzarlo de pasada no lo abra. El círculo de cierre y el centro en el Asteroide los fijó la tarea |
 | 54 | **La mejora se hace desde un icono encima del nodo, no desde un botón del panel** (13.13). Aparece difuminado desde `coste − 5`; con el coste alcanzado sigue difuminado hasta que el cursor está sobre el nodo, y entonces, al 100 %, el clic izquierdo sobre el icono mejora. Solo en nodos propios que puedan mejorarse: nunca Congelados, Reconvirtiendo, al máximo, del Enemigo ni neutrales. El panel deja la fila como información (`Mejora: 40` o `NIVEL MÁXIMO`). **Ajustado con el usuario en `T6-15`**: el relleno cian y el sonar salen en cuanto la mejora se puede pagar, el borde se marca en blanco con el cursor sobre el icono y el rombo crece a 19 × 19 px | Pedido por el usuario el 2026-11-16, al ver las tres propuestas del botón de mejora: se mejora donde se mira, encima del nodo, y el aviso de −5 dice que ya casi. Cómo se combinan el aviso y el cursor, el gesto, la fila del panel y el caso bloqueado se cerraron con él el mismo día. Lo implementa `T6-15` |
 | 53 | **El botón de pausa del HUD abre la pausa sin cerrar antes nada**, a diferencia de `Esc`, que cierra primero el apuntado, el menú de encendido o el panel (13.10). Lo que estuviera abierto se queda congelado con la partida y sigue ahí al reanudar. Una pulsación que empieza en el botón es suya: si se suelta dentro pausa, y si no, no hace nada —ni lazo ni clic sobre el tablero—. Decidido al implementar `T6-08` el 2026-11-16; el usuario lo dio por bueno en Play |
 

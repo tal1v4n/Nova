@@ -15,6 +15,7 @@ MonoBehaviour:
   protonSpeed: 2.5
   doubleClickBuffer: 0.25
   dragThreshold: 4
+  ignitionHoverDelay: 0.15
   magnetarShotDamage: 2
   magnetarResistance: 0.5
   upgradeHintMargin: 5

@@ -28,16 +28,13 @@ namespace Nova.Editor
 
         [Serializable] sealed class EnergyExport { public int cellWidth; public int cellHeight; public int[] advance; public int frames; public float fps; public int digitPhaseOffset; public int boxHeight; }
 
-        [Serializable] sealed class PowerHex { public string zero; public string decay; public string wormhole; }
-
         [Serializable]
         sealed class ChargeExport
         {
             public int width; public int height; public int socketWidth; public int fuseX0; public int fuseLength;
             public int flameWidth; public int flameFront; public int frames; public float fps;
-            public string[] powers; public string[] factions;
-            public PowerHex readyLight; public int readyLightRow; public float readyLightHalfWidth;
-            public int readyLightFrom; public int readyLightTravel;
+            public string[] powers; public string[] factions; public string ready;
+            public int readyBeatFrames; public int readyFlameX;
         }
 
         [Serializable] sealed class FactionHex { public string player; public string enemy; public string neutral; }
@@ -131,15 +128,20 @@ namespace Nova.Editor
                 return false;
             }
 
+            if (charge.ready != "beat")
+            {
+                error = $"{ChargeFolder}/ui_charge.json: la barra elegida no es «El latido» (ready = {charge.ready}); ChargeBarView monta esa.";
+                return false;
+            }
             art.ConfigureChargeBar(
                 GridRows(ChargeFolder + "/ui_charge_socket.png", 2),
+                GridRows(ChargeFolder + "/ui_charge_cap.png", 2),
                 GridRows(ChargeFolder + "/ui_charge_track.png", 2),
                 GridRows(ChargeFolder + "/ui_charge_fuse_sheet.png", NodeLabelArt.Powers),
                 GridRows(ChargeFolder + "/ui_charge_flame_sheet.png", 2 * NodeLabelArt.Powers),
+                GridRows(ChargeFolder + "/ui_charge_ready.png", NodeLabelArt.Powers),
                 charge.width, charge.height, charge.socketWidth, charge.fuseX0, charge.fuseLength, charge.flameWidth,
-                charge.flameFront, charge.frames, charge.fps,
-                new[] { Hex(charge.readyLight.zero), Hex(charge.readyLight.decay), Hex(charge.readyLight.wormhole) },
-                charge.readyLightRow, charge.readyLightHalfWidth, charge.readyLightFrom, charge.readyLightTravel);
+                charge.flameFront, charge.frames, charge.fps, charge.readyBeatFrames, charge.readyFlameX);
             if (!art.HasChargeBar)
             {
                 error = $"La barra de carga de {ChargeFolder} está incompleta o sin cortar: sincroniza con Nova → Arte → Sincronizar sprites desde art.";
