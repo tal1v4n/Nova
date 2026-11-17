@@ -698,7 +698,7 @@ namespace Nova.Tests
 
             router.Hover(new Vector2(4f, 4f), null, 11f);
             router.Hover(Vector2.zero, asteroid, 12f);
-            router.Hover(Vector2.zero, asteroid, 12f + HoverDelay);
+            router.Hover(Vector2.zero, asteroid, 12f + HoverDelay + 0.01f); // 12 + 0.15 en float se queda un pelo corto
             Assert.IsTrue(menu.IsOpen, "Al volver, sí.");
         }
 
