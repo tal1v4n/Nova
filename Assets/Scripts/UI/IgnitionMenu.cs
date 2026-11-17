@@ -12,7 +12,13 @@ namespace Nova.UI
     // dentro y el tipo por fuera. Solo dibuja: el estado es de IgnitionMenuState, el clic lo
     // resuelve InputRouter y cada opción se valida con NodeIgnition.Check, que no tiene efectos.
     //
-    // Discos y texto son primitivas de la regla 4 de T.2; la skin final es de T6-09.
+    // Discos y texto son primitivas de la regla 4 de T.2.
+    //
+    // T6-09: con PanelArt, la skin final, `ART-UI-IGN-MENU` «Los nodos» (A.6): cada opción es el sprite de nivel 1
+    // del nodo que se va a encender, entre cuatro esquinas; sin Energía, tramado; no disponible, solo el contorno.
+    // Las opciones salen del centro al abrirse (patrón «Ignición», 320 ms con 80 de escalonado) y las esquinas se
+    // cierran con el cursor encima. El nombre va encima de la opción de arriba y debajo de las de abajo, con el
+    // coste en su línea (13.7, desviación 381). Se compone con PanelSkin.
     [DefaultExecutionOrder(50)] // UI, 15.10
     [DisallowMultipleComponent]
     public sealed class IgnitionMenu : MonoBehaviour
@@ -48,6 +54,9 @@ namespace Nova.UI
         [Tooltip("Textos de la UI (T.7 #39): de aquí salen los nombres de las opciones.")]
         [SerializeField] UiText text;
 
+        [Tooltip("Opcional (T6-09): el arte del menú. Sin él, primitivas.")]
+        [SerializeField] PanelArt art;
+
         GameObject root;
         SpriteRenderer[] discs;
         TextMeshPro[] costs;
@@ -56,6 +65,21 @@ namespace Nova.UI
 
         NodeController watched;
         bool subscribed;
+
+        // Con arte.
+        SpriteRenderer[] optionViews;
+        CanvasSprite[] optionCanvases;
+        TextMeshPro[] optionLabels;
+        readonly float[] hoverSince = { -1f, -1f, -1f };
+        readonly int[] drawnKey = { int.MinValue, int.MinValue, int.MinValue };
+        float openedAt;
+        Vector2 openedCenter;
+        NodeController openedNode;
+
+        internal bool HasArt => art != null && art.HasIgnitionMenu;
+        internal PixelCanvas OptionCanvas(int option) { EnsureBuilt(); return optionCanvases[option]?.Canvas; }
+        internal Vector2 OptionArtPosition(int option) { EnsureBuilt(); return optionViews[option].transform.position; }
+        internal TextMeshPro OptionLabel(int option) { EnsureBuilt(); return optionLabels[option]; }
 
         internal bool IsVisible => root != null && root.activeSelf;
         internal OptionLook LookOf(int option) => looks[option];
@@ -74,12 +98,13 @@ namespace Nova.UI
         }
 
         // Para la escena de prueba y los tests: el cableado normal es por el Inspector.
-        public void Configure(IgnitionMenuState state, TMP_FontAsset fontAsset, UiText uiText)
+        public void Configure(IgnitionMenuState state, TMP_FontAsset fontAsset, UiText uiText, PanelArt panelArt = null)
         {
             Unsubscribe();
             menu = state;
             font = fontAsset;
             text = uiText;
+            art = panelArt;
         }
 
         internal void Subscribe()
@@ -109,6 +134,13 @@ namespace Nova.UI
                 return;
 
             root.transform.position = menu.Center;
+            // Se abre de nuevo (otro Asteroide u otro sitio): la entrada vuelve a empezar.
+            if (menu.Node != openedNode || menu.Center != openedCenter)
+            {
+                openedNode = menu.Node;
+                openedCenter = menu.Center;
+                openedAt = Time.unscaledTime;
+            }
             NodeIgnition ignition = menu.Node.GetComponent<NodeIgnition>();
             for (int i = 0; i < IgnitionMenuState.Options.Count; i++)
             {
@@ -117,6 +149,91 @@ namespace Nova.UI
                     : new ActionCheck(ActionBlock.Unavailable, 0);
                 Paint(i, check);
             }
+            bool artOn = HasArt;
+            for (int i = 0; i < discs.Length; i++)
+            {
+                discs[i].enabled = !artOn;
+                names[i].enabled = !artOn;
+                if (artOn)
+                    costs[i].enabled = false;
+                optionViews[i].enabled = artOn;
+                optionLabels[i].enabled = artOn;
+                drawnKey[i] = int.MinValue;
+            }
+            if (artOn)
+                Animate(Time.unscaledTime);
+        }
+
+        void LateUpdate()
+        {
+            if (HasArt && root != null && root.activeSelf && menu != null && menu.IsOpen)
+                Animate(Time.unscaledTime);
+        }
+
+        // Con arte: la entrada, el encima y el pulsado de cada opción, y su etiqueta.
+        void Animate(float now)
+        {
+            PanelArt.IgnitionPieces p = art.Ignition;
+            for (int i = 0; i < optionViews.Length; i++)
+            {
+                float k = UiMotion.Orbital(Mathf.Clamp01((now - openedAt - i * p.staggerSeconds) / p.enterSeconds));
+                Vector2 home = IgnitionMenuState.OptionPosition(Vector2.zero, i);
+                optionViews[i].transform.localPosition = home * k;
+
+                OptionLook look = looks[i];
+                bool enabled = look == OptionLook.Enabled;
+                bool hovered = enabled && menu.HoveredOption == i;
+                bool pressed = enabled && menu.IsPressed(i);
+                if (!hovered)
+                    hoverSince[i] = -1f;
+                else if (hoverSince[i] < 0f)
+                    hoverSince[i] = now;
+                float close = hovered ? Mathf.Clamp01((now - hoverSince[i]) / p.hoverSeconds) : 0f;
+
+                PanelArt.CornerLook? corners = look == OptionLook.Unavailable ? (PanelArt.CornerLook?)null
+                    : look == OptionLook.MissingEnergy ? PanelArt.CornerLook.Missing
+                    : pressed ? PanelArt.CornerLook.Pressed
+                    : hovered ? PanelArt.CornerLook.Hover
+                    : PanelArt.CornerLook.Normal;
+                PanelArt.NodeLook node = look == OptionLook.Unavailable ? PanelArt.NodeLook.Outline
+                    : look == OptionLook.MissingEnergy ? PanelArt.NodeLook.Dithered
+                    : PanelArt.NodeLook.Full;
+
+                // La etiqueta: el nombre y el coste en su línea, cuando la opción ha llegado a su sitio.
+                PanelArt.ButtonText c = p.text;
+                Color32 nameColor = look == OptionLook.Unavailable ? c.unavailable
+                    : look == OptionLook.MissingEnergy ? c.muted
+                    : hovered || pressed ? c.hover : c.normal;
+                Color32 costColor = look == OptionLook.MissingEnergy ? c.missing : hovered || pressed ? c.hoverCost : c.cost;
+                string label = "<color=" + PanelSkin.Hex(nameColor) + ">" + names[i].text + "</color>";
+                if (look != OptionLook.Unavailable)
+                    label += " <color=" + PanelSkin.Hex(costColor) + ">" + costs[i].text + "</color>";
+                optionLabels[i].text = label;
+                optionLabels[i].enabled = k >= 0.999f;
+                // Encima de la opción de arriba y debajo de las de abajo, con la mayúscula a nameGap del círculo de clic.
+                float side = i == 0 ? 1f : -1f;
+                float gap = (p.nameGap + 5) / (float)PrimitiveSprites.PixelsPerUnit;
+                optionLabels[i].transform.localPosition = home + new Vector2(0f, side * (IgnitionMenuState.OptionRadius + gap));
+
+                int key = ((corners.HasValue ? (int)corners.Value : 9) * 3 + (int)node) * 64 + Mathf.RoundToInt(close * 16f) + (pressed ? 32 : 0);
+                if (key == drawnKey[i])
+                    continue;
+                drawnKey[i] = key;
+                if (optionCanvases[i] == null)
+                {
+                    optionCanvases[i] = new CanvasSprite(p.cell, p.cell, new Vector2(0.5f, 0.5f), "IgnitionOption" + i);
+                    optionViews[i].sprite = optionCanvases[i].Sprite;
+                }
+                PanelSkin.ComposeOption(optionCanvases[i].Canvas, p, i, corners, node, pressed, close);
+                optionCanvases[i].Upload();
+            }
+        }
+
+        void OnDestroy()
+        {
+            if (optionCanvases != null)
+                foreach (CanvasSprite c in optionCanvases)
+                    c?.Destroy();
         }
 
         void Paint(int i, ActionCheck check)
@@ -180,6 +297,20 @@ namespace Nova.UI
                 names[i] = Label(disc.transform, outward, 1, diameter * 3);
                 names[i].text = text != null ? text.TypeName(IgnitionMenuState.Options[i]) : IgnitionMenuState.Options[i].ToString();
             }
+            optionViews = new SpriteRenderer[count];
+            optionCanvases = new CanvasSprite[count];
+            optionLabels = new TextMeshPro[count];
+            for (int i = 0; i < count; i++)
+            {
+                optionViews[i] = new GameObject("OptionArt" + i).AddComponent<SpriteRenderer>();
+                optionViews[i].transform.SetParent(root.transform, false);
+                optionViews[i].sortingOrder = SortingOrder;
+                optionViews[i].enabled = false;
+                optionLabels[i] = Label(root.transform, Vector2.zero, 1, diameter * 3);
+                optionLabels[i].richText = true;
+                optionLabels[i].enabled = false;
+            }
+
             root.SetActive(false);
         }
 

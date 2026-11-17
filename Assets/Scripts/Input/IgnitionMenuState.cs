@@ -100,5 +100,34 @@ namespace Nova.Input
 
         void HandleFactionChanged(Faction previous, Faction current) => Close();
         void HandleTypeChanged(NodeType previous, NodeType current) => Close();
+
+        // --- El cursor, para el encima y el pulsado del arte (T6-09, ART-UI-IGN-MENU) ---
+
+        // La opción con el cursor encima, o -1.
+        public int HoveredOption { get; private set; } = -1;
+
+        bool held;
+        int pressedOption = -1;
+
+        // Pulsada: el botón izquierdo bajó sobre esa misma opción, sigue abajo y el cursor sigue encima.
+        public bool IsPressed(int option) => held && pressedOption == option && HoveredOption == option;
+
+        // Del router, en Update: dónde está el cursor y si el botón izquierdo está abajo.
+        public void SetPointer(Vector2 world, bool leftHeld)
+        {
+            HoveredOption = OptionAt(world);
+            if (leftHeld && !held)
+                pressedOption = HoveredOption;
+            held = leftHeld;
+            if (!held)
+                pressedOption = -1;
+        }
+
+        public void Release()
+        {
+            held = false;
+            pressedOption = -1;
+            HoveredOption = -1;
+        }
     }
 }

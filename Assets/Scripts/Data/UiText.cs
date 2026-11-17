@@ -351,6 +351,28 @@ namespace Nova.Data
         public string SlotLocked(int requiredLevel) => Format(slotLockedFormat, requiredLevel);
         public string Cancel(int refund) => Format(cancelFormat, refund);
 
+        // T6-09: el arte de la rueda pinta el número y el coste, y la palabra y lo que devuelve, en dos colores
+        // (ART-UI-WHEEL). Se parten los mismos formatos: lo de antes del coste, y en «Cancelar» el «+» va con él.
+        public string SlotNumber(int number) => Format(Before(slotFormat, "{1}"), number);
+        public string CancelWord => Before(cancelFormat, CancelCut);
+        public string CancelRefund(int refund) => Format(cancelFormat.Substring(CancelCut(cancelFormat)), refund);
+
+        static string Before(string format, string token)
+        {
+            int i = format.IndexOf(token, System.StringComparison.Ordinal);
+            return i < 0 ? format : format.Substring(0, i);
+        }
+
+        static string Before(string format, System.Func<string, int> cut) => format.Substring(0, cut(format));
+
+        static int CancelCut(string format)
+        {
+            int i = format.IndexOf("{0}", System.StringComparison.Ordinal);
+            if (i < 0)
+                return format.Length;
+            return i > 0 && format[i - 1] == '+' ? i - 1 : i;
+        }
+
         public string MapName(int map) => Pick(mapNames, map - 1, nameof(map));
         public string HudLevel(int map, int level) => Format(hudLevelFormat, map, level);
         public string LevelCaption(int map, int level) => Format(levelCaptionFormat, map, level, MapName(map).ToUpperInvariant());

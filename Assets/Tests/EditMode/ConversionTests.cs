@@ -476,23 +476,24 @@ namespace Nova.Tests
 
             for (int i = 0; i < 2; i++)
             {
-                Assert.Less(Vector2.Distance(center + InfoPanelState.ConversionOffsets[i], view.ConversionPosition(i)), 1e-5f);
+                Assert.Less(Vector2.Distance(center + panel.ConversionOffset(i), view.ConversionPosition(i)), 1e-5f);
                 Assert.AreEqual(i, panel.ConversionOptionAt(view.ConversionPosition(i)));
             }
-            Assert.AreEqual(-1, panel.ConversionOptionAt(center + new Vector2(0f, InfoPanelState.RowY(3))), "La fila de la mejora no es un blanco.");
+            Assert.AreEqual(-1, panel.ConversionOptionAt(center + new Vector2(0f, panel.RowY(3))), "La fila de la mejora no es un blanco.");
         }
 
         [Test]
         public void PanelGeometryFallsOnWholePixelsAndInsideThePanel()
         {
+            panel.Open(Node("Star", Faction.Player, 30), Vector2.zero);
             Vector2 size = InfoPanelState.ConversionButtonSize;
-            foreach (float v in new[] { InfoPanelState.Height, size.x, size.y, InfoPanelState.RowY(3), InfoPanelState.RowY(5),
-                         InfoPanelState.ConversionOffsets[0].x, InfoPanelState.ConversionOffsets[1].x })
+            foreach (float v in new[] { panel.Height, size.x, size.y, panel.RowY(3), panel.RowY(5),
+                         panel.ConversionOffset(0).x, panel.ConversionOffset(1).x, panel.ConversionOffset(0).y })
                 Assert.AreEqual(Mathf.Round(v * 64f), v * 64f, 1e-4f);
 
-            float bottom = InfoPanelState.ConversionOffsets[0].y - size.y / 2f;
-            Assert.Greater(bottom, -InfoPanelState.Height / 2f, "La última fila cabe en el panel.");
-            float gap = (InfoPanelState.ConversionOffsets[1].x - size.x / 2f) - (InfoPanelState.ConversionOffsets[0].x + size.x / 2f);
+            float bottom = panel.ConversionOffset(0).y - size.y / 2f;
+            Assert.Greater(bottom, -panel.Height / 2f, "La última fila cabe en el panel.");
+            float gap = (panel.ConversionOffset(1).x - size.x / 2f) - (panel.ConversionOffset(0).x + size.x / 2f);
             Assert.AreEqual(4f, gap * 64f, 1e-4f, "4 px entre los dos botones.");
         }
 

@@ -33,5 +33,14 @@
   "wormhole_ready"
  ],
  "flameEmberColumn": 32,
- "note": "n = fuseLength * invertido // coste; la pista en mosaico por todo el largo, la mecha en mosaico desde fuseX0 tapando la pista, y la llama con su x = 2 en la ultima columna de la mecha; pausada: la mecha quieta (columna 32) y la brasa; lista: la mecha entera, la llama lista pegada al borde derecho y una luz de 3 px que recorre la fila 2 de la mecha de x = -3 a 49 en el bucle"
+ "readyLight": {
+  "zero": "#FFFFFF",
+  "decay": "#FFFFFF",
+  "wormhole": "#FFFFFF"
+ },
+ "readyLightRow": 2,
+ "readyLightHalfWidth": 1.5,
+ "readyLightFrom": -3,
+ "readyLightTravel": 52,
+ "note": "n = fuseLength * invertido // coste; la pista en mosaico por todo el largo, la mecha en mosaico desde fuseX0 tapando la pista, y la llama con su x = 2 en la ultima columna de la mecha; pausada: la mecha quieta (columna 32) y la brasa; lista: la mecha entera, la llama lista pegada al borde derecho y una luz de 3 px que recorre la fila 2 de la mecha de x = -3 a 49 en el bucle (los pixeles de la mecha con |x - cabeza| < 1.5, cabeza = f / frames * readyLightTravel + readyLightFrom); bajo la mecha la pista se borra"
 }

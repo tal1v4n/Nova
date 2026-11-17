@@ -164,6 +164,10 @@ namespace Nova.Input
                 hud.Release();
             if (upgradeIcons != null)
                 upgradeIcons.Release();
+            if (infoPanel != null)
+                infoPanel.Release();
+            if (ignitionMenu != null)
+                ignitionMenu.Release();
             rightPressing = false;
             rightDragging = false;
             rightPressNode = null;
@@ -194,6 +198,11 @@ namespace Nova.Input
                 // Y los iconos de mejora pasan a activo, encima y pulsado con el cursor (T6-15).
                 if (upgradeIcons != null)
                     upgradeIcons.SetPointer(world, PickNode(world), mouse.leftButton.isPressed);
+                // Y los botones del panel y las opciones del menú de encendido, con su arte (T6-09).
+                if (infoPanel != null)
+                    infoPanel.SetPointer(world, mouse.leftButton.isPressed);
+                if (ignitionMenu != null)
+                    ignitionMenu.SetPointer(world, mouse.leftButton.isPressed);
 
                 if (mouse.leftButton.wasPressedThisFrame)
                     pending.Enqueue(new PointerEvent(PointerKind.LeftDown, world, PickNode(world)));
@@ -633,7 +642,9 @@ namespace Nova.Input
                 if (center.x + InfoPanelState.Width / 2f > right)
                     center = InfoPanelState.CenterBeside(position, true);
             }
-            return KeepInView(center, InfoPanelState.Width / 2f, InfoPanelState.Height / 2f);
+            // El alto sigue a las filas del nodo (13.3, T6-09).
+            float height = InfoPanelState.LayoutFor(node, Panel.Viewer).Height;
+            return KeepInView(center, InfoPanelState.Width / 2f, height / 2f);
         }
 
         // Cámara ortográfica del tablero; null en los tests, donde nada se desplaza.

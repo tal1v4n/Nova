@@ -134,8 +134,11 @@ namespace Nova.Tests
             router.ReleaseRight(at, node);
         }
 
-        Vector2 SlotAt(int index) => panel.Center + InfoPanelState.WheelSlotOffsets[index];
-        Vector2 CancelAt => panel.Center + InfoPanelState.CancelOffset;
+        // Sin rueda (un nodo que no es un Púlsar propio) no hay fila: la de la rueda de un Púlsar propio, para
+        // comprobar que su sitio no es un botón.
+        Vector2 SlotAt(int index) => panel.Center + (panel.Layout.HasWheel ? panel.WheelSlotOffset(index)
+            : new Vector2(new[] { -1.03125f, 0f, 1.03125f }[index], panel.RowY(7)));
+        Vector2 CancelAt => panel.Center + panel.CancelOffset;
 
         // Púlsar propio de nivel 1 con el panel abierto.
         NodeController OpenPulsar(int level = 1, int energy = 100)
@@ -214,15 +217,15 @@ namespace Nova.Tests
                 Assert.Less(Vector2.Distance(SlotAt(i), wheel.SlotPosition(i)), 1e-5f);
             Assert.Less(Vector2.Distance(CancelAt, wheel.CancelPosition), 1e-5f);
 
-            foreach (float v in new[] { InfoPanelState.Height, InfoPanelState.WheelSlotSize.x, InfoPanelState.WheelSlotSize.y,
-                         InfoPanelState.RowY(6), InfoPanelState.RowY(7), InfoPanelState.RowY(8), InfoPanelState.WheelSlotOffsets[0].x })
+            foreach (float v in new[] { panel.Height, InfoPanelState.WheelSlotSize.x, InfoPanelState.WheelSlotSize.y,
+                         panel.RowY(6), panel.RowY(7), panel.RowY(8), panel.WheelSlotOffset(0).x, panel.WheelSlotOffset(0).y })
                 Assert.AreEqual(Mathf.Round(v * 64f), v * 64f, 1e-4f, "Píxel exacto a 64 PPU.");
 
-            float bottom = InfoPanelState.CancelOffset.y - InfoPanelState.CancelSize.y / 2f;
-            Assert.Greater(bottom, -InfoPanelState.Height / 2f, "La última fila cabe en el panel.");
-            float right = InfoPanelState.WheelSlotOffsets[2].x + InfoPanelState.WheelSlotSize.x / 2f;
+            float bottom = panel.CancelOffset.y - InfoPanelState.CancelSize.y / 2f;
+            Assert.Greater(bottom, -panel.Height / 2f, "La última fila cabe en el panel.");
+            float right = panel.WheelSlotOffset(2).x + InfoPanelState.WheelSlotSize.x / 2f;
             Assert.LessOrEqual(right, InfoPanelState.CancelSize.x / 2f + 1e-5f);
-            Assert.AreEqual(-1, panel.WheelSlotAt(panel.Center + new Vector2(0f, InfoPanelState.RowY(3))), "La fila de la mejora no es un blanco.");
+            Assert.AreEqual(-1, panel.WheelSlotAt(panel.Center + new Vector2(0f, panel.RowY(3))), "La fila de la mejora no es un blanco.");
         }
 
         // --- Cargar y cancelar (7.1) ---

@@ -30,6 +30,11 @@ namespace Nova.Editor
     // T6-15: el icono de mejora (A.6, ART-UI-BTN-UPG) es una rejilla de celdas de 29 × 20 —fila = estado,
     // columna = frame— que mide ui_upgrade_icon.json, con el pivote abajo al centro: va encima de la huella.
     //
+    // T6-09: las piezas del panel, la rueda, el menú de encendido, el número de Energía y la barra de carga (A.6)
+    // no se colocan como sprites: las vistas leen sus píxeles y los componen en un PixelCanvas, como los
+    // generadores. Se importan legibles (Read/Write) y se cortan en rejillas con la celda de UiGrids —la de sus
+    // .json—, con cada celda llamada <pieza>_<fila>_<columna> y el pivote arriba a la izquierda.
+    //
     // T5-05b: las texturas de datos de los fondos con movimiento no son sprites. Los campos y los
     // puntos son números —densidades y fracciones a 8 bits— y se leen en lineal; lo fijo es color y
     // se lee en sRGB, como un sprite. Ninguna se filtra ni se comprime, y el alfa es dato: no se trata
@@ -50,8 +55,8 @@ namespace Nova.Editor
 
         // Subirla reimporta todo lo que pasa por aquí. 1: las texturas de datos (T5-05b); 2: todo en 2D;
         // 3: el protón y las cifras (T6-04); 4: el protón en diez tallas; 5: el lazo (T6-06); 6: las hojas de A.5 (T6-07);
-        // 7: el HUD (T6-08); 8: el icono de mejora (T6-15).
-        public override uint GetVersion() => 8;
+        // 7: el HUD (T6-08); 8: el icono de mejora (T6-15); 9: el panel, la rueda, el menú y los números (T6-09).
+        public override uint GetVersion() => 9;
 
         void OnPreprocessTexture()
         {
@@ -70,7 +75,9 @@ namespace Nova.Editor
             }
 
             string fileName = System.IO.Path.GetFileNameWithoutExtension(assetPath);
-            bool isSheet = fileName.EndsWith(SheetSuffix) || ProtonSheetPattern.IsMatch(fileName) || fileName == DigitsName;
+            bool uiPiece = UiGrids.ContainsKey(fileName) || UiSingles.Contains(fileName);
+            bool isSheet = fileName.EndsWith(SheetSuffix) || ProtonSheetPattern.IsMatch(fileName) || fileName == DigitsName
+                           || UiGrids.ContainsKey(fileName);
 
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = isSheet ? SpriteImportMode.Multiple : SpriteImportMode.Single;
@@ -81,12 +88,14 @@ namespace Nova.Editor
             importer.wrapMode = TextureWrapMode.Clamp;
             importer.npotScale = TextureImporterNPOTScale.None;
             importer.maxTextureSize = MaxTextureSize;
+            // T6-09: las vistas leen los píxeles de estas piezas.
+            importer.isReadable = uiPiece;
 
             // Pivote Center: en NOVA nada se apoya en un suelo (Bottom no aplica a ningún asset). La esquina del
             // lazo (T6-06) es la excepción: se coloca por su esquina de arriba a la izquierda y se refleja allí.
             var settings = new TextureImporterSettings();
             importer.ReadTextureSettings(settings);
-            bool topLeft = fileName == LassoCornerName || HudPattern.IsMatch(fileName);
+            bool topLeft = fileName == LassoCornerName || HudPattern.IsMatch(fileName) || uiPiece;
             settings.spriteAlignment = (int)(topLeft ? SpriteAlignment.TopLeft : SpriteAlignment.Center);
             settings.spriteMeshType = SpriteMeshType.FullRect;
             // La placa del HUD: nueve cortes, con el borde de su .json (la escalera más el marco).
@@ -246,12 +255,66 @@ namespace Nova.Editor
             return export != null ? new Vector2Int(export.cellWidth, export.cellHeight) : default;
         }
 
+        // T6-09: la celda de cada pieza de A.6 que se compone en CPU, la de su .json (ancho, alto). Una por fila y
+        // columna: <pieza>_<fila>_<columna>.
+        static readonly System.Collections.Generic.Dictionary<string, Vector2Int> UiGrids =
+            new System.Collections.Generic.Dictionary<string, Vector2Int>
+            {
+                // ART-UI-PANEL «La sonda»: una fila por bando (Jugador, Enemigo, neutral).
+                { "ui_info_panel_corner", new Vector2Int(8, 8) },
+                { "ui_info_panel_edge", new Vector2Int(2, 1) },
+                { "ui_info_panel_tether", new Vector2Int(8, 3) },
+                { "ui_info_panel_pulse", new Vector2Int(3, 3) },
+                { "ui_info_panel_socket", new Vector2Int(3, 7) },
+                { "ui_info_panel_divider", new Vector2Int(4, 1) },
+                { "ui_info_panel_rule", new Vector2Int(4, 3) },
+                // ART-UI-HUD-ENERGY «El filamento»: fila = cifra, columna = frame; lo neutral, una fila.
+                { "ui_energy_label_player_sheet", new Vector2Int(12, 16) },
+                { "ui_energy_label_enemy_sheet", new Vector2Int(12, 16) },
+                { "ui_energy_label_neutral", new Vector2Int(12, 16) },
+                // ART-UI-CHARGE «La mecha».
+                { "ui_charge_socket", new Vector2Int(2, 6) },
+                { "ui_charge_track", new Vector2Int(2, 6) },
+                { "ui_charge_fuse_sheet", new Vector2Int(8, 6) },
+                { "ui_charge_flame_sheet", new Vector2Int(5, 6) },
+                // ART-UI-BTN-CONV «El barrido».
+                { "ui_btn_convert_plate", new Vector2Int(20, 20) },
+                { "ui_btn_convert_front", new Vector2Int(5, 16) },
+                { "ui_btn_convert_fill", new Vector2Int(8, 8) },
+                // ART-UI-WHEEL «Las teclas».
+                { "ui_power_wheel_plate", new Vector2Int(20, 20) },
+                { "ui_power_wheel_fill", new Vector2Int(8, 8) },
+                { "ui_power_wheel_hover", new Vector2Int(8, 8) },
+                { "ui_power_wheel_icons", new Vector2Int(12, 12) },
+                // ART-UI-IGN-MENU «Los nodos».
+                { "ui_ignition_menu_corner", new Vector2Int(7, 7) },
+                { "ui_ignition_menu_nodes", new Vector2Int(72, 72) },
+            };
+
+        // Las piezas de una sola celda.
+        static readonly System.Collections.Generic.HashSet<string> UiSingles =
+            new System.Collections.Generic.HashSet<string> { "ui_info_panel_screen", "ui_power_wheel_lock" };
+
         static void SliceSheet(TextureImporter importer)
         {
             importer.GetSourceTextureWidthAndHeight(out int width, out int height);
             string baseName = System.IO.Path.GetFileNameWithoutExtension(importer.assetPath);
             SpriteRect[] rects;
-            if (HudSheetPattern.IsMatch(baseName))
+            if (UiGrids.TryGetValue(baseName, out Vector2Int uiCell))
+            {
+                if (width % uiCell.x != 0 || height % uiCell.y != 0)
+                {
+                    Debug.LogError($"[Nova] {importer.assetPath}: {width}x{height} no es una rejilla de celdas de {uiCell.x}x{uiCell.y}.");
+                    return;
+                }
+                int rows = height / uiCell.y;
+                int columns = width / uiCell.x;
+                var topLeft = new Vector2(0f, 1f);
+                rects = Enumerable.Range(0, rows).SelectMany(row => Enumerable.Range(0, columns).Select(column =>
+                    Frame($"{baseName}_{row}_{column}", new Rect(column * uiCell.x, height - (row + 1) * uiCell.y, uiCell.x, uiCell.y), topLeft)))
+                    .ToArray();
+            }
+            else if (HudSheetPattern.IsMatch(baseName))
             {
                 Vector2Int cell = HudCell(importer.assetPath, baseName);
                 if (cell.x <= 0 || cell.y <= 0 || width % cell.x != 0 || height % cell.y != 0)

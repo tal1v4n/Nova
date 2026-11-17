@@ -26,7 +26,7 @@ namespace Nova.Editor
     // Assets/Sprites/world/beam_zero/, beam_decay/ y beam_wormhole/—.
     //
     // T6-07: y el de los efectos puntuales en VfxArt —las quince hojas de A.5, de Assets/Sprites/fx/—.
-    public static class NodeArtAssets
+    public static partial class NodeArtAssets
     {
         public const string SpritesFolder = "Assets/Sprites/nodes";
         public const string StatesFolder = "Assets/Sprites/states";
@@ -155,8 +155,25 @@ namespace Nova.Editor
                 return;
             }
             EditorUtility.SetDirty(hud);
+
+            // T6-09: el número y la barra de cada nodo, y el panel, la rueda y el menú (A.6).
+            NodeLabelArt labels = LoadOrCreate<NodeLabelArt>(NodeLabelArtPath);
+            if (!ConfigureNodeLabels(labels, out string labelError))
+            {
+                Debug.LogError($"[Nova] {labelError}");
+                return;
+            }
+            EditorUtility.SetDirty(labels);
+
+            PanelArt panelArt = LoadOrCreate<PanelArt>(PanelArtPath);
+            if (!ConfigurePanel(panelArt, out string panelError))
+            {
+                Debug.LogError($"[Nova] {panelError}");
+                return;
+            }
+            EditorUtility.SetDirty(panelArt);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[Nova] Sprites, huellas y hojas de idle asignados a los {Nodes.Length} tipos de nodo, los overlays de estado a {StateArtPath}, el radio y el arco del Magnetar a {MagnetarArtPath}, el protón a {ProtonArtPath}, los haces de poder a {PowerBeamArtPath}, la línea, la selección, el lazo y la retícula a {InputArtPath} y los quince efectos a {VfxArtPath} y el HUD a {HudArtPath}.");
+            Debug.Log($"[Nova] Sprites, huellas y hojas de idle asignados a los {Nodes.Length} tipos de nodo, los overlays de estado a {StateArtPath}, el radio y el arco del Magnetar a {MagnetarArtPath}, el protón a {ProtonArtPath}, los haces de poder a {PowerBeamArtPath}, la línea, la selección, el lazo y la retícula a {InputArtPath} los quince efectos a {VfxArtPath}, el HUD a {HudArtPath}, el número y la barra de carga a {NodeLabelArtPath} y el panel, la rueda y el menú de encendido a {PanelArtPath}.");
         }
 
         static T LoadOrCreate<T>(string path) where T : ScriptableObject

@@ -634,9 +634,11 @@ namespace Nova.Editor
             go.AddComponent<ProvisionalAimView>().Configure(aim, registry); // T3-07
             go.AddComponent<AimDimView>().Configure(aim, registry); // T6-06
             go.AddComponent<AimReticleView>().Configure(input, aim, sendLine, registry); // T6-06
-            go.AddComponent<IgnitionMenu>().Configure(menu, font, text);
-            go.AddComponent<NodeInfoPanel>().Configure(panel, font, text);
-            go.AddComponent<PulsarPowerWheel>().Configure(panel, aim, font, text); // T3-07
+            // T6-09: el panel, la rueda y el menú con su arte (A.6). Sin PanelArt asignado, siguen las primitivas.
+            var panelArt = AssetDatabase.LoadAssetAtPath<PanelArt>(NodeArtAssets.PanelArtPath);
+            go.AddComponent<IgnitionMenu>().Configure(menu, font, text, panelArt);
+            go.AddComponent<NodeInfoPanel>().Configure(panel, font, text, panelArt);
+            go.AddComponent<PulsarPowerWheel>().Configure(panel, aim, font, text, panelArt); // T3-07
             // T6-08: la barra de poder en todas las escenas; la de arriba, solo con GameManager, que da el nivel y el tiempo.
             go.AddComponent<PowerBarUI>().Configure(hudArt, registry);
             if (game != null)
@@ -689,6 +691,10 @@ namespace Nova.Editor
                 AssetDatabase.LoadAssetAtPath<MagnetarArt>(NodeArtAssets.MagnetarArtPath),
                 AssetDatabase.LoadAssetAtPath<ProtonArt>(NodeArtAssets.ProtonArtPath));
             go.AddComponent<ProvisionalPulsarView>();
+            // T6-09: el número de Energía y la barra de carga con su arte. Sin NodeLabelArt, siguen los provisionales.
+            var labelArt = AssetDatabase.LoadAssetAtPath<NodeLabelArt>(NodeArtAssets.NodeLabelArtPath);
+            go.AddComponent<EnergyLabelView>().Configure(labelArt);
+            go.AddComponent<ChargeBarView>().Configure(labelArt);
             // T6-02: los estados de 14.1 y el idle. Sin NodeStateArt asignado, los estados siguen provisionales.
             go.AddComponent<NodeAnimator>().Configure(balance,
                 AssetDatabase.LoadAssetAtPath<NodeStateArt>(NodeArtAssets.StateArtPath));

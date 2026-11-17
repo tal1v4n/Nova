@@ -48,7 +48,9 @@ namespace Nova.Presentation
         {
             EnsureBuilt();
 
-            bool visible = Node.IsInitialized && Node.Type == NodeType.Pulsar && Caster.HasPowerCharge;
+            // T6-09: con el arte de la barra (ChargeBarView, ART-UI-CHARGE), la provisional se aparta.
+            bool byArt = TryGetComponent(out ChargeBarView art) && art.Draws;
+            bool visible = Node.IsInitialized && Node.Type == NodeType.Pulsar && Caster.HasPowerCharge && !byArt;
             back.enabled = visible;
             fill.enabled = visible && Caster.Invested > 0;
             if (!visible)

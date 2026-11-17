@@ -556,7 +556,7 @@ namespace Nova.Tests
         }
 
         // T6-15: la cuarta fila del panel, que hasta entonces era el botón de mejora.
-        Vector2 UpgradeRow => panel.Center + new Vector2(0f, InfoPanelState.RowY(3));
+        Vector2 UpgradeRow => panel.Center + new Vector2(0f, panel.RowY(3));
 
         [Test]
         public void RightClickOnAnotherNodeMovesThePanel()
@@ -615,7 +615,7 @@ namespace Nova.Tests
             NodeController star = Node("Star", Faction.Player, 10);
             router.ClickRight(star);
             NodeController hidden = Node("Star", Faction.Player, 10, panel.Center);
-            Vector2 inside = panel.Center + new Vector2(0f, InfoPanelState.Height / 4f);
+            Vector2 inside = panel.Center + new Vector2(0f, panel.Height / 4f);
 
             ClickAt(inside, hidden);
 
@@ -624,7 +624,7 @@ namespace Nova.Tests
 
         // --- Reconversión desde el panel (13.3 punto 5, T2-07) ---
 
-        Vector2 ConversionButton(int index) => panel.Center + InfoPanelState.ConversionOffsets[index];
+        Vector2 ConversionButton(int index) => panel.Center + panel.ConversionOffset(index);
 
         NodeController Convertible(string type, Faction faction, int energy)
         {

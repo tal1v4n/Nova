@@ -23,6 +23,8 @@ namespace Nova.Presentation
     // ni se pinta el halo. Y el sprite lo mueve él (el cabeceo),
     // porque dos componentes escribiendo la misma posición se pisan.
     //
+    // T6-09: con el arte del número (EnergyLabelView, ART-UI-HUD-ENERGY), aquí ya no se dibuja el número.
+    //
     // T6-03: el susto definitivo es de NodeAnimator (salto y temblor, capa 5 de 14.7). Con él moviendo el
     // sprite, aquí no tiembla nada: el número se queda quieto, como con el cabeceo (A.2.5). Este temblor
     // solo queda para el círculo de las escenas sin arte.
@@ -115,7 +117,8 @@ namespace Nova.Presentation
 
             bool visible = Node.IsInitialized;
             body.enabled = visible;
-            label.enabled = visible;
+            // T6-09: con el arte del número (EnergyLabelView), el TextMeshPro se aparta.
+            label.enabled = visible && !LabelDrawnByArt;
             aura.enabled = visible && Node.HasState(NodeStateFlags.Infected) && !AnimatorDrawsStates;
             if (!visible)
                 return;
@@ -155,6 +158,8 @@ namespace Nova.Presentation
         bool ShakesItself => IsScared && !(HasArt && Animator != null);
 
         bool HasArt => Visual != null && NodeVisual.SpriteOf(Node) != null;
+
+        bool LabelDrawnByArt => TryGetComponent(out EnergyLabelView energyLabel) && energyLabel.Draws;
 
         bool AnimatorDrawsStates => Animator != null && Animator.DrawsStates;
 

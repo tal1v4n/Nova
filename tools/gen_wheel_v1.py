@@ -552,7 +552,8 @@ def piezas():
         for e in ('normal', 'encima', 'pulsado', 'bloqueado', 'candado', 'nodisp', 'cargando', 'listo',
                   'listo_encima'):
             d[f'placa_{p}_{e}'] = placa(e, p)
-        d[f'carga_{p}'] = np.hstack([carga(2, RAMPA[p][5], RAMPA[p][4]), carga(4, RAMPA[p][5], RAMPA[p][4])])
+        # las mismas que pinta ranura(): todos los puntos en el indice 4, sobre el relleno del 5 (o del 6, pausada)
+        d[f'carga_{p}'] = np.hstack([carga(2, RAMPA[p][4], RAMPA[p][4]), carga(4, RAMPA[p][4], RAMPA[p][4])])
     for i in range(1, PASOS + 1):
         d[f'carga_{i}'] = carga(i)
     d['pictos'] = hoja_pictos(PICTOS_V1)
@@ -581,14 +582,23 @@ def exportar(d):
     cols = ('normal', 'encima', 'pulsado', 'bloqueado', 'candado', 'nodisp', 'cargando', 'listo', 'listo_encima')
     Image.fromarray(np.vstack([np.hstack([p[f'placa_{q}_{e}'] for e in cols]) for q in PODERES]), 'RGBA').save(
         os.path.join(d, 'ui_power_wheel_plate.png'))
-    Image.fromarray(np.vstack([p[f'carga_{q}'] for q in PODERES] +
-                              [np.hstack([p[f'carga_{i}'] for i in range(1, PASOS + 1)])[:, :16]]), 'RGBA').save(
+    Image.fromarray(np.vstack([p[f'carga_{q}'] for q in PODERES]), 'RGBA').save(
         os.path.join(d, 'ui_power_wheel_fill.png'))
+    Image.fromarray(np.hstack([p[f'carga_{i}'] for i in range(1, PASOS + 1)]), 'RGBA').save(
+        os.path.join(d, 'ui_power_wheel_hover.png'))
     Image.fromarray(p['pictos'], 'RGBA').save(os.path.join(d, 'ui_power_wheel_icons.png'))
     Image.fromarray(p['candado'], 'RGBA').save(os.path.join(d, 'ui_power_wheel_lock.png'))
     j = json_comun()
     j.update({'plateCell': 20, 'plateBorder': BORDE, 'plateCenterMode': 'tiled', 'plateRows': list(PODERES),
-              'plateColumns': list(cols), 'icon': PIC, 'iconAt': [PADX, 4], 'iconColumns': list(PICTOS_V1),
+              'plateColumns': list(cols), 'fillRows': list(PODERES), 'fillColumns': ['paused', 'charging'],
+              'fillTile': 8, 'hoverSteps': PASOS,
+              'powerColors': {q: {'charging': hexa(RAMPA[q][5]), 'paused': hexa(RAMPA[q][6]),
+                                  'front': hexa(RAMPA[q][2]), 'light': hexa(RAMPA[q][1]),
+                                  'lightEdge': hexa(RAMPA[q][2]), 'readyNumber': hexa(OSCURO)}
+                              for q in PODERES},
+              'lightWidth': 3, 'lightFrom': -8, 'lightTravel': SW + 16,
+              'cancelPlates': 'la fila zero de la placa: normal, encima (tambien pulsado) y bloqueado',
+              'icon': PIC, 'iconAt': [PADX, 4], 'iconColumns': list(PICTOS_V1),
               'lockAt': [PADX + 2, 6], 'textRight': SW - PADX, 'capTop': TY,
               'note': 'ranura: placa de nueve cortes de su poder y estado; encima, la trama cian de carga (paso 1 a '
                       '5) entra de izquierda a derecha en 160 ms; cargando, la trama del poder (fila del poder: '

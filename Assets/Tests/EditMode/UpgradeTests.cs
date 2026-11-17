@@ -310,7 +310,8 @@ namespace Nova.Tests
         [Test]
         public void PanelSizesFallOnWholePixels()
         {
-            foreach (float size in new[] { InfoPanelState.Width, InfoPanelState.Height, InfoPanelState.CancelSize.x, InfoPanelState.CancelSize.y })
+            foreach (float size in new[] { InfoPanelState.Width, InfoPanelState.LayoutFor(null, Faction.Player).Height,
+                         InfoPanelState.CancelSize.x, InfoPanelState.CancelSize.y })
                 Assert.AreEqual(Mathf.Round(size * 64f), size * 64f, 1e-4f);
         }
 

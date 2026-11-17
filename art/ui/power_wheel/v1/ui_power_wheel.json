@@ -70,6 +70,47 @@
   "listo",
   "listo_encima"
  ],
+ "fillRows": [
+  "zero",
+  "decay",
+  "wormhole"
+ ],
+ "fillColumns": [
+  "paused",
+  "charging"
+ ],
+ "fillTile": 8,
+ "hoverSteps": 5,
+ "powerColors": {
+  "zero": {
+   "charging": "#35669F",
+   "paused": "#232F63",
+   "front": "#B8F0FF",
+   "light": "#EAFDFF",
+   "lightEdge": "#B8F0FF",
+   "readyNumber": "#11142A"
+  },
+  "decay": {
+   "charging": "#256B2B",
+   "paused": "#143A2C",
+   "front": "#B4FA84",
+   "light": "#E4FFD0",
+   "lightEdge": "#B4FA84",
+   "readyNumber": "#11142A"
+  },
+  "wormhole": {
+   "charging": "#452088",
+   "paused": "#241247",
+   "front": "#C9A2FF",
+   "light": "#F0E2FF",
+   "lightEdge": "#C9A2FF",
+   "readyNumber": "#11142A"
+  }
+ },
+ "lightWidth": 3,
+ "lightFrom": -8,
+ "lightTravel": 76,
+ "cancelPlates": "la fila zero de la placa: normal, encima (tambien pulsado) y bloqueado",
  "icon": 12,
  "iconAt": [
   4,

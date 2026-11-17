@@ -14,5 +14,21 @@
  "pulseLoopFrames": 32,
  "fps": 12,
  "titleRuleBlinkFrames": 8,
- "note": "fondo: la tesela de 8 en mosaico; esquinas espejadas; filo un punto cada 2 px; cable del borde del nodo (media huella + 2) al costado del panel, en escalon si el panel se desplaza en vertical, un punto cada 2 px y el pulso de 3 px recorriendolo del nodo al panel en 32 frames; enchufe a 3 px del panel, en la y del cable"
+ "capTop": 7,
+ "dividerStep": 4,
+ "ruleGap": 3,
+ "ruleLight": 3,
+ "tetherFromFootprint": 2,
+ "socketGap": 3,
+ "text": {
+  "title": {
+   "player": "#A6F2FD",
+   "enemy": "#FF9EB2",
+   "neutral": "#E2E6EF"
+  },
+  "text": "#E2E6EF",
+  "label": "#B5BCCD",
+  "muted": "#8A93A6"
+ },
+ "note": "fondo: la tesela de 8 en mosaico; esquinas espejadas; filo un punto cada 2 px; cable del borde del nodo (media huella + 2) al costado del panel, en escalon si el panel se desplaza en vertical, un punto cada 2 px y el pulso de 3 px recorriendolo del nodo al panel en 32 frames (cabeza en el pixel 0 del pulso, cola en el 1); enchufe a 3 px del panel, en la y del cable; divider: un punto cada 4 en la fila de encima de cada bloque menos el primero; rule: la raya bajo el titulo (pixel 0 en mosaico, a 4 px del pie de la primera fila, hasta 6 px del final) y el testigo de 3 x 3 al final, visible los frames f // 8 pares"
 }

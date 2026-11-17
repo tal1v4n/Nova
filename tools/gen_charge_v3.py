@@ -217,11 +217,14 @@ def exportar(d):
                    'fuseRows': list(PODERES), 'fusePausedColumn': FRAMES,
                    'flameRows': [f'{p}_{m}' for p in PODERES for m in ('charging', 'ready')],
                    'flameEmberColumn': FRAMES,
+                   'readyLight': {p: '#%02X%02X%02X' % tuple(int(v) for v in rampa_poder(p)[0]) for p in PODERES},
+                   'readyLightRow': 2, 'readyLightHalfWidth': 1.5, 'readyLightFrom': -3, 'readyLightTravel': LARGO + 6,
                    'note': 'n = fuseLength * invertido // coste; la pista en mosaico por todo el largo, la mecha '
                            'en mosaico desde fuseX0 tapando la pista, y la llama con su x = 2 en la ultima '
                            'columna de la mecha; pausada: la mecha quieta (columna 32) y la brasa; lista: la mecha '
                            'entera, la llama lista pegada al borde derecho y una luz de 3 px que recorre la fila 2 '
-                           'de la mecha de x = -3 a 49 en el bucle'}, fh, indent=1)
+                           'de la mecha de x = -3 a 49 en el bucle (los pixeles de la mecha con |x - cabeza| < 1.5, '
+                           'cabeza = f / frames * readyLightTravel + readyLightFrom); bajo la mecha la pista se borra'}, fh, indent=1)
 
 
 if __name__ == '__main__':

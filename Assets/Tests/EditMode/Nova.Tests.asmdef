@@ -11,6 +11,7 @@
         "Nova.Input",
         "Nova.Presentation",
         "Nova.UI",
+        "Nova.Utils",
         "Unity.TextMeshPro"
     ],
     "includePlatforms": [

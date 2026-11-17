@@ -47,6 +47,10 @@ ESQ = 8
 PLASMA = {'player': rampa('plasma_p'), 'enemy': rampa('plasma_e'), 'neutral': rampa('neutral')}
 
 
+def hexa(c):
+    return '#%02X%02X%02X' % tuple(int(v) for v in c)
+
+
 def bando_de(fac):
     R = RFAC[fac]
     return {'titulo': R[2] if fac != 'neutral' else R[1]}
@@ -199,6 +203,23 @@ def antes_de_pegar(lienzo, caso, cx, cy, x, y, w, h, izquierda, f):
     pega(lienzo, en, x1 if not izquierda else x1 - 2, ya - 3)
 
 
+def divisor(fac):
+    """Tesela de 4 x 1 de la linea entre bloques: un punto cada 4 en la sombra del bando."""
+    t = rgba(1, 4)
+    t[0, 0, :3] = RFAC[fac][6] if fac != 'enemy' else RFAC[fac][5]
+    t[0, 0, 3] = 255
+    return t
+
+
+def testigo(fac):
+    """La raya del titulo y su testigo, como los pinta `raya`: 1 x 1 de la raya y el testigo de 3 x 3 al lado."""
+    t = rgba(3, 4)
+    full = raya(fac, 9, 0)
+    t[1, 0] = full[1, 0]
+    t[:, 1:4] = full[:, 6:9]
+    return t
+
+
 def piezas():
     d = {'trama': trama()}
     for fac in FACCIONES:
@@ -208,6 +229,8 @@ def piezas():
         d[f'pulso_{fac}'] = pulso(fac)
         d[f'enchufe_{fac}'] = enchufe(fac)
         d[f'raya_{fac}'] = raya(fac, 32, 0)
+        d[f'divisor_{fac}'] = divisor(fac)
+        d[f'testigo_{fac}'] = testigo(fac)
     return d
 
 
@@ -224,17 +247,27 @@ def exportar(d):
     p = piezas()
     Image.fromarray(p['trama'], 'RGBA').save(os.path.join(d, 'ui_info_panel_screen.png'))
     for clave, nombre in (('esquina', 'corner'), ('filo', 'edge'), ('cable', 'tether'),
-                          ('pulso', 'pulse'), ('enchufe', 'socket')):
+                          ('pulso', 'pulse'), ('enchufe', 'socket'), ('divisor', 'divider'),
+                          ('testigo', 'rule')):
         Image.fromarray(np.vstack([p[f'{clave}_{f}'] for f in FACCIONES]), 'RGBA').save(
             os.path.join(d, f'ui_info_panel_{nombre}.png'))
     with open(os.path.join(d, 'ui_info_panel.json'), 'w') as fh:
         json.dump({'width': W, 'padding': PAD, 'rowHeight': FILA, 'rows': list(FACCIONES),
                    'screenTile': 8, 'cornerSize': ESQ, 'edgeStep': 2, 'tetherStep': 2,
                    'pulseLoopFrames': FRAMES, 'fps': 12, 'titleRuleBlinkFrames': 8,
+                   'capTop': base.CAP_Y, 'dividerStep': 4, 'ruleGap': 3, 'ruleLight': 3,
+                   'tetherFromFootprint': 2, 'socketGap': 3,
+                   'text': {'title': {f: hexa(bando_de(f)['titulo']) for f in FACCIONES},
+                            'text': hexa(base.C_TEXTO), 'label': hexa(base.C_ROTULO),
+                            'muted': hexa(base.C_GRIS)},
                    'note': 'fondo: la tesela de 8 en mosaico; esquinas espejadas; filo un punto cada 2 px; '
                            'cable del borde del nodo (media huella + 2) al costado del panel, en escalon si el '
                            'panel se desplaza en vertical, un punto cada 2 px y el pulso de 3 px recorriendolo '
-                           'del nodo al panel en 32 frames; enchufe a 3 px del panel, en la y del cable'}, fh, indent=1)
+                           'del nodo al panel en 32 frames (cabeza en el pixel 0 del pulso, cola en el 1); enchufe '
+                           'a 3 px del panel, en la y del cable; divider: un punto cada 4 en la fila de encima de cada '
+                           'bloque menos el primero; rule: la raya bajo el titulo (pixel 0 en mosaico, a 4 px del pie '
+                           'de la primera fila, hasta 6 px del final) y el testigo de 3 x 3 al final, visible los '
+                           'frames f // 8 pares'}, fh, indent=1)
 
 
 if __name__ == '__main__':
