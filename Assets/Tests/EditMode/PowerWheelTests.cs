@@ -358,7 +358,10 @@ namespace Nova.Tests
             Assert.AreSame(enemy, beams.Active[0].Target);
             Assert.AreEqual(PowerChargeState.Idle, Caster(pulsar).State);
             Assert.IsFalse(aim.IsAiming);
-            Assert.AreEqual("Poderes", wheel.Header);
+            Assert.IsFalse(panel.IsOpen, "18 #56: el panel se cerró al apuntar y no vuelve solo.");
+
+            RightClick(pulsar);
+            Assert.AreEqual("Poderes", wheel.Header, "Al reabrirlo, la rueda ya no tiene nada cargado.");
         }
 
         [Test]
