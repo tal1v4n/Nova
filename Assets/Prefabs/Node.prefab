@@ -30,6 +30,8 @@ GameObject:
   - component: {fileID: 8826767285077947241}
   - component: {fileID: 1661158970486546173}
   - component: {fileID: 7219644904623616947}
+  - component: {fileID: 4756206859846762326}
+  - component: {fileID: 1620609085631123989}
   - component: {fileID: 584352815515619169}
   m_Layer: 8
   m_Name: Node
@@ -364,6 +366,32 @@ MonoBehaviour:
   widthPixels: 48
   heightPixels: 4
   offsetPixels: 40
+--- !u!114 &4756206859846762326
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7921229937245829407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92d1b3985475f86498ae731288d70db4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.EnergyLabelView
+  art: {fileID: 11400000, guid: dc08b8904cbc01f46a940c5e816a8a49, type: 2}
+--- !u!114 &1620609085631123989
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7921229937245829407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b91288c5f9b03a4da5873aa37b5c1fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Nova.Presentation::Nova.Presentation.ChargeBarView
+  art: {fileID: 11400000, guid: dc08b8904cbc01f46a940c5e816a8a49, type: 2}
 --- !u!114 &584352815515619169
 MonoBehaviour:
   m_ObjectHideFlags: 0

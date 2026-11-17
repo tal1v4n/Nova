@@ -648,6 +648,8 @@ cambian por segundo, que es cuánto movimiento hay.
 
 **El icono de mejora** (`T6-15`, A.6) es una rejilla de celdas cuya medida dice `ui_upgrade_icon.json` —29 × 20, fila = estado y columna = frame—, con el pivote **abajo al centro**, en la columna entera `celda / 2`: va encima de la huella del nodo y no en coordenadas de pantalla. Cada celda se llama `ui_upgrade_icon_sheet_<fila>_<columna>`.
 
+**El panel, la rueda, el menú de encendido, el número de Energía y la barra de carga** (`T6-09`, A.6) no se colocan como sprites: las vistas **leen sus píxeles y los componen en CPU** (`PixelCanvas`), como los generadores, porque las máscaras en escalera de 13.12, el barrido, el mosaico absoluto de las tramas y el cable con escalón no se montan exactos con *Draw Mode*. Por eso sus piezas se importan con **Read/Write** y se cortan en rejillas con la celda de su `.json` (`SpriteImportRules.UiGrids`), cada celda `<pieza>_<fila>_<columna>` y el pivote arriba a la izquierda. Lo compuesto se sube a una textura con `Filter Mode: Point` a 64 px por unidad.
+
 **Las hojas de A.5 son rejillas** (`T6-07`): `fx_<efecto>_sheet.png`, en celdas de 48, 64 o 96 según el efecto, con una fila por caso y las variantes en columnas. `SpriteImportRules` las corta con la celda que dice el `.json` que el generador deja al lado —`ArtBridge` copia los dos— y llama a cada celda `<hoja>_<fila>_<columna>`, con la fila 0 arriba. Qué es cada fila lo dice el mismo `.json` (`rows`), y `VfxArt` elige por ese nombre.
 
 Números de juego (vida, puntaje, valores) no se hornean en el sprite: van

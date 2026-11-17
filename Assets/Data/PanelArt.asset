@@ -1,0 +1,314 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 675401ba16b09bf468f6d2cd6324d797, type: 3}
+  m_Name: PanelArt
+  m_EditorClassIdentifier: Nova.Data::Nova.Data.PanelArt
+  panel:
+    screen: {fileID: 21300000, guid: 84db8d456f0561acd3aa0173c315d4a8, type: 3}
+    corner:
+    - {fileID: -153846977, guid: 70cbd08549a89ac026b9ca668999091d, type: 3}
+    - {fileID: -1939680610, guid: 70cbd08549a89ac026b9ca668999091d, type: 3}
+    - {fileID: 655395232, guid: 70cbd08549a89ac026b9ca668999091d, type: 3}
+    edge:
+    - {fileID: -1602620999, guid: 114e451c6d0ed540d2ef5800119cbec0, type: 3}
+    - {fileID: 1025299684, guid: 114e451c6d0ed540d2ef5800119cbec0, type: 3}
+    - {fileID: -226397402, guid: 114e451c6d0ed540d2ef5800119cbec0, type: 3}
+    tether:
+    - {fileID: 861145268, guid: 07bd554d04ff95b0eeef14cd31ba6161, type: 3}
+    - {fileID: -1449273575, guid: 07bd554d04ff95b0eeef14cd31ba6161, type: 3}
+    - {fileID: -1376070579, guid: 07bd554d04ff95b0eeef14cd31ba6161, type: 3}
+    pulse:
+    - {fileID: -12834020, guid: 82c51776c5ee5361e1cffb339e78dff3, type: 3}
+    - {fileID: 1604079466, guid: 82c51776c5ee5361e1cffb339e78dff3, type: 3}
+    - {fileID: 1321908745, guid: 82c51776c5ee5361e1cffb339e78dff3, type: 3}
+    socket:
+    - {fileID: 1713472763, guid: 26b6bd932a685b4529afa45ab9907c88, type: 3}
+    - {fileID: -1651888118, guid: 26b6bd932a685b4529afa45ab9907c88, type: 3}
+    - {fileID: -1183261067, guid: 26b6bd932a685b4529afa45ab9907c88, type: 3}
+    divider:
+    - {fileID: -1451462653, guid: 651e24d75a26e6ae0ca17169ee814548, type: 3}
+    - {fileID: -572444472, guid: 651e24d75a26e6ae0ca17169ee814548, type: 3}
+    - {fileID: 1122181420, guid: 651e24d75a26e6ae0ca17169ee814548, type: 3}
+    rule:
+    - {fileID: -1648196911, guid: a011623fc8c16c9519d2a7a7034554f5, type: 3}
+    - {fileID: -9938350, guid: a011623fc8c16c9519d2a7a7034554f5, type: 3}
+    - {fileID: 211980068, guid: a011623fc8c16c9519d2a7a7034554f5, type: 3}
+    width: 208
+    padding: 8
+    rowHeight: 24
+    capTop: 7
+    pulseFrames: 32
+    framesPerSecond: 12
+    blinkFrames: 8
+    dividerStep: 4
+    ruleGap: 3
+    ruleLight: 3
+    tetherFromFootprint: 2
+    socketGap: 3
+    titleColor:
+    - serializedVersion: 2
+      rgba: 4294832806
+    - serializedVersion: 2
+      rgba: 4289896191
+    - serializedVersion: 2
+      rgba: 4293912290
+    textColor:
+      serializedVersion: 2
+      rgba: 4293912290
+    labelColor:
+      serializedVersion: 2
+      rgba: 4291673269
+    mutedColor:
+      serializedVersion: 2
+      rgba: 4289106826
+  conversion:
+    plate:
+    - {fileID: 884737647, guid: fe5f5ed03eefce282d69ef9d9b6e791e, type: 3}
+    - {fileID: 785442651, guid: fe5f5ed03eefce282d69ef9d9b6e791e, type: 3}
+    - {fileID: 413632292, guid: fe5f5ed03eefce282d69ef9d9b6e791e, type: 3}
+    - {fileID: -1502102166, guid: fe5f5ed03eefce282d69ef9d9b6e791e, type: 3}
+    - {fileID: 2146227952, guid: fe5f5ed03eefce282d69ef9d9b6e791e, type: 3}
+    - {fileID: 1189242037, guid: fe5f5ed03eefce282d69ef9d9b6e791e, type: 3}
+    front:
+    - {fileID: 611956933, guid: bba9972f56ecde19860483ff720ba131, type: 3}
+    - {fileID: -454266875, guid: bba9972f56ecde19860483ff720ba131, type: 3}
+    fill:
+    - {fileID: -284647516, guid: 7c1a45b524feff263c42961953a2a695, type: 3}
+    - {fileID: 1654864308, guid: 7c1a45b524feff263c42961953a2a695, type: 3}
+    size: {x: 94, y: 20}
+    cellHeight: 22
+    pressedDrop: 2
+    capTop: 5
+    padX: 6
+    plateBorder: 6
+    innerX0: 2
+    innerX1: 92
+    hoverSeconds: 0.16
+    primaryFill:
+      serializedVersion: 2
+      rgba: 4294301503
+    pressedFill:
+      serializedVersion: 2
+      rgba: 4294832806
+    primaryText:
+      serializedVersion: 2
+      rgba: 4280947729
+    text:
+      normal:
+        serializedVersion: 2
+        rgba: 4293912290
+      cost:
+        serializedVersion: 2
+        rgba: 4294301503
+      hover:
+        serializedVersion: 2
+        rgba: 4294967295
+      hoverCost:
+        serializedVersion: 2
+        rgba: 4294967016
+      muted:
+        serializedVersion: 2
+        rgba: 4289106826
+      missing:
+        serializedVersion: 2
+        rgba: 4285220338
+      unavailable:
+        serializedVersion: 2
+        rgba: 4286604637
+      onPower:
+        serializedVersion: 2
+        rgba: 4280947729
+  wheel:
+    plate:
+    - {fileID: 1231955053, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: 1797294365, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: -1476487036, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: -1022231166, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: 965644575, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: 1990228311, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: 1117509888, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: -1652283011, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: 696340309, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: -20735346, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: -1934604047, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: 337387819, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: 172331402, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: 1732995067, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: 797909575, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: 1502733922, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: -1609124030, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: -1970207746, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: 1746257575, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: -154637560, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: 527591406, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: -2063306515, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: -15879484, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: -1011552019, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: 1340596245, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: -1038121648, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    - {fileID: 1456536447, guid: 84d5aa1fa063cbe201d4eece354112ea, type: 3}
+    fill:
+    - {fileID: 478928212, guid: bfed51509171a97a3c0ed3718ba9b181, type: 3}
+    - {fileID: -405481881, guid: bfed51509171a97a3c0ed3718ba9b181, type: 3}
+    - {fileID: -1639690892, guid: bfed51509171a97a3c0ed3718ba9b181, type: 3}
+    - {fileID: 469293448, guid: bfed51509171a97a3c0ed3718ba9b181, type: 3}
+    - {fileID: -747251623, guid: bfed51509171a97a3c0ed3718ba9b181, type: 3}
+    - {fileID: 1194619930, guid: bfed51509171a97a3c0ed3718ba9b181, type: 3}
+    hover:
+    - {fileID: 238792718, guid: a397caa045b462c0b4bd59655f8bc16b, type: 3}
+    - {fileID: 1844481162, guid: a397caa045b462c0b4bd59655f8bc16b, type: 3}
+    - {fileID: -311655797, guid: a397caa045b462c0b4bd59655f8bc16b, type: 3}
+    - {fileID: -366228741, guid: a397caa045b462c0b4bd59655f8bc16b, type: 3}
+    - {fileID: -1091648351, guid: a397caa045b462c0b4bd59655f8bc16b, type: 3}
+    icons:
+    - {fileID: -1825589435, guid: 770ab3db9938a76daf5c17bf6f8aec83, type: 3}
+    - {fileID: 166434085, guid: 770ab3db9938a76daf5c17bf6f8aec83, type: 3}
+    - {fileID: -1967464304, guid: 770ab3db9938a76daf5c17bf6f8aec83, type: 3}
+    - {fileID: -905848855, guid: 770ab3db9938a76daf5c17bf6f8aec83, type: 3}
+    - {fileID: -1138077951, guid: 770ab3db9938a76daf5c17bf6f8aec83, type: 3}
+    - {fileID: 1061868979, guid: 770ab3db9938a76daf5c17bf6f8aec83, type: 3}
+    - {fileID: -1082560212, guid: 770ab3db9938a76daf5c17bf6f8aec83, type: 3}
+    - {fileID: 1091007304, guid: 770ab3db9938a76daf5c17bf6f8aec83, type: 3}
+    - {fileID: 903301164, guid: 770ab3db9938a76daf5c17bf6f8aec83, type: 3}
+    - {fileID: 1923082814, guid: 770ab3db9938a76daf5c17bf6f8aec83, type: 3}
+    - {fileID: 45465882, guid: 770ab3db9938a76daf5c17bf6f8aec83, type: 3}
+    - {fileID: 1581999776, guid: 770ab3db9938a76daf5c17bf6f8aec83, type: 3}
+    lockIcon: {fileID: 21300000, guid: 32aff59d97eefc421e07e2d99a8aba1f, type: 3}
+    slotSize: {x: 60, y: 20}
+    cancelSize: {x: 192, y: 20}
+    gap: 6
+    cellHeight: 22
+    pressedDrop: 2
+    plateBorder: 6
+    iconAt: {x: 4, y: 4}
+    lockAt: {x: 6, y: 6}
+    textRight: 56
+    capTop: 5
+    frames: 32
+    framesPerSecond: 12
+    hoverSeconds: 0.16
+    charging:
+    - serializedVersion: 2
+      rgba: 4288636469
+    - serializedVersion: 2
+      rgba: 4281035557
+    - serializedVersion: 2
+      rgba: 4287111237
+    paused:
+    - serializedVersion: 2
+      rgba: 4284690211
+    - serializedVersion: 2
+      rgba: 4281088532
+    - serializedVersion: 2
+      rgba: 4282847780
+    front:
+    - serializedVersion: 2
+      rgba: 4294963384
+    - serializedVersion: 2
+      rgba: 4286905012
+    - serializedVersion: 2
+      rgba: 4294943433
+    light:
+    - serializedVersion: 2
+      rgba: 4294966762
+    - serializedVersion: 2
+      rgba: 4291887076
+    - serializedVersion: 2
+      rgba: 4294959856
+    lightEdge:
+    - serializedVersion: 2
+      rgba: 4294963384
+    - serializedVersion: 2
+      rgba: 4286905012
+    - serializedVersion: 2
+      rgba: 4294943433
+    lightWidth: 3
+    lightFrom: -8
+    lightTravel: 76
+    text:
+      normal:
+        serializedVersion: 2
+        rgba: 4293912290
+      cost:
+        serializedVersion: 2
+        rgba: 4294301503
+      hover:
+        serializedVersion: 2
+        rgba: 4294967295
+      hoverCost:
+        serializedVersion: 2
+        rgba: 4294967016
+      muted:
+        serializedVersion: 2
+        rgba: 4289106826
+      missing:
+        serializedVersion: 2
+        rgba: 4285220338
+      unavailable:
+        serializedVersion: 2
+        rgba: 4286604637
+      onPower:
+        serializedVersion: 2
+        rgba: 4280947729
+  ignition:
+    corner:
+    - {fileID: -694934282, guid: abd2e70af658340b32aa658c49a3f878, type: 3}
+    - {fileID: -1319040319, guid: abd2e70af658340b32aa658c49a3f878, type: 3}
+    - {fileID: -867596700, guid: abd2e70af658340b32aa658c49a3f878, type: 3}
+    - {fileID: -1686706678, guid: abd2e70af658340b32aa658c49a3f878, type: 3}
+    nodes:
+    - {fileID: 254256079, guid: 9b01746beda23389e89db5007a68d05e, type: 3}
+    - {fileID: -239069933, guid: 9b01746beda23389e89db5007a68d05e, type: 3}
+    - {fileID: 1552660429, guid: 9b01746beda23389e89db5007a68d05e, type: 3}
+    - {fileID: -1854713506, guid: 9b01746beda23389e89db5007a68d05e, type: 3}
+    - {fileID: 2143820947, guid: 9b01746beda23389e89db5007a68d05e, type: 3}
+    - {fileID: 1285706291, guid: 9b01746beda23389e89db5007a68d05e, type: 3}
+    - {fileID: -439179040, guid: 9b01746beda23389e89db5007a68d05e, type: 3}
+    - {fileID: 382165940, guid: 9b01746beda23389e89db5007a68d05e, type: 3}
+    - {fileID: -1031671496, guid: 9b01746beda23389e89db5007a68d05e, type: 3}
+    cell: 72
+    frame: 48
+    cornerSize: 7
+    cornerInset: 1
+    hoverClose: 2
+    pressedClose: 3
+    pressedDrop: 2
+    nameGap: 4
+    costGap: 4
+    enterSeconds: 0.32
+    staggerSeconds: 0.08
+    hoverSeconds: 0.16
+    text:
+      normal:
+        serializedVersion: 2
+        rgba: 4293912290
+      cost:
+        serializedVersion: 2
+        rgba: 4294301503
+      hover:
+        serializedVersion: 2
+        rgba: 4294967295
+      hoverCost:
+        serializedVersion: 2
+        rgba: 4294967016
+      muted:
+        serializedVersion: 2
+        rgba: 4289106826
+      missing:
+        serializedVersion: 2
+        rgba: 4285220338
+      unavailable:
+        serializedVersion: 2
+        rgba: 4286604637
+      onPower:
+        serializedVersion: 2
+        rgba: 4280947729
