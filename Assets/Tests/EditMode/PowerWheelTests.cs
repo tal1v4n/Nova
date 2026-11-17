@@ -340,7 +340,8 @@ namespace Nova.Tests
 
             Assert.IsTrue(aim.IsAiming);
             Assert.AreSame(pulsar, aim.Pulsar);
-            Assert.AreEqual("Cero Absoluto: elige objetivo", wheel.Header);
+            Assert.IsFalse(panel.IsOpen, "18 #56: al apuntar, el panel se cierra.");
+            Assert.IsFalse(wheel.IsVisible);
             Assert.AreEqual(PowerChargeState.Ready, Caster(pulsar).State, "Apuntar no lanza.");
         }
 
@@ -425,32 +426,38 @@ namespace Nova.Tests
 
             Assert.IsFalse(aim.IsAiming);
             Assert.AreEqual(PowerChargeState.Ready, Caster(pulsar).State, "Sin perder la carga.");
-            Assert.AreSame(pulsar, panel.Node, "El clic derecho no abre el panel del enemigo.");
+            Assert.IsFalse(panel.IsOpen, "El clic derecho no abre el panel del enemigo.");
 
+            RightClick(pulsar);
             ClickAt(SlotAt(0));
-            Assert.IsTrue(aim.IsAiming, "Se vuelve a apuntar con la ranura.");
+            Assert.IsTrue(aim.IsAiming, "Se vuelve a apuntar desde el panel del Púlsar.");
         }
 
         [Test]
-        public void EscapeCancelsTheAimBeforeClosingThePanel()
+        public void EscapeCancelsTheAimAndNothingElse()
         {
             ReadyPulsar();
             ClickAt(SlotAt(0));
+            bool paused = false;
+            router.OnPauseRequested += () => paused = true;
 
             router.PressEscape();
             Assert.IsFalse(aim.IsAiming);
-            Assert.IsTrue(panel.IsOpen);
-
-            router.PressEscape();
-            Assert.IsFalse(panel.IsOpen);
+            Assert.IsFalse(panel.IsOpen, "El panel ya se cerró al apuntar.");
+            Assert.IsFalse(paused, "El primer Esc solo cancela el apuntado.");
         }
 
         [Test]
-        public void CancellingThePowerWhileAimingStopsAiming()
+        // 18 #56: mientras se apunta no hay panel, así que «Cancelar» no está: el poder se cancela reabriendo el
+        // panel, y reabrirlo pasa por el clic derecho, que antes cancela el apuntado.
+        public void CancellingThePowerTakesReopeningThePanel()
         {
             NodeController pulsar = ReadyPulsar();
             ClickAt(SlotAt(0));
 
+            RightClick(null);
+            Assert.IsFalse(aim.IsAiming);
+            RightClick(pulsar);
             ClickAt(CancelAt);
 
             Assert.IsFalse(Caster(pulsar).HasPowerCharge);

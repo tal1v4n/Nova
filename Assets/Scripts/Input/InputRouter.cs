@@ -336,8 +336,8 @@ namespace Nova.Input
             // botón deshabilitado o ausente, el clic no hace nada. La mejora ya no es del panel, sino
             // del icono sobre el nodo (13.13, T6-15).
             //
-            // El panel sigue respondiendo en modo apuntado: es el mando del Púlsar que apunta, y
-            // desde él se cancela el poder (desviación 211).
+            // Al entrar en modo apuntado el panel se cierra (13.5, 18 #56, T6-09): mientras se apunta no hay
+            // panel. Hasta T6-09 seguía abierto y respondiendo (desviación 211).
             if (!dragging && Panel.Contains(pressWorld))
             {
                 // Rueda de poderes (13.5, T3-07): solo en un Púlsar propio.
@@ -533,14 +533,15 @@ namespace Nova.Input
         bool IsAiming => aim != null && aim.IsAiming;
 
         // 13.5: la ranura del poder ya cargado brilla y su clic entra en modo apuntado (desviación
-        // 209); cualquier otra ranura empieza a cargar, y las reglas dicen si se puede.
+        // 209) y cierra el panel (18 #56): se apunta con el tablero despejado. Cualquier otra ranura
+        // empieza a cargar, y las reglas dicen si se puede.
         void ChooseWheelSlot(NodeController pulsar, PowerType power)
         {
             if (pulsar.TryGetComponent(out PulsarCaster caster) && caster.State == PowerChargeState.Ready
                 && caster.Power != null && caster.Power.Type == power)
             {
-                if (aim != null)
-                    aim.Begin(pulsar, Issuer.Faction);
+                if (aim != null && aim.Begin(pulsar, Issuer.Faction))
+                    Panel.Close();
                 return;
             }
             Issuer.ChargePower(pulsar, power);
