@@ -597,6 +597,9 @@ namespace Nova.Input
             hoverAsteroid = null;
             Menu.Open(node, KeepInView(node.transform.position, IgnitionMenuState.Extent, IgnitionMenuState.Extent),
                 Issuer.Faction, byHover: true);
+            // Abierto aquí: si se cierra antes de la próxima llamada (clic derecho, Esc), esa llamada lo sabrá y
+            // no lo reabrirá con el cursor todavía encima.
+            menuWasOpen = true;
         }
 
         bool CanOpenByHover(NodeController node)
