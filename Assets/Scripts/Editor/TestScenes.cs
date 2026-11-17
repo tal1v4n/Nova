@@ -672,8 +672,10 @@ namespace Nova.Editor
             serialized.ApplyModifiedPropertiesWithoutUndo();
             go.AddComponent<ProvisionalMagnetarView>();
             // T6-05: el arco de cada disparo. Sin MagnetarArt asignado, el trazo sigue siendo el provisional.
+            // T.7 #56: con ProtonArt, el arco acaba en el borde de la bolsa del protón.
             go.AddComponent<MagnetarShotArc>().Configure(
-                AssetDatabase.LoadAssetAtPath<MagnetarArt>(NodeArtAssets.MagnetarArtPath));
+                AssetDatabase.LoadAssetAtPath<MagnetarArt>(NodeArtAssets.MagnetarArtPath),
+                AssetDatabase.LoadAssetAtPath<ProtonArt>(NodeArtAssets.ProtonArtPath));
             go.AddComponent<ProvisionalPulsarView>();
             // T6-02: los estados de 14.1 y el idle. Sin NodeStateArt asignado, los estados siguen provisionales.
             go.AddComponent<NodeAnimator>().Configure(balance,

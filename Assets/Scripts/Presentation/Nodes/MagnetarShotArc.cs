@@ -14,6 +14,9 @@ namespace Nova.Presentation
     // - La punta sigue al protón durante sus 2 frames. Si el disparo lo derriba —o termina por otra
     //   cosa—, se queda en su última posición y el arco acaba sus frames ahí (14.9).
     // - Un disparo nuevo corta el arco anterior: un Magnetar nunca enseña dos (14.9, Rayo Cósmico).
+    // - El arco acaba en el borde de la bolsa del protón, no en su centro (T.7 #56): el último píxel de
+    //   la punta cae en ProtonArt.BagRadiusPixels de su talla, y el trazo no cruza las cifras de la Carga.
+    //   Sin ProtonArt, el contacto sigue en el centro del protón, como en el provisional.
     // - Capa 0 de 14.7: por debajo del nodo y del protón, por encima del fondo y del anillo de radio.
     //
     // El trazo se monta como lo genera tools/nova_core.py (Filamento.linea): nacimiento en el centro,
@@ -33,8 +36,11 @@ namespace Nova.Presentation
         const int BirthPixels = 16;
         const int TilePixels = 256;
         const int ContactPixels = 24;
+        const int TipPixels = 32; // de x = 24 a 31 hay dibujo: la cruz del golpe sobresale 8 px del contacto
 
         [SerializeField] MagnetarArt art;
+        [Tooltip("Para acabar el arco en el borde de la bolsa del protón (T.7 #56). Sin él, acaba en su centro.")]
+        [SerializeField] ProtonArt protonArt;
 
         NodeController node;
         MagnetarTurret turret;
@@ -46,6 +52,7 @@ namespace Nova.Presentation
         MagnetarArt.ShotFrames frames;
         Proton target;
         Vector2 tipWorld;
+        int bagPixels;
         float elapsed;
         bool showing;
         bool subscribed;
@@ -56,6 +63,7 @@ namespace Nova.Presentation
         internal bool IsShowing => showing;
         internal int Frame => showing ? Mathf.FloorToInt(elapsed * FramesPerSecond) : -1;
         internal Vector2 TipPosition => tipWorld;
+        internal int BagPixels => bagPixels;
         internal SpriteRenderer Birth { get { EnsureBuilt(); return birth; } }
         internal SpriteRenderer Tip { get { EnsureBuilt(); return tip; } }
         internal IReadOnlyList<SpriteRenderer> Tiles => tiles;
@@ -79,9 +87,10 @@ namespace Nova.Presentation
         }
 
         // Para la plantilla de nodo y los tests: el cableado normal es por el Inspector.
-        public void Configure(MagnetarArt magnetarArt)
+        public void Configure(MagnetarArt magnetarArt, ProtonArt protonSizes = null)
         {
             art = magnetarArt;
+            protonArt = protonSizes;
         }
 
         internal void Subscribe()
@@ -107,7 +116,7 @@ namespace Nova.Presentation
                 return;
             elapsed += deltaTime;
             if (target != null)
-                tipWorld = target.transform.position;
+                Track(target);
             int frame = Frame;
             if (frame >= frames.FrameCount)
             {
@@ -132,8 +141,19 @@ namespace Nova.Presentation
         {
             Release();
             target = proton;
-            tipWorld = proton.transform.position;
+            Track(proton);
             target.OnFinished += HandleTargetFinished;
+        }
+
+        // La punta va al protón y la bolsa, a la talla de su Carga de ahora: si el disparo lo encoge, el
+        // arco lo sigue. Un protón ya sin Carga conserva la última bolsa que tuvo.
+        void Track(Proton proton)
+        {
+            tipWorld = proton.transform.position;
+            if (protonArt != null && protonArt.Sizes > 0 && proton.Charge > 0)
+                bagPixels = protonArt.BagRadiusPixels(protonArt.SizeFor(proton.Charge));
+            else if (protonArt == null || protonArt.Sizes == 0)
+                bagPixels = 0;
         }
 
         // El protón termina —derribado por este disparo, por otro, o al llegar—: la punta se queda
@@ -171,8 +191,11 @@ namespace Nova.Presentation
             root.position = new Vector3(from.x, from.y, transform.position.z);
             root.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg);
 
-            // Todo en píxeles enteros a lo largo del arco: la punta cae en el píxel del protón.
+            // Todo en píxeles enteros a lo largo del arco. Sin bolsa, el contacto cae en el píxel del protón;
+            // con ella, la punta se retira para que su último píxel toque el borde de la bolsa (T.7 #56).
             int length = Mathf.RoundToInt(delta.magnitude * PixelsPerUnit);
+            if (bagPixels > 0)
+                length = Mathf.Max(0, length - bagPixels - (TipPixels - ContactPixels));
             int tipLeft = length - ContactPixels;
 
             birth.sprite = frames.Birth[frame];

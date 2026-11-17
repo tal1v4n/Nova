@@ -350,6 +350,37 @@ namespace Nova.Tests
             arc.Unsubscribe();
         }
 
+        // T.7 #56: con ProtonArt, el último píxel de la punta toca el borde de la bolsa y no cruza las cifras.
+        ProtonArt ProtonSizes()
+        {
+            var proton = ScriptableObject.CreateInstance<ProtonArt>();
+            spawned.Add(proton);
+            proton.Configure(new ProtonArt.SizeFrames[10], new ProtonArt.SizeFrames[10], new Sprite[10], new int[10], 5,
+                new[] { 12, 13, 14, 15, 16, 18, 19, 20, 21, 22 });
+            return proton;
+        }
+
+        [Test]
+        public void WithProtonArtTheArcEndsAtTheEdgeOfTheBag()
+        {
+            NodeController magnetar = Node("Magnetar", Faction.Enemy, Vector2.zero);
+            var arc = magnetar.gameObject.AddComponent<MagnetarShotArc>();
+            arc.Configure(art, ProtonSizes());
+            arc.Subscribe();
+            Fly(Faction.Player, 30, new Vector2(1.5f, 0f)); // 96 px, dentro del radio; Carga 30, talla 5, bolsa de 18 px
+
+            magnetar.GetComponent<MagnetarTurret>().Tick(Tick);
+
+            Assert.IsTrue(arc.IsShowing, "El Magnetar dispara.");
+            Assert.AreEqual(18, arc.BagPixels);
+            int contact = 96 - 18 - 8;
+            Assert.AreEqual(contact / 64f, arc.Tip.transform.localPosition.x, 1e-5f,
+                "El último píxel de la punta (x = 31) cae en el borde de la bolsa.");
+            Assert.AreEqual(contact - 24 - 16, arc.Tiles[0].sprite.rect.width, "El tramo se acorta con la punta.");
+            Assert.AreEqual(new Vector2(1.5f, 0f), arc.TipPosition, "La punta sigue al protón.");
+            arc.Unsubscribe();
+        }
+
         [Test]
         public void TheTipFollowsTheProton()
         {

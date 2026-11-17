@@ -342,7 +342,8 @@ namespace Nova.Presentation
             string row = $"{FactionName(proton.Faction)}_{RadiusOf(node)}";
             if (outcome.Result == ImpactResult.Absorbed)
                 PlayOnNode(node, art.Absorb, row);
-            else if (outcome.Result == ImpactResult.Damaged)
+            // Un impacto que avanza el deshielo también quita Energía —de cualquier bando, 7.3—: lleva el mismo daño (T.7 #57).
+            else if (outcome.Result == ImpactResult.Damaged || outcome.Result == ImpactResult.ThawProgress)
                 PlayOnNode(node, art.Damage, row, random.Next(art.Damage.Variants));
         }
 

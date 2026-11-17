@@ -142,7 +142,7 @@ Efectos que se reproducen y terminan. No bloquean nada.
 | `FX-CAP` | Captura | El nodo capturado | `ChangeFaction()` | 0.4 s (= estado `Capturado`) |
 | `FX-SEND` | Lanzamiento | El nodo origen | `ProtonLauncher` descuenta Energía | 0.2 s |
 | `FX-ABS` | Absorción aliada | El nodo destino | `ImpactResult.Absorbed` | 0.3 s |
-| `FX-DMG` | Daño sin captura | El nodo destino | `ImpactResult.Damaged` | 0.3 s |
+| `FX-DMG` | Daño sin captura | El nodo destino | `ImpactResult.Damaged` y `ImpactResult.ThawProgress`: un impacto que solo avanza el deshielo también quita Energía ([18](./NOVA_GameDesign_Spec.md#18-decisiones-tomadas-por-defecto) #51) | 0.3 s |
 | `FX-SHOT` | Disparo del Magnetar | **Arco de plasma** del Magnetar al protón (14.9), más destello sobre el protón | Cada tick de cadencia | Efecto de juego instantáneo; se ve **2 frames (0.17 s)** |
 | `FX-KILL` | Protón destruido | El protón | `charge <= 0` | 0.25 s |
 | `FX-THAW` | Deshielo | El nodo congelado | Energía llega a 0 o auto-deshielo 30 s | 0.5 s |
@@ -238,7 +238,7 @@ Añadido el **2026-10-10**. Dos elementos del tablero comparten el mismo lenguaj
 | | Línea de envío | Arco del Magnetar |
 |---|---|---|
 | **Qué la dispara** | Arrastre derecho desde un nodo propio que puede enviar, o selección activa ([13.1](./NOVA_GameDesign_Spec.md#131-ratón)) | Cada disparo de la torreta ([6.3](./NOVA_GameDesign_Spec.md#63-efecto-del-magnetar-sobre-protones), `FX-SHOT`) |
-| **Une** | Centro del nodo origen → **cursor** | Centro del Magnetar → **protón** al que dispara |
+| **Une** | Centro del nodo origen → **cursor** | Centro del Magnetar → **borde de la bolsa** del protón al que dispara: el último píxel de la punta cae en `bagRadiusPixels` de su talla y el arco no cruza las cifras de la Carga ([18](./NOVA_GameDesign_Spec.md#18-decisiones-tomadas-por-defecto) #52) |
 | **Sobre quién** | Solo el Jugador. El Enemigo no tiene cursor | Magnetares de **los tres bandos**, incluido el neutral |
 | **Color** | Rampa del Jugador | Rampa del bando del Magnetar |
 | **Duración** | Lo que dure el gesto. **Bucle de 16 frames**, porque no tiene duración fija ([NOVA_Arte_Tecnica.md](./NOVA_Arte_Tecnica.md), *Animación*) | **2 frames (0.17 s)**, sin bucle: aparece, se retuerce y se apaga |

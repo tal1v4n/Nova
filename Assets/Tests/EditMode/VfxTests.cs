@@ -328,6 +328,23 @@ namespace Nova.Tests
         }
 
         [Test]
+        public void AHostileHitThatOnlyThawsAFrozenNodeAlsoDamages()
+        {
+            // T.7 #57: el impacto es ThawProgress y no Damaged, pero le quita Energía igual.
+            NodeController source = Node("Star", Faction.Player, 50, 1, Vector2.zero);
+            NodeController frozen = Node("Star", Faction.Enemy, 40, 1, new Vector2(-1f, 0f));
+            frozen.Freeze();
+
+            Proton hit = Send(source, frozen);
+            Step(0f);
+            Land(hit);
+            Assert.IsTrue(frozen.HasState(NodeStateFlags.Frozen), "Sigue congelado: solo avanza el deshielo.");
+            Assert.Less(frozen.Energy, 40);
+            string damage = Shown.Single(name => name.StartsWith("dmg_"));
+            StringAssert.StartsWith("dmg_player_24_", damage, "La fila del bando del protón y la talla del nodo.");
+        }
+
+        [Test]
         public void EffectsRunAtTwelveFramesASecondStopInPauseAndGoBackToThePool()
         {
             NodeController source = Node("Star", Faction.Player, 40, 1, Vector2.zero);
